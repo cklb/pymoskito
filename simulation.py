@@ -4,6 +4,7 @@ from __future__ import division
 # Rendering Tests
 
 import vtk
+import os.path
 from time import sleep
 from numpy import sin, cos, pi
 from numpy import array as narray
@@ -26,8 +27,35 @@ beam_depth = 0.03
 
 scale = 1
 
+
 #---------------------------------------------------------------------
-# model equations
+# plotting 
+#---------------------------------------------------------------------
+table = vtk.vtkTable()
+#Time:
+arrTime = vtk.vtkFloatArray()
+arrTime.SetName("time")
+#Error: yd-r
+arrE = vtk.vtkFloatArray()
+arrE.SetName("epsilon")
+#psi3
+arrPsi3 = vtk.vtkFloatArray()
+arrPsi3.SetName("psi3")
+#theta
+arrTheta = vtk.vtkFloatArray()
+arrTheta.SetName("theta")
+#tau
+arrTau = vtk.vtkFloatArray()
+arrTau.SetName("tau")
+# add rows to table 
+table.AddColumn(arrTime)
+table.AddColumn(arrE)
+table.AddColumn(arrTheta)
+table.AddColumn(arrPsi3)
+table.AddColumn(arrTau)
+
+#---------------------------------------------------------------------
+# trajectory generation
 #---------------------------------------------------------------------
 def calcTrajectory(t):
     '''
@@ -62,11 +90,17 @@ def rhs(t, q):
     dx3 = x4
 
     #choose controller
+    yd = calcTrajectory(t)
     tau = 0
-#    tau = p_controller(calcTrajectory(t), y)
+#    tau = p_controller(yd, y)
 
     u = (tau - M* (2*x1*x2*x4 + G*x1*cos(x3))) / (M*x1**2 + J + Jb)
     dx4 = u
+
+    #plotting data
+    new_row = [t, yd-x1, x3, 0, tau] #TODO psi3
+    for i in range( table.GetNumberOfColumns()):
+        table.GetColumn(i).InsertNextValue(new_row[i])
 
     return [dx1, dx2, dx3, dx4]
 
@@ -137,7 +171,7 @@ def updateScene(*args):
     '''
 
     t, q = calcStep()
-    print t,'\t', q
+    #print t,'\t', q
     r_beam, T_beam, r_ball, T_ball = calcPositions(q)
 
     setBodyState(beamActor, r_beam, T_beam)
@@ -145,9 +179,9 @@ def updateScene(*args):
 
     renWin.Render()
 
-    if abs(r_ball[1]) > l :
-        print '\n###################################### \n#  Ball fell down -> exiting application.'
-        quit()
+#    if abs(r_ball[1]) > l :
+#        print '\n###################################### \n#  Ball fell down -> exiting application.'
+#        input('Simulation paused press Enter to continue')
 
 
 #------- visualisation --------------------------------
@@ -157,7 +191,7 @@ ren.SetBackground(1, 1, 1)
 renWin = vtk.vtkRenderWindow()
 renWin.SetSize(500, 500)
 renWin.AddRenderer(ren)
-
+renWin.SetWindowName("Ball and Beam Simulation")
 
 #-------- add the beam ----
 # geometry
@@ -228,4 +262,21 @@ iren.Start()
 # End of Simulation
 iren.GetRenderWindow().Finalize()
 
+print '\n-> End of Simulation dumping measurements:'
+table.Dump(6)
+
+done = False
+while not done:
+    fileName = '../measurements/' + raw_input('Please specify filename: ') + '.vtk'
+    if os.path.isfile(fileName):
+        if raw_input('file already exists, overwrite? (y/n)') == 'y':
+            done = True
+    else:
+        done  = True
     
+print 'saving to', fileName
+
+tWriter = vtk.vtkTableWriter()
+tWriter.SetInputData(table)
+tWriter.SetFileName(fileName)
+tWriter.Update()
