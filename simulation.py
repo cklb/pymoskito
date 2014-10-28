@@ -14,7 +14,7 @@ from scipy.integrate import ode
 # global settings
 #--------------------------------------------------------------------- 
 dt = 0.01       # stepwidth
-q0 = [0, 0.1, 0, 0]    # initial minimal state vector (r, dr, theta, dtheta)'
+q0 = [0, 0, 0, 0]    # initial minimal state vector (r, dr, theta, dtheta)'
 
 M = 0.05    #kg
 R = 0.01    #m
@@ -92,7 +92,7 @@ def rhs(t, q):
     #choose controller
     yd = calcTrajectory(t)
     tau = 0
-#    tau = p_controller(yd, y)
+    #tau = p_controller(yd, y)
 
     u = (tau - M* (2*x1*x2*x4 + G*x1*cos(x3))) / (M*x1**2 + J + Jb)
     dx4 = u
@@ -179,9 +179,10 @@ def updateScene(*args):
 
     renWin.Render()
 
-#    if abs(r_ball[1]) > l :
-#        print '\n###################################### \n#  Ball fell down -> exiting application.'
-#        input('Simulation paused press Enter to continue')
+    if abs(q[0]) > 1.2*l/2 :
+        print '\n###################################### \n#  Ball fell down -> exiting application.'
+        quit()
+        raw_input('Simulation paused press Enter to continue')
 
 
 #------- visualisation --------------------------------
@@ -237,13 +238,40 @@ ballActor.SetScale(scale)
 
 #make it look nice
 ballProp = ballActor.GetProperty()
-ballProp.SetColor(0, 0.8, 0.3)
+ballProp.SetColor(1, 1, 0)
 ballProp.SetAmbient(0.2)
 ballProp.SetDiffuse(0.8)
 ballProp.SetSpecular(0.5)
 ballProp.SetSpecularPower(0.5)
 
 ren.AddActor(ballActor)
+
+#-------- add the back ----
+# geometry
+vPlane = vtk.vtkPlaneSource()
+vPlane.SetCenter(0, 0, -0.1)
+vPlane.SetNormal(0, 0, 1)
+
+#mapper
+vPlaneMapper = vtk.vtkPolyDataMapper()
+vPlaneMapper.SetInputConnection(vPlane.GetOutputPort())
+
+# actor
+vPlaneActor = vtk.vtkLODActor()
+vPlaneActor.SetMapper(vPlaneMapper)
+vPlaneActor.SetScale(scale)
+
+#make it look nice
+vPlaneProp = vPlaneActor.GetProperty()
+col = [0.78125, 0.4570, 0.119]
+vPlaneProp.SetColor([x*0.7 for x in col])
+vPlaneProp.SetAmbient(0.2)
+vPlaneProp.SetDiffuse(0.8)
+vPlaneProp.SetSpecular(0.5)
+vPlaneProp.SetSpecularPower(0.5)
+
+ren.AddActor(vPlaneActor)
+
 
 # get everybody into the frame
 ren.ResetCamera()
@@ -261,6 +289,8 @@ iren.Start()
 
 # End of Simulation
 iren.GetRenderWindow().Finalize()
+
+quit()
 
 print '\n-> End of Simulation dumping measurements:'
 table.Dump(6)
