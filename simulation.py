@@ -14,7 +14,7 @@ from scipy.integrate import ode
 # global settings
 #--------------------------------------------------------------------- 
 dt = 0.01       # stepwidth
-q0 = [0, 0, 0, 0]    # initial minimal state vector (r, dr, theta, dtheta)'
+q0 = [0, 0.1, 0, 0]    # initial minimal state vector (r, dr, theta, dtheta)'
 
 M = 0.05    #kg
 R = 0.01    #m
@@ -91,8 +91,9 @@ def rhs(t, q):
 
     #choose controller
     yd = calcTrajectory(t)
+    yd = 0.1
     tau = 0
-    #tau = p_controller(yd, y)
+    tau = p_controller(yd, y)
 
     u = (tau - M* (2*x1*x2*x4 + G*x1*cos(x3))) / (M*x1**2 + J + Jb)
     dx4 = u
@@ -108,7 +109,7 @@ def rhs(t, q):
 # controller
 #---------------------------------------------------------------------
 def p_controller(yd, y):
-    Kp = 10
+    Kp = .5
     return  Kp*(yd-y)
 
 #---------------------------------------------------------------------
