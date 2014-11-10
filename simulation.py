@@ -22,6 +22,7 @@ J = 0.02    # kgm^2
 Jb = 2e-6   # kgm^2
 G = 9.81    # m/s^2
 l = 0.5     # m
+B = M/(Jb/R**2+M)
 beam_width = 0.01
 beam_depth = 0.03
 
@@ -93,7 +94,6 @@ def rhs(t, q):
     y= x1
 
     dx1 = x2
-    B = M/(Jb/R**2+M)
     dx2 = B*(x1*x4**2 - G*sin(x3))
     dx3 = x4
 
