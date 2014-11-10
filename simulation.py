@@ -57,17 +57,25 @@ table.AddColumn(arrTau)
 #---------------------------------------------------------------------
 # trajectory generation
 #---------------------------------------------------------------------
-def calcTrajectory(t):
+def calcTrajectory(t,order):
     '''
     Calculates desired trajectory for ball position
     '''
-
     #TODO
     A = 1
     #A = 2
     #A = 3
-    #yd = A * cos(pi*t/5)
-    yd = 0.1
+    yd_0 = A * cos(pi*t/5)
+    yd_1 = -A * (pi/5) * sin(pi*t/5)
+    yd_2 = -A * (pi/5)**2 * cos(pi*t/5)
+    yd_3 = A * (pi/5)**3 * sin(pi*t/5)
+    yd_4 = A * (pi/5)**4 * cos(pi*t/5)
+    yd_derivates = [yd_0 , yd_1 , yd_2 , yd_3 , yd_4]
+    yd = []    
+    
+    for i in range(order+1):
+        yd.append(yd_derivates[i])
+         
     return yd
 
 #---------------------------------------------------------------------
@@ -90,15 +98,15 @@ def rhs(t, q):
     dx3 = x4
 
     #choose controller
-    yd = calcTrajectory(t)
-#    tau = 0
-    tau = p_controller(yd, q)
-    print tau
+#   tau = 0
+    tau = p_controller(t,q)
+#    tau = f_controller()
 
     u = (tau - M* (2*x1*x2*x4 + G*x1*cos(x3))) / (M*x1**2 + J + Jb)
     dx4 = u
 
     #plotting data
+    yd = calcTrajectory(t,0)
     new_row = [t, yd-x1, x3, 0, tau] #TODO psi3
     for i in range( table.GetNumberOfColumns()):
         table.GetColumn(i).InsertNextValue(new_row[i])
@@ -108,7 +116,8 @@ def rhs(t, q):
 #---------------------------------------------------------------------
 # controller
 #---------------------------------------------------------------------
-def p_controller(yd, q):
+def p_controller(t,q):
+    yd = calcTrajectory(t,0)
     x1 = q[0]
     x4 = q[3]
     # Kp for yd = 0.1 and dr = 0.01
@@ -116,17 +125,16 @@ def p_controller(yd, q):
     if yd<0:
         yd = yd*(-1)
     if (x1>-0.05 and x1<0.05) or x4==0:
-        print 'mitte'
         return 0
     # ball is on the right side
     if x1>0:
-        print 'rechts'
         return Kp*(yd-x1)
     
     # ball is on the left side
     if x1<0:
-        print 'links'
         return  Kp*(yd+x1)
+
+    
 
 #---------------------------------------------------------------------
 # solver
@@ -188,7 +196,7 @@ def updateScene(*args):
     '''
 
     t, q = calcStep()
-    print t,'\t', q
+#    print t,'\t', q
     r_beam, T_beam, r_ball, T_ball = calcPositions(q)
 
     setBodyState(beamActor, r_beam, T_beam)
