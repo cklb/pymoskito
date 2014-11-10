@@ -14,14 +14,14 @@ from scipy.integrate import ode
 # global settings
 #--------------------------------------------------------------------- 
 dt = 0.01       # stepwidth
-q0 = [0, 0.1, 0, 0]    # initial minimal state vector (r, dr, theta, dtheta)'
+q0 = [0, 0.01, 0, 0]    # initial minimal state vector (r, dr, theta, dtheta)'
 
-M = 0.05    #kg
-R = 0.01    #m
-J = 0.02    #kgm^2
-Jb = 2e-6   #kgm^2
-G = 9.81    #m/s^2
-l = 0.5     #m
+M = 0.05    # kg
+R = 0.01    # m
+J = 0.02    # kgm^2
+Jb = 2e-6   # kgm^2
+G = 9.81    # m/s^2
+l = 0.5     # m
 beam_width = 0.01
 beam_depth = 0.03
 
@@ -66,8 +66,8 @@ def calcTrajectory(t):
     A = 1
     #A = 2
     #A = 3
-    yd = A * cos(pi*t/5)
-
+    #yd = A * cos(pi*t/5)
+    yd = 0.1
     return yd
 
 #---------------------------------------------------------------------
@@ -91,9 +91,9 @@ def rhs(t, q):
 
     #choose controller
     yd = calcTrajectory(t)
-    yd = 0.1
-    tau = 0
-    tau = p_controller(yd, y)
+#    tau = 0
+    tau = p_controller(yd, q)
+    print tau
 
     u = (tau - M* (2*x1*x2*x4 + G*x1*cos(x3))) / (M*x1**2 + J + Jb)
     dx4 = u
@@ -108,9 +108,25 @@ def rhs(t, q):
 #---------------------------------------------------------------------
 # controller
 #---------------------------------------------------------------------
-def p_controller(yd, y):
-    Kp = .5
-    return  Kp*(yd-y)
+def p_controller(yd, q):
+    x1 = q[0]
+    x4 = q[3]
+    # Kp for yd = 0.1 and dr = 0.01
+    Kp = 8
+    if yd<0:
+        yd = yd*(-1)
+    if (x1>-0.05 and x1<0.05) or x4==0:
+        print 'mitte'
+        return 0
+    # ball is on the right side
+    if x1>0:
+        print 'rechts'
+        return Kp*(yd-x1)
+    
+    # ball is on the left side
+    if x1<0:
+        print 'links'
+        return  Kp*(yd+x1)
 
 #---------------------------------------------------------------------
 # solver
@@ -172,7 +188,7 @@ def updateScene(*args):
     '''
 
     t, q = calcStep()
-    #print t,'\t', q
+    print t,'\t', q
     r_beam, T_beam, r_ball, T_ball = calcPositions(q)
 
     setBodyState(beamActor, r_beam, T_beam)
