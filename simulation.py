@@ -14,7 +14,7 @@ from scipy.integrate import ode
 # global settings
 #--------------------------------------------------------------------- 
 dt = 0.01       # stepwidth
-q0 = [0, 0.01, 0, 0]    # initial minimal state vector (r, dr, theta, dtheta)'
+q0 = [0, 0, 0, 0]    # initial minimal state vector (r, dr, theta, dtheta)'
 
 M = 0.05    # kg
 R = 0.01    # m
@@ -23,6 +23,7 @@ Jb = 2e-6   # kgm^2
 G = 9.81    # m/s^2
 l = 0.5     # m
 B = M/(Jb/R**2+M)
+
 beam_width = 0.01
 beam_depth = 0.03
 
@@ -99,17 +100,17 @@ def rhs(t, q):
 
     #choose controller
 #   tau = 0
-    tau = p_controller(t,q)
-#    tau = f_controller()
+#   tau = p_controller(t,q)
+    u = f_controller(t,q)
 
-    u = (tau - M* (2*x1*x2*x4 + G*x1*cos(x3))) / (M*x1**2 + J + Jb)
+#    u = (tau - M* (2*x1*x2*x4 + G*x1*cos(x3))) / (M*x1**2 + J + Jb)
     dx4 = u
 
     #plotting data
-    yd = calcTrajectory(t,0)
-    new_row = [t, yd-x1, x3, 0, tau] #TODO psi3
-    for i in range( table.GetNumberOfColumns()):
-        table.GetColumn(i).InsertNextValue(new_row[i])
+#    yd = calcTrajectory(t,0)
+#    new_row = [t, yd-x1, x3, 0, tau] #TODO psi3
+#    for i in range( table.GetNumberOfColumns()):
+#        table.GetColumn(i).InsertNextValue(new_row[i])
 
     return [dx1, dx2, dx3, dx4]
 
@@ -133,6 +134,38 @@ def p_controller(t,q):
     # ball is on the left side
     if x1<0:
         return  Kp*(yd+x1)
+
+# Controller for modification of f designed by Christoph
+def f_controller(t,q):
+    yd_0 , yd_1 , yd_2 , yd_3 , yd_4 = calcTrajectory(t,4)
+    x1 = q[0]
+    x2 = q[1]
+    x3 = q[2]
+    x4 = q[3]
+    # gain of the controller
+    k0 = 16
+    k1 = 32
+    k2 = 24
+    k3 = 8
+    
+    # calculate nonlinear terms phi
+    phi1 = x1
+    phi2 = x2  
+    phi3 = -B*G*sin(x3)
+    phi4 = -B*G*x4*sin(x3)
+    
+    # calculate fictional input v
+    v = yd_4 + k3*(yd_3 - phi4) + k2*(yd_2 - phi3) + k1*(yd_1 - phi2) + k0*(yd_0 - phi1)
+    
+    # calculate a(x)
+    a = -B*G*cos(x3)
+    # calculate b(x)
+    b = B*G*x4**2*sin(x3)
+    
+    # calculate u
+    u = (v-b)/a
+    
+    return u
 
     
 
