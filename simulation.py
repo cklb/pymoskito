@@ -14,14 +14,14 @@ from scipy.integrate import ode
 # global settings
 #--------------------------------------------------------------------- 
 dt = 0.01       # stepwidth
-q0 = [0, 0, 0, 0]    # initial minimal state vector (r, dr, theta, dtheta)'
+q0 = [0.1, 0, 0, 0.0564]    # initial minimal state vector (r, dr, theta, dtheta)'
 
 M = 0.05    # kg
 R = 0.01    # m
 J = 0.02    # kgm^2
 Jb = 2e-6   # kgm^2
 G = 9.81    # m/s^2
-l = 0.5     # m
+l = 2     # m
 B = M/(Jb/R**2+M)
 
 beam_width = 0.01
@@ -73,8 +73,8 @@ def calcTrajectory(t,order):
     yd_3 = A * (pi/5)**3 * sin(pi*t/5)
     yd_4 = A * (pi/5)**4 * cos(pi*t/5)
     yd_derivates = [yd_0 , yd_1 , yd_2 , yd_3 , yd_4]
-    yd = []    
-    
+    yd = []
+        
     for i in range(order+1):
         yd.append(yd_derivates[i])
          
@@ -101,9 +101,9 @@ def rhs(t, q):
     #choose controller
 #   tau = 0
 #   tau = p_controller(t,q)
-    u = f_controller(t,q)
+    tau = f_controller(t,q)
 
-#    u = (tau - M* (2*x1*x2*x4 + G*x1*cos(x3))) / (M*x1**2 + J + Jb)
+    u = (tau - M* (2*x1*x2*x4 + G*x1*cos(x3))) / (M*x1**2 + J + Jb)
     dx4 = u
 
     #plotting data
@@ -229,7 +229,7 @@ def updateScene(*args):
     '''
 
     t, q = calcStep()
-#    print t,'\t', q
+    print t,'\t', q
     r_beam, T_beam, r_ball, T_ball = calcPositions(q)
 
     setBodyState(beamActor, r_beam, T_beam)
@@ -248,7 +248,7 @@ def updateScene(*args):
 ren = vtk.vtkRenderer()
 ren.SetBackground(1, 1, 1)
 renWin = vtk.vtkRenderWindow()
-renWin.SetSize(500, 500)
+renWin.SetSize(1000, 500)
 renWin.AddRenderer(ren)
 renWin.SetWindowName("Ball and Beam Simulation")
 
@@ -317,7 +317,7 @@ vPlaneMapper.SetInputConnection(vPlane.GetOutputPort())
 # actor
 vPlaneActor = vtk.vtkLODActor()
 vPlaneActor.SetMapper(vPlaneMapper)
-vPlaneActor.SetScale(scale)
+vPlaneActor.SetScale(2.5,1,1)
 
 #make it look nice
 vPlaneProp = vPlaneActor.GetProperty()
@@ -333,6 +333,7 @@ ren.AddActor(vPlaneActor)
 
 # get everybody into the frame
 ren.ResetCamera()
+ren.GetActiveCamera().Zoom(2)
 
 # setup the interactor
 iren = vtk.vtkRenderWindowInteractor()
