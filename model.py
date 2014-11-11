@@ -2,17 +2,18 @@
 # -*- coding: utf-8 -*-
 
 from settings import *
+from numpy import sin, cos, pi
 
 #---------------------------------------------------------------------
 # implementation of the system in state space form
 #--------------------------------------------------------------------- 
 
-class Model:
+class BallBeamModel:
 
-    def __init__(self, controller_cb):
-        self.controller = controller_cb
+    def __init__(self, controller):
+        self.controller = controller
 
-    def state_func(self, t, q):
+    def stateFunc(self, t, q):
         '''
         Calculations of system state changes
         '''
@@ -28,7 +29,7 @@ class Model:
         dx3 = x4
 
         #call controller
-        tau = self.controller(t, q)
+        tau = self.controller.control(t, q)
 
         #inverse nonliniear system transformation
         u = (tau - M* (2*x1*x2*x4 + G*x1*cos(x3))) / (M*x1**2 + J + Jb)
