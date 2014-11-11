@@ -10,6 +10,7 @@ from control import FController
 from sim_core import Simulator
 from model import BallBeamModel
 from visualization import VtkVisualizer
+from logging import GraphLogger
 
 #--------------------------------------------------------------------- 
 # Main Application
@@ -21,31 +22,40 @@ class BallBeam:
 
     model = None
     simulator = None
+    visualizer = None
+    logger = None
     run = False
 
-    def __init__(self, controller):
+    def __init__(self, controller, initialState=None):
         self.model = BallBeamModel(controller)
-        self.simulator = Simulator(self.model)
+        self.simulator = Simulator(self.model, initialState)
+
+    def setVisualizer(self, visualizer):
+        self.visualizer = visualizer
+
+    def setLogger(self, logger):
+        self.logger = logger
 
     def run(self):
         self.run = True
+
         while self.run:
-            t, q = self.simulator.calcStep()
-            print t, ':\t', q
+            data = self.simulator.calcStep()
+            print data['t'], ':\t', data['q']
 
             if self.logger is not None:
-                logger.log(t,q)
+                self.logger.log(data)
 
             if self.visualizer is not None:
-                r_beam, T_beam, r_ball, T_ball = model.calcPositions(q)
-                visualizer.updateScene(r_beam, T_beam, r_ball, T_ball)
+                r_beam, T_beam, r_ball, T_ball = self.model.calcPositions(data['q'])
+                self.visualizer.updateScene(r_beam, T_beam, r_ball, T_ball)
 
             sleep(0.01)
 
     def stop(self):
         self.run = False
 
-
+#TODO
 def process(arg):
     pass
 
@@ -63,26 +73,24 @@ def main():
         if o in ("-h", "--help"):
             print __doc__
             sys.exit(0)
+    
+    # process arguments
+    for arg in args:
+        process(arg) 
 
-    # TODO get these from cmd line
+    # Test calls
     trajG = HarmonicGenerator()
+    trajG.setAmplitude(0)
     cont = FController(trajG)
 
-    bb = BallBeam(cont)
+    bb = BallBeam(cont, initialState=[0, 0.5, 0, 0])
+    vis = VtkVisualizer()
+    bb.setVisualizer(vis)
+    gL = GraphLogger()
+    bb.setLogger(gL)
 
     bb.run()
 
-    try:
-        bb.run()
-    except:
-        bb.stop()
-
-
-    ''' TODO
-    # process arguments
-    for arg in args:
-        process(arg) # process() is defined elsewhere
-    '''
 
 if __name__ == "__main__":
     main()

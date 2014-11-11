@@ -3,6 +3,7 @@
 
 from settings import *
 from numpy import sin, cos, pi
+from numpy import array as narray
 
 #---------------------------------------------------------------------
 # implementation of the system in state space form
@@ -37,7 +38,7 @@ class BallBeamModel:
 
         return [dx1, dx2, dx3, dx4]
 
-    def calcPositions(q):
+    def calcPositions(self, q):
         '''
         Calculate stationary vectors and rot. matrices for bodies
         '''
