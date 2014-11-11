@@ -1,21 +1,14 @@
-﻿#!/usr/bin/python
-# -*- coding: utf-8 -*-
-
-#---------------------------------------------------------------------
+﻿#---------------------------------------------------------------------
 # Core of the physical simulation
 #--------------------------------------------------------------------- 
 
-#import vtk
-#import os.path
-#from time import sleep
-
 from __future__ import division
-
+from time import sleep
 from numpy import sin, cos, pi
 from numpy import array as narray
 from scipy.integrate import ode
 
-import settings
+from settings import *
 
 class Simulator:
     """Simulation Wrapper"""
@@ -41,8 +34,29 @@ class Simulator:
     def set_logger(self, logger_cb):
         self.logger = logger_cb
 
-    def run(self):
+    def calcStep():
+        '''
+        Calcualte one step in simulation
+        '''
 
+        return solver.t, solver.integrate(solver.t+dt)
+
+    def run(self):
+        self.run = True
+        while self.run:
+            t, q = calcStep()
+
+            if self.logger is not None:
+                logger.log(t,q)
+
+            if self.visualizer is not None:
+                r_beam, T_beam, r_ball, T_ball = model.calcPositions(q)
+                visualizer.updateScene(r_beam, T_beam, r_ball, T_ball)
+
+            time.sleep(0.01)
+
+    def stop(self):
+        self.run = False
 
 
 #---------------------------------------------------------------------
@@ -71,63 +85,9 @@ table.AddColumn(arrTheta)
 table.AddColumn(arrPsi3)
 table.AddColumn(arrTau)
 
-#---------------------------------------------------------------------
-# trajectory generation
-#---------------------------------------------------------------------
-def calcTrajectory(t,order):
-    '''
-    Calculates desired trajectory for ball position
-    '''
-    #TODO
-    A = 1
-    #A = 2
-    #A = 3
-    yd_0 = A * cos(pi*t/5)
-    yd_1 = -A * (pi/5) * sin(pi*t/5)
-    yd_2 = -A * (pi/5)**2 * cos(pi*t/5)
-    yd_3 = A * (pi/5)**3 * sin(pi*t/5)
-    yd_4 = A * (pi/5)**4 * cos(pi*t/5)
-    yd_derivates = [yd_0 , yd_1 , yd_2 , yd_3 , yd_4]
-    yd = []
-        
-    for i in range(order+1):
-        yd.append(yd_derivates[i])
-         
-    return yd
 
-#---------------------------------------------------------------------
-# model equations
-#---------------------------------------------------------------------
-def rhs(t, q):
-    '''
-    Calculations of system state changes
-    '''
-    #definitoric
-    x1 = q[0]
-    x2 = q[1]
-    x3 = q[2]
-    x4 = q[3]
-    y= x1
 
-    dx1 = x2
-    dx2 = B*(x1*x4**2 - G*sin(x3))
-    dx3 = x4
 
-    #choose controller
-    tau = 0
-#    tau = p_controller(t,q)
-#    tau = f_controller(t,q)
-
-    u = (tau - M* (2*x1*x2*x4 + G*x1*cos(x3))) / (M*x1**2 + J + Jb)
-    dx4 = u
-
-    #plotting data
-    yd = calcTrajectory(t,0)
-    new_row = [t, yd-x1, x3, 0, tau] #TODO psi3
-    for i in range( table.GetNumberOfColumns()):
-        table.GetColumn(i).InsertNextValue(new_row[i])
-
-    return [dx1, dx2, dx3, dx4]
 
 #---------------------------------------------------------------------
 # controller
@@ -182,52 +142,10 @@ def f_controller(t,q):
     
     return u
 
-    
-
-
-
 #---------------------------------------------------------------------
 #
 #---------------------------------------------------------------------
-def calcStep():
-    '''
-    Calcualte one step in simulation
-    '''
 
-    return solver.t, solver.integrate(solver.t+dt)
-
-
-#---------------------------------------------------------------------
-#
-#---------------------------------------------------------------------
-def calcPositions(q):
-    '''
-    Calculate stationary vectors and rot. matrices for bodies
-    '''
-
-    #beam
-    r_beam = [0, -R/2 - beam_width, 0]
-    T_beam = narray([[cos(q[2]), -sin(q[2]), 0], [sin(q[2]), cos(q[2]), 0], [0, 0, 1]])
-
-    #ball
-    r_ball = [cos(q[2])*q[0], sin(q[2])*q[0], 0]
-    T_ball = narray([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
-
-    return r_beam, T_beam, r_ball, T_ball
-
-    
-#---------------------------------------------------------------------
-#
-#---------------------------------------------------------------------
-def setBodyState(actor, r, T):
-    poke = vtk.vtkMatrix4x4()
-    
-    for i in range(3):
-        for n in range(3):
-            poke.SetElement(i, n, T[i, n])
-        poke.SetElement(i, 3, r[i])
-
-    actor.PokeMatrix(poke)
     
 #---------------------------------------------------------------------
 #
@@ -252,114 +170,10 @@ def updateScene(*args):
         raw_input('Simulation paused press Enter to continue')
 
 
-#------- visualisation --------------------------------
-# create renderer and window
-ren = vtk.vtkRenderer()
-ren.SetBackground(1, 1, 1)
-renWin = vtk.vtkRenderWindow()
-renWin.SetSize(1000, 500)
-renWin.AddRenderer(ren)
-renWin.SetWindowName("Ball and Beam Simulation")
-
-#-------- add the beam ----
-# geometry
-beam = vtk.vtkCubeSource()
-beam.SetXLength(beam_length)
-beam.SetYLength(beam_width)
-beam.SetZLength(beam_depth)
-
-#mapper
-beamMapper = vtk.vtkPolyDataMapper()
-beamMapper.SetInputConnection(beam.GetOutputPort())
-
-# actor
-beamActor = vtk.vtkLODActor()
-beamActor.SetMapper(beamMapper)
-beamActor.SetScale(scale)
-
-#make it look nice
-beamProp = beamActor.GetProperty()
-beamProp.SetColor(0.3, 0.3, 0.3)
-beamProp.SetAmbient(0.2)
-beamProp.SetDiffuse(0.8)
-beamProp.SetSpecular(0.5)
-beamProp.SetSpecularPower(0.5)
-
-ren.AddActor(beamActor)
-
-#-------- add the ball ----
-# geometry
-ball = vtk.vtkSphereSource()
-ball.SetRadius(R)
-ball.SetThetaResolution(20)
-ball.SetPhiResolution(20)
-
-#mapper
-ballMapper = vtk.vtkPolyDataMapper()
-ballMapper.SetInputConnection(ball.GetOutputPort())
-
-# actor
-ballActor = vtk.vtkLODActor()
-ballActor.SetMapper(ballMapper)
-ballActor.SetScale(scale)
-
-#make it look nice
-ballProp = ballActor.GetProperty()
-ballProp.SetColor(1, 1, 0)
-ballProp.SetAmbient(0.2)
-ballProp.SetDiffuse(0.8)
-ballProp.SetSpecular(0.5)
-ballProp.SetSpecularPower(0.5)
-
-ren.AddActor(ballActor)
-
-#-------- add the back ----
-# geometry
-vPlane = vtk.vtkPlaneSource()
-vPlane.SetCenter(0, 0, -0.1)
-vPlane.SetNormal(0, 0, 1)
-
-#mapper
-vPlaneMapper = vtk.vtkPolyDataMapper()
-vPlaneMapper.SetInputConnection(vPlane.GetOutputPort())
-
-# actor
-vPlaneActor = vtk.vtkLODActor()
-vPlaneActor.SetMapper(vPlaneMapper)
-vPlaneActor.SetScale(2.5,1,1)
-
-#make it look nice
-vPlaneProp = vPlaneActor.GetProperty()
-col = [0.78125, 0.4570, 0.119]
-vPlaneProp.SetColor([x*0.7 for x in col])
-vPlaneProp.SetAmbient(0.2)
-vPlaneProp.SetDiffuse(0.8)
-vPlaneProp.SetSpecular(0.5)
-vPlaneProp.SetSpecularPower(0.5)
-
-ren.AddActor(vPlaneActor)
 
 
-# get everybody into the frame
-ren.ResetCamera()
-ren.GetActiveCamera().Zoom(2)
 
-# setup the interactor
-iren = vtk.vtkRenderWindowInteractor()
-iren.SetRenderWindow(renWin)
-iren.SetInteractorStyle(vtk.vtkInteractorStyleTrackballCamera())
-iren.Initialize()
-iren.AddObserver('TimerEvent', updateScene)
-iren.CreateRepeatingTimer(20)
-
-# Start the Simulation
-iren.Start()
-
-# End of Simulation
-iren.GetRenderWindow().Finalize()
-
-quit()
-
+'''
 print '\n-> End of Simulation dumping measurements:'
 table.Dump(6)
 
@@ -378,3 +192,4 @@ tWriter = vtk.vtkTableWriter()
 tWriter.SetInputData(table)
 tWriter.SetFileName(fileName)
 tWriter.Update()
+'''
