@@ -1,35 +1,48 @@
 ﻿#!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+#---------------------------------------------------------------------
+# Core of the physical simulation
+#--------------------------------------------------------------------- 
+
+#import vtk
+#import os.path
+#from time import sleep
 
 from __future__ import division
-# Rendering Tests
 
-import vtk
-import os.path
-from time import sleep
 from numpy import sin, cos, pi
 from numpy import array as narray
 from scipy.integrate import ode
 
-#---------------------------------------------------------------------
-# global settings
-#--------------------------------------------------------------------- 
-dt = 0.01       # stepwidth
-q0 = [0.1, 0, 0, 0.0564]    # initial minimal state vector (r, dr, theta, dtheta)'
+import settings
 
-M = 0.05    # kg
-R = 0.01    # m
-J = 0.02    # kgm^2
-Jb = 2e-6   # kgm^2
-G = 9.81    # m/s^2
-B = M/(Jb/R**2+M)
+class Simulator:
+    """Simulation Wrapper"""
 
-beam_width = 0.01
-beam_depth = 0.03
-beam_length = 2     # m
+    traj_gen = None
+    controller = None
+    solver = None
+    logger = None
+    visualizer = None
 
-scale = 1
+    def __init__(self, trajectory_generator, controller):
+        self.traj_gen = trajectory_generator
+        self.controller = controller
+
+        # solver
+        self.solver = ode(rhs)
+        self.solver.set_initial_value(q0)
+        self.solver.set_integrator(int_mode, method=int_method, rtol=int_rtol, atol=int_atol)
+
+    def set_visualizer(self, visualizer_cb):
+        self.visualizer = visualizer_cb
+
+    def set_logger(self, logger_cb):
+        self.logger = logger_cb
+
+    def run(self):
+
 
 
 #---------------------------------------------------------------------
@@ -171,12 +184,6 @@ def f_controller(t,q):
 
     
 
-#---------------------------------------------------------------------
-# solver
-#---------------------------------------------------------------------
-solver = ode(rhs)
-solver.set_initial_value(q0)
-solver.set_integrator('vode', method='adams', rtol=1e-6, atol=1e-9)
 
 
 #---------------------------------------------------------------------
