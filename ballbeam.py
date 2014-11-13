@@ -42,8 +42,8 @@ class BallBeam:
         while self.run:
             data = self.simulator.calcStep()
 
-            if self.logger is not None:
-                self.logger.log(data)
+            #if self.logger is not None:
+                #self.logger.log(data)
 
             if self.visualizer is not None:
                 r_beam, T_beam, r_ball, T_ball = self.model.calcPositions(data[1])
@@ -85,8 +85,8 @@ def main():
     bb = BallBeam(cont, initialState=[1, 0, 0, 0])
     vis = VtkVisualizer()
     bb.setVisualizer(vis)
-    gL = GraphLogger(10)
-    bb.setLogger(gL)
+    #gL = Logger()
+    #bb.setLogger(gL)
 
     bb.run()
 

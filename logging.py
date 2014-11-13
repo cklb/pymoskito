@@ -13,27 +13,19 @@ class Logger:
     """
 
 
-    def __init__(self):
+    def __init__(self, dimensions):
+        self.dim = dimensions
         self.data = {}
-        self.data['t'] = []
-        #TODO respect dimensions
-        self.data['x'] = [[], [], [], []]
-
-    def log(self, inputData):
-        '''
-        expects 1 value for time axis + list of x values
-        '''
-
-        if len(inputData) < 2:
-            print 'Error: Data Set to small!'
-            return
+        self.data['x'] = []
+        self.data['y'] = []
+        for i in range(self.dim):
+            self.data['y'].append([])
 
 
-        self.data['t'].append(inputData[0])
-        for index, val in enumerate(inputData[1]):
-            self.data['x'][index].append(val)
-        
-        self.takeAction()
+    def log(self, data):
+        print 'ERROR not there yet!'
+        return
+
 
     def finalize(self):
         ''' dump data to disk
@@ -41,23 +33,65 @@ class Logger:
         #TODO
     
 class GraphLogger(Logger):
+    ''' 
+    Provides y(x) plotting for data
+    '''
 
-    def __init__(self, name='Untitled', dim=2, x_range=[0, 10]):
-        Logger.__init__(self)
-        #TODO respect dimensions
-        self.figure, self.ax = plt.subplots()
-        self.lines, = self.ax.plot([], [], 'b-')
-        self.ax.set_autoscaley_on(True)
-        self.ax.set_xlim(x_range)
-        #self.figure.name(name)
-        self.ax.grid()
+
+    def __init__(self, name='Untitled', dimensions=1, yonly=False, x_range=[0, 10]):
+        Logger.__init__(self, dimensions)
+
+        self.yonly = yonly
+        #create a plot for every dimension
+        self.figure, self.axes = plt.subplots(self.dim, sharex=True)
+        self.lines = []
+        for i in range(self.dim):
+            if yonly:
+                self.lines.append(self.axes.plot([], [], 'b-')[0])
+                self.axes.set_autoscalex_on(True)
+                self.axes.set_autoscaley_on(True)
+                self.axes.grid()
+            else:
+                self.lines.append(self.axes[i].plot([], [], 'b-')[0])
+                self.axes[i].set_autoscaley_on(True)
+                self.axes[i].set_xlim(x_range)
+                self.axes[i].grid()
+
+    def log(self, x, y):
+        '''
+        expects 1 value for x-axis and a list of values for y-axis
+        '''
+        if x is not None:
+            self.data['x'].append(x)
+        else:
+            if len(self.data['x']) == 0:
+                self.data['x'].append(0)
+            else:
+                self.data['x'].append(self.data['x'][-1] + 1)
+
+        if len(y) != self.dim:
+            print 'Error: Y-Data corrupt:', len(y), '!=', self.dim
+            return
+
+        for index, val in enumerate(y):
+            self.data['y'][index].append(val)
+        
+        self.takeAction()
 
     def takeAction(self):
-        self.lines.set_xdata(self.data['t'])
-        self.lines.set_ydata(self.data['x'][0])
+        ''' 
+        Implements the actual plotting
+        '''
 
-        self.ax.relim()
-        self.ax.autoscale_view()
+        for index, line in enumerate(self.lines):
+            line.set_xdata(self.data['x'])
+            line.set_ydata(self.data['y'][index])
+            if self.yonly:
+                self.axes.relim()
+                self.axes.autoscale_view()
+            else:
+                self.axes[index].relim()
+                self.axes[index].autoscale_view()
 
         self.figure.canvas.draw()
         self.figure.canvas.flush_events()

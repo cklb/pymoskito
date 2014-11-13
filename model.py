@@ -32,6 +32,12 @@ class BallBeamModel:
         #call controller
         tau = self.controller.control(t, q)
 
+        if tau > 1e3:
+            print '*************'
+            print 'Error controller wants:', tau
+            print '*************'
+            tau = 0
+
         #inverse nonliniear system transformation
         u = (tau - M* (2*x1*x2*x4 + G*x1*cos(x3))) / (M*x1**2 + J + Jb)
         dx4 = u
