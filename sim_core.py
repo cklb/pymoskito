@@ -16,12 +16,8 @@ class Simulator:
     This Class exceutes the timestep integration.
     """
 
-    traj_gen = None
-    controller = None
     model = None
     solver = None
-    logger = None
-    visualizer = None
 
     def __init__(self, model, initialState=None):
         # model
@@ -44,7 +40,7 @@ class Simulator:
         Calcualte one step in simulation
         '''
         s = self.solver
-        data = {'t' : s.t, 'q' : s.integrate(s.t+dt) }
+        data = [s.t, s.integrate(s.t+dt)]
 
         return data
 

@@ -41,13 +41,12 @@ class BallBeam:
 
         while self.run:
             data = self.simulator.calcStep()
-            print data['t'], ':\t', data['q']
 
             if self.logger is not None:
                 self.logger.log(data)
 
             if self.visualizer is not None:
-                r_beam, T_beam, r_ball, T_ball = self.model.calcPositions(data['q'])
+                r_beam, T_beam, r_ball, T_ball = self.model.calcPositions(data[1])
                 self.visualizer.updateScene(r_beam, T_beam, r_ball, T_ball)
 
             sleep(0.01)
@@ -80,13 +79,13 @@ def main():
 
     # Test calls
     trajG = HarmonicGenerator()
-    trajG.setAmplitude(0)
+    trajG.setAmplitude(1)
     cont = FController(trajG)
 
-    bb = BallBeam(cont, initialState=[0, 0.5, 0, 0])
+    bb = BallBeam(cont, initialState=[1, 0, 0, 0])
     vis = VtkVisualizer()
     bb.setVisualizer(vis)
-    gL = GraphLogger()
+    gL = GraphLogger(10)
     bb.setLogger(gL)
 
     bb.run()
