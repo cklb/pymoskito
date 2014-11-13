@@ -4,6 +4,7 @@
 from numpy import sin, cos
 
 from settings import *
+from logging import GraphLogger
 
 #---------------------------------------------------------------------
 # controller base class 
@@ -38,6 +39,7 @@ class FController(Controller):
     def __init__(self, trajGen):
         self.order = 4
         Controller.__init__(self, trajGen)
+        self.log = GraphLogger(name='u', yonly=True)
 
     def calcOutput(self, x, yd):
         # calculate nonlinear terms phi
@@ -60,6 +62,7 @@ class FController(Controller):
         
         # calculate u
         u = (v-b)/a
+        self.log.log(None, [u])
         
         return u
 
