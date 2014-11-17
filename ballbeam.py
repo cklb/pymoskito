@@ -6,11 +6,11 @@ import getopt
 from time import sleep
 
 from trajectory import HarmonicGenerator
-from control import FController
+from control import FController, GController, JController
 from sim_core import Simulator
 from model import BallBeamModel
 from visualization import VtkVisualizer
-from logging import GraphLogger
+#from logging import GraphLogger
 
 #--------------------------------------------------------------------- 
 # Main Application
@@ -33,8 +33,8 @@ class BallBeam:
     def setVisualizer(self, visualizer):
         self.visualizer = visualizer
 
-    def setLogger(self, logger):
-        self.logger = logger
+#    def setLogger(self, logger):
+#        self.logger = logger
 
     def run(self):
         self.run = True
@@ -42,14 +42,14 @@ class BallBeam:
         while self.run:
             data = self.simulator.calcStep()
 
-            if self.logger is not None:
-                self.logger.log(data)
+#            if self.logger is not None:
+#                self.logger.log(data)
 
             if self.visualizer is not None:
                 r_beam, T_beam, r_ball, T_ball = self.model.calcPositions(data[1])
                 self.visualizer.updateScene(r_beam, T_beam, r_ball, T_ball)
 
-            sleep(0.01)
+            sleep(0.1)
 
     def stop(self):
         self.run = False
@@ -79,14 +79,16 @@ def main():
 
     # Test calls
     trajG = HarmonicGenerator()
-    trajG.setAmplitude(1)
-    cont = FController(trajG)
+    trajG.setAmplitude(0.5)
+#    cont = FController(trajG)
+#    cont = GController(trajG)
+    cont = JController(trajG)
 
-    bb = BallBeam(cont, initialState=[1, 0, 0, 0])
+    bb = BallBeam(cont, initialState=[0.5, 0, 0, 0])
     vis = VtkVisualizer()
     bb.setVisualizer(vis)
-    gL = GraphLogger(10)
-    bb.setLogger(gL)
+#    gL = GraphLogger(10)
+#    bb.setLogger(gL)
 
     bb.run()
 

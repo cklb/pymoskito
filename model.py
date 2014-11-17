@@ -23,7 +23,7 @@ class BallBeamModel:
         x2 = q[1]
         x3 = q[2]
         x4 = q[3]
-        y= x1
+        y = x1
 
         dx1 = x2
         dx2 = B*(x1*x4**2 - G*sin(x3))

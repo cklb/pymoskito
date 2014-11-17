@@ -33,6 +33,7 @@ class FController(Controller):
     k1 = 32
     k2 = 24
     k3 = 8
+    
 
     def __init__(self, trajGen):
         self.order = 4
@@ -43,7 +44,7 @@ class FController(Controller):
         phi1 = x[0]
         phi2 = x[1]  
         phi3 = -B*G*sin(x[2])
-        phi4 = -B*G*x[3]*sin(x[2])
+        phi4 = -B*G*x[3]*cos(x[2])
         
         # calculate fictional input v
         v = yd[4] + \
@@ -62,3 +63,84 @@ class FController(Controller):
         
         return u
 
+#---------------------------------------------------------------------
+# controller created by changing g(x) 
+#---------------------------------------------------------------------
+
+class GController(Controller):
+    
+    # controller gains
+    k0 = 16
+    k1 = 32
+    k2 = 24
+    k3 = 8
+    
+    def __init__(self, trajGen):
+        self.order = 4
+        Controller.__init__(self, trajGen)
+        
+    def calcOutput(self, x, yd):
+        
+        # calculate nonlinear terms phi
+        phi1 = x[0]
+        phi2 = x[1]  
+        phi3 = -B*G*sin(x[2]) + B*x[0]*x[3]**2
+        phi4 = -B*G*x[3]*cos(x[2]) + B*x[1]*x[3]**2
+        
+        # calculate fictional input v
+        v = yd[4] + \
+                self.k3*(yd[3] - phi4) + \
+                self.k2*(yd[2] - phi3) + \
+                self.k1*(yd[1] - phi2) + \
+                self.k0*(yd[0] - phi1)
+        
+        # calculate a(x)
+        a = -B*G*cos(x[2]) + 2*B*x[1]*x[3]
+        # calculate b(x)
+        b = B**2+x[0]*x[3]**4 + B*G*(1 - B)*x[3]**2*sin(x[2])
+        
+        # calculate u
+        u = (v-b)/a
+        
+        return u
+
+#---------------------------------------------------------------------
+# controller based on the standard jacobian approximation
+#---------------------------------------------------------------------
+
+class JController(Controller):
+    
+    # controller gains
+    k0 = 16
+    k1 = 32
+    k2 = 24
+    k3 = 8
+    
+    def __init__(self, trajGen):
+        self.order = 4
+        Controller.__init__(self, trajGen)
+    
+    def calcOutput(self, x, yd):
+        
+        # calculate linear terms phi
+        phi1 = x[0]
+        phi2 = x[1]  
+        phi3 = -B*G*x[2]
+        phi4 = -B*G*x[3]
+        
+        # calculate fictional input v
+        v = yd[4] + \
+                self.k3*(yd[3] - phi4) + \
+                self.k2*(yd[2] - phi3) + \
+                self.k1*(yd[1] - phi2) + \
+                self.k0*(yd[0] - phi1)
+        
+        # calculate a(x)
+        a = -B*G/(J + Jb)
+        # calculate b(x)
+        b = B*M*G**2*x[0]/(J + Jb)
+        
+        # calculate u
+        u = (v-b)/a
+        
+        return u
