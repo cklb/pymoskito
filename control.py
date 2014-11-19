@@ -8,6 +8,7 @@ from logging import GraphLogger
 
 import numpy as np
 
+
 #---------------------------------------------------------------------
 # controller base class 
 #---------------------------------------------------------------------
@@ -247,4 +248,5 @@ class IOLController(Controller):
 
         return u
     
-#print 'x1=%f , x2=%f, x3=%f, x4=%f, u=%f, yd=%f' % (x[0],x[1],x[2],x[3],u,yd[0])
+        #print 'x1=%f , x2=%f, x3=%f, x4=%f, u=%f, yd=%f' % (x[0],x[1],x[2],x[3],u,yd[0])
+

@@ -33,17 +33,11 @@ class BallBeam:
     def setVisualizer(self, visualizer):
         self.visualizer = visualizer
 
-#    def setLogger(self, logger):
-#        self.logger = logger
-
     def run(self):
         self.run = True
 
         while self.run:
             data = self.simulator.calcStep()
-
-            #if self.logger is not None:
-                #self.logger.log(data)
 
             if self.visualizer is not None:
                 r_beam, T_beam, r_ball, T_ball = self.model.calcPositions(data[1])
@@ -59,6 +53,9 @@ def process(arg):
     pass
 
 def main():
+    '''
+    Ball and Bem Simulation Toolkit
+    '''
     # parse command line options
     try:
         opts, args = getopt.getopt(sys.argv[1:], "h", ["help"])
@@ -91,10 +88,9 @@ def main():
     cont = IOLController(trajG)
 
     bb = BallBeam(cont, initialState=[0.5, 0, 0, 0])
+
     vis = VtkVisualizer()
     bb.setVisualizer(vis)
-    #gL = Logger()
-    #bb.setLogger(gL)
 
     bb.run()
 
