@@ -31,7 +31,6 @@ class Controller:
 class PController(Controller):
     '''
     PController with a negative controller gain
-    - with reference to bode diagram --> negative gain
     - system is unstable, because the controller is too slow
     - e.g. inital states x = [0, 0.2, 0, 0], desired position r = 0
     '''
@@ -48,9 +47,7 @@ class PController(Controller):
         
         u = self.Kp*(yd[0]-x[0])
         
-        
         return u
-
 
 #---------------------------------------------------------------------
 # controller created by changing f(x) 
@@ -203,4 +200,51 @@ class LSSController(Controller):
         
         return u
         
+#---------------------------------------------------------------------
+# linear statespace controller
+#---------------------------------------------------------------------
+
+class IOLController(Controller):
+    '''
+    Input-Output-Linearisation-Controller with managed non well defined 
+    relative degree
+    - this controller fails!!!
+    '''
+    # controller gains
+    k0 = 8
+    k1 = 12
+    k2 = 6
+    
+    def __init__(self, trajGen):
+        self.order = 3
+        Controller.__init__(self, trajGen)
+        
+    def calcOutput(self, x, yd):
+        
+        print 'yd',yd
+        # calculate y terms
+        y = x[0]
+        y_d = x[1]
+        y_dd = B*x[0]*x[3]**2 -B*G*sin(x[2]) 
+        
+        # calculate fictional input v
+        v = yd[3] + \
+                self.k2*(yd[2] - y_dd) + \
+                self.k1*(yd[1] - y_d) + \
+                self.k0*(yd[0] - y)
+        
+        # calculate a(x)
+        a = 2*B*x[0]*x[3]
+        # calculate b(x)
+        b = B*x[1]*x[3]**2 - B*G*x[3]*cos(x[2])
+        
+        # calculate u
+#        if (x[0]>-0.2 and x[0]<0.2) or (x[3]>-0.2 and x[3]<0.2):
+        if np.absolute(a) < 0.3:     
+            u = 0
+        else:
+            u = (v-b)/a
+
+        return u
+    
 #print 'x1=%f , x2=%f, x3=%f, x4=%f, u=%f, yd=%f' % (x[0],x[1],x[2],x[3],u,yd[0])
