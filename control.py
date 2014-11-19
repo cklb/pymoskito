@@ -1,10 +1,12 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-from numpy import sin, cos
+from numpy import sin, cos, array
 
 from settings import *
 from logging import GraphLogger
+
+import numpy as np
 
 #---------------------------------------------------------------------
 # controller base class 
@@ -145,5 +147,32 @@ class JController(Controller):
         
         # calculate u
         u = (v-b)/a
+        
+        return u
+
+#---------------------------------------------------------------------
+# linear statespace controller
+#---------------------------------------------------------------------
+
+class LSSController(Controller):
+    '''
+    linear statespace controller
+    System is linearised by tau = 0 and x = [0,0,0,0]
+    '''
+    
+    # Zustandsrückführung mit Eigenwerte bei -2
+    K = array([-0.5362, -0.0913, 0.48, 0.16])
+
+    # Vorfilter V = -[C(A-BK)^-1*B]^-1
+    V = -0.0457
+    
+    def __init__(self, trajGen):
+        self.order = 0
+        Controller.__init__(self, trajGen)
+        
+    def calcOutput(self, x, yd):
+        
+        # calculate u
+        u = np.dot(-self.K,np.transpose(x)) + yd[0]*self.V
         
         return u
