@@ -6,7 +6,7 @@ import getopt
 from time import sleep
 
 from trajectory import HarmonicGenerator, FixedPointGenerator
-from control import FController, GController, JController, LSSController
+from control import PController, FController, GController, JController, LSSController
 from sim_core import Simulator
 from model import BallBeamModel
 from visualization import VtkVisualizer
@@ -78,18 +78,18 @@ def main():
         process(arg) 
 
     # Test calls
-    trajG = HarmonicGenerator()
-    trajG.setAmplitude(0.5)
-#    trajG = FixedPointGenerator()
-#    trajG.setPosition(-0.5)
+#    trajG = HarmonicGenerator()
+#    trajG.setAmplitude(0.5)
+    trajG = FixedPointGenerator()
+    trajG.setPosition(0)
     
 #    cont = FController(trajG)
 #    cont = GController(trajG)
 #    cont = JController(trajG)
-#    cont = PController(trajG)
-    cont = LSSController(trajG)
+    cont = PController(trajG)
+#    cont = LSSController(trajG)
 
-    bb = BallBeam(cont, initialState=[0.5, 0, 0, 0])
+    bb = BallBeam(cont, initialState=[0, 0.2, 0, 0])
     vis = VtkVisualizer()
     bb.setVisualizer(vis)
     #gL = Logger()

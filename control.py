@@ -25,6 +25,32 @@ class Controller:
 
         return self.calcOutput(x, yd)
 
+#---------------------------------------------------------------------
+# P controller
+#---------------------------------------------------------------------
+class PController(Controller):
+    '''
+    PController with a negative controller gain
+    - with reference to bode diagram --> negative gain
+    - system is unstable, because the controller is too slow
+    - e.g. inital states x = [0, 0.2, 0, 0], desired position r = 0
+    '''
+    
+    # controller fails, because he is stupid   
+    # controller gain
+    Kp = -0.6
+    
+    def __init__(self, trajGen):
+        self.order = 0
+        Controller.__init__(self, trajGen)
+        
+    def calcOutput(self, x, yd):
+        
+        u = self.Kp*(yd[0]-x[0])
+        
+        
+        return u
+
 
 #---------------------------------------------------------------------
 # controller created by changing f(x) 
@@ -176,3 +202,5 @@ class LSSController(Controller):
         u = np.dot(-self.K,np.transpose(x)) + yd[0]*self.V
         
         return u
+        
+#print 'x1=%f , x2=%f, x3=%f, x4=%f, u=%f, yd=%f' % (x[0],x[1],x[2],x[3],u,yd[0])
