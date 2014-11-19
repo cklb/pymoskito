@@ -1,6 +1,8 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+import time
+
 import matplotlib.pyplot as plt 
 plt.ion()
 from settings import *
@@ -8,29 +10,40 @@ from settings import *
 #--------------------------------------------------------------------- 
 # data logging helper
 #--------------------------------------------------------------------- 
+
 class Logger:
-    """ base class for data logger
+    """ Main Data Logger
     """
 
-
-    def __init__(self, dimensions):
-        self.dim = dimensions
+    def __init__(self):
         self.data = {}
-        self.data['x'] = []
-        self.data['y'] = []
-        for i in range(self.dim):
-            self.data['y'].append([])
+        self.timestep = 0
+        self.filename = '../logs/'+time.strftime('%Y%m%d-%H%M%S')+'_logdata'
 
+    def __enter__(self):
+        return self
 
-    def log(self, data):
-        print 'ERROR not there yet!'
+    def log(self, input_data):
+        print input_data
+        for key, val in input_data.iteritems():
+            if key not in self.data:
+                self.data.update({key: [val]})
+            else:
+                if len(self.data[key]) != self.timestep:
+                    print 'ERROR in Logging Data! Too many sources for: ', key
+                    print self.timestep, '>',  len(self.data[key])
+                self.data[key].append(val)
+
+        if 't' in input_data:
+            self.timestep += 1
+
         return
 
-
-    def finalize(self):
+    def __exit__(self, exc_type, exc_value, traceback):
         ''' dump data to disk
         '''
-        #TODO
+        with open(self.filename, 'w+') as f:
+            f.write(str(self.data))
     
 class GraphLogger(Logger):
     ''' 

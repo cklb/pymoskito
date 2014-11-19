@@ -15,16 +15,22 @@ import numpy as np
 class Controller:
 
     trajGen = None
+    logger = None
     order = 0
 
-    def __init__(self, trajGen):
+    def __init__(self, trajGen, logger=None):
         self.trajGen = trajGen
+        if logger is not None:
+            self.logger = logger
+
         return
 
     def control(self, t, x):
         yd = self.trajGen.getValues(t, self.order)
 
-        return self.calcOutput(x, yd)
+        u = self.calcOutput(x, yd)
+        self.logger.log({'u':u})
+        return u
 
 #---------------------------------------------------------------------
 # P controller
@@ -40,9 +46,9 @@ class PController(Controller):
     # controller gain
     Kp = -0.6
     
-    def __init__(self, trajGen):
+    def __init__(self, trajGen, logger=None):
         self.order = 0
-        Controller.__init__(self, trajGen)
+        Controller.__init__(self, trajGen, logger)
         
     def calcOutput(self, x, yd):
         
@@ -62,9 +68,9 @@ class FController(Controller):
     k3 = 8
     
 
-    def __init__(self, trajGen):
+    def __init__(self, trajGen, logger=None):
         self.order = 4
-        Controller.__init__(self, trajGen)
+        Controller.__init__(self, trajGen, logger)
         self.log = GraphLogger(name='u', yonly=True)
 
     def calcOutput(self, x, yd):
@@ -104,9 +110,9 @@ class GController(Controller):
     k2 = 24
     k3 = 8
     
-    def __init__(self, trajGen):
+    def __init__(self, trajGen, logger=None):
         self.order = 4
-        Controller.__init__(self, trajGen)
+        Controller.__init__(self, trajGen, logger)
         
     def calcOutput(self, x, yd):
         
@@ -145,9 +151,9 @@ class JController(Controller):
     k2 = 24
     k3 = 8
     
-    def __init__(self, trajGen):
+    def __init__(self, trajGen, logger=None):
         self.order = 4
-        Controller.__init__(self, trajGen)
+        Controller.__init__(self, trajGen, logger)
     
     def calcOutput(self, x, yd):
         
@@ -190,9 +196,9 @@ class LSSController(Controller):
     # Vorfilter V = -[C(A-BK)^-1*B]^-1
     V = -0.0457
     
-    def __init__(self, trajGen):
+    def __init__(self, trajGen, logger=None):
         self.order = 0
-        Controller.__init__(self, trajGen)
+        Controller.__init__(self, trajGen, logger)
         
     def calcOutput(self, x, yd):
         

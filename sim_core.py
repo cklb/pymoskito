@@ -6,7 +6,6 @@ from __future__ import division
 from scipy.integrate import ode
 
 from settings import *
-from logging import GraphLogger
 
 #--------------------------------------------------------------------- 
 # Core of the physical simulation
@@ -19,9 +18,8 @@ class Simulator:
 
     model = None
     solver = None
-    logger = None
 
-    def __init__(self, model, initialState=None):
+    def __init__(self, model, initialState=None, logger=None):
         # model
         self.model = model
 
@@ -35,17 +33,23 @@ class Simulator:
         self.solver.set_initial_value(q)
         self.solver.set_integrator(int_mode, method=int_method, rtol=int_rtol, atol=int_atol)
         #Logging
-        self.logger = GraphLogger(name='System States', dimensions = 4)
+        self.logger = logger
 
     def calcStep(self):
         '''
         Calcualte one step in simulation
         '''
+
         s = self.solver
-        data = [s.t, s.integrate(s.t+dt)]
+        t, self.model_output = s.integrate(s.t+dt) 
+        self.model_input = self.controller.control(self.model_output)
 
         if self.logger is not None:
-            self.logger.log(data[0], data[1])
+            data = {'t':s.t}
+            for i in range(model.states):
+                data.update(('x%' % (i+1)), self.model_output[i])
 
-        return data
+            self.logger.log(data)
+
+        return t, x
 

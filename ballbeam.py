@@ -4,20 +4,21 @@
 import sys
 import getopt
 from time import sleep
+import traceback
 
 from trajectory import HarmonicGenerator, FixedPointGenerator
 from control import PController, FController, GController, JController, LSSController, IOLController
 from sim_core import Simulator
 from model import BallBeamModel
 from visualization import VtkVisualizer
-#from logging import GraphLogger
+from logging import Logger
 
 #--------------------------------------------------------------------- 
 # Main Application
 #--------------------------------------------------------------------- 
 class BallBeam:
     '''
-    This is the main application launcher (it will get very fancy)
+    This is the main application (it will get very fancy)
     '''
 
     model = None
@@ -26,9 +27,11 @@ class BallBeam:
     logger = None
     run = False
 
-    def __init__(self, controller, initialState=None):
+    def __init__(self, controller, initialState=None, logger=None):
+        if logger is not None:
+            self.logger = logger
         self.model = BallBeamModel(controller)
-        self.simulator = Simulator(self.model, initialState)
+        self.simulator = Simulator(self.model, initialState, logger)
 
     def setVisualizer(self, visualizer):
         self.visualizer = visualizer
@@ -37,18 +40,17 @@ class BallBeam:
         self.run = True
 
         while self.run:
-            data = self.simulator.calcStep()
+            t, q = self.simulator.calcStep()
 
             if self.visualizer is not None:
-                r_beam, T_beam, r_ball, T_ball = self.model.calcPositions(data[1])
+                r_beam, T_beam, r_ball, T_ball = self.model.calcPositions(q)
                 self.visualizer.updateScene(r_beam, T_beam, r_ball, T_ball)
 
-            sleep(0.01)
+            sleep(dt)
 
     def stop(self):
         self.run = False
 
-#TODO
 def process(arg):
     pass
 
@@ -74,25 +76,29 @@ def main():
     for arg in args:
         process(arg) 
 
-    # Test calls
-#    trajG = HarmonicGenerator()
-#    trajG.setAmplitude(0.5)
-    trajG = FixedPointGenerator()
-    trajG.setPosition(0)
-    
-#    cont = FController(trajG)
-#    cont = GController(trajG)
-#    cont = JController(trajG)
-#    cont = PController(trajG)
-#    cont = LSSController(trajG)
-    cont = IOLController(trajG)
+    with Logger() as l:
+        # Test calls
+    #    trajG = HarmonicGenerator()
+    #    trajG.setAmplitude(0.5)
+        trajG = FixedPointGenerator()
+        trajG.setPosition(0)
+        
+    #    cont = FController(trajG)
+    #    cont = GController(trajG)
+    #    cont = JController(trajG)
+        cont = PController(trajG, l)
+    #    cont = LSSController(trajG)
 
-    bb = BallBeam(cont, initialState=[0.5, 0, 0, 0])
 
-    vis = VtkVisualizer()
-    bb.setVisualizer(vis)
+        bb = BallBeam(cont, initialState=[0, 0.2, 0, 0])
+        vis = VtkVisualizer()
+        bb.setVisualizer(vis)
 
-    bb.run()
+        #Run main application
+        try:
+            bb.run()
+        except Exception, err:
+            print traceback.format_exc()
 
 
 if __name__ == "__main__":
