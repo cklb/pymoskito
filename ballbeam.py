@@ -13,6 +13,8 @@ from model import BallBeamModel
 from visualization import VtkVisualizer
 from logging import Logger
 
+from settings import dt
+
 #--------------------------------------------------------------------- 
 # Main Application
 #--------------------------------------------------------------------- 
@@ -27,20 +29,39 @@ class BallBeam:
     logger = None
     run = False
 
-    def __init__(self, controller, initialState=None, logger=None):
+    def __init__(self, initialState=None, logger=None):
         if logger is not None:
             self.logger = logger
-        self.model = BallBeamModel(controller)
-        self.simulator = Simulator(self.model, initialState, logger)
+        self.model = BallBeamModel(logger=logger)
+
+
+        # Trajectory
+        self.trajG = HarmonicGenerator(logger=logger)
+        self.trajG.setAmplitude(0.5)
+        #self.trajG = FixedPointGenerator(logger=logger)
+        #self.trajG.setPosition(0)
+
+        # Control
+        #    cont = FController(trajG)
+        #    cont = GController(trajG)
+        #    cont = JController(trajG)
+        #self.cont = PController(logger=logger)
+        self.cont = LSSController(logger=logger)
+
+        self.simulator = Simulator(self.model, initialState, \
+                trajectory=self.trajG, controller=self.cont, \
+                logger=logger)
 
     def setVisualizer(self, visualizer):
         self.visualizer = visualizer
+
+    #TODO setController setTrajectory etc
 
     def run(self):
         self.run = True
 
         while self.run:
-            t, q = self.simulator.calcStep()
+            q = self.simulator.calcStep()
 
             if self.visualizer is not None:
                 r_beam, T_beam, r_ball, T_ball = self.model.calcPositions(q)
@@ -77,20 +98,7 @@ def main():
         process(arg) 
 
     with Logger() as l:
-        # Test calls
-    #    trajG = HarmonicGenerator()
-    #    trajG.setAmplitude(0.5)
-        trajG = FixedPointGenerator()
-        trajG.setPosition(0)
-        
-    #    cont = FController(trajG)
-    #    cont = GController(trajG)
-    #    cont = JController(trajG)
-        cont = PController(trajG, l)
-    #    cont = LSSController(trajG)
-
-
-        bb = BallBeam(cont, initialState=[0, 0.2, 0, 0])
+        bb = BallBeam(initialState=[0, 0.2, 0, 0], logger=l)
         vis = VtkVisualizer()
         bb.setVisualizer(vis)
 

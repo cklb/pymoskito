@@ -12,8 +12,8 @@ class TrajectoryGenerator:
     base class for trajectory generators
     '''
 
-    def __init__(self):
-        pass
+    def __init__(self, logger=None):
+        self.logger = logger
 
     def getValues(self, t, order):
         yd = self.calcValues(t)
@@ -23,8 +23,8 @@ class HarmonicGenerator(TrajectoryGenerator):
 
     A = 0
 
-    def __init__(self):
-        TrajectoryGenerator.__init__(self)
+    def __init__(self, logger=None):
+        TrajectoryGenerator.__init__(self, logger)
 
     def setAmplitude(self, Amplitude):
         self.A = Amplitude
@@ -46,8 +46,8 @@ class FixedPointGenerator(TrajectoryGenerator):
     
     pos = 0
     
-    def __init__(self):
-        TrajectoryGenerator.__init__(self)
+    def __init__(self, logger=None):
+        TrajectoryGenerator.__init__(self, logger)
     
     def setPosition(self, position):
         if (-beam_length/2 > position) or (position < beam_length/2):

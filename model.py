@@ -8,11 +8,20 @@ from numpy import array as narray
 #---------------------------------------------------------------------
 # implementation of the system in state space form
 #--------------------------------------------------------------------- 
+#TODO create BaseClass
 
 class BallBeamModel:
 
-    def __init__(self, controller):
-        self.controller = controller
+    def __init__(self, logger=None):
+        self.tau = 0
+        self.states = 4
+        self.logger = logger
+
+    def setInput(self, model_input):
+        self.tau = model_input
+
+    def getStates(self):
+        return self.states
 
     def stateFunc(self, t, q):
         '''
@@ -29,17 +38,14 @@ class BallBeamModel:
         dx2 = B*(x1*x4**2 - G*sin(x3))
         dx3 = x4
 
-        #call controller
-        tau = self.controller.control(t, q)
-
-        if tau > 1e3:
+        if self.tau > 1e3:
             print '*************'
-            print 'Error controller wants:', tau
+            print 'BallBeamModel(): Error controller wants:', tau
             print '*************'
             tau = 0
 
         #inverse nonliniear system transformation
-        u = (tau - M* (2*x1*x2*x4 + G*x1*cos(x3))) / (M*x1**2 + J + Jb)
+        u = (self.tau - M* (2*x1*x2*x4 + G*x1*cos(x3))) / (M*x1**2 + J + Jb)
         dx4 = u
 
         return [dx1, dx2, dx3, dx4]

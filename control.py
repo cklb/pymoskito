@@ -18,18 +18,20 @@ class Controller:
     logger = None
     order = 0
 
-    def __init__(self, trajGen, logger=None):
-        self.trajGen = trajGen
+    def __init__(self, logger=None):
         if logger is not None:
             self.logger = logger
 
         return
 
-    def control(self, t, x):
-        yd = self.trajGen.getValues(t, self.order)
+    def getOrder(self):
+        return self.order
 
-        u = self.calcOutput(x, yd)
-        self.logger.log({'u':u})
+    def control(self, x, w):
+        u = self.calcOutput(x, w)
+        if self.logger is not None:
+            self.logger.log({'u':u})
+
         return u
 
 #---------------------------------------------------------------------
@@ -37,23 +39,19 @@ class Controller:
 #---------------------------------------------------------------------
 class PController(Controller):
     '''
-    PController with a negative controller gain
-    - system is unstable, because the controller is too slow
+    PController
     - e.g. inital states x = [0, 0.2, 0, 0], desired position r = 0
     '''
     
-    # controller fails, because he is stupid   
     # controller gain
     Kp = -0.6
     
-    def __init__(self, trajGen, logger=None):
+    def __init__(self, logger=None):
         self.order = 0
-        Controller.__init__(self, trajGen, logger)
+        Controller.__init__(self, logger)
         
-    def calcOutput(self, x, yd):
-        
-        u = self.Kp*(yd[0]-x[0])
-        
+    def calcOutput(self, x, w):
+        u = self.Kp*(w[0]-x[0])
         return u
 
 #---------------------------------------------------------------------
@@ -68,9 +66,9 @@ class FController(Controller):
     k3 = 8
     
 
-    def __init__(self, trajGen, logger=None):
+    def __init__(self, logger=None):
         self.order = 4
-        Controller.__init__(self, trajGen, logger)
+        Controller.__init__(self, logger)
         self.log = GraphLogger(name='u', yonly=True)
 
     def calcOutput(self, x, yd):
@@ -110,9 +108,9 @@ class GController(Controller):
     k2 = 24
     k3 = 8
     
-    def __init__(self, trajGen, logger=None):
+    def __init__(self, logger=None):
         self.order = 4
-        Controller.__init__(self, trajGen, logger)
+        Controller.__init__(self, logger)
         
     def calcOutput(self, x, yd):
         
@@ -151,9 +149,9 @@ class JController(Controller):
     k2 = 24
     k3 = 8
     
-    def __init__(self, trajGen, logger=None):
+    def __init__(self, logger=None):
         self.order = 4
-        Controller.__init__(self, trajGen, logger)
+        Controller.__init__(self, logger)
     
     def calcOutput(self, x, yd):
         
@@ -196,9 +194,9 @@ class LSSController(Controller):
     # Vorfilter V = -[C(A-BK)^-1*B]^-1
     V = -0.0457
     
-    def __init__(self, trajGen, logger=None):
+    def __init__(self, logger=None):
         self.order = 0
-        Controller.__init__(self, trajGen, logger)
+        Controller.__init__(self, logger)
         
     def calcOutput(self, x, yd):
         
