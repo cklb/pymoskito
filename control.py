@@ -4,7 +4,6 @@
 from numpy import sin, cos, array
 
 from settings import *
-from logging import GraphLogger
 
 import numpy as np
 
@@ -69,7 +68,6 @@ class FController(Controller):
     def __init__(self, logger=None):
         self.order = 4
         Controller.__init__(self, logger)
-        self.log = GraphLogger(name='u', yonly=True)
 
     def calcOutput(self, x, yd):
         # calculate nonlinear terms phi
@@ -92,7 +90,6 @@ class FController(Controller):
         
         # calculate u
         u = (v-b)/a
-        self.log.log(None, [u])
         
         return u
 
@@ -249,7 +246,7 @@ class IOLController(Controller):
         else:
             u = (v-b)/a
 
-        return u
+        return -u
     
         #print 'x1=%f , x2=%f, x3=%f, x4=%f, u=%f, yd=%f' % (x[0],x[1],x[2],x[3],u,yd[0])
 
