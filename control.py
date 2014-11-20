@@ -220,12 +220,11 @@ class IOLController(Controller):
     k1 = 12
     k2 = 6
     
-    def __init__(self, trajGen):
+    def __init__(self, logger=None):
         self.order = 3
-        Controller.__init__(self, trajGen)
+        Controller.__init__(self, logger)
         
     def calcOutput(self, x, yd):
-        
         print 'yd',yd
         # calculate y terms
         y = x[0]

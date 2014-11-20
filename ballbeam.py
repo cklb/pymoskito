@@ -36,17 +36,19 @@ class BallBeam:
 
 
         # Trajectory
-        self.trajG = HarmonicGenerator(logger=logger)
-        self.trajG.setAmplitude(0.5)
-        #self.trajG = FixedPointGenerator(logger=logger)
-        #self.trajG.setPosition(0)
+        #self.trajG = HarmonicGenerator(logger=logger)
+        #self.trajG.setAmplitude(0.5)
+        self.trajG = FixedPointGenerator(logger=logger)
+        self.trajG.setPosition(0.9)
 
         # Control
         #    cont = FController(trajG)
         #    cont = GController(trajG)
-        #    cont = JController(trajG)
+        #
+        self.cont = JController(logger=logger)
         #self.cont = PController(logger=logger)
-        self.cont = LSSController(logger=logger)
+        #self.cont = LSSController(logger=logger)
+        #self.cont = IOLController(logger=logger)
 
         self.simulator = Simulator(self.model, initialState, \
                 trajectory=self.trajG, controller=self.cont, \
@@ -98,7 +100,7 @@ def main():
         process(arg) 
 
     with Logger() as l:
-        bb = BallBeam(initialState=[0, 0.2, 0, 0], logger=l)
+        bb = BallBeam(initialState=[-0.9, 0.2, 0, 0], logger=l)
         vis = VtkVisualizer()
         bb.setVisualizer(vis)
 

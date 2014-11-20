@@ -40,9 +40,9 @@ class BallBeamModel:
 
         if self.tau > 1e3:
             print '*************'
-            print 'BallBeamModel(): Error controller wants:', tau
+            print 'BallBeamModel(): Error controller wants:', self.tau
             print '*************'
-            tau = 0
+            self.tau = 0
 
         #inverse nonliniear system transformation
         u = (self.tau - M* (2*x1*x2*x4 + G*x1*cos(x3))) / (M*x1**2 + J + Jb)
