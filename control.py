@@ -1,11 +1,10 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-from numpy import sin, cos, array
+import numpy as np
 
 from settings import *
 
-import numpy as np
 
 
 #---------------------------------------------------------------------
@@ -59,11 +58,10 @@ class PController(Controller):
 class FController(Controller):
 
     # controller gains
-    k0 = 16
-    k1 = 32
-    k2 = 24
-    k3 = 8
-    
+    k0 = 16.
+    k1 = 32.
+    k2 = 24.
+    k3 = 8.
 
     def __init__(self, logger=None):
         self.order = 4
@@ -71,14 +69,11 @@ class FController(Controller):
 
     def calcOutput(self, x, yd):
         
-        print 'x:',x
-        print 'yd:',yd
-
         # calculate nonlinear terms phi
         phi1 = x[0]
         phi2 = x[1]  
-        phi3 = -B*G*sin(x[2])
-        phi4 = -B*G*x[3]*cos(x[2])
+        phi3 = -B*G*np.sin(x[2])
+        phi4 = -B*G*x[3]*np.cos(x[2])
         
         # calculate fictional input v
         v = yd[4] + \
@@ -88,20 +83,20 @@ class FController(Controller):
                 self.k0*(yd[0] - phi1)
         
         # calculate a(x)
-        a = -B*G*cos(x[2])
+        a = -B*G*np.cos(x[2])
         # calculate b(x)
-        b = B*G*x[3]**2*sin(x[2])
+        b = B*G*x[3]**2*np.sin(x[2])
         
         # calculate u
         u = (v-b)/a
         
-        print 'u', u
+        #print phi1, phi2, phi3, phi4
+        #print a, b, v, u
         return u
 
 #---------------------------------------------------------------------
 # controller created by changing g(x) 
 #---------------------------------------------------------------------
-
 class GController(Controller):
     
     # controller gains
@@ -119,8 +114,8 @@ class GController(Controller):
         # calculate nonlinear terms phi
         phi1 = x[0]
         phi2 = x[1]  
-        phi3 = -B*G*sin(x[2]) + B*x[0]*x[3]**2
-        phi4 = -B*G*x[3]*cos(x[2]) + B*x[1]*x[3]**2
+        phi3 = -B*G*np.sin(x[2]) + B*x[0]*x[3]**2
+        phi4 = -B*G*x[3]*np.cos(x[2]) + B*x[1]*x[3]**2
         
         # calculate fictional input v
         v = yd[4] + \
@@ -130,9 +125,9 @@ class GController(Controller):
                 self.k0*(yd[0] - phi1)
         
         # calculate a(x)
-        a = -B*G*cos(x[2]) + 2*B*x[1]*x[3]
+        a = -B*G*np.cos(x[2]) + 2*B*x[1]*x[3]
         # calculate b(x)
-        b = B**2+x[0]*x[3]**4 + B*G*(1 - B)*x[3]**2*sin(x[2])
+        b = B**2+x[0]*x[3]**4 + B*G*(1 - B)*x[3]**2*np.sin(x[2])
         
         # calculate u
         u = (v-b)/a
@@ -142,7 +137,6 @@ class GController(Controller):
 #---------------------------------------------------------------------
 # controller based on the standard jacobian approximation
 #---------------------------------------------------------------------
-
 class JController(Controller):
     
     # controller gains
@@ -183,15 +177,14 @@ class JController(Controller):
 #---------------------------------------------------------------------
 # linear statespace controller
 #---------------------------------------------------------------------
-
 class LSSController(Controller):
     '''
     linear statespace controller
     System is linearised by tau = 0 and x = [0,0,0,0]
     '''
     
-    # Zustandsrückführung mit Eigenwerte bei -2
-    K = array([-0.5362, -0.0913, 0.48, 0.16])
+    # Zustandsrückführung mit Eigenwerten bei -2
+    K = np.array([-0.5362, -0.0913, 0.48, 0.16])
 
     # Vorfilter V = -[C(A-BK)^-1*B]^-1
     V = -0.0457
@@ -201,16 +194,14 @@ class LSSController(Controller):
         Controller.__init__(self, logger)
         
     def calcOutput(self, x, yd):
-        
         # calculate u
         u = np.dot(-self.K,np.transpose(x)) + yd[0]*self.V
         
         return u
         
 #---------------------------------------------------------------------
-# linear statespace controller
+# Input-Output-Linearization
 #---------------------------------------------------------------------
-
 class IOLController(Controller):
     '''
     Input-Output-Linearisation-Controller with managed non well defined 
@@ -247,7 +238,6 @@ class IOLController(Controller):
         b = B*x[1]*x[3]**2 - B*G*x[3]*cos(x[2])
         
         # calculate u
-#        if (x[0]>-0.2 and x[0]<0.2) or (x[3]>-0.2 and x[3]<0.2):
         if np.absolute(a) < 0.3:     
             u = 0
         else:

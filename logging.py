@@ -43,7 +43,7 @@ class Logger:
         ''' dump data to disk
         '''
         with open(self.filename, 'w+') as f:
-            f.write(str(self.data))
+            f.write(repr(self.data))
     
 class GraphLogger(Logger):
     ''' 

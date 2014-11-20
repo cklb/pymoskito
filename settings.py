@@ -6,7 +6,7 @@
 #--------------------------------------------------------------------- 
 
 # Integration
-dt = 0.05                   # stepwidth
+dt = 0.01                   # stepwidth
 q0 = [0, 0, 0, 0]           # initial minimal state vector (r, dr, theta, dtheta) default values (used if none is given)
 int_mode = 'vode'
 int_method='adams'

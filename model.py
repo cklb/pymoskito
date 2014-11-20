@@ -10,6 +10,9 @@ from numpy import array as narray
 #--------------------------------------------------------------------- 
 #TODO create BaseClass
 
+class ModelException(Exception):
+    pass
+
 class BallBeamModel:
 
     def __init__(self, logger=None):
@@ -38,17 +41,24 @@ class BallBeamModel:
         dx2 = B*(x1*x4**2 - G*sin(x3))
         dx3 = x4
 
-        if self.tau > 1e3:
-            print '*************'
-            print 'BallBeamModel(): Error controller wants:', self.tau
-            print '*************'
-            self.tau = 0
+        #if self.tau > 1e3:
+            #print '*************'
+            #print 'BallBeamModel(): Error controller wants:', self.tau
+            #print '*************'
+            #self.tau = 0
 
         #inverse nonliniear system transformation
         u = (self.tau - M* (2*x1*x2*x4 + G*x1*cos(x3))) / (M*x1**2 + J + Jb)
         dx4 = u
-
+       
         return [dx1, dx2, dx3, dx4]
+
+    def checkConsistancy(self, state):
+        ''' Checks if the model rules are violated
+        '''
+        if abs(state[0]) > beam_length/2:
+            raise ModelException('Ball fell down.')
+
 
     def calcPositions(self, q):
         '''

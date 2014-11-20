@@ -19,7 +19,6 @@ class Simulator:
     def __init__(self, model, initialState=None, trajectory=None, sensor=None, controller=None, logger=None):
         # model
         self.model = model
-        self.model_output = 0
 
         # solver
         self.solver = ode(model.stateFunc)
@@ -33,11 +32,9 @@ class Simulator:
 
         #sensor
         self.sensor = sensor
-        self.sensor_output = 0
        
         #trajectory
         self.trajectory = trajectory
-        self.traj_output = 0
 
         #controller
         self.controller = controller
@@ -59,33 +56,35 @@ class Simulator:
         # integrate model
         self.model.setInput(self.controller_output)
         s = self.solver
-        self.model_output = s.integrate(s.t+dt) 
+        model_output = s.integrate(s.t+dt) 
+
+        #check credibility
+        self.model.checkConsistancy(model_output)
 
         #perform measurement
+        sensor_output = 0
         if self.sensor is not None:
-            self.sensor_output = self.sensor.measure(s.t, self.model_output)
+            sensor_output = self.sensor.measure(s.t, self.model_output)
         else:
-            self.sensor_output = self.model_output
+            sensor_output = model_output
 
         #get desired values
+        traj_output = 0
         if self.trajectory is not None:
-            self.traj_output = self.trajectory.getValues(s.t, self.tOrder)
-        else:
-            self.traj_output = 0
+            traj_output = self.trajectory.getValues(s.t, self.tOrder)
 
         #perform control
+        self.controller_output = 0
         if self.controller is not None:
-            self.controller_output = self.controller.control(self.sensor_output, self.traj_output)
-        else:
-            self.controller_output = 0
+            self.controller_output = self.controller.control(sensor_output, traj_output)
 
         #store
         if self.logger is not None:
             data = {'t':s.t}
             for i in range(self.model.getStates()):
-                data.update({('x%i' % (i+1)): self.model_output[i]})
+                data.update({('x%i' % (i+1)): model_output[i]})
 
             self.logger.log(data)
 
-        return self.model_output
+        return model_output
 

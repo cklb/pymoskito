@@ -9,14 +9,14 @@ import traceback
 from trajectory import HarmonicGenerator, FixedPointGenerator
 from control import PController, FController, GController, JController, LSSController, IOLController
 from sim_core import Simulator
-from model import BallBeamModel
+from model import BallBeamModel, ModelException
 from visualization import VtkVisualizer
 from logging import Logger
 
 from settings import dt
 
 #--------------------------------------------------------------------- 
-# Main Application
+# 
 #--------------------------------------------------------------------- 
 class BallBeam:
     '''
@@ -32,18 +32,19 @@ class BallBeam:
     def __init__(self, initialState=None, logger=None):
         if logger is not None:
             self.logger = logger
-        self.model = BallBeamModel(logger=logger)
 
+        #TODO let those be set dynamically
+        self.model = BallBeamModel(logger=logger)
 
         # Trajectory
         #self.trajG = HarmonicGenerator(logger=logger)
         #self.trajG.setAmplitude(0.5)
         self.trajG = FixedPointGenerator(logger=logger)
-        self.trajG.setPosition(0)
+        self.trajG.setPosition(0.5)
 
         # Control
         self.cont = FController(logger=logger)
-        #    cont = GController(trajG)
+        #self.cont = GController(logger=logger)
         #self.cont = JController(logger=logger)
         #self.cont = PController(logger=logger)
         #self.cont = LSSController(logger=logger)
@@ -61,18 +62,25 @@ class BallBeam:
     def run(self):
         self.run = True
 
-        while self.run:
-            q = self.simulator.calcStep()
+        try:
+            while self.run:
+                q = self.simulator.calcStep()
 
-            if self.visualizer is not None:
-                r_beam, T_beam, r_ball, T_ball = self.model.calcPositions(q)
-                self.visualizer.updateScene(r_beam, T_beam, r_ball, T_ball)
+                if self.visualizer is not None:
+                    r_beam, T_beam, r_ball, T_ball = self.model.calcPositions(q)
+                    self.visualizer.updateScene(r_beam, T_beam, r_ball, T_ball)
 
-            sleep(dt)
+                sleep(dt)
+
+        except ModelException as e:
+            print 'Model ERROR: ', e.args[0]
 
     def stop(self):
         self.run = False
 
+#--------------------------------------------------------------------- 
+# Main Application
+#--------------------------------------------------------------------- 
 def process(arg):
     pass
 
@@ -99,7 +107,7 @@ def main():
         process(arg) 
 
     with Logger() as l:
-        bb = BallBeam(initialState=[0, 0.2, 0, 0], logger=l)
+        bb = BallBeam(initialState=[0, 0, 0, 0], logger=l)
         vis = VtkVisualizer()
         bb.setVisualizer(vis)
 

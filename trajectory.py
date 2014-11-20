@@ -50,11 +50,12 @@ class FixedPointGenerator(TrajectoryGenerator):
         TrajectoryGenerator.__init__(self, logger)
     
     def setPosition(self, position):
-        if (-beam_length/2 > position) or (position < beam_length/2):
+        if abs(position) > beam_length/2:
             self.pos = position
         else:
             print 'This position is not on the beam, it is set to r = 0'
             self.pos = 0
+        self.pos = position
     
     def calcValues(self, t):
         '''
@@ -62,10 +63,10 @@ class FixedPointGenerator(TrajectoryGenerator):
         '''
         yd = []
         yd.append(self.pos)
-        yd.append(0)
-        yd.append(0)
-        yd.append(0)
-        yd.append(0)
+        yd.append(0.)
+        yd.append(0.)
+        yd.append(0.)
+        yd.append(0.)
 
         return yd
 
