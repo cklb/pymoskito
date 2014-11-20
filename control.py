@@ -70,6 +70,10 @@ class FController(Controller):
         Controller.__init__(self, logger)
 
     def calcOutput(self, x, yd):
+        
+        print 'x:',x
+        print 'yd:',yd
+
         # calculate nonlinear terms phi
         phi1 = x[0]
         phi2 = x[1]  
@@ -91,6 +95,7 @@ class FController(Controller):
         # calculate u
         u = (v-b)/a
         
+        print 'u', u
         return u
 
 #---------------------------------------------------------------------
@@ -222,7 +227,9 @@ class IOLController(Controller):
         Controller.__init__(self, logger)
         
     def calcOutput(self, x, yd):
-        print 'yd',yd
+        print 'x:',x
+        print 'yd:',yd
+
         # calculate y terms
         y = x[0]
         y_d = x[1]
@@ -246,7 +253,8 @@ class IOLController(Controller):
         else:
             u = (v-b)/a
 
-        return -u
+        print 'u', u
+        return u
     
         #print 'x1=%f , x2=%f, x3=%f, x4=%f, u=%f, yd=%f' % (x[0],x[1],x[2],x[3],u,yd[0])
 

@@ -77,7 +77,7 @@ class Simulator:
         if self.controller is not None:
             self.controller_output = self.controller.control(self.sensor_output, self.traj_output)
         else:
-            self.controller_output = self.model_output
+            self.controller_output = 0
 
         #store
         if self.logger is not None:

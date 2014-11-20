@@ -42,13 +42,12 @@ class BallBeam:
         self.trajG.setPosition(0)
 
         # Control
-        self.cont = FController(logger)
+        self.cont = FController(logger=logger)
         #    cont = GController(trajG)
-        #
         #self.cont = JController(logger=logger)
         #self.cont = PController(logger=logger)
         #self.cont = LSSController(logger=logger)
-        self.cont = IOLController(logger=logger)
+        #self.cont = IOLController(logger=logger)
 
         self.simulator = Simulator(self.model, initialState, \
                 trajectory=self.trajG, controller=self.cont, \
