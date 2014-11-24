@@ -37,19 +37,16 @@ class Logger:
         if 't' in input_data:
             self.timestep += 1
 
+    def update(self):
         #update all subscriptions that got new data
         updated_callbacks = []
-        for key, val in input_data.iteritems():
-            for item in self.subscribers:
-                if key in item[1] and item[0] not in updated_callbacks:
-                    #build paket
-                    paket = {}
-                    for element in item[1]:
-                        paket.update({element: self.data[element]})
-                    #send it
-                    item[0](paket)
-                    #remember subscriber
-                    updated_callbacks.append(item[0])
+        for item in self.subscribers:
+            #build paket
+            paket = {}
+            for element in item[1]:
+                paket.update({element: self.data[element]})
+            #send it
+            item[0](paket)
         return
 
     def subscribe(self, keys, callback):

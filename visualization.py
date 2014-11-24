@@ -29,14 +29,13 @@ class VtkVisualizer:
 
     iren = None
 
-    def __init__(self):
+    def __init__(self, parent):
         # create renderer and window
         self.ren = vtk.vtkRenderer()
         self.ren.SetBackground(1, 1, 1)
-        self.renWin = vtk.vtkRenderWindow()
-        self.renWin.SetSize(1000, 500)
-        self.renWin.AddRenderer(self.ren)
-        self.renWin.SetWindowName("Ball and Beam Simulation")
+
+        self.parent = parent
+        parent.GetRenderWindow().AddRenderer(self.ren)
 
         #-------- add the beam ----
         # geometry
@@ -122,11 +121,8 @@ class VtkVisualizer:
         self.ren.GetActiveCamera().Zoom(2)
 
         # setup the interactor
-        self.iren = vtk.vtkRenderWindowInteractor()
-        self.iren.SetRenderWindow(self.renWin)
-        self.iren.SetInteractorStyle(vtk.vtkInteractorStyleTrackballCamera())
+        self.iren = parent.GetRenderWindow().GetInteractor()
         self.iren.Initialize()
-        #self.iren.GetRenderWindow().Finalize()
 
     def setBodyState(self, actor, r, T):
         poke = vtk.vtkMatrix4x4()
@@ -145,5 +141,5 @@ class VtkVisualizer:
         self.setBodyState(self.beamActor, r_beam, T_beam)
         self.setBodyState(self.ballActor, r_ball, T_ball)
 
-        self.renWin.Render()
+        self.parent.GetRenderWindow().Render()
 

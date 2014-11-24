@@ -39,17 +39,17 @@ class BallBeam:
         self.model = BallBeamModel(logger=logger)
 
         # Trajectory
-        #self.trajG = HarmonicGenerator(logger=logger)
-        #self.trajG.setAmplitude(0.5)
-        self.trajG = FixedPointGenerator(logger=logger)
-        self.trajG.setPosition(0.5)
+        self.trajG = HarmonicGenerator(logger=logger)
+        self.trajG.setAmplitude(0.5)
+        #self.trajG = FixedPointGenerator(logger=logger)
+        #self.trajG.setPosition(0.5)
 
         # Control
         #self.cont = FController(logger=logger)
         #self.cont = GController(logger=logger)
-        self.cont = JController(logger=logger)
+        #self.cont = JController(logger=logger)
         #self.cont = PController(logger=logger)
-        #self.cont = LSSController(logger=logger)
+        self.cont = LSSController(logger=logger)
         #self.cont = IOLController(logger=logger)
 
         self.simulator = Simulator(self.model, initialState, \
@@ -71,4 +71,5 @@ class BallBeam:
 
         except ModelException as e:
             print 'Model ERROR: ', e.args[0]
+            raise Exception('Error in Maineventloop.')
 

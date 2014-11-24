@@ -20,11 +20,12 @@ class TrajectoryGenerator:
         return [yd[i] for i in range(order+1)]
 
 class HarmonicGenerator(TrajectoryGenerator):
-
-    A = 0
+    ''' provide a harmonic signal with derivatives
+    '''
 
     def __init__(self, logger=None):
         TrajectoryGenerator.__init__(self, logger)
+        self.A = 1
 
     def setAmplitude(self, Amplitude):
         self.A = Amplitude
@@ -43,6 +44,8 @@ class HarmonicGenerator(TrajectoryGenerator):
         return yd
 
 class FixedPointGenerator(TrajectoryGenerator):
+    ''' provides a fixed signal
+    '''
     
     pos = 0
     
@@ -50,12 +53,11 @@ class FixedPointGenerator(TrajectoryGenerator):
         TrajectoryGenerator.__init__(self, logger)
     
     def setPosition(self, position):
-        if abs(position) > beam_length/2:
+        if abs(position) <= beam_length/2:
             self.pos = position
         else:
             print 'This position is not on the beam, it is set to r = 0'
             self.pos = 0
-        self.pos = position
     
     def calcValues(self, t):
         '''
