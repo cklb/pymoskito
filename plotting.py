@@ -1,7 +1,9 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-import pyqtplot as pt
+from pyqtgraph.Qt import QtGui, QtCore
+import pyqtgraph as pg
+import pyqtgraph.Widgets.RemoteGraphicsView
 
 from logging import Logger
 
@@ -12,35 +14,51 @@ class Plotter:
     """ 
     """
 
-    #for several plots in the same window
-    self.colors = ['b', 'g', 'r', 'w']
 
     def __init__(self, dataNames):
         self.keys = dataNames
         self.keys.append('t')
-
-    def connect(self, logger):
-        ''' registration routine
-        this routine registers at the logger to get called whenever there is new data
-        '''
         self.logger = logger
-        self.logger.register(self.keys, self.update)
-
-class PyQtGraphPlotter(Plotter):
-    ''' Plotting Helper using PyQtgraph
-    '''
-    def __init__(self, dataNames):
-        Plotter.__init__(dataNames)
-        #create own QGraphicsWidget
-        self.win = plt.plot([], [])
-#        self.lines = ...
+        self.logger.subscribe(self.keys, self.update)
 
     def update(self, data):
         """ update routine
         will get called, whenever there is new data. Has to be implemented
         """
-        for key, val in data.iteritems():
-            self.lines[key].setData(val)
+        return
 
+class PyQtGraphPlotter(Plotter):
+    ''' Plotting Helper using PyQtgraph
+    '''
+
+    #for several plots in the same window
+    self.colors = ['b', 'g', 'r', 'w']
+    
+    def __init__(self, dataNames):
+        Plotter.__init__(dataNames)
+
+        #create own QGraphicsWidget
+        self.view = pg.widgets.RemoteGraphicsView.RemoteGraphicsView()
+        self.view.pg.setConfigOptions(antialies=True)
+        self.view.setWindowTitle('Data')
+        self.plt = self.view.pg.PlotItem()
+        self.plt._setProxyOptions(deferGetattr=True)
+        self.view.setCentralItem(self.plt)
+
+        #create curves
+        self.curves = {}
+        for entry in dataNames:
+            self.curves.update({entry: self.plt.plot()})
+
+
+    def getWidget(self):
+        return self.view
+
+    def update(self, data):
+        """ update routine
+        updates data in plot window
+        """
+        for key, val in data:
+            self.curves[key].setData(val)
 
 

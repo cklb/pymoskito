@@ -16,6 +16,7 @@ class Logger:
     """
 
     def __init__(self):
+        self.subscribers = []
         self.data = {}
         self.timestep = 0
         self.filename = '../logs/'+time.strftime('%Y%m%d-%H%M%S')+'_logdata'
@@ -30,14 +31,34 @@ class Logger:
                 self.data.update({key: [val]})
             else:
                 if len(self.data[key]) != self.timestep:
-                    print 'ERROR in Logging Data! Too many sources for: ', key
+                    print 'ERROR in Logging Data! Too much input from: ', key
                     print self.timestep, '>',  len(self.data[key])
                 self.data[key].append(val)
 
         if 't' in input_data:
             self.timestep += 1
 
+        #update all subscriptions that got new data
+        updated_callbacks = []
+        for key, val in input_data.iteritems():
+            for item in self.subscribers:
+                if key in item[1] and item[0] not in updated_callbacks:
+                    #build paket
+                    paket = [self.data[element] for element in item[1]]
+                    #send it
+                    item[0](paket)
+                    #remember subscriber
+                    updated_callbacks.append(item[0])
         return
+
+    def subscribe(self, keys, callback):
+        for item in self.subscribers:
+            if item[0] == callback:
+                item[1].append(keys)
+
+        self.subscribers.append(callback, keys)
+        print self.subscribers
+
 
     def __exit__(self, exc_type, exc_value, traceback):
         ''' dump data to disk
