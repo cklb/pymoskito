@@ -43,9 +43,9 @@ class BallBeam:
         self.trajG.setPosition(0.5)
 
         # Control
-        self.cont = FController(logger=logger)
+        #self.cont = FController(logger=logger)
         #self.cont = GController(logger=logger)
-        #self.cont = JController(logger=logger)
+        self.cont = JController(logger=logger)
         #self.cont = PController(logger=logger)
         #self.cont = LSSController(logger=logger)
         #self.cont = IOLController(logger=logger)
