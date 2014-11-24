@@ -3,7 +3,7 @@
 
 from pyqtgraph.Qt import QtGui, QtCore
 import pyqtgraph as pg
-import pyqtgraph.Widgets.RemoteGraphicsView
+import pyqtgraph.widgets.RemoteGraphicsView
 
 from logging import Logger
 
@@ -13,10 +13,8 @@ from logging import Logger
 class Plotter:
     """ 
     """
-
-
-    def __init__(self, dataNames):
-        self.keys = dataNames
+    def __init__(self, dataNames, logger):
+        self.keys = [i for i in dataNames]
         self.keys.append('t')
         self.logger = logger
         self.logger.subscribe(self.keys, self.update)
@@ -32,10 +30,10 @@ class PyQtGraphPlotter(Plotter):
     '''
 
     #for several plots in the same window
-    self.colors = ['b', 'g', 'r', 'w']
+    colors = ['b', 'g', 'r', 'w']
     
-    def __init__(self, dataNames):
-        Plotter.__init__(dataNames)
+    def __init__(self, dataNames, logger):
+        Plotter.__init__(self, dataNames, logger)
 
         #create own QGraphicsWidget
         self.view = pg.widgets.RemoteGraphicsView.RemoteGraphicsView()
@@ -58,7 +56,10 @@ class PyQtGraphPlotter(Plotter):
         """ update routine
         updates data in plot window
         """
-        for key, val in data:
-            self.curves[key].setData(val)
+        for key, val in data.iteritems():
+            if key == 't':
+                pass
+            else:
+                self.curves[key].setData(val)
 
 

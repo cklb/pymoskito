@@ -14,6 +14,8 @@ from numpy import pi
 import pyqtgraph.parametertree.parameterTypes as pTypes
 from pyqtgraph.parametertree import Parameter, ParameterTree, ParameterItem, registerParameterType
 
+from logging import PyQtGraphPlotter
+
 app = QtGui.QApplication([])
 win = QtGui.QMainWindow()
 area = DockArea()

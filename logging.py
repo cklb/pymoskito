@@ -25,7 +25,6 @@ class Logger:
         return self
 
     def log(self, input_data):
-        print input_data
         for key, val in input_data.iteritems():
             if key not in self.data:
                 self.data.update({key: [val]})
@@ -44,7 +43,9 @@ class Logger:
             for item in self.subscribers:
                 if key in item[1] and item[0] not in updated_callbacks:
                     #build paket
-                    paket = [self.data[element] for element in item[1]]
+                    paket = {}
+                    for element in item[1]:
+                        paket.update({element: self.data[element]})
                     #send it
                     item[0](paket)
                     #remember subscriber
@@ -56,9 +57,7 @@ class Logger:
             if item[0] == callback:
                 item[1].append(keys)
 
-        self.subscribers.append(callback, keys)
-        print self.subscribers
-
+        self.subscribers.append((callback, keys))
 
     def __exit__(self, exc_type, exc_value, traceback):
         ''' dump data to disk
