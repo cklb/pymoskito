@@ -16,7 +16,6 @@ from control import PController, FController, GController, JController, LSSContr
 from sim_core import Simulator
 from model import BallBeamModel, ModelException
 from visualization import VtkVisualizer
-from logging import SuperLogger
 from plotting import PyQtGraphPlotter
 from gui import Gui
 
@@ -51,7 +50,12 @@ for arg in args:
 #----------------------------------------------------------------
 # Create Simulation Backend
 #----------------------------------------------------------------
-l = SuperLogger()
+l = Logger()
+logThread = LoggerThread(l)
+l.moveToThread(logThread)
+
+bb.newData.connect(l.log)
+
 bb = BallBeam(initialState=st.q0, logger=l)
 
 #----------------------------------------------------------------

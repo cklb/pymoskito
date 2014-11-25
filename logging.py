@@ -2,23 +2,32 @@
 # -*- coding: utf-8 -*-
 
 import sys, time
-from PyQt4.QtCore import QObject, pyqtSignal
+from PyQt4.QtCore import QObject, pyqtSignal, QThread, QTimer
 
 #--------------------------------------------------------------------- 
 # data logging helper
 #--------------------------------------------------------------------- 
-class Logger(QObject):
-    """ Main Data Logger
+class LoggerThread(QThread):
+    """ Thread that runs the logging mechanics
     """
 
+    def __init__(self, logger):
+        QThread.__init__(self)
+        self.timer = QTimer()
+        self.logger = logger
+        self.timer.timeout.connect(self.logger.update())
+
+    def run(self)
+        self.timer.start(.2)
+
+class Logger:
+    """ Thread that runs the logging mechanics
+    """
     def __init__(self):
         self.subscribers = []
         self.data = {}
         self.timestep = 0
         self.filename = '../logs/'+time.strftime('%Y%m%d-%H%M%S')+'_logdata'
-
-    def __enter__(self):
-        return self
 
     def log(self, input_data):
         for key, val in input_data.iteritems():
@@ -34,6 +43,7 @@ class Logger(QObject):
             self.timestep += 1
 
     def update(self):
+        print 'hey'
         for item in self.subscribers:
             #build paket
             paket = {}
