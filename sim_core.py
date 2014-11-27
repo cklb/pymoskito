@@ -23,11 +23,11 @@ class Simulator:
         # solver
         self.solver = ode(model.stateFunc)
         if initialState is not None:
-            q = initialState
+            self.q = initialState
         else:
-            q = q0
+            self.q = q0
 
-        self.solver.set_initial_value(q)
+        self.solver.set_initial_value(self.q)
         self.solver.set_integrator(int_mode, method=int_method, rtol=int_rtol, atol=int_atol)
 
         #sensor
@@ -47,6 +47,9 @@ class Simulator:
         
         #Logging
         self.logger = logger
+        
+        #erster Durchlauf
+        self.start = True
 
     def calcStep(self):
         '''
@@ -87,4 +90,63 @@ class Simulator:
             self.logger.log(data)
 
         return model_output
+    
+# hier wird erst der Reglerausgang mit den Initialwerten ausgerechnet und anschließend in das Modell eingespeist
+# damit funktioniert der F- und GController leider auch nicht, die Reglerwerten hauen schon nach dem zweiten 
+# Schritt ab
+    
+#    def calcStep(self):
+#        '''
+#        Calculate one step in simulation
+#        '''
+#        s = self.solver
+#        
+#        if self.start == True:
+#            if self.trajectory is not None:
+#                traj_output = self.trajectory.getValues(s.t, self.tOrder)
+#                print 'im start traj_output: ',traj_output    
+#            if self.controller is not None:
+#                self.controller_output = self.controller.control(self.q, traj_output)
+#                print 'initial state: ', self.q
+#                print 'im start: self.controller_output: ',self.controller_output
+#            self.start = False
+#        else:
+#            #get desired values
+#            traj_output = 0
+#            if self.trajectory is not None:
+#                traj_output = self.trajectory.getValues(s.t, self.tOrder)
+#            print 'traj_output: ',traj_output            
+#            
+#            #perform control
+#            self.controller_output = 0
+#            if self.controller is not None:
+#                self.controller_output = self.controller.control(self.sensor_output, traj_output)
+#            print 'self.controller_output: ',self.controller_output
+#            
+#        # integrate model
+#        self.model.setInput(self.controller_output)
+#        model_output = s.integrate(s.t+dt)
+#        print 'model_output: ',model_output
+#
+#        #check credibility
+#        self.model.checkConsistancy(model_output)
+#
+#        #perform measurement
+#        self.sensor_output = 0
+#        print 'self.sensor: ',self.sensor
+#        if self.sensor is not None:
+#            self.sensor_output = self.sensor.measure(s.t, self.model_output)
+#        else:
+#            self.sensor_output = model_output
+#        print 'self.sensor_output: ',self.sensor_output      
+#
+#        #store
+#        if self.logger is not None:
+#            data = {'t':s.t}
+#            for i in range(self.model.getStates()):
+#                data.update({('x%i' % (i+1)): model_output[i]})
+#
+#            self.logger.log(data)
+#
+#        return model_output
 

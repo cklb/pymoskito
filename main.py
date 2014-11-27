@@ -24,7 +24,7 @@ from control import PController, FController, GController, JController, LSSContr
 from sim_core import Simulator
 from model import BallBeamModel, ModelException
 from visualization import VtkVisualizer
-from logging import Logger
+from logging import SuperLogger
 from plotting import PyQtGraphPlotter
 
 import settings as st
@@ -58,7 +58,7 @@ for arg in args:
 #----------------------------------------------------------------
 # Create Simulation Backend
 #----------------------------------------------------------------
-l = Logger()
+l = SuperLogger()
 bb = BallBeam(initialState=st.q0, logger=l)
 
 #----------------------------------------------------------------
@@ -77,12 +77,12 @@ app.setWindowIcon(QtGui.QIcon('ball_and_beam.png'))
 d1 = Dock('Parameter')
 d2 = Dock('Simulation')
 d3 = Dock('System States')
-d4 = Dock('Controller Output')
+#d4 = Dock('Controller Output')
 
 area.addDock(d1, 'left')
 area.addDock(d2, 'top')
 area.addDock(d3, 'right')
-area.addDock(d4, 'right')
+#area.addDock(d4, 'right')
 
 
 #----------------------------------------------------------------
@@ -141,7 +141,7 @@ d3.addWidget(plotX1.getWidget())
 #d3.addWidget(plotX4.getWidget())
 
 #create plotter for u
-d4.addWidget(PyQtGraphPlotter(['u'], l).getWidget())
+#d4.addWidget(PyQtGraphPlotter(['u'], l).getWidget())
 
 win.show()
 

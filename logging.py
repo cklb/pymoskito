@@ -11,7 +11,7 @@ from settings import *
 # data logging helper
 #--------------------------------------------------------------------- 
 
-class Logger:
+class SuperLogger:
     """ Main Data Logger
     """
 
@@ -62,7 +62,7 @@ class Logger:
         with open(self.filename, 'w+') as f:
             f.write(repr(self.data))
     
-class GraphLogger(Logger):
+class GraphLogger(SuperLogger):
     ''' 
     Provides y(x) plotting for data
     '''
@@ -127,7 +127,7 @@ class GraphLogger(Logger):
         self.figure.canvas.flush_events()
         return
 
-class QtGraphLogger(Logger):
+class QtGraphLogger(SuperLogger):
     ''' 
     Provides y(x) plotting for data
     '''
