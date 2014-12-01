@@ -5,6 +5,8 @@
 import sys
 import getopt
 import traceback
+#Qt
+from PyQt4.QtCore import QObject, QThread, pyqtSignal, QTimer
 
 #pyqtgraph related
 from pyqtgraph.Qt import QtCore, QtGui
@@ -13,7 +15,7 @@ from pyqtgraph.Qt import QtCore, QtGui
 from ballbeam import BallBeam
 from trajectory import HarmonicGenerator, FixedPointGenerator
 from control import PController, FController, GController, JController, LSSController, IOLController
-from sim_core import SimulationThread, Simulator
+from sim_core import Simulator
 from model import BallBeamModel, ModelException
 from visualization import VtkVisualizer
 from plotting import PyQtGraphPlotter
@@ -48,24 +50,22 @@ for arg in args:
     process(arg) 
 
 #----------------------------------------------------------------
-# Data Aquisition Backend
-#----------------------------------------------------------------
-l = DataLogger()
-logThread = LoggerThread(l)
-l.moveToThread(logThread)
-logThread.start()
-
-#----------------------------------------------------------------
 # Simulation Backend
 #----------------------------------------------------------------
-simulator = Simulator(l)
-simThread = SimulationThread()
+
+
+#Model
+model = BallBeamModel()
+simulator = Simulator(model)
+simThread = QThread()
 simulator.moveToThread(simThread)
-simThread.timer.timeout.connect(simulator.calcStep)
-simulator.finished.connect(simThread.quit)
-#simThread.finished.connect(gui.simFinished)
+simThread.started.connect(simulator.run)
 
+def simFinished():
+    print 'exiting thread'
+    simThread.quit()
 
+simulator.finished.connect(simFinished)
 #----------------------------------------------------------------
 # Create Gui
 #----------------------------------------------------------------
@@ -97,17 +97,33 @@ bb.setVisualizer(vis)
 
 gui.show()
 
-#organize execution
-#simTimer = QtCore.QTimer()
-#simTimer.timeout.connect(bb.update)
-#logTimer = QtCore.QTimer()
-#logTimer.timeout.connect(l.update)
-
-#simTimer.start(0.1)
-#logTimer.start(0.2)
-
 
 print 'lets do this'
+
+
+
+# Trajectory
+trajG = HarmonicGenerator()
+trajG.setAmplitude(0.5)
+#trajG = FixedPointGenerator()
+#trajG.setPosition(0.5)
+
+# Control
+#cont = FController()
+#cont = GController()
+#cont = JController()
+#cont = PController()
+cont = LSSController()
+#cont = IOLController()
+
+simulator.setupSolver()
+simulator.setInitialValues(st.q0)
+simulator.setEndTime(5)
+simulator.setController(cont)
+simulator.setTrajectoryGenerator(trajG)
+
+
+simThread.start()
 ## Start Qt event loop unless running in interactive mode or using pyside.
 if __name__ == '__main__':
     import sys
