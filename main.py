@@ -58,16 +58,12 @@ for arg in args:
 #----------------------------------------------------------------
 # Create Simulation Backend
 #----------------------------------------------------------------
-<<<<<<< HEAD
-l = Logger()
+l = DataLogger()
 logThread = LoggerThread(l)
 l.moveToThread(logThread)
 
 bb.newData.connect(l.log)
 
-=======
-l = SuperLogger()
->>>>>>> master
 bb = BallBeam(initialState=st.q0, logger=l)
 
 #----------------------------------------------------------------
