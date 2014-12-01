@@ -26,4 +26,3 @@ beam_width = 0.01   # m
 beam_depth = 0.03   # m
 beam_length = 2     # m
 scale = 1
-

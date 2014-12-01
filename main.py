@@ -7,15 +7,7 @@ import getopt
 import traceback
 
 #pyqtgraph related
-import pyqtgraph as pg
 from pyqtgraph.Qt import QtCore, QtGui
-from pyqtgraph.dockarea import *
-import pyqtgraph.parametertree.parameterTypes as pTypes
-from pyqtgraph.parametertree import Parameter, ParameterTree, ParameterItem, registerParameterType
-import numpy as np
-
-#vtk
-from vtk.qt4.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 
 #own
 from ballbeam import BallBeam
@@ -26,6 +18,7 @@ from model import BallBeamModel, ModelException
 from visualization import VtkVisualizer
 from logging import SuperLogger
 from plotting import PyQtGraphPlotter
+from gui import Gui
 
 import settings as st
 #--------------------------------------------------------------------- 
@@ -65,63 +58,9 @@ bb = BallBeam(initialState=st.q0, logger=l)
 # Create Gui
 #----------------------------------------------------------------
 app = QtGui.QApplication([])
-win = QtGui.QMainWindow()
-area = DockArea()
+gui = Gui()
 
-# Window properties
-win.setCentralWidget(area)
-win.resize(1000,500)
-win.setWindowTitle('Ball and Beam')
-app.setWindowIcon(QtGui.QIcon('ball_and_beam.png'))
-
-d1 = Dock('Parameter')
-d2 = Dock('Simulation')
-d3 = Dock('System States')
-#d4 = Dock('Controller Output')
-
-area.addDock(d1, 'left')
-area.addDock(d2, 'top')
-area.addDock(d3, 'right')
-#area.addDock(d4, 'right')
-
-
-#----------------------------------------------------------------
-# Parameter List
-#----------------------------------------------------------------
-params = [
-    {'name': 'System parameter', 'type': 'group', 'children': [
-        {'name': 'Ball Mass', 'type': 'float', 'value': st.M, 'step': 0.01, 'suffix': 'kg'},
-        {'name': 'Ball Radius [m]', 'type': 'float', 'value': st.R, 'step': 0.01},
-        {'name': 'Ball inertia torque [kgm^2]', 'type': 'float', 'value': st.J},
-        {'name': 'Beam inertia torque [kgm^2]', 'type': 'float', 'value': st.Jb},
-        {'name': 'Beam length (min=1,max=6)', 'type': 'float', 'value': st.beam_length, 'step': 0.5, 'limits': (1,6)},
-    ]},
-    {'name': 'Initial States', 'type': 'group', 'children': [
-        {'name': 'Ball position [m]', 'type': 'float', 'value': st.q0[0], 'step': 0.1, 'limits':\
-                (-st.beam_length/2, st.beam_length/2)},
-        {'name': 'Ball velocity [m/s]', 'type': 'float', 'value': st.q0[1]},
-        {'name': 'Beam angle [degree]', 'type': 'float', 'value': st.q0[2]*180/np.pi, 'step': 1},
-        {'name': 'Beam velocity', 'type': 'float', 'value': st.q0[3]*180/np.pi, 'step': 1},
-    ]},
-    {'name': 'Controller', 'type': 'int', 'value': 1}
-]
-# create a tree of parameter objects
-p = Parameter.create(name='params', types='group', children=params)
-t = ParameterTree()
-t.setParameters(p, showTop = False)
-t.setWindowTitle('Parameter')
-d1.addWidget(t)
-
-#----------------------------------------------------------------
-# vtk window
-#----------------------------------------------------------------
-vtkLayout = QtGui.QVBoxLayout()
-frame = QtGui.QFrame()
-vtkWidget = QVTKRenderWindowInteractor(frame)
-vtkLayout.addWidget(vtkWidget)
-frame.setLayout(vtkLayout)
-d2.addWidget(frame)
-vis = VtkVisualizer(vtkWidget)
+vis = VtkVisualizer(gui.getVtkWidget())
 bb.setVisualizer(vis)
 
 #----------------------------------------------------------------
@@ -129,7 +68,7 @@ bb.setVisualizer(vis)
 #----------------------------------------------------------------
 #create plotter for x1
 plotX1 = PyQtGraphPlotter(['x1'], l)
-d3.addWidget(plotX1.getWidget())
+gui.addPlotToDock(plotX1.getWidget())
 ##create plotter for x2
 #plotX2 = PyQtGraphPlotter(['x2'], l)
 #d3.addWidget(plotX2.getWidget())
@@ -143,7 +82,8 @@ d3.addWidget(plotX1.getWidget())
 #create plotter for u
 #d4.addWidget(PyQtGraphPlotter(['u'], l).getWidget())
 
-win.show()
+
+gui.show()
 
 #organize execution
 simTimer = QtCore.QTimer()
