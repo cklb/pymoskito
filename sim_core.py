@@ -1,30 +1,14 @@
 ﻿#!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-
 from __future__ import division
 from scipy.integrate import ode
-from PyQt4.QtCore import QObject, QThread, pyqtSignal, QTimer
-
+from PyQt4.QtCore import QObject, pyqtSignal
 import settings as st
 
 #--------------------------------------------------------------------- 
 # Core of the physical simulation
 #--------------------------------------------------------------------- 
-class SimulationThread(QThread):
-    """ Thread that runs the physical simulation
-    """
-
-    def __init__(self, parent=None):
-        QThread.__init__(self, parent)
-        self.timer = QTimer()
-
-    def run(self):
-        ''' run simulation 
-        '''
-        self.timer.start(0)
-
-
 class Simulator(QObject):
     """ Simulation Wrapper
     
@@ -33,41 +17,47 @@ class Simulator(QObject):
 
     finished = pyqtSignal()
 
-    def __init__(self, logger, parent=None):
+    def __init__(self, model, parent=None):
         QObject.__init__(self, parent)
-        self.logger = logger
+        self.model = model
         
         #init states
+        self.simTime = 0
+        self.stepSize = st.dt
         self.traj_output = 0
         self.controller_output = 0
+        self.model_output = 0
         self.sensor_output = 0
         
-    def setupSolver(self, intMode=None, intMethod=None, rTol=None, aTol=None):
-        self.solver = ode(model.stateFunc)
+        #init storage
+        self.storage = {'simTime':[],\
+                'traj_output':[],\
+                'controller_output':[],\
+                'model_output':[],\
+                'sensor_output':[]}
+
+    def setupSolver(self, intMode=st.int_mode, intMethod=st.int_method, rTol=st.int_rtol, aTol=st.int_atol):
+        self.solver = ode(self.model.stateFunc)
         self.solver.set_integrator(intMode, method=intMethod, rtol=rTol, atol=aTol)
 
     def setInitialValues(self, values):
         if self.solver is None:
-            print('Error setup solver first!')
+            print('Error: setup solver first!')
         else:
             self.solver.set_initial_value(values)
 
     def setTrajectoryGenerator(self, generator):
         self.trajectory = generator
-        self.trajectory.newData.connect(logger.log)
 
     def setController(self, controller):
         self.controller = controller
-        self.controller.newData.connect(logger.log)
         self.tOrder = controller.getOrder()
-
-    def setModel(self, model):
-        self.model = model
-        self.model.newData.connect(logger.log)
 
     def setSensor(self, sensor):
         self.sensor = sensor
-        self.sensor.newData.connect(logger.log)
+
+    def setStepSize(self, stepSize):
+        self.stepSize = setpSize
 
     def setEndTime(self, endTime):
         self.endTime = endTime
@@ -80,38 +70,44 @@ class Simulator(QObject):
         # integrate model
         self.model.setInput(self.controller_output)
         s = self.solver
-        model_output = s.integrate(s.t+dt) 
+        self.model_output = s.integrate(s.t+self.stepSize) 
+        self.simTime = s.t
 
         #check credibility
-        self.model.checkConsistancy(model_output)
+        self.model.checkConsistancy(self.model_output)
 
         #perform measurement
-        if self.sensor is not None:
-            sensor_output = self.sensor.measure(s.t, self.model_output)
+        if hasattr(self, 'sensor'):
+            self.sensor_output = self.sensor.measure(s.t, self.model_output)
         else:
-            sensor_output = model_output
+            self.sensor_output = self.model_output
 
         #get desired values
-        if self.trajectory is not None:
-            traj_output = self.trajectory.getValues(s.t, self.tOrder)
+        if hasattr(self, 'trajectory'):
+            self.traj_output = self.trajectory.getValues(s.t, self.tOrder)
 
         #perform control
-        if self.controller is not None:
-            self.controller_output = self.controller.control(sensor_output, traj_output)
+        if hasattr(self, 'controller'):
+            self.controller_output = self.controller.control(self.sensor_output, self.traj_output)
 
-        #store
-        #if self.logger is not None:
-            #data = {'t':s.t}
-            #for i in range(self.model.getStates()):
-                #data.update({('x%i' % (i+1)): model_output[i]})
+        return 
 
-            #self.logger.log(data)
-
-        #check end time
-        if self.endTime is not None:
-            if s.t >= self.endTime:
-                emit(finished)
-
-
-        return model_output
+    def storeValues(self):
+        self.storage['simTime'].append(self.simTime)
+        self.storage['traj_output'].append(self.traj_output)
+        self.storage['controller_output'].append(self.controller_output)
+        self.storage['model_output'].append(self.model_output)
+        self.storage['sensor_output'].append(self.sensor_output)
     
+    def run(self):
+
+        while self.simTime <= self.endTime:
+            self.calcStep()
+            self.storeValues()
+
+        print '### Simulator finished ###'
+        self.finished.emit()
+        return
+
+    def getValues(self):
+        return self.storage
