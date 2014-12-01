@@ -21,7 +21,7 @@ from vtk.qt4.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 from ballbeam import BallBeam
 from trajectory import HarmonicGenerator, FixedPointGenerator
 from control import PController, FController, GController, JController, LSSController, IOLController
-from sim_core import Simulator
+from sim_core import SimulationThread, Simulator
 from model import BallBeamModel, ModelException
 from visualization import VtkVisualizer
 from logging import DataLogger, LoggerThread
@@ -56,15 +56,23 @@ for arg in args:
     process(arg) 
 
 #----------------------------------------------------------------
-# Create Simulation Backend
+# Data Aquisition Backend
 #----------------------------------------------------------------
 l = DataLogger()
 logThread = LoggerThread(l)
 l.moveToThread(logThread)
+logThread.start()
 
-bb.newData.connect(l.log)
+#----------------------------------------------------------------
+# Simulation Backend
+#----------------------------------------------------------------
+simulator = Simulator(l)
+simThread = SimulationThread()
+simulator.moveToThread(simThread)
+simThread.timer.timeout.connect(simulator.calcStep)
+simulator.finished.connect(simThread.quit)
+#simThread.finished.connect(gui.simFinished)
 
-bb = BallBeam(initialState=st.q0, logger=l)
 
 #----------------------------------------------------------------
 # Create Gui
@@ -127,14 +135,14 @@ vtkLayout.addWidget(vtkWidget)
 frame.setLayout(vtkLayout)
 d2.addWidget(frame)
 vis = VtkVisualizer(vtkWidget)
-bb.setVisualizer(vis)
+#bb.setVisualizer(vis)
 
 #----------------------------------------------------------------
 # pyqt windows
 #----------------------------------------------------------------
 #create plotter for x1
-plotX1 = PyQtGraphPlotter(['x1'], l)
-d3.addWidget(plotX1.getWidget())
+#plotX1 = PyQtGraphPlotter(['x1'], l)
+#d3.addWidget(plotX1.getWidget())
 ##create plotter for x2
 #plotX2 = PyQtGraphPlotter(['x2'], l)
 #d3.addWidget(plotX2.getWidget())
@@ -151,13 +159,13 @@ d3.addWidget(plotX1.getWidget())
 win.show()
 
 #organize execution
-simTimer = QtCore.QTimer()
-simTimer.timeout.connect(bb.update)
-logTimer = QtCore.QTimer()
-logTimer.timeout.connect(l.update)
+#simTimer = QtCore.QTimer()
+#simTimer.timeout.connect(bb.update)
+#logTimer = QtCore.QTimer()
+#logTimer.timeout.connect(l.update)
 
-simTimer.start(0.1)
-logTimer.start(0.2)
+#simTimer.start(0.1)
+#logTimer.start(0.2)
 
 
 print 'lets do this'
