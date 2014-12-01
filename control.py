@@ -224,7 +224,7 @@ class IOLController(Controller):
         # calculate y terms
         y = x[0]
         y_d = x[1]
-        y_dd = B*x[0]*x[3]**2 -B*G*sin(x[2]) 
+        y_dd = B*x[0]*x[3]**2 -B*G*np.sin(x[2]) 
         
         # calculate fictional input v
         v = yd[3] + \
@@ -235,7 +235,7 @@ class IOLController(Controller):
         # calculate a(x)
         a = 2*B*x[0]*x[3]
         # calculate b(x)
-        b = B*x[1]*x[3]**2 - B*G*x[3]*cos(x[2])
+        b = B*x[1]*x[3]**2 - B*G*x[3]*np.cos(x[2])
         
         # calculate u
         if np.absolute(a) < 0.3:     

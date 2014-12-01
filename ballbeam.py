@@ -13,7 +13,7 @@ from control import PController, FController, GController, JController, LSSContr
 from sim_core import Simulator
 from model import BallBeamModel, ModelException
 from visualization import VtkVisualizer
-from logging import Logger
+from logging import SuperLogger
 
 from settings import dt
 

@@ -20,9 +20,10 @@ class LoggerThread(QThread):
     def run(self)
         self.timer.start(.2)
 
-class Logger:
+class DataLogger:
     """ Thread that runs the logging mechanics
     """
+
     def __init__(self):
         self.subscribers = []
         self.data = {}

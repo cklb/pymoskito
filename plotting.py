@@ -5,7 +5,7 @@ from pyqtgraph.Qt import QtGui, QtCore
 import pyqtgraph as pg
 import pyqtgraph.widgets.RemoteGraphicsView
 
-from logging import Logger
+from logging import SuperLogger
 
 #--------------------------------------------------------------------- 
 # data plotting helper
