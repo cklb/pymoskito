@@ -50,7 +50,7 @@ for arg in args:
 #----------------------------------------------------------------
 # Create Simulation Backend
 #----------------------------------------------------------------
-l = Logger()
+l = DataLogger()
 logThread = LoggerThread(l)
 l.moveToThread(logThread)
 
