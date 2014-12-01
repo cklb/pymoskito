@@ -15,15 +15,18 @@ class LoggerThread(QThread):
         QThread.__init__(self)
         self.timer = QTimer()
         self.logger = logger
-        self.timer.timeout.connect(self.logger.update())
+        self.timer.timeout.connect(self.logger.update)
 
-    def run(self)
+    def run(self):
         self.timer.start(.2)
 
-class Logger:
+
+class DataLogger(QObject):
     """ Thread that runs the logging mechanics
     """
-    def __init__(self):
+
+    def __init__(self, parent=None):
+        QObject.__init__(self, parent)
         self.subscribers = []
         self.data = {}
         self.timestep = 0
