@@ -13,7 +13,7 @@ from control import PController, FController, GController, JController, LSSContr
 from sim_core import Simulator
 from model import BallBeamModel, ModelException
 from visualization import VtkVisualizer
-from logging import SuperLogger
+from logging import DataLogger
 
 from settings import dt
 
@@ -55,6 +55,16 @@ class BallBeam:
         self.simulator = Simulator(self.model, initialState, \
                 trajectory=self.trajG, controller=self.cont, \
                 logger=logger)
+
+
+    def setModel(self, model):
+        self.model = model
+
+    def setController(self, controller):
+        self.cont = controller
+
+    def setTrajectoryGenerator(self, generator):
+        self.trajG = generator
 
     def setVisualizer(self, visualizer):
         self.visualizer = visualizer

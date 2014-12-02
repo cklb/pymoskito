@@ -1,55 +1,70 @@
 ﻿#!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-
 from __future__ import division
 from scipy.integrate import ode
-
-from settings import *
+from PyQt4 import QtGui
+from PyQt4.QtCore import QObject, pyqtSignal
+import settings as st
 
 #--------------------------------------------------------------------- 
 # Core of the physical simulation
 #--------------------------------------------------------------------- 
-class Simulator:
+class Simulator(QObject):
     """ Simulation Wrapper
     
     This Class exceutes the timestep integration.
     """
 
-    def __init__(self, model, initialState=None, trajectory=None, sensor=None, controller=None, logger=None):
-        # model
+    finished = pyqtSignal()
+
+    def __init__(self, model, parent=None):
+        QObject.__init__(self, parent)
         self.model = model
+        
+        self.initStates() 
+        self.initStorage()
 
-        # solver
-        self.solver = ode(model.stateFunc)
-        if initialState is not None:
-            self.q = initialState
-        else:
-            self.q = q0
-
-        self.solver.set_initial_value(self.q)
-        self.solver.set_integrator(int_mode, method=int_method, rtol=int_rtol, atol=int_atol)
-
-        #sensor
-        self.sensor = sensor
-       
-        #trajectory
-        self.trajectory = trajectory
-
-        #controller
-        self.controller = controller
-        if controller is not None:
-            self.tOrder = controller.getOrder()
-        else:
-            self.tOrder = 0
-
+    def initStates(self):
+        self.simTime = 0
+        self.stepSize = st.dt
+        self.traj_output = 0
         self.controller_output = 0
-        
-        #Logging
-        self.logger = logger
-        
-        #erster Durchlauf
-        self.start = True
+        self.model_output = 0
+        self.sensor_output = 0
+
+    def initStorage(self):
+        self.storage = {'simTime':[],\
+                'traj_output':[],\
+                'controller_output':[],\
+                'model_output':[],\
+                'sensor_output':[]}
+
+    def setupSolver(self, intMode=st.int_mode, intMethod=st.int_method, rTol=st.int_rtol, aTol=st.int_atol):
+        self.solver = ode(self.model.stateFunc)
+        self.solver.set_integrator(intMode, method=intMethod, rtol=rTol, atol=aTol)
+
+    def setInitialValues(self, values):
+        if self.solver is None:
+            print('Error: setup solver first!')
+        else:
+            self.solver.set_initial_value(values)
+
+    def setTrajectoryGenerator(self, generator):
+        self.trajectory = generator
+
+    def setController(self, controller):
+        self.controller = controller
+        self.tOrder = controller.getOrder()
+
+    def setSensor(self, sensor):
+        self.sensor = sensor
+
+    def setStepSize(self, stepSize):
+        self.stepSize = setpSize
+
+    def setEndTime(self, endTime):
+        self.endTime = endTime
 
     def calcStep(self):
         '''
@@ -59,94 +74,53 @@ class Simulator:
         # integrate model
         self.model.setInput(self.controller_output)
         s = self.solver
-        model_output = s.integrate(s.t+dt) 
+        self.model_output = s.integrate(s.t+self.stepSize) 
+        self.simTime = s.t
 
         #check credibility
-        self.model.checkConsistancy(model_output)
+        self.model.checkConsistancy(self.model_output)
 
         #perform measurement
-        sensor_output = 0
-        if self.sensor is not None:
-            sensor_output = self.sensor.measure(s.t, self.model_output)
+        if hasattr(self, 'sensor'):
+            self.sensor_output = self.sensor.measure(s.t, self.model_output)
         else:
-            sensor_output = model_output
+            self.sensor_output = self.model_output
 
         #get desired values
-        traj_output = 0
-        if self.trajectory is not None:
-            traj_output = self.trajectory.getValues(s.t, self.tOrder)
+        if hasattr(self, 'trajectory'):
+            self.traj_output = self.trajectory.getValues(s.t, self.tOrder)
 
         #perform control
-        self.controller_output = 0
-        if self.controller is not None:
-            self.controller_output = self.controller.control(sensor_output, traj_output)
+        if hasattr(self, 'controller'):
+            self.controller_output = self.controller.control(self.sensor_output, self.traj_output)
 
-        #store
-        if self.logger is not None:
-            data = {'t':s.t}
-            for i in range(self.model.getStates()):
-                data.update({('x%i' % (i+1)): model_output[i]})
+        return 
 
-            self.logger.log(data)
-
-        return model_output
+    def storeValues(self):
+        self.storage['simTime'].append(self.simTime)
+        self.storage['traj_output'].append(self.traj_output)
+        self.storage['controller_output'].append(self.controller_output)
+        self.storage['model_output'].append(self.model_output)
+        self.storage['sensor_output'].append(self.sensor_output)
     
-# hier wird erst der Reglerausgang mit den Initialwerten ausgerechnet und anschließend in das Modell eingespeist
-# damit funktioniert der F- und GController leider auch nicht, die Reglerwerten hauen schon nach dem zweiten 
-# Schritt ab
-    
-#    def calcStep(self):
-#        '''
-#        Calculate one step in simulation
-#        '''
-#        s = self.solver
-#        
-#        if self.start == True:
-#            if self.trajectory is not None:
-#                traj_output = self.trajectory.getValues(s.t, self.tOrder)
-#                print 'im start traj_output: ',traj_output    
-#            if self.controller is not None:
-#                self.controller_output = self.controller.control(self.q, traj_output)
-#                print 'initial state: ', self.q
-#                print 'im start: self.controller_output: ',self.controller_output
-#            self.start = False
-#        else:
-#            #get desired values
-#            traj_output = 0
-#            if self.trajectory is not None:
-#                traj_output = self.trajectory.getValues(s.t, self.tOrder)
-#            print 'traj_output: ',traj_output            
-#            
-#            #perform control
-#            self.controller_output = 0
-#            if self.controller is not None:
-#                self.controller_output = self.controller.control(self.sensor_output, traj_output)
-#            print 'self.controller_output: ',self.controller_output
-#            
-#        # integrate model
-#        self.model.setInput(self.controller_output)
-#        model_output = s.integrate(s.t+dt)
-#        print 'model_output: ',model_output
-#
-#        #check credibility
-#        self.model.checkConsistancy(model_output)
-#
-#        #perform measurement
-#        self.sensor_output = 0
-#        print 'self.sensor: ',self.sensor
-#        if self.sensor is not None:
-#            self.sensor_output = self.sensor.measure(s.t, self.model_output)
-#        else:
-#            self.sensor_output = model_output
-#        print 'self.sensor_output: ',self.sensor_output      
-#
-#        #store
-#        if self.logger is not None:
-#            data = {'t':s.t}
-#            for i in range(self.model.getStates()):
-#                data.update({('x%i' % (i+1)): model_output[i]})
-#
-#            self.logger.log(data)
-#
-#        return model_output
+    def run(self):
+
+        while self.simTime <= self.endTime:
+            self.calcStep()
+            self.storeValues()
+
+        #move back to main thread
+        self.moveToThread(QtGui.QApplication.instance().thread())
+        self.finished.emit()
+        return
+
+    def getValues(self):
+        return self.storage
+
+    def reset(self):
+        '''
+        reset to initial state
+        '''
+        self.initStates() 
+        self.initStorage()
 

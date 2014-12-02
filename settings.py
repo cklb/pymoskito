@@ -12,6 +12,7 @@ int_mode = 'vode'
 int_method='adams'
 int_rtol=1e-6
 int_atol=1e-9
+sim_time = 5
 
 # System
 M = 0.05    # kg

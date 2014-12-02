@@ -5,6 +5,8 @@
 import sys
 import getopt
 import traceback
+#Qt
+from PyQt4.QtCore import QObject, QThread, pyqtSignal, QTimer
 
 #pyqtgraph related
 from pyqtgraph.Qt import QtCore, QtGui
@@ -16,7 +18,7 @@ from control import PController, FController, GController, JController, LSSContr
 from sim_core import Simulator
 from model import BallBeamModel, ModelException
 from visualization import VtkVisualizer
-from logging import SuperLogger
+from logging import DataLogger, LoggerThread
 from plotting import PyQtGraphPlotter
 from gui import Gui
 
@@ -48,27 +50,23 @@ for o, a in opts:
 for arg in args:
     process(arg) 
 
-#----------------------------------------------------------------
-# Create Simulation Backend
-#----------------------------------------------------------------
-l = SuperLogger()
-bb = BallBeam(initialState=st.q0, logger=l)
 
 #----------------------------------------------------------------
 # Create Gui
 #----------------------------------------------------------------
 app = QtGui.QApplication([])
 gui = Gui()
+gui.show()
+#vis = VtkVisualizer(gui.getVtkWidget())
+#bb.setVisualizer(vis)
 
-vis = VtkVisualizer(gui.getVtkWidget())
-bb.setVisualizer(vis)
 
 #----------------------------------------------------------------
 # pyqt windows
 #----------------------------------------------------------------
 #create plotter for x1
-plotX1 = PyQtGraphPlotter(['x1'], l)
-gui.addPlotToDock(plotX1.getWidget())
+#plotX1 = PyQtGraphPlotter(['x1'], l)
+#d3.addWidget(plotX1.getWidget())
 ##create plotter for x2
 #plotX2 = PyQtGraphPlotter(['x2'], l)
 #d3.addWidget(plotX2.getWidget())
@@ -83,19 +81,7 @@ gui.addPlotToDock(plotX1.getWidget())
 #d4.addWidget(PyQtGraphPlotter(['u'], l).getWidget())
 
 
-gui.show()
 
-#organize execution
-simTimer = QtCore.QTimer()
-simTimer.timeout.connect(bb.update)
-logTimer = QtCore.QTimer()
-logTimer.timeout.connect(l.update)
-
-simTimer.start(0.1)
-logTimer.start(0.2)
-
-
-print 'lets do this'
 ## Start Qt event loop unless running in interactive mode or using pyside.
 if __name__ == '__main__':
     import sys
