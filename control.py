@@ -185,24 +185,21 @@ class LSSController(Controller):
     '''
     # Zustandsrückführung mit Eigenwerten bei -2
 #    K = np.array([-0.5362, -0.0913, 0.48, 0.16])
-
-    
 #    V = -0.0457
     
     def __init__(self, logger=None):
+        Controller.__init__(self, logger)
     
-        l = lin.Linearization(x0=[0,0,0,0],tau0=0)
-#        self.K = np.array([-0.5362, -0.0913, 0.48, 0.16])
+        l = lin.Linearization(x0=[0.5,0,0,0],tau0=0)
         self.K = l.polesToAckermann([-2,-2,-2,-2])
         self.V = l.prefilter(self.K)
         self.order = 0
-        Controller.__init__(self, logger)
         
     def calcOutput(self, x, yd):
         # calculate u
         u = np.dot(-self.K,np.transpose(x)) + yd[0]*self.V
         
-        return u
+        return u[0]
         
 #---------------------------------------------------------------------
 # Input-Output-Linearization

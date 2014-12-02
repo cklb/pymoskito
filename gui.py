@@ -150,14 +150,14 @@ class Gui(QtGui.QMainWindow):
         #self.trajG = HarmonicGenerator()
         #self.trajG.setAmplitude(0.5)
         self.trajG = FixedPointGenerator()
-        self.trajG.setPosition(-0.5)
+        self.trajG.setPosition(0.5)
 
         # Control
         #self.cont = FController()
-        self.cont = GController()
+        #self.cont = GController()
         #self.cont = JController()
         #self.cont = PController()
-        #self.cont = LSSController()
+        self.cont = LSSController()
         #self.cont = IOLController()
 
         #Measurement
@@ -168,7 +168,7 @@ class Gui(QtGui.QMainWindow):
         self.simulator.setInitialValues(st.q0)
         self.simulator.setEndTime(st.sim_time)
         self.simulator.setController(self.cont)
-        self.simulator.setSensor(self.sen)
+        #self.simulator.setSensor(self.sen)
         self.simulator.setTrajectoryGenerator(self.trajG)
         #until here  <<<
  

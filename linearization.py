@@ -104,7 +104,7 @@ class Linearization:
         
         K = t1T*(A**4 + p[3]*A**(3) + p[2]*A**2 + p[1]*A + p[0]*sp.eye(4))
                         
-        return self.symMatrixToNumArray(K)
+        return self.symMatrixToNumArray(K)[0]
         
     def prefilter(self, K = None):
         A = self.symMatrixToNumArray(self.A)
@@ -113,10 +113,10 @@ class Linearization:
         # Vorfilter V = -[C(A-BK)^-1*B]^-1
         if K is not None:
             V = -np.linalg.inv(np.dot(np.dot(C,(np.linalg.inv(A-B*K))),B))
-            print V[0]
         else:
-            V = 0
-        return V
+            return 0
+
+        return V[0]
         
     def symMatrixToNumArray(self, symMatrix = None):
         symMatrixShape = symMatrix.shape        
@@ -125,7 +125,4 @@ class Linearization:
             for j in range(0,symMatrixShape[1]):
                 numArray[i,j] = symMatrix[i,j]
         return numArray
-    
-l = Linearization(x0=[0.5,0,0,0], tau0 = 0)
-nu = l.symMatrixToNumArray(l.A)
 
