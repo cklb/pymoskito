@@ -3,6 +3,7 @@
 
 from __future__ import division
 from scipy.integrate import ode
+from PyQt4 import QtGui
 from PyQt4.QtCore import QObject, pyqtSignal
 import settings as st
 
@@ -21,15 +22,18 @@ class Simulator(QObject):
         QObject.__init__(self, parent)
         self.model = model
         
-        #init states
+        self.initStates() 
+        self.initStorage()
+
+    def initStates(self):
         self.simTime = 0
         self.stepSize = st.dt
         self.traj_output = 0
         self.controller_output = 0
         self.model_output = 0
         self.sensor_output = 0
-        
-        #init storage
+
+    def initStorage(self):
         self.storage = {'simTime':[],\
                 'traj_output':[],\
                 'controller_output':[],\
@@ -105,9 +109,18 @@ class Simulator(QObject):
             self.calcStep()
             self.storeValues()
 
-        print '### Simulator finished ###'
+        #move back to main thread
+        self.moveToThread(QtGui.QApplication.instance().thread())
         self.finished.emit()
         return
 
     def getValues(self):
         return self.storage
+
+    def reset(self):
+        '''
+        reset to initial state
+        '''
+        self.initStates() 
+        self.initStorage()
+
