@@ -4,6 +4,7 @@
 import numpy as np
 
 from settings import *
+import linearization as lin
 
 
 
@@ -182,14 +183,18 @@ class LSSController(Controller):
     linear statespace controller
     System is linearised by tau = 0 and x = [0,0,0,0]
     '''
-    
     # Zustandsrückführung mit Eigenwerten bei -2
-    K = np.array([-0.5362, -0.0913, 0.48, 0.16])
+#    K = np.array([-0.5362, -0.0913, 0.48, 0.16])
 
-    # Vorfilter V = -[C(A-BK)^-1*B]^-1
-    V = -0.0457
+    
+#    V = -0.0457
     
     def __init__(self, logger=None):
+    
+        l = lin.Linearization(x0=[0,0,0,0],tau0=0)
+#        self.K = np.array([-0.5362, -0.0913, 0.48, 0.16])
+        self.K = l.polesToAckermann([-2,-2,-2,-2])
+        self.V = l.prefilter(self.K)
         self.order = 0
         Controller.__init__(self, logger)
         
