@@ -68,5 +68,4 @@ class DataLogger(QObject):
         '''
         with open(self.filename, 'w+') as f:
             f.write(repr(self.data))
-    
 

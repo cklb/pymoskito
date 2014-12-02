@@ -18,6 +18,10 @@ from control import PController, FController, GController, JController, LSSContr
 from sim_core import Simulator
 from model import BallBeamModel, ModelException
 from visualization import VtkVisualizer
+<<<<<<< HEAD
+=======
+from logging import DataLogger, LoggerThread
+>>>>>>> signal-slot_based_logging
 from plotting import PyQtGraphPlotter
 from gui import Gui
 
@@ -69,11 +73,29 @@ simulator.finished.connect(simFinished)
 #----------------------------------------------------------------
 # Create Gui
 #----------------------------------------------------------------
+
+
+#Model
+model = BallBeamModel()
+simulator = Simulator(model)
+simThread = QThread()
+simulator.moveToThread(simThread)
+simThread.started.connect(simulator.run)
+
+def simFinished():
+    print 'exiting thread'
+    simThread.quit()
+
+simulator.finished.connect(simFinished)
+#----------------------------------------------------------------
+# Create Gui
+#----------------------------------------------------------------
 app = QtGui.QApplication([])
 gui = Gui()
 
 vis = VtkVisualizer(gui.getVtkWidget())
 bb.setVisualizer(vis)
+
 
 #----------------------------------------------------------------
 # pyqt windows
@@ -99,7 +121,6 @@ gui.show()
 
 
 print 'lets do this'
-
 
 
 # Trajectory
