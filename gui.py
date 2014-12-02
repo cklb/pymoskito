@@ -88,6 +88,15 @@ class Gui(QtGui.QMainWindow):
         self.actPlayPause.setDisabled(True)
         self.actPlayPause.triggered.connect(self.playAnimation)
 
+        self.speedDial = QtGui.QDial()
+        self.speedDial.setDisabled(True)
+        self.speedDial.setMinimum(0)
+        self.speedDial.setMaximum(100)
+        self.speedDial.setValue(50)
+        self.speedDial.setSingleStep(1)
+        self.speedDial.resize(256, 256)
+        self.speedDial.valueChanged.connect(self.updatePlaybackGain)
+
         self.timeSlider = QtGui.QSlider(QtCore.Qt.Horizontal, self)
         self.timeSlider.setMinimum(0)
         self.timeSliderRange = 1000
@@ -109,11 +118,12 @@ class Gui(QtGui.QMainWindow):
         self.toolbarSim.addAction(self.actSimulate)
         self.toolbarSim.addSeparator()
         self.toolbarSim.addAction(self.actPlayPause)
+        self.toolbarSim.addWidget(self.speedDial)
         self.toolbarSim.addWidget(self.timeSlider)
 
 
 
-        #TODO make them settable and remove this static stuff
+        #TODO make them settable and remove this static stuff  << from here
         # Trajectory
         self.trajG = HarmonicGenerator()
         self.trajG.setAmplitude(0.5)
@@ -133,8 +143,8 @@ class Gui(QtGui.QMainWindow):
         self.simulator.setEndTime(st.sim_time)
         self.simulator.setController(self.cont)
         self.simulator.setTrajectoryGenerator(self.trajG)
-        #until here
-
+        #until here  <<<
+ 
     def playAnimation(self):
         '''
         play the animation
@@ -144,7 +154,7 @@ class Gui(QtGui.QMainWindow):
         self.actPlayPause.setIcon(QtGui.QIcon('data/pause.png'))
         self.actPlayPause.triggered.disconnect(self.playAnimation)
         self.actPlayPause.triggered.connect(self.pauseAnimation)
-        self.playbackTimer.start(self.simulator.stepSize * self.playbackGain)
+        self.playbackTimer.start(0.2)
                 
     def pauseAnimation(self):
         '''
@@ -174,6 +184,7 @@ class Gui(QtGui.QMainWindow):
         self.simThread.quit()
         self.actSimulate.setDisabled(False)
         self.actPlayPause.setDisabled(False)
+        self.speedDial.setDisabled(False)
         self.simData = self.simulator.getValues()
         self.validData = True
         self.updatePlots()
@@ -208,8 +219,10 @@ class Gui(QtGui.QMainWindow):
         '''
         go one step forward in playback
         '''
-        if self.playbackTime + self.simulator.stepSize <= self.simulator.endTime:
-            self.playbackTime += self.simulator.stepSize
+        if self.playbackTime + self.simulator.stepSize*self.playbackGain \
+                <= self.simulator.endTime:
+            print 'incrementing by: ',self.simulator.stepSize*self.playbackGain
+            self.playbackTime += self.simulator.stepSize*self.playbackGain
             pos = self.playbackTime / self.simulator.endTime * self.timeSliderRange
             self.timeSlider.blockSignals(True)
             self.timeSlider.setValue(pos)
@@ -218,6 +231,14 @@ class Gui(QtGui.QMainWindow):
         else:
             self.pauseAnimation()
             return
+
+    def updatePlaybackGain(self, val):
+        '''
+        adjust playback time to slider value
+        '''
+        self.playbackGain = 10**(   \
+                1.0*(val - self.speedDial.maximum()/2)/self.speedDial.maximum() \
+                )
 
     def updatePlaybackTime(self):
         '''
