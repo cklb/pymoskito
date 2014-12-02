@@ -6,13 +6,13 @@
 #--------------------------------------------------------------------- 
 
 # Integration
-dt = 0.01                   # stepwidth
+dt = 0.1                   # stepwidth
 q0 = [0.5, 0, 0.0564, 0]           # initial minimal state vector (r, dr, theta, dtheta) default values (used if none is given)
 int_mode = 'vode'
 int_method='adams'
 int_rtol=1e-6
 int_atol=1e-9
-sim_time = 10
+sim_time = 100
 
 # System
 M = 0.05    # kg

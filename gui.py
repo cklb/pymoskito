@@ -5,6 +5,9 @@ from numpy import pi
 
 #Qt
 from PyQt4.QtCore import QTimer, QThread, pyqtSignal
+
+#pyqtgraph
+import pyqtgraph as pg
 from pyqtgraph.Qt import QtCore, QtGui
 from pyqtgraph.dockarea import *
 import pyqtgraph.parametertree
@@ -25,6 +28,7 @@ class Gui(QtGui.QMainWindow):
     class for the graphical user interface
     '''
 
+    newData = pyqtSignal()
     playbackTimeChanged = pyqtSignal()
     
     def __init__(self):
@@ -46,25 +50,28 @@ class Gui(QtGui.QMainWindow):
         
         # Window properties
         self.setCentralWidget(self.area)
-        self.resize(1000,500)
+        self.resize(1000, 700)
         self.setWindowTitle('Ball and Beam')
         self.setWindowIcon(QtGui.QIcon('data/ball_and_beam.png'))
         
         # create docks
-        self.d1 = Dock('Parameter')
-        self.d2 = Dock('Simulation')
-        self.d3 = Dock('Data')
-        #self.d4 = Dock('Plots')
+        self.paramDock = Dock('Parameter')
+        self.vtkDock = Dock('Simulation')
+        self.dataDock = Dock('Data')
+        self.plotDocks = []
+        self.plotDocks.append(Dock('Placeholder'))
         
         # arrange docks
-        self.area.addDock(self.d1, 'left')
-        self.area.addDock(self.d2, 'top')
-        self.area.addDock(self.d3, 'right')
+        self.area.addDock(self.vtkDock, 'left')
+        self.area.addDock(self.paramDock, 'bottom', self.vtkDock)
+        self.area.addDock(self.dataDock, 'bottom', self.paramDock)
+        self.area.addDock(self.plotDocks[-1], 'right')
         
+        #paramter widget
         self.parameter = Parameter()
         
         # add widgets to the docks
-        self.d1.addWidget(self.parameter)        
+        self.paramDock.addWidget(self.parameter)        
         
         # vtk window
         self.vtkLayout = QtGui.QVBoxLayout()
@@ -72,8 +79,14 @@ class Gui(QtGui.QMainWindow):
         self.vtkWidget = QVTKRenderWindowInteractor(self.frame)
         self.vtkLayout.addWidget(self.vtkWidget)
         self.frame.setLayout(self.vtkLayout)
-        self.d2.addWidget(self.frame)
+        self.vtkDock.addWidget(self.frame)
         self.visualizer = VtkVisualizer(self.vtkWidget)
+
+        #data window
+        self.dataList = QtGui.QListWidget(self)
+        self.dataDock.addWidget(self.dataList)
+        self.newData.connect(self.updateDataList)
+        self.dataList.itemDoubleClicked.connect(self.createPlot)
         
         # action for simulation control
         self.actSimulate = QtGui.QAction(self)
@@ -88,13 +101,19 @@ class Gui(QtGui.QMainWindow):
         self.actPlayPause.setDisabled(True)
         self.actPlayPause.triggered.connect(self.playAnimation)
 
+        self.actStop = QtGui.QAction(self)
+        self.actStop.setText('Stop')
+        self.actStop.setIcon(QtGui.QIcon('data/stop.png'))
+        self.actStop.setDisabled(True)
+        self.actStop.triggered.connect(self.stopAnimation)
+
         self.speedDial = QtGui.QDial()
         self.speedDial.setDisabled(True)
         self.speedDial.setMinimum(0)
         self.speedDial.setMaximum(100)
         self.speedDial.setValue(50)
         self.speedDial.setSingleStep(1)
-        self.speedDial.resize(256, 256)
+        self.speedDial.resize(24, 24)
         self.speedDial.valueChanged.connect(self.updatePlaybackGain)
 
         self.timeSlider = QtGui.QSlider(QtCore.Qt.Horizontal, self)
@@ -118,6 +137,7 @@ class Gui(QtGui.QMainWindow):
         self.toolbarSim.addAction(self.actSimulate)
         self.toolbarSim.addSeparator()
         self.toolbarSim.addAction(self.actPlayPause)
+        self.toolbarSim.addAction(self.actStop)
         self.toolbarSim.addWidget(self.speedDial)
         self.toolbarSim.addWidget(self.timeSlider)
 
@@ -131,11 +151,11 @@ class Gui(QtGui.QMainWindow):
         #self.trajG.setPosition(0.5)
 
         # Control
-        #self.cont = FController()
-        #self.cont = GController()
-        #self.cont = JController()
+        self.cont = FController()
+        self.cont = GController()
+        self.cont = JController()
         #self.cont = PController()
-        self.cont = LSSController()
+        #self.cont = LSSController()
         #self.cont = IOLController()
 
         self.simulator.setupSolver()
@@ -149,7 +169,7 @@ class Gui(QtGui.QMainWindow):
         '''
         play the animation
         '''
-        print 'playing animation'
+        print 'Gui(): playing animation'
         self.actPlayPause.setText('Pause')
         self.actPlayPause.setIcon(QtGui.QIcon('data/pause.png'))
         self.actPlayPause.triggered.disconnect(self.playAnimation)
@@ -160,12 +180,27 @@ class Gui(QtGui.QMainWindow):
         '''
         pause the animation
         '''
-        print 'pausing animation'
+        print 'Gui(): pausing animation'
         self.playbackTimer.stop()
         self.actPlayPause.setText('Play')
         self.actPlayPause.setIcon(QtGui.QIcon('data/play.png'))
         self.actPlayPause.triggered.disconnect(self.pauseAnimation)
         self.actPlayPause.triggered.connect(self.playAnimation)
+        
+    def stopAnimation(self):
+        '''
+        pause the animation
+        '''
+        print 'Gui(): stopping animation'
+        if self.actPlayPause.text() == 'Pause':
+            #animation is playing -> stop it
+            self.playbackTimer.stop()
+            self.actPlayPause.setText('Play')
+            self.actPlayPause.setIcon(QtGui.QIcon('data/play.png'))
+            self.actPlayPause.triggered.disconnect(self.pauseAnimation)
+            self.actPlayPause.triggered.connect(self.playAnimation)
+
+        self.timeSlider.setValue(0)
 
     def startSimulation(self):
         '''
@@ -184,27 +219,24 @@ class Gui(QtGui.QMainWindow):
         self.simThread.quit()
         self.actSimulate.setDisabled(False)
         self.actPlayPause.setDisabled(False)
+        self.actStop.setDisabled(False)
         self.speedDial.setDisabled(False)
         self.simData = self.simulator.getValues()
         self.validData = True
-        self.updatePlots()
+        self.newData.emit()
         self.timeSlider.triggerAction(QtGui.QAbstractSlider.SliderToMinimum)
         self.playAnimation()
 
     def simulationFailed(self):
         '''
         integration failed, enable play button and update plots
-        #TODO wirte warning window
+        #TODO write warning window
         '''
         print 'Gui(): simulation failed'
-        self.simThread.quit()
-        self.actSimulate.setDisabled(False)
-        self.actPlayPause.setDisabled(False)
-        self.simData = self.simulator.getValues()
-        self.validData = True
-        self.updatePlots()
-        self.timeSlider.triggerAction(QtGui.QAbstractSlider.SliderToMinimum)
-        #self.playAnimation()
+        box = QtGui.QMessageBox()
+        box.setText('The timestep integration failed!')
+        box.exec_()
+        self.simulationFinished()
 
     def updatePlots(self):
         '''
@@ -221,7 +253,6 @@ class Gui(QtGui.QMainWindow):
         '''
         if self.playbackTime + self.simulator.stepSize*self.playbackGain \
                 <= self.simulator.endTime:
-            print 'incrementing by: ',self.simulator.stepSize*self.playbackGain
             self.playbackTime += self.simulator.stepSize*self.playbackGain
             pos = self.playbackTime / self.simulator.endTime * self.timeSliderRange
             self.timeSlider.blockSignals(True)
@@ -256,7 +287,8 @@ class Gui(QtGui.QMainWindow):
         #TODO
 
         #update state of rendering
-        state = self.interpolate(self.simData['model_output'])
+        state = [self.interpolate(self.simData['model_output.q'+str(i)]) \
+                for i in range(1, self.simulator.model.getStates()+1)]
         r_beam, T_beam, r_ball, T_ball = self.simulator.model.calcPositions(state)
         self.visualizer.updateScene(r_beam, T_beam, r_ball, T_ball)
 
@@ -270,8 +302,27 @@ class Gui(QtGui.QMainWindow):
             else:
                 index += 1
             
-        return data[index]
+        if index >= len(data):
+            return 0
+        else:
+            return data[index]
 
+    def updateDataList(self):
+        self.dataList.clear()
+        for key, val in self.simData.iteritems():
+            self.dataList.insertItem(0, key)
+
+    def createPlot(self, item):
+        ''' creates a plot widget corresponding to the ListItem
+        '''
+        title = str(item.text())
+        data = self.simData[title]
+        dock = Dock(title)
+        self.area.addDock(dock, 'above', self.plotDocks[-1])
+        plot = pg.PlotWidget(title=title)
+        plot.plot(self.simData['simTime'], data)
+        dock.addWidget(plot)
+        self.plotDocks.append(dock)
 
 class Parameter(pyqtgraph.parametertree.ParameterTree):
     '''

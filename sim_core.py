@@ -3,8 +3,13 @@
 
 from __future__ import division
 from scipy.integrate import ode
+
+#Qt
 from PyQt4 import QtGui
 from PyQt4.QtCore import QObject, pyqtSignal
+
+#own
+from model import ModelException
 import settings as st
 
 #--------------------------------------------------------------------- 
@@ -38,8 +43,13 @@ class Simulator(QObject):
         self.storage = {'simTime':[],\
                 'traj_output':[],\
                 'controller_output':[],\
-                'model_output':[],\
-                'sensor_output':[]}
+                #'model_output':[],\
+                'model_output.q1':[],\
+                'model_output.q2':[],\
+                'model_output.q3':[],\
+                'model_output.q4':[],\
+                #'sensor_output':[]
+                }
 
     def setupSolver(self, intMode=st.int_mode, intMethod=st.int_method, rTol=st.int_rtol, aTol=st.int_atol):
         self.solver = ode(self.model.stateFunc)
@@ -101,8 +111,12 @@ class Simulator(QObject):
         self.storage['simTime'].append(self.simTime)
         self.storage['traj_output'].append(self.traj_output)
         self.storage['controller_output'].append(self.controller_output)
-        self.storage['model_output'].append(self.model_output)
-        self.storage['sensor_output'].append(self.sensor_output)
+        #self.storage['model_output'].append(self.model_output)
+        self.storage['model_output.q1'].append(self.model_output[0])
+        self.storage['model_output.q2'].append(self.model_output[1])
+        self.storage['model_output.q3'].append(self.model_output[2])
+        self.storage['model_output.q4'].append(self.model_output[3])
+        #self.storage['sensor_output'].append(self.sensor_output)
     
     def run(self):
         try:
@@ -112,6 +126,7 @@ class Simulator(QObject):
 
         except ModelException as e:
             print 'Simulator.run(): Model ERROR: ', e.args[0]
+            self.endTime = self.simTime
             self.failed.emit()
             return
 
