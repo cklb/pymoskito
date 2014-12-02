@@ -53,7 +53,8 @@ class Gui(QtGui.QMainWindow):
         # create docks
         self.d1 = Dock('Parameter')
         self.d2 = Dock('Simulation')
-        self.d3 = Dock('Plots')
+        self.d3 = Dock('Data')
+        #self.d4 = Dock('Plots')
         
         # arrange docks
         self.area.addDock(self.d1, 'left')
@@ -77,7 +78,7 @@ class Gui(QtGui.QMainWindow):
         # action for simulation control
         self.actSimulate = QtGui.QAction(self)
         self.actSimulate.setText('Simulate')
-        self.actSimulate.setIcon(QtGui.QIcon('data/play.png'))
+        self.actSimulate.setIcon(QtGui.QIcon('data/simulate.png'))
         self.actSimulate.triggered.connect(self.startSimulation)
         
         # actions for animation control
@@ -89,7 +90,8 @@ class Gui(QtGui.QMainWindow):
 
         self.timeSlider = QtGui.QSlider(QtCore.Qt.Horizontal, self)
         self.timeSlider.setMinimum(0)
-        self.timeSlider.setMaximum(1000)
+        self.timeSliderRange = 1000
+        self.timeSlider.setMaximum(self.timeSliderRange)
         self.timeSlider.setTickInterval(1)
         self.timeSlider.setTracking(True)
         self.timeSlider.valueChanged.connect(self.updatePlaybackTime)
@@ -139,7 +141,7 @@ class Gui(QtGui.QMainWindow):
         '''
         print 'playing animation'
         self.actPlayPause.setText('Pause')
-        self.actPlayPause.setIcon(QtGui.QIcon('data/media-playback-pause.png'))
+        self.actPlayPause.setIcon(QtGui.QIcon('data/pause.png'))
         self.actPlayPause.triggered.disconnect(self.playAnimation)
         self.actPlayPause.triggered.connect(self.pauseAnimation)
         self.playbackTimer.start(self.simulator.stepSize * self.playbackGain)
@@ -208,7 +210,7 @@ class Gui(QtGui.QMainWindow):
         '''
         if self.playbackTime + self.simulator.stepSize <= self.simulator.endTime:
             self.playbackTime += self.simulator.stepSize
-            pos = self.playbackTime / self.simulator.endTime * 1000
+            pos = self.playbackTime / self.simulator.endTime * self.timeSliderRange
             self.timeSlider.blockSignals(True)
             self.timeSlider.setValue(pos)
             self.timeSlider.blockSignals(False)
@@ -221,7 +223,7 @@ class Gui(QtGui.QMainWindow):
         '''
         adjust playback time to slider value
         '''
-        self.playbackTime = 1.0*self.timeSlider.value()/1000 * self.simulator.endTime
+        self.playbackTime = 1.0*self.timeSlider.value()/self.timeSliderRange * self.simulator.endTime
         self.playbackTimeChanged.emit()
         return
 
