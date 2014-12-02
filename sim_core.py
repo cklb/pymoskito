@@ -61,7 +61,7 @@ class Simulator(QObject):
         self.sensor = sensor
 
     def setStepSize(self, stepSize):
-        self.stepSize = setpSize
+        self.stepSize = stepSize
 
     def setEndTime(self, endTime):
         self.endTime = endTime
