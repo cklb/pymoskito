@@ -39,6 +39,7 @@ class Gui(QtGui.QMainWindow):
         self.simThread = QThread()
         self.simThread.started.connect(self.simulator.run)
         self.simulator.finished.connect(self.simulationFinished)
+        self.simulator.failed.connect(self.simulationFailed)
 
         # dockarea allows to rearrange the user interface at runtime
         self.area = DockArea()
@@ -94,6 +95,7 @@ class Gui(QtGui.QMainWindow):
         self.timeSlider.valueChanged.connect(self.updatePlaybackTime)
 
         self.playbackTime = 0
+        self.playbackGain = 1
         self.playbackTimer = QTimer()
         self.playbackTimer.timeout.connect(self.incrementPlaybackTime)
         self.playbackTimeChanged.connect(self.updateGui)
@@ -105,7 +107,6 @@ class Gui(QtGui.QMainWindow):
         self.toolbarSim.addAction(self.actSimulate)
         self.toolbarSim.addSeparator()
         self.toolbarSim.addAction(self.actPlayPause)
-        #self.toolbarSim.addAction(self.actStop)
         self.toolbarSim.addWidget(self.timeSlider)
 
 
@@ -130,6 +131,7 @@ class Gui(QtGui.QMainWindow):
         self.simulator.setEndTime(st.sim_time)
         self.simulator.setController(self.cont)
         self.simulator.setTrajectoryGenerator(self.trajG)
+        #until here
 
     def playAnimation(self):
         '''
@@ -137,10 +139,10 @@ class Gui(QtGui.QMainWindow):
         '''
         print 'playing animation'
         self.actPlayPause.setText('Pause')
-        self.actPlayPause.setIcon(QtGui.QIcon('data/pause.png'))
+        self.actPlayPause.setIcon(QtGui.QIcon('data/media-playback-pause.png'))
         self.actPlayPause.triggered.disconnect(self.playAnimation)
         self.actPlayPause.triggered.connect(self.pauseAnimation)
-        self.playbackTimer.start(.5)
+        self.playbackTimer.start(self.simulator.stepSize * self.playbackGain)
                 
     def pauseAnimation(self):
         '''
@@ -160,7 +162,6 @@ class Gui(QtGui.QMainWindow):
         print 'Gui(): launching simulation'
         self.actSimulate.setDisabled(True)
         self.simulator.reset()
-        self.simulator.moveToThread(self.simThread)
         self.simThread.start()
 
     def simulationFinished(self):
@@ -168,6 +169,21 @@ class Gui(QtGui.QMainWindow):
         integration finished, enable play button and update plots
         '''
         print 'Gui(): simulation finished'
+        self.simThread.quit()
+        self.actSimulate.setDisabled(False)
+        self.actPlayPause.setDisabled(False)
+        self.simData = self.simulator.getValues()
+        self.validData = True
+        self.updatePlots()
+        self.timeSlider.triggerAction(QtGui.QAbstractSlider.SliderToMinimum)
+        self.playAnimation()
+
+    def simulationFailed(self):
+        '''
+        integration failed, enable play button and update plots
+        #TODO wirte warning window
+        '''
+        print 'Gui(): simulation failed'
         self.simThread.quit()
         self.actSimulate.setDisabled(False)
         self.actPlayPause.setDisabled(False)
@@ -192,6 +208,10 @@ class Gui(QtGui.QMainWindow):
         '''
         if self.playbackTime + self.simulator.stepSize <= self.simulator.endTime:
             self.playbackTime += self.simulator.stepSize
+            pos = self.playbackTime / self.simulator.endTime * 1000
+            self.timeSlider.blockSignals(True)
+            self.timeSlider.setValue(pos)
+            self.timeSlider.blockSignals(False)
             self.playbackTimeChanged.emit()
         else:
             self.pauseAnimation()
@@ -201,15 +221,11 @@ class Gui(QtGui.QMainWindow):
         '''
         adjust playback time to slider value
         '''
-        #self.playbackTime = 1.0*self.timeSlider.value()/1000 * self.simulator.stepSize
-        #self.playbackTimeChanged.emit()
+        self.playbackTime = 1.0*self.timeSlider.value()/1000 * self.simulator.endTime
+        self.playbackTimeChanged.emit()
         return
 
     def updateGui(self):
-        #update slider pos
-        pos = self.playbackTime / self.simulator.endTime * 1000
-        self.timeSlider.setValue(pos)
-
         if not self.validData:
             return
 

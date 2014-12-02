@@ -17,6 +17,7 @@ class Simulator(QObject):
     """
 
     finished = pyqtSignal()
+    failed = pyqtSignal()
 
     def __init__(self, model, parent=None):
         QObject.__init__(self, parent)
@@ -104,13 +105,16 @@ class Simulator(QObject):
         self.storage['sensor_output'].append(self.sensor_output)
     
     def run(self):
+        try:
+            while self.simTime <= self.endTime:
+                self.calcStep()
+                self.storeValues()
 
-        while self.simTime <= self.endTime:
-            self.calcStep()
-            self.storeValues()
+        except ModelException as e:
+            print 'Simulator.run(): Model ERROR: ', e.args[0]
+            self.failed.emit()
+            return
 
-        #move back to main thread
-        self.moveToThread(QtGui.QApplication.instance().thread())
         self.finished.emit()
         return
 
