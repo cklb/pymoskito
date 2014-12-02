@@ -22,6 +22,7 @@ from model import BallBeamModel
 from trajectory import HarmonicGenerator, FixedPointGenerator
 from control import PController, FController, GController, JController, LSSController, IOLController
 from visualization import VtkVisualizer
+from sensor import DeadTimeSensor, NoiseSensor
 
 class Gui(QtGui.QMainWindow):
     '''
@@ -41,6 +42,7 @@ class Gui(QtGui.QMainWindow):
         self.model = BallBeamModel()
         self.simulator = Simulator(self.model)
         self.simThread = QThread()
+        self.simulator.moveToThread(self.simThread)
         self.simThread.started.connect(self.simulator.run)
         self.simulator.finished.connect(self.simulationFinished)
         self.simulator.failed.connect(self.simulationFailed)
@@ -145,23 +147,28 @@ class Gui(QtGui.QMainWindow):
 
         #TODO make them settable and remove this static stuff  << from here
         # Trajectory
-        self.trajG = HarmonicGenerator()
-        self.trajG.setAmplitude(0.5)
-        #self.trajG = FixedPointGenerator()
-        #self.trajG.setPosition(0.5)
+        #self.trajG = HarmonicGenerator()
+        #self.trajG.setAmplitude(0.5)
+        self.trajG = FixedPointGenerator()
+        self.trajG.setPosition(-0.5)
 
         # Control
-        self.cont = FController()
+        #self.cont = FController()
         self.cont = GController()
-        self.cont = JController()
+        #self.cont = JController()
         #self.cont = PController()
         #self.cont = LSSController()
         #self.cont = IOLController()
+
+        #Measurement
+        #self.sen = DeadTimeSensor(10)
+        self.sen = NoiseSensor(sigma=0.1)
 
         self.simulator.setupSolver()
         self.simulator.setInitialValues(st.q0)
         self.simulator.setEndTime(st.sim_time)
         self.simulator.setController(self.cont)
+        self.simulator.setSensor(self.sen)
         self.simulator.setTrajectoryGenerator(self.trajG)
         #until here  <<<
  
@@ -268,7 +275,7 @@ class Gui(QtGui.QMainWindow):
         adjust playback time to slider value
         '''
         self.playbackGain = 10**(   \
-                1.0*(val - self.speedDial.maximum()/2)/self.speedDial.maximum() \
+                10.0*(val - self.speedDial.maximum()/2)/self.speedDial.maximum() \
                 )
 
     def updatePlaybackTime(self):

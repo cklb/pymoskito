@@ -58,7 +58,8 @@ class BallBeamModel:
         '''
         if abs(state[0]) > beam_length/2:
             raise ModelException('Ball fell down.')
-
+        if abs(state[2]) > pi:
+            raise ModelException('Beam reached critical angle.')
 
     def calcPositions(self, q):
         '''

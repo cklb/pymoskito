@@ -49,6 +49,7 @@ class Simulator(QObject):
                 'model_output.q3':[],\
                 'model_output.q4':[],\
                 #'sensor_output':[]
+                'sensor_output.q1':[],\
                 }
 
     def setupSolver(self, intMode=st.int_mode, intMethod=st.int_method, rTol=st.int_rtol, aTol=st.int_atol):
@@ -116,6 +117,7 @@ class Simulator(QObject):
         self.storage['model_output.q2'].append(self.model_output[1])
         self.storage['model_output.q3'].append(self.model_output[2])
         self.storage['model_output.q4'].append(self.model_output[3])
+        self.storage['sensor_output.q1'].append(self.sensor_output[0])
         #self.storage['sensor_output'].append(self.sensor_output)
     
     def run(self):
