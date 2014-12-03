@@ -1,16 +1,15 @@
 # -*- coding: utf-8 -*-
 
 #system
-from numpy import pi
+import numpy as np
 
 #Qt
+from PyQt4 import QtCore, QtGui
 from PyQt4.QtCore import QTimer, QThread, pyqtSignal
 
 #pyqtgraph
 import pyqtgraph as pg
-from pyqtgraph.Qt import QtCore, QtGui
-from pyqtgraph.dockarea import *
-import pyqtgraph.parametertree
+import pyqtgraph.dockarea
 
 #vtk
 from vtk.qt4.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
@@ -24,7 +23,7 @@ from control import PController, FController, GController, JController, LSSContr
 from visualization import VtkVisualizer
 from sensor import DeadTimeSensor, NoiseSensor
 
-class Gui(QtGui.QMainWindow):
+class BallBeamGui(QtGui.QMainWindow):
     '''
     class for the graphical user interface
     '''
@@ -48,7 +47,7 @@ class Gui(QtGui.QMainWindow):
         self.simulator.failed.connect(self.simulationFailed)
 
         # dockarea allows to rearrange the user interface at runtime
-        self.area = DockArea()
+        self.area = pg.dockarea.DockArea()
         
         # Window properties
         self.setCentralWidget(self.area)
@@ -57,11 +56,11 @@ class Gui(QtGui.QMainWindow):
         self.setWindowIcon(QtGui.QIcon('data/ball_and_beam.png'))
         
         # create docks
-        self.paramDock = Dock('Parameter')
-        self.vtkDock = Dock('Simulation')
-        self.dataDock = Dock('Data')
+        self.paramDock = pg.dockarea.Dock('Parameter')
+        self.vtkDock = pg.dockarea.Dock('Simulation')
+        self.dataDock = pg.dockarea.Dock('Data')
         self.plotDocks = []
-        self.plotDocks.append(Dock('Placeholder'))
+        self.plotDocks.append(pg.dockarea.Dock('Placeholder'))
         
         # arrange docks
         self.area.addDock(self.vtkDock, 'left')
@@ -331,14 +330,14 @@ class Gui(QtGui.QMainWindow):
         dock.addWidget(plot)
         self.plotDocks.append(dock)
 
-class Parameter(pyqtgraph.parametertree.ParameterTree):
+class Parameter(pg.parametertree.ParameterTree):
     '''
     shows all system parameter in a widget
     '''
     
     def __init__(self):
         # constructor of the base class
-        pyqtgraph.parametertree.ParameterTree.__init__(self)
+        pg.parametertree.ParameterTree.__init__(self)
         
         self.params = [
             {'name': 'System parameter', 'type': 'group', 'children': [
@@ -351,13 +350,13 @@ class Parameter(pyqtgraph.parametertree.ParameterTree):
             {'name': 'Initial States', 'type': 'group', 'children': [
                 {'name': 'Initial radius in [m]', 'type': 'float', 'value': st.q0[0], 'step': 0.1, 'limits': (-st.beam_length/2,st.beam_length/2)},
                 {'name': 'Initial velocity in [m/s]', 'type': 'float', 'value': st.q0[1]},
-                {'name': 'Initial rotation angle in [Grad]', 'type': 'float', 'value': st.q0[2]*180/pi, 'step': 1},
-                {'name': 'Initial rotation velocity in [Grad/s]', 'type': 'float', 'value': st.q0[3]*180/pi, 'step': 1},
+                {'name': 'Initial rotation angle in [Grad]', 'type': 'float', 'value': st.q0[2]*180/np.pi, 'step': 1},
+                {'name': 'Initial rotation velocity in [Grad/s]', 'type': 'float', 'value': st.q0[3]*180/np.pi, 'step': 1},
             ]},
         ]
         
         # create a tree of parameter objects
-        self.p = pyqtgraph.parametertree.Parameter.create(name='params', types='group', children=self.params)
+        self.p = pg.parametertree.Parameter.create(name='params', types='group', children=self.params)
         self.setParameters(self.p, showTop = False)
         
         self.p.sigTreeStateChanged.connect(self.change)
