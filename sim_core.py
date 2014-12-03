@@ -15,68 +15,65 @@ import settings as st
 #--------------------------------------------------------------------- 
 # Core of the physical simulation
 #--------------------------------------------------------------------- 
+class SimulationModule():
+    """ Smallest Unit in Simulation Process
+        Provides neccessary functions like output calculation and holds
+        all settings
+    """
+    settings = {}
+
+    def __init__(self):
+        pass
+
+    def getOutputDimension(self)
+        raise Exception()
+
+
 class Simulator(QObject):
     """ Simulation Wrapper
     
-    This Class exceutes the timestep integration.
+        This Class exceutes the timestep integration.
     """
 
+    #qt general
     finished = pyqtSignal()
     failed = pyqtSignal()
-
-    def __init__(self, model, parent=None):
-        QObject.__init__(self, parent)
-        self.model = model
         
-        self.initStates() 
-        self.initStorage()
+    #abilities (should match the module names)
+    moduleList = ['model', 'disturbance', 'sensor', 'observer', 'control', 'trajectory']
+
+    def __init__(self, parent=None):
+        QObject.__init__(self, parent)
 
     def initStates(self):
-        self.simTime = 0
-        self.stepSize = st.dt
-        self.traj_output = 0
-        self.controller_output = 0
-        self.model_output = 0
-        self.sensor_output = 0
-
-    def initStorage(self):
-        self.storage = {'simTime':[],\
-                'traj_output':[],\
-                'controller_output':[],\
-                #'model_output':[],\
-                'model_output.q1':[],\
-                'model_output.q2':[],\
-                'model_output.q3':[],\
-                'model_output.q4':[],\
-                #'sensor_output':[]
-                'sensor_output.q1':[],\
+        #init fields with known dimension
+        self.states = {\
+                'current_time': 0,\
                 }
 
-    def setupSolver(self, intMode=st.int_mode, intMethod=st.int_method, rTol=st.int_rtol, aTol=st.int_atol):
+        #init fields with variing names
+        for elem in self.modulelist:
+            self.states.update({(elem+'_output'): 0})
+
+    def initStorage(self):
+        #init fields with fixed dimensions
+        self.storage = {\
+               'simTime':[],\
+               }
+
+        #init fields with variable dimensions
+        for module in self.moduleList:
+            for idx in range(len(module.getOutputDimension())):
+                self.states.update({(elem+'_output.'+idx): []})
+
+    def setupSolver(self):
         self.solver = ode(self.model.stateFunc)
-        self.solver.set_integrator(intMode, method=intMethod, rtol=rTol, atol=aTol)
-
-    def setInitialValues(self, values):
-        if self.solver is None:
-            print('Error: setup solver first!')
-        else:
-            self.solver.set_initial_value(values)
-
-    def setTrajectoryGenerator(self, generator):
-        self.trajectory = generator
-
-    def setController(self, controller):
-        self.controller = controller
-        self.tOrder = controller.getOrder()
-
-    def setSensor(self, sensor):
-        self.sensor = sensor
-
-    def setStepSize(self, stepSize):
-        self.stepSize = stepSize
-
-    def setEndTime(self, endTime):
-        self.endTime = endTime
+        self.solver.set_integrator(self.solverSettings['Mode'],\
+                method=self.solverSettings['Method'],\
+                rtol=self.solverSettings['rTol'],\
+                atol=self.solverSettings['aTol'],\
+                } 
+        self.solver.set_initial_value(self.initialValues)
 
     def calcStep(self):
         '''
@@ -92,11 +89,26 @@ class Simulator(QObject):
         #check credibility
         self.model.checkConsistancy(self.model_output)
 
+        # --- run simulation modules ---
+        
+        #perform disturbance
+        if hasattr(self, 'disturbance'):
+            self.disturbance_output = self.disturbance.disturb(s.t)
+        else:
+            self.disturbance_output = 0
+
         #perform measurement
         if hasattr(self, 'sensor'):
-            self.sensor_output = self.sensor.measure(s.t, self.model_output)
+            self.sensor_output = self.sensor.measure(s.t,\
+                    self.model_output + self.disturbance_output)
         else:
             self.sensor_output = self.model_output
+
+        #perform observation
+        if hasattr(self, 'observer'):
+            self.observer_output = self.oberver.observe(self.sensor_output)
+        else:
+            self.observer_output = self.sensor_output
 
         #get desired values
         if hasattr(self, 'trajectory'):
@@ -104,23 +116,24 @@ class Simulator(QObject):
 
         #perform control
         if hasattr(self, 'controller'):
-            self.controller_output = self.controller.control(self.sensor_output, self.traj_output)
+            self.controller_output = self.control.control(self.observer_output, self.traj_output)
 
         return 
 
     def storeValues(self):
         self.storage['simTime'].append(self.simTime)
-        self.storage['traj_output'].append(self.traj_output)
-        self.storage['controller_output'].append(self.controller_output)
-        #self.storage['model_output'].append(self.model_output)
-        self.storage['model_output.q1'].append(self.model_output[0])
-        self.storage['model_output.q2'].append(self.model_output[1])
-        self.storage['model_output.q3'].append(self.model_output[2])
-        self.storage['model_output.q4'].append(self.model_output[3])
-        self.storage['sensor_output.q1'].append(self.sensor_output[0])
-        #self.storage['sensor_output'].append(self.sensor_output)
-    
+        for module in self.moduleList:
+            module_values = getattr(self, module+'_output')
+            for idx, val in enumerate(module_values)
+                self.storage[elem+'_output.'+idx].append(val)
+
     def run(self):
+        #initialize
+        self.initStates()
+        self.initStorage()
+        self.setupSolver()
+
+        #simulate
         try:
             while self.simTime <= self.endTime:
                 self.calcStep()
@@ -138,10 +151,5 @@ class Simulator(QObject):
     def getValues(self):
         return self.storage
 
-    def reset(self):
-        '''
-        reset to initial state
-        '''
-        self.initStates() 
-        self.initStorage()
-
+    def listModules(self):
+        return self.moduleList

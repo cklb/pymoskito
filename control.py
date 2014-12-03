@@ -5,32 +5,28 @@ import numpy as np
 
 from settings import *
 import linearization as lin
-
-
+from sim_core import SimulationModule
 
 #---------------------------------------------------------------------
 # controller base class 
 #---------------------------------------------------------------------
-class Controller:
+class Controller(SimulationModule):
 
-    trajGen = None
-    logger = None
     order = 0
 
-    def __init__(self, logger=None):
-        if logger is not None:
-            self.logger = logger
-
+    def __init__(self):
+        SimulationModule.__init__(self)
         return
 
     def getOrder(self):
         return self.order
 
+    def getOutputDimension(self):
+        #no extra necessary all the same
+        return 1
+
     def control(self, x, w):
         u = self.calcOutput(x, w)
-        if self.logger is not None:
-            self.logger.log({'u':u})
-
         return u
 
 #---------------------------------------------------------------------
@@ -45,9 +41,9 @@ class PController(Controller):
     # controller gain
     Kp = -0.6
     
-    def __init__(self, logger=None):
+    def __init__(self):
         self.order = 0
-        Controller.__init__(self, logger)
+        Controller.__init__(self)
         
     def calcOutput(self, x, w):
         u = self.Kp*(w[0]-x[0])
@@ -64,9 +60,9 @@ class FController(Controller):
     k2 = 24.
     k3 = 8.
 
-    def __init__(self, logger=None):
+    def __init__(self):
         self.order = 4
-        Controller.__init__(self, logger)
+        Controller.__init__(self)
 
     def calcOutput(self, x, yd):
         
@@ -106,9 +102,9 @@ class GController(Controller):
     k2 = 24
     k3 = 8
     
-    def __init__(self, logger=None):
+    def __init__(self):
         self.order = 4
-        Controller.__init__(self, logger)
+        Controller.__init__(self)
         
     def calcOutput(self, x, yd):
         
@@ -146,9 +142,9 @@ class JController(Controller):
     k2 = 24
     k3 = 8
     
-    def __init__(self, logger=None):
+    def __init__(self):
         self.order = 4
-        Controller.__init__(self, logger)
+        Controller.__init__(self)
     
     def calcOutput(self, x, yd):
         
@@ -187,8 +183,8 @@ class LSSController(Controller):
 #    K = np.array([-0.5362, -0.0913, 0.48, 0.16])
 #    V = -0.0457
     
-    def __init__(self, logger=None):
-        Controller.__init__(self, logger)
+    def __init__(self):
+        Controller.__init__(self)
     
         l = lin.Linearization(x0=[0.5,0,0,0],tau0=0)
         self.K = l.polesToAckermann([-2,-2,-2,-2])
@@ -215,9 +211,9 @@ class IOLController(Controller):
     k1 = 12
     k2 = 6
     
-    def __init__(self, logger=None):
+    def __init__(self):
         self.order = 3
-        Controller.__init__(self, logger)
+        Controller.__init__(self)
         
     def calcOutput(self, x, yd):
         print 'x:',x

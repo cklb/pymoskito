@@ -5,6 +5,8 @@ from settings import *
 from numpy import sin, cos, pi
 from numpy import array as narray
 
+from sim_core import SimulationModule
+
 #---------------------------------------------------------------------
 # implementation of the system in state space form
 #--------------------------------------------------------------------- 
@@ -13,7 +15,15 @@ from numpy import array as narray
 class ModelException(Exception):
     pass
 
-class BallBeamModel:
+class SimualtionModel(SimulationModule):
+
+    def __init__(self):
+        SimulationModule.__init__(self)
+
+    def getOutputDimension(self):
+        return self.states
+
+class BallBeamModel(SimulationModel):
 
     def __init__(self, logger=None):
         self.tau = 0
@@ -22,9 +32,6 @@ class BallBeamModel:
 
     def setInput(self, model_input):
         self.tau = model_input
-
-    def getStates(self):
-        return self.states
 
     def stateFunc(self, t, q):
         '''
