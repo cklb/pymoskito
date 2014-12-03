@@ -10,7 +10,7 @@ import traceback
 from PyQt4 import QtGui
 
 #own
-from gui import BallBeamGui
+from gui import BallBeamGui, TestGui
 
 #--------------------------------------------------------------------- 
 # Main Application
@@ -41,7 +41,8 @@ for arg in args:
 # Create Gui
 #----------------------------------------------------------------
 app = QtGui.QApplication([])
-gui = BallBeamGui()
+#gui = BallBeamGui()
+gui = TestGui()
 gui.show()
 
 ## Start Qt event loop unless running in interactive mode or using pyside.

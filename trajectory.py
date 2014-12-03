@@ -7,7 +7,7 @@ from settings import *
 #---------------------------------------------------------------------
 # trajectory generation
 #---------------------------------------------------------------------
-class TrajectoryGenerator:
+class Trajectory:
     '''
     base class for trajectory generators
     '''
@@ -19,7 +19,7 @@ class TrajectoryGenerator:
         yd = self.calcValues(t)
         return [yd[i] for i in range(order+1)]
 
-class HarmonicGenerator(TrajectoryGenerator):
+class HarmonicTrajectory(Trajectory):
     ''' provide a harmonic signal with derivatives
     '''
 
@@ -43,7 +43,7 @@ class HarmonicGenerator(TrajectoryGenerator):
 
         return yd
 
-class FixedPointGenerator(TrajectoryGenerator):
+class FixedPointTrajectory(Trajectory):
     ''' provides a fixed signal
     '''
     

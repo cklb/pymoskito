@@ -2,6 +2,20 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import division
+
+class SimulationModule:
+    """ Smallest Unit in Simulation Process
+        Provides neccessary functions like output calculation and holds
+        all settings
+    """
+    settings = {}
+
+    def __init__(self):
+        pass
+
+    def getOutputDimension(self):
+        raise Exception()
+
 from scipy.integrate import ode
 
 #Qt
@@ -15,20 +29,6 @@ import settings as st
 #--------------------------------------------------------------------- 
 # Core of the physical simulation
 #--------------------------------------------------------------------- 
-class SimulationModule():
-    """ Smallest Unit in Simulation Process
-        Provides neccessary functions like output calculation and holds
-        all settings
-    """
-    settings = {}
-
-    def __init__(self):
-        pass
-
-    def getOutputDimension(self)
-        raise Exception()
-
-
 class Simulator(QObject):
     """ Simulation Wrapper
     
@@ -40,7 +40,7 @@ class Simulator(QObject):
     failed = pyqtSignal()
         
     #abilities (should match the module names)
-    moduleList = ['model', 'disturbance', 'sensor', 'observer', 'control', 'trajectory']
+    moduleList = ['model', 'disturbance', 'sensor', 'observer', 'controller', 'trajectory']
 
     def __init__(self, parent=None):
         QObject.__init__(self, parent)
@@ -72,7 +72,7 @@ class Simulator(QObject):
                 method=self.solverSettings['Method'],\
                 rtol=self.solverSettings['rTol'],\
                 atol=self.solverSettings['aTol'],\
-                } 
+                ) 
         self.solver.set_initial_value(self.initialValues)
 
     def calcStep(self):
@@ -116,7 +116,7 @@ class Simulator(QObject):
 
         #perform control
         if hasattr(self, 'controller'):
-            self.controller_output = self.control.control(self.observer_output, self.traj_output)
+            self.controller_output = self.controller.control(self.observer_output, self.traj_output)
 
         return 
 
@@ -124,7 +124,7 @@ class Simulator(QObject):
         self.storage['simTime'].append(self.simTime)
         for module in self.moduleList:
             module_values = getattr(self, module+'_output')
-            for idx, val in enumerate(module_values)
+            for idx, val in enumerate(module_values):
                 self.storage[elem+'_output.'+idx].append(val)
 
     def run(self):

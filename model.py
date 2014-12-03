@@ -15,7 +15,7 @@ from sim_core import SimulationModule
 class ModelException(Exception):
     pass
 
-class SimualtionModel(SimulationModule):
+class SimulationModel(SimulationModule):
 
     def __init__(self):
         SimulationModule.__init__(self)

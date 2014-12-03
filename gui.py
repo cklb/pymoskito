@@ -17,11 +17,12 @@ from vtk.qt4.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 #own
 import settings as st
 from sim_core import Simulator
+from sim_interface import SimulatorInteractor, SimulatorView
 from model import BallBeamModel
-from trajectory import HarmonicGenerator, FixedPointGenerator
-from control import PController, FController, GController, JController, LSSController, IOLController
+from trajectory import HarmonicTrajectory, FixedPointTrajectory
+from controller import PController, FController, GController, JController, LSSController, IOLController
 from visualization import VtkVisualizer
-from sensor import DeadTimeSensor, NoiseSensor
+from sensor import DeadTimeSensor
 
 class BallBeamGui(QtGui.QMainWindow):
     '''
@@ -146,9 +147,9 @@ class BallBeamGui(QtGui.QMainWindow):
 
         #TODO make them settable and remove this static stuff  << from here
         # Trajectory
-        #self.trajG = HarmonicGenerator()
+        #self.trajG = HarmonicTrajectory()
         #self.trajG.setAmplitude(0.5)
-        self.trajG = FixedPointGenerator()
+        self.trajG = FixedPointTrajectory()
         self.trajG.setPosition(0.5)
 
         # Control
@@ -161,7 +162,7 @@ class BallBeamGui(QtGui.QMainWindow):
 
         #Measurement
         #self.sen = DeadTimeSensor(10)
-        self.sen = NoiseSensor(sigma=0.1)
+        #self.sen = NoiseSensor(sigma=0.1)
 
         self.simulator.setupSolver()
         self.simulator.setInitialValues(st.q0)
@@ -382,4 +383,23 @@ class Parameter(pg.parametertree.ParameterTree):
             st.q0[0] = data
             print'r: ',st.q0[0]
 
-# weitere if Anweisungen fuer andere Parameter, sehr umstaendlich: HILFE
+
+class TestGui(QtGui.QMainWindow):
+    
+    def __init__(self):
+        # constructor of the base class
+        QtGui.QMainWindow.__init__(self)
+        self.sim = SimulatorInteractor(self)
+
+        #viewer
+        self.targetView = SimulatorView(self)
+        self.targetView.setModel(self.sim.target_model)
+
+        # Window properties
+        self.setCentralWidget(self.targetView)
+        self.resize(500, 500)
+        self.setWindowTitle('Sim Test')
+       
+        modName = 'controller'
+        
+
