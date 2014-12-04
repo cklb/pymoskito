@@ -1,75 +1,73 @@
-#!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+from __future__ import division
 from numpy import sin, cos, pi
-from settings import *
+
+from sim_core import SimulationModule
 
 #---------------------------------------------------------------------
 # trajectory generation
 #---------------------------------------------------------------------
-class Trajectory:
+class Trajectory(SimulationModule):
     '''
     base class for trajectory generators
     '''
 
-    def __init__(self, logger=None):
-        self.logger = logger
+    def __init__(self, outputDimension):
+        self.output_dim = outputDimension
+        return
 
-    def getValues(self, t, order):
+    def getOutputDimension(self):
+        return self.output_dim
+
+    def getValues(self, t):
         yd = self.calcValues(t)
-        return [yd[i] for i in range(order+1)]
+        return [yd[i] for i in range(self.outputDimension)]
+
 
 class HarmonicTrajectory(Trajectory):
     ''' provide a harmonic signal with derivatives
     '''
 
-    def __init__(self, logger=None):
-        TrajectoryGenerator.__init__(self, logger)
-        self.A = 1
+    settings = {'Amplitude': 1.0}
 
-    def setAmplitude(self, Amplitude):
-        self.A = Amplitude
+    def __init__(self, derivateOrder):
+        TrajectoryGenerator.__init__(self, derivateOrder+1)
+        if derivateOrder > 4:
+            print 'Error: not enough derivates implemented!'
 
     def calcValues(self, t):
         '''
         Calculates desired trajectory for ball position
         '''
         yd = []
-        yd.append(self.A * cos(pi*t/5))
-        yd.append(-self.A * (pi/5) * sin(pi*t/5))
-        yd.append(-self.A * (pi/5)**2 * cos(pi*t/5))
-        yd.append(self.A * (pi/5)**3 * sin(pi*t/5))
-        yd.append(self.A * (pi/5)**4 * cos(pi*t/5))
-
+        A = self.settings['Amplitude']
+        yd.append(A * cos(pi*t/5))
+        yd.append(-A * (pi/5) * sin(pi*t/5))
+        yd.append(-A * (pi/5)**2 * cos(pi*t/5))
+        yd.append(A * (pi/5)**3 * sin(pi*t/5))
+        yd.append(A * (pi/5)**4 * cos(pi*t/5))
         return yd
 
 class FixedPointTrajectory(Trajectory):
     ''' provides a fixed signal
     '''
     
-    pos = 0
+    settings = {'Position': 1.0}
     
-    def __init__(self, logger=None):
-        TrajectoryGenerator.__init__(self, logger)
-    
-    def setPosition(self, position):
-        if abs(position) <= beam_length/2:
-            self.pos = position
-        else:
-            print 'This position is not on the beam, it is set to r = 0'
-            self.pos = 0
+    def __init__(self, derivateOrder):
+        TrajectoryGenerator.__init__(self, derivateOrder+1)
     
     def calcValues(self, t):
         '''
         Calculates desired trajectory for ball position
         '''
         yd = []
-        yd.append(self.pos)
+        yd.append(self.settings['Position'])
         yd.append(0.)
         yd.append(0.)
         yd.append(0.)
         yd.append(0.)
-
         return yd
 
 #TODO: Anfahren verschiedener Positionen

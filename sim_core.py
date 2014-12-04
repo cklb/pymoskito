@@ -6,7 +6,8 @@ from __future__ import division
 class SimulationModule:
     """ Smallest Unit in Simulation Process
         Provides neccessary functions like output calculation and holds
-        all settings
+        all settings is 'settings' all available settings have to be added
+        to this dict and have to be known a priori.
     """
     settings = {}
 
