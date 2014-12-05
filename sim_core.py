@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import division
+from collections import OrderedDict
 
 class SimulationModule:
     """ Smallest Unit in Simulation Process
@@ -9,7 +10,7 @@ class SimulationModule:
         all settings is 'settings' all available settings have to be added
         to this dict and have to be known a priori.
     """
-    settings = {}
+    settings = OrderedDict()
 
     def __init__(self):
         pass
@@ -43,10 +44,19 @@ class Simulator(QObject):
     #abilities (should match the module names)
     moduleList = ['model', 'disturbance', 'sensor', 'observer', 'controller', 'trajectory']
 
+    #solver specific
+    solverSettings = {'Mode': 'vode',\
+            'Method': 'adams',\
+            'step size': 0.01,\
+            'rTol': 1e-6,\
+            'aTol': 1e-9,\
+            'end time': 100,\
+            }
+
     def __init__(self, parent=None):
         QObject.__init__(self, parent)
 
-    def initStates(self):
+    def _initStates(self):
         #init fields with known dimension
         self.states = {\
                 'current_time': 0,\
@@ -56,7 +66,7 @@ class Simulator(QObject):
         for elem in self.modulelist:
             self.states.update({(elem+'_output'): 0})
 
-    def initStorage(self):
+    def _initStorage(self):
         #init fields with fixed dimensions
         self.storage = {\
                'simTime':[],\
@@ -67,16 +77,16 @@ class Simulator(QObject):
             for idx in range(len(module.getOutputDimension())):
                 self.states.update({(elem+'_output.'+idx): []})
 
-    def setupSolver(self):
+    def _setupSolver(self):
         self.solver = ode(self.model.stateFunc)
         self.solver.set_integrator(self.solverSettings['Mode'],\
                 method=self.solverSettings['Method'],\
                 rtol=self.solverSettings['rTol'],\
                 atol=self.solverSettings['aTol'],\
                 ) 
-        self.solver.set_initial_value(self.initialValues)
+        self.solver.set_initial_value(self.model.settings['initial value'])
 
-    def calcStep(self):
+    def _calcStep(self):
         '''
         Calcualte one step in simulation
         '''
@@ -84,8 +94,8 @@ class Simulator(QObject):
         # integrate model
         self.model.setInput(self.controller_output)
         s = self.solver
-        self.model_output = s.integrate(s.t+self.stepSize) 
         self.simTime = s.t
+        self.model_output = s.integrate(s.t + self.solverSettings['step size']) 
 
         #check credibility
         self.model.checkConsistancy(self.model_output)
@@ -121,7 +131,7 @@ class Simulator(QObject):
 
         return 
 
-    def storeValues(self):
+    def _storeValues(self):
         self.storage['simTime'].append(self.simTime)
         for module in self.moduleList:
             module_values = getattr(self, module+'_output')
@@ -130,19 +140,19 @@ class Simulator(QObject):
 
     def run(self):
         #initialize
-        self.initStates()
-        self.initStorage()
-        self.setupSolver()
+        self._initStates()
+        self._initStorage()
+        self._setupSolver()
 
         #simulate
         try:
-            while self.simTime <= self.endTime:
-                self.calcStep()
-                self.storeValues()
+            while self.simTime <= self.solverSettings['end time']:
+                self._calcStep()
+                self._storeValues()
 
         except ModelException as e:
             print 'Simulator.run(): Model ERROR: ', e.args[0]
-            self.endTime = self.simTime
+            self.solverSettings['end time'] = self.simTime
             self.failed.emit()
             return
 

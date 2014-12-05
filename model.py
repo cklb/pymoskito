@@ -29,6 +29,8 @@ class BallBeamModel(SimulationModel):
             'G': 9.81,      \
             'beam length': 2.0,      \
             'beam width': 0.01,      \
+            'beam depth': 0.03,      \
+            'inital state': [0, 0, 0, 0],\
             }
 
     def __init__(self):
