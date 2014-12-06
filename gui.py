@@ -29,6 +29,7 @@ class BallBeamGui(QtGui.QMainWindow):
     class for the graphical user interface
     '''
 
+    runSimulation = pyqtSignal()
     newData = pyqtSignal()
     playbackTimeChanged = pyqtSignal()
     
@@ -37,15 +38,16 @@ class BallBeamGui(QtGui.QMainWindow):
         QtGui.QMainWindow.__init__(self)
 
         # Create Simulation Backend
-        self.simData = {}
-        self.validData = False
-        self.model = BallBeamModel()
-        self.simulator = Simulator(self.model)
-        self.simThread = QThread()
-        self.simulator.moveToThread(self.simThread)
-        self.simThread.started.connect(self.simulator.run)
-        self.simulator.finished.connect(self.simulationFinished)
-        self.simulator.failed.connect(self.simulationFailed)
+        self.sim = SimulatorInteractor(self)
+        self.runSimulation.connect(self.sim.runSimulation)
+        self.sim.simulationFinished(self.simulationFinished)
+
+        # sim setup viewer
+        self.targetView = SimulatorView(self)
+        self.targetView.setModel(self.sim.target_model)
+
+        # sim results viewer
+        self.resultview = QtGui.QTreeView()
 
         # dockarea allows to rearrange the user interface at runtime
         self.area = pg.dockarea.DockArea()
@@ -143,35 +145,6 @@ class BallBeamGui(QtGui.QMainWindow):
         self.toolbarSim.addWidget(self.speedDial)
         self.toolbarSim.addWidget(self.timeSlider)
 
-
-
-        #TODO make them settable and remove this static stuff  << from here
-        # Trajectory
-        #self.trajG = HarmonicTrajectory()
-        #self.trajG.setAmplitude(0.5)
-        self.trajG = FixedPointTrajectory()
-        self.trajG.setPosition(0.5)
-
-        # Control
-        #self.cont = FController()
-        #self.cont = GController()
-        #self.cont = JController()
-        #self.cont = PController()
-        self.cont = LSSController()
-        #self.cont = IOLController()
-
-        #Measurement
-        #self.sen = DeadTimeSensor(10)
-        #self.sen = NoiseSensor(sigma=0.1)
-
-        self.simulator.setupSolver()
-        self.simulator.setInitialValues(st.q0)
-        self.simulator.setEndTime(st.sim_time)
-        self.simulator.setController(self.cont)
-        #self.simulator.setSensor(self.sen)
-        self.simulator.setTrajectoryGenerator(self.trajG)
-        #until here  <<<
- 
     def playAnimation(self):
         '''
         play the animation
@@ -215,8 +188,7 @@ class BallBeamGui(QtGui.QMainWindow):
         '''
         print 'Gui(): launching simulation'
         self.actSimulate.setDisabled(True)
-        self.simulator.reset()
-        self.simThread.start()
+        self.runSimulation.emit()
 
     def simulationFinished(self):
         '''
@@ -400,6 +372,3 @@ class TestGui(QtGui.QMainWindow):
         self.resize(500, 500)
         self.setWindowTitle('Sim Test')
        
-        modName = 'controller'
-        
-
