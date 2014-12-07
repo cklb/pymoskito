@@ -41,8 +41,8 @@ for arg in args:
 # Create Gui
 #----------------------------------------------------------------
 app = QtGui.QApplication([])
-#gui = BallBeamGui()
-gui = TestGui()
+gui = BallBeamGui()
+#gui = TestGui()
 gui.show()
 
 ## Start Qt event loop unless running in interactive mode or using pyside.

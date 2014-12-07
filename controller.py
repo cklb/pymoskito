@@ -137,10 +137,10 @@ class GController(Controller):
 class JController(Controller):
     
     # controller gains
-    k0 = 16
-    k1 = 32
-    k2 = 24
-    k3 = 8
+    k0 = 16.0
+    k1 = 32.0
+    k2 = 24.0
+    k3 = 8.0
     
     def __init__(self):
         self.order = 4

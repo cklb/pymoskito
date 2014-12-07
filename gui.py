@@ -39,8 +39,8 @@ class BallBeamGui(QtGui.QMainWindow):
         # Create Simulation Backend
         self.sim = SimulatorInteractor(self)
         self.runSimulation.connect(self.sim.runSimulation)
-        self.sim.simulationFinished(self.simulationFinished)
-        self.sim.simulationFailed(self.simulationFailed)
+        self.sim.simulationFinished.connect(self.simulationFinished)
+        self.sim.simulationFailed.connect(self.simulationFailed)
 
         # sim setup viewer
         self.targetView = SimulatorView(self)
@@ -93,7 +93,6 @@ class BallBeamGui(QtGui.QMainWindow):
         #data window
         self.dataList = QtGui.QListWidget(self)
         self.dataDock.addWidget(self.dataList)
-        self.newData.connect(self.updateDataList)
         self.dataList.itemDoubleClicked.connect(self.createPlot)
         
         # action for simulation control
@@ -194,7 +193,7 @@ class BallBeamGui(QtGui.QMainWindow):
         self.actSimulate.setDisabled(True)
         self.runSimulation.emit()
 
-    def simulationFinished(self):
+    def simulationFinished(self, data):
         '''
         integration finished, enable play button and update plots
         '''
@@ -205,10 +204,12 @@ class BallBeamGui(QtGui.QMainWindow):
         self.speedDial.setDisabled(False)
         self.timeSlider.triggerAction(QtGui.QAbstractSlider.SliderToMinimum)
 
-        self.readResults()
+        self.currentDataset = data
+        self._readResults()
+        self._updateDataList()
         self.playAnimation()
 
-    def simulationFailed(self):
+    def simulationFailed(self, data):
         '''
         integration failed, enable play button and update plots
         #TODO write warning window
@@ -217,12 +218,11 @@ class BallBeamGui(QtGui.QMainWindow):
         box = QtGui.QMessageBox()
         box.setText('The timestep integration failed!')
         box.exec_()
-        self.simulationFinished()
+        self.simulationFinished(data)
 
-    def readResults(self):
-        self.currentDataset = copy.deepcopy(self.sim.simData)
-        self.currentStepSize = self.currentDataset['solver']['step size']
-        self.currentEndTime = self.currentDataset['solver']['end time']
+    def _readResults(self):
+        self.currentStepSize = float(self.currentDataset['modules']['solver']['step size'])
+        self.currentEndTime = float(self.currentDataset['modules']['solver']['end time'])
         self.validData = True
 
     def updatePlots(self):
@@ -274,8 +274,8 @@ class BallBeamGui(QtGui.QMainWindow):
         #TODO
 
         #update state of rendering
-        state = [self.interpolate(self.simData['model_output.q'+str(i)]) \
-                for i in range(1, self.model.getStates()+1)]
+        state = [self.interpolate(self.currentDataset['results']['model_output.'+str(i)]) \
+                for i in range(self.model.getOutputDimension())]
         r_beam, T_beam, r_ball, T_ball = self.model.calcPositions(state)
         self.visualizer.updateScene(r_beam, T_beam, r_ball, T_ball)
 
@@ -283,7 +283,7 @@ class BallBeamGui(QtGui.QMainWindow):
         #find corresponding index in dataset that fitts the current playback time
         #TODO implement real interpolation
         index = 0
-        for elem in self.simData['simTime']:
+        for elem in self.currentDataset['results']['simTime']:
             if elem > self.playbackTime:
                 break
             else:
@@ -294,20 +294,20 @@ class BallBeamGui(QtGui.QMainWindow):
         else:
             return data[index]
 
-    def updateDataList(self):
+    def _updateDataList(self):
         self.dataList.clear()
-        for key, val in self.simData['results'].iteritems():
+        for key, val in self.currentDataset['results'].iteritems():
             self.dataList.insertItem(0, key)
 
     def createPlot(self, item):
         ''' creates a plot widget corresponding to the ListItem
         '''
         title = str(item.text())
-        data = self.simData[title]
-        dock = Dock(title)
+        data = self.currentDataset['results'][title]
+        dock = pg.dockarea.Dock(title)
         self.area.addDock(dock, 'above', self.plotDocks[-1])
         plot = pg.PlotWidget(title=title)
-        plot.plot(self.simData['simTime'], data)
+        plot.plot(self.currentDataset['results']['simTime'], data)
         dock.addWidget(plot)
         self.plotDocks.append(dock)
 

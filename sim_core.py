@@ -18,11 +18,10 @@ class SimulationModule:
     def getOutputDimension(self):
         raise Exception()
 
-from scipy.integrate import ode
 
 #Qt
 from PyQt4 import QtGui
-from PyQt4.QtCore import QObject, pyqtSignal
+from PyQt4.QtCore import QObject, pyqtSignal, pyqtSlot
 
 #own
 from model import ModelException
@@ -38,33 +37,23 @@ class Simulator(QObject):
     """
 
     #qt general
-    finished = pyqtSignal()
-    failed = pyqtSignal()
+    finished = pyqtSignal(dict)
+    failed = pyqtSignal(dict)
         
     #abilities (should match the module names)
-    moduleList = ['model', 'disturbance', 'sensor', 'observer', 'controller', 'trajectory']
+    moduleList = ['model', 'solver', 'disturbance', 'sensor', 'observer', 'controller', 'trajectory']
 
-    #solver specific
-    solverSettings = {'Mode': 'vode',\
-            'Method': 'adams',\
-            'step size': 0.01,\
-            'rTol': 1e-6,\
-            'aTol': 1e-9,\
-            'end time': 100,\
-            }
 
     def __init__(self, parent=None):
         QObject.__init__(self, parent)
 
     def _initStates(self):
         #init fields with known dimension
-        self.states = {\
-                'current_time': 0,\
-                }
+        self.current_time = 0
 
         #init fields with variing names
-        for elem in self.modulelist:
-            self.states.update({(elem+'_output'): 0})
+        for elem in self.moduleList:
+            setattr(self, (elem+'_output'), 0)
 
     def _initStorage(self):
         #init fields with fixed dimensions
@@ -73,18 +62,14 @@ class Simulator(QObject):
                }
 
         #init fields with variable dimensions
-        for module in self.moduleList:
-            for idx in range(len(module.getOutputDimension())):
-                self.states.update({(elem+'_output.'+idx): []})
+        for moduleName in self.moduleList:
+            if hasattr(self, moduleName):
+                module = getattr(self, moduleName)
+            else:
+                continue
 
-    def _setupSolver(self):
-        self.solver = ode(self.model.stateFunc)
-        self.solver.set_integrator(self.solverSettings['Mode'],\
-                method=self.solverSettings['Method'],\
-                rtol=self.solverSettings['rTol'],\
-                atol=self.solverSettings['aTol'],\
-                ) 
-        self.solver.set_initial_value(self.model.settings['initial value'])
+            for idx in range(module.getOutputDimension()):
+                self.storage.update({(moduleName + '_output.' + str(idx)): []})
 
     def _calcStep(self):
         '''
@@ -93,15 +78,13 @@ class Simulator(QObject):
         
         # integrate model
         self.model.setInput(self.controller_output)
-        s = self.solver
-        self.simTime = s.t
-        self.model_output = s.integrate(s.t + self.solverSettings['step size']) 
+        self.current_time = self.solver.getTime()
+        self.solver_output = self.solver.integrate(self.current_time) 
 
         #check credibility
-        self.model.checkConsistancy(self.model_output)
+        self.model.checkConsistancy(self.solver_output)
+        self.model_output = self.solver_output
 
-        # --- run simulation modules ---
-        
         #perform disturbance
         if hasattr(self, 'disturbance'):
             self.disturbance_output = self.disturbance.disturb(s.t)
@@ -110,7 +93,7 @@ class Simulator(QObject):
 
         #perform measurement
         if hasattr(self, 'sensor'):
-            self.sensor_output = self.sensor.measure(s.t,\
+            self.sensor_output = self.sensor.measure(self.current_time,\
                     self.model_output + self.disturbance_output)
         else:
             self.sensor_output = self.model_output
@@ -123,7 +106,7 @@ class Simulator(QObject):
 
         #get desired values
         if hasattr(self, 'trajectory'):
-            self.traj_output = self.trajectory.getValues(s.t, self.tOrder)
+            self.traj_output = self.trajectory.getValues(self.current_time)
 
         #perform control
         if hasattr(self, 'controller'):
@@ -132,35 +115,40 @@ class Simulator(QObject):
         return 
 
     def _storeValues(self):
-        self.storage['simTime'].append(self.simTime)
+        self.storage['simTime'].append(self.current_time)
         for module in self.moduleList:
-            module_values = getattr(self, module+'_output')
-            for idx, val in enumerate(module_values):
-                self.storage[elem+'_output.'+idx].append(val)
+            if not hasattr(self, module):
+                continue
 
+            module_values = getattr(self, module+'_output')
+            if isinstance(module_values, float) or isinstance(module_values, int):
+                module_values = [module_values]
+
+            for idx, val in enumerate(module_values):
+                self.storage[module + '_output.' + str(idx)].append(val)
+    
+    @pyqtSlot()
     def run(self):
         #initialize
         self._initStates()
         self._initStorage()
-        self._setupSolver()
+        self.solver.initialize()
 
         #simulate
         try:
-            while self.simTime <= self.solverSettings['end time']:
+            while self.current_time <= float(self.solver.settings['end time']):
                 self._calcStep()
                 self._storeValues()
 
         except ModelException as e:
             print 'Simulator.run(): Model ERROR: ', e.args[0]
-            self.solverSettings['end time'] = self.simTime
-            self.failed.emit()
+            self.solver.settings['end time'] = self.current_time
+            self.failed.emit(self.storage)
             return
 
-        self.finished.emit()
+        self.finished.emit(self.storage)
+        print 'done.'
         return
-
-    def getValues(self):
-        return self.storage
 
     def listModules(self):
         return self.moduleList

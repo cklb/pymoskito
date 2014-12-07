@@ -22,7 +22,7 @@ class Trajectory(SimulationModule):
 
     def getValues(self, t):
         yd = self.calcValues(t)
-        return [yd[i] for i in range(self.outputDimension)]
+        return [yd[i] for i in range(self.output_dim)]
 
 
 class HarmonicTrajectory(Trajectory):
@@ -32,7 +32,7 @@ class HarmonicTrajectory(Trajectory):
     settings = {'Amplitude': 1.0}
 
     def __init__(self, derivateOrder):
-        TrajectoryGenerator.__init__(self, derivateOrder+1)
+        Trajectory.__init__(self, derivateOrder+1)
         if derivateOrder > 4:
             print 'Error: not enough derivates implemented!'
 
@@ -41,7 +41,7 @@ class HarmonicTrajectory(Trajectory):
         Calculates desired trajectory for ball position
         '''
         yd = []
-        A = self.settings['Amplitude']
+        A = float(self.settings['Amplitude'])
         yd.append(A * cos(pi*t/5))
         yd.append(-A * (pi/5) * sin(pi*t/5))
         yd.append(-A * (pi/5)**2 * cos(pi*t/5))
@@ -56,14 +56,14 @@ class FixedPointTrajectory(Trajectory):
     settings = {'Position': 1.0}
     
     def __init__(self, derivateOrder):
-        TrajectoryGenerator.__init__(self, derivateOrder+1)
+        Trajectory.__init__(self, derivateOrder+1)
     
     def calcValues(self, t):
         '''
         Calculates desired trajectory for ball position
         '''
         yd = []
-        yd.append(self.settings['Position'])
+        yd.append(float(self.settings['Position']))
         yd.append(0.)
         yd.append(0.)
         yd.append(0.)

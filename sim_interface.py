@@ -107,9 +107,8 @@ class SimulatorInteractor(QtCore.QObject):
 
 
     #qt general
-    simulationFinished = pyqtSignal()
-    simulationFailed = pyqtSignal()
-    newData = pyqtSignal()
+    simulationFinished = QtCore.pyqtSignal(dict)
+    simulationFailed = QtCore.pyqtSignal(dict)
 
     def __init__(self, parent=None):
         QtCore.QObject.__init__(self, parent)
@@ -127,6 +126,8 @@ class SimulatorInteractor(QtCore.QObject):
             name = QStandardItem(module)
             if module == 'model':
                 value = QStandardItem('BallBeamModel')
+            elif module == 'solver':
+                value = QStandardItem('VODESolver')
             else:
                 value = QStandardItem('None')
             
@@ -185,8 +186,8 @@ class SimulatorInteractor(QtCore.QObject):
 
         return
 
-    def _getSettings(self, model, module):
-        item = model.findItem(module)
+    def _getSettings(self, model, moduleName):
+        item = model.findItems(moduleName).pop(0)
 
         settings = {}
         for row in range(item.rowCount()):
@@ -196,39 +197,58 @@ class SimulatorInteractor(QtCore.QObject):
 
         return settings
 
-    def _setupSimlator(self):
-        self.sim = Simulator(self)
+    def _setupSimlator(self, model):
+        sim = Simulator()
     
         # setup simulation Modules
-        for row in range(self.current_model.rowCount()):
-            # build correct object and add it the the simulator
-            moduleItem = self.current_model.item(row, 0)
-            subModuleItem = self.current_model.item(row, 1)
+        for row in range(model.rowCount()):
+            # build correct object and add it to the simulator
+            moduleItem = model.item(row, 0)
+            moduleName = str(moduleItem.text())
+            subModuleItem = model.item(row, 1)
             module = __import__(str(moduleItem.text()))
-            subModule = getattr(module, str(subModuleItem.text()))
-            self.sim.setattr(str(item.text()), subModule())
+            subName = str(subModuleItem.text())
 
-            # get settings for module and apply them
-            settings = self._getSettings(self.target_model, module)
-            getattr(self.sim, module).setattr('settings', settings)
+            settings = {}
+            if subName != 'None':
+                subModule = getattr(module, str(subModuleItem.text()))
+                slot = None
+                if moduleName == 'solver':
+                    slot = subModule(sim.model.getOutputDimension(), sim.model.stateFunc)
+                elif moduleName == 'disturbance':
+                    slot = subModule(sim.model.getOutputDimension())
+                elif moduleName == 'sensor':
+                    slot = subModule(sim.model.getOutputDimension())
+                elif moduleName == 'trajectory':
+                    slot = subModule(sim.controller.getOrder())
+                else:
+                    slot = subModule()
+
+                setattr(sim, moduleName, slot)
+
+                # get settings for module and apply them
+                settings = self._getSettings(self.target_model, moduleItem.text())
+                settings.update({'type': subName})
+                setattr(getattr(sim, moduleName), 'settings', settings)
 
             # store settings in simData
-            self.simData.update({'settings': {module, settings}})
+            self.simData['modules'].update({moduleName: settings})
 
+        return sim
 
     def runSimulation(self):
-        self.simData = {}
+        self.simData = {'modules': {}}
 
         #copy settings from target model
         self.current_model = copy.deepcopy(self.target_model)
 
         #create and setup simulator
-        self._setupSimlator()
+        self.sim = self._setupSimlator(self.target_model)
 
         #setup threads
-        self.simThread = QThread()
+        self.simThread = QtCore.QThread()
         self.sim.moveToThread(self.simThread)
-        self.simThread.started.connect(self.simulator.run)
+        self.simThread.started.connect(self.sim.run)
         self.sim.finished.connect(self.simFinished)
         self.sim.failed.connect(self.simFailed)
 
@@ -239,16 +259,12 @@ class SimulatorInteractor(QtCore.QObject):
         #stop thread
         self.simThread.quit()
         
-        #copy result data
-        self.simData.update({'results':copy.deepcopy(self.sim.getValues())})
-        
-        #delete simulator
-        del(self.sim)
-
-    def simFinished(self):
+    def simFinished(self, data):
         self._simAftercare()
-        self.simulationFinished.emit()
+        self.simData.update({'results':copy.deepcopy(data)})
+        self.simulationFinished.emit(self.simData)
 
-    def simFailed(self):
+    def simFailed(self, data):
         self._simAftercare()
-        self.simulationFailed.emit()
+        self.simData.update({'results':copy.deepcopy(data)})
+        self.simulationFailed.emit(self.simData)
