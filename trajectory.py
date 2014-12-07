@@ -14,6 +14,7 @@ class Trajectory(SimulationModule):
     '''
 
     def __init__(self, outputDimension):
+        SimulationModule.__init__(self)
         self.output_dim = outputDimension
         return
 

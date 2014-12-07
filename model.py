@@ -33,6 +33,7 @@ class BallBeamModel(SimulationModel):
             }
 
     def __init__(self):
+        SimulationModule.__init__(self)
         self.tau = 0
         self.states = 4
         self.firstRun = True

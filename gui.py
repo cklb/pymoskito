@@ -45,7 +45,7 @@ class BallBeamGui(QtGui.QMainWindow):
         # sim setup viewer
         self.targetView = SimulatorView(self)
         self.targetView.setModel(self.sim.target_model)
-        self.targetView.setColumnWidth(1, 100)
+        self.targetView.setColumnWidth(1, 10)
         self.targetView.expanded.connect(self.targetViewChanged)
         self.targetView.collapsed.connect(self.targetViewChanged)
 
@@ -62,12 +62,14 @@ class BallBeamGui(QtGui.QMainWindow):
         self.setWindowIcon(QtGui.QIcon('data/ball_and_beam.png'))
         
         # create docks
-        self.propertyDock = pg.dockarea.Dock('Properties', size=(1, 100))
+        self.propertyDock = pg.dockarea.Dock('Properties', size=(1, 10))
         self.vtkDock = pg.dockarea.Dock('Simulation')
         self.dataDock = pg.dockarea.Dock('Data')
         self.plotDocks = []
         self.plotDocks.append(pg.dockarea.Dock('Placeholder'))
-        
+        self.plots = []
+        self.plotItems = []
+
         # arrange docks
         self.area.addDock(self.vtkDock, 'right')
         self.area.addDock(self.propertyDock, 'left', self.vtkDock)
@@ -253,7 +255,7 @@ class BallBeamGui(QtGui.QMainWindow):
         adjust playback time to slider value
         '''
         self.playbackGain = 10**(   \
-                10.0*(val - self.speedDial.maximum()/2)/self.speedDial.maximum() \
+                5.0*(val - self.speedDial.maximum()/2)/self.speedDial.maximum() \
                 )
 
     def updatePlaybackTime(self):
@@ -304,9 +306,9 @@ class BallBeamGui(QtGui.QMainWindow):
         data = self.currentDataset['results'][title]
         dock = pg.dockarea.Dock(title)
         self.area.addDock(dock, 'above', self.plotDocks[-1])
-        plot = pg.PlotWidget(title=title)
-        plot.plot(self.currentDataset['results']['simTime'], data)
-        dock.addWidget(plot)
+        self.plots.append(pg.PlotWidget(title=title))
+        self.plotItems.append(self.plots[-1].plot(x=self.currentDataset['results']['simTime'], y=data))
+        dock.addWidget(self.plots[-1])
         self.plotDocks.append(dock)
 
     def _updatePlots(self):
@@ -315,8 +317,9 @@ class BallBeamGui(QtGui.QMainWindow):
         '''
         for dock in self.plotDocks:
             for widget in dock.widgets:
-                widget.getPlotItem().setData(self.currentDataset['results']['simTime'],
-                        self.currentDataset['results'][dock.name()])
+                widget.getPlotItem().clear()
+                widget.getPlotItem().plot(x=self.currentDataset['results']['simTime'],\
+                        y=self.currentDataset['results'][dock.name()])
 
     def targetViewChanged(self, index):
         self.targetView.resizeColumnToContents(0)

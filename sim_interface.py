@@ -114,6 +114,7 @@ class SimulatorInteractor(QtCore.QObject):
         QtCore.QObject.__init__(self, parent)
         self._setupModel()
         self.sim = None
+        self.simThread = QtCore.QThread()
 
     def _setupModel(self):
         self.target_model = SimulatorModel(self)
@@ -238,6 +239,7 @@ class SimulatorInteractor(QtCore.QObject):
                     slot = subModule()
 
                 setattr(sim, moduleName, slot)
+                self.simModules.append(slot)
 
                 # get settings for module and apply them
                 settings = self._getSettings(self.target_model, moduleItem.text())
@@ -256,10 +258,13 @@ class SimulatorInteractor(QtCore.QObject):
         self.current_model = copy.deepcopy(self.target_model)
 
         #create and setup simulator
+        self.simModules = []
         self.sim = self._setupSimlator(self.target_model)
 
         #setup threads
-        self.simThread = QtCore.QThread()
+        for module in self.simModules:
+            module.moveToThread(self.simThread)
+
         self.sim.moveToThread(self.simThread)
         self.simThread.started.connect(self.sim.run)
         self.sim.finished.connect(self.simFinished)
@@ -271,13 +276,21 @@ class SimulatorInteractor(QtCore.QObject):
     def _simAftercare(self):
         #stop thread
         self.simThread.quit()
+
+        #delete modules
+        for module in self.simModules:
+            del(module)
+
+        del(self.sim)
         
+    @QtCore.pyqtSlot(dict)
     def simFinished(self, data):
-        self._simAftercare()
         self.simData.update({'results':copy.deepcopy(data)})
+        self._simAftercare()
         self.simulationFinished.emit(self.simData)
 
+    @QtCore.pyqtSlot(dict)
     def simFailed(self, data):
-        self._simAftercare()
         self.simData.update({'results':copy.deepcopy(data)})
+        self._simAftercare()
         self.simulationFailed.emit(self.simData)

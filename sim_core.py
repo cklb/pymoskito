@@ -4,7 +4,11 @@
 from __future__ import division
 from collections import OrderedDict
 
-class SimulationModule:
+#Qt
+from PyQt4 import QtGui
+from PyQt4.QtCore import QObject, pyqtSignal, pyqtSlot
+
+class SimulationModule(QObject):
     """ Smallest Unit in Simulation Process
         Provides neccessary functions like output calculation and holds
         all settings is 'settings' all available settings have to be added
@@ -12,16 +16,14 @@ class SimulationModule:
     """
     settings = OrderedDict()
 
-    def __init__(self):
-        pass
+    def __init__(self, parent=None):
+        QObject.__init__(self, parent)
 
     def getOutputDimension(self):
         raise Exception()
 
 
-#Qt
-from PyQt4 import QtGui
-from PyQt4.QtCore import QObject, pyqtSignal, pyqtSlot
+
 
 #own
 from model import ModelException
@@ -87,7 +89,7 @@ class Simulator(QObject):
 
         #perform disturbance
         if hasattr(self, 'disturbance'):
-            self.disturbance_output = self.disturbance.disturb(s.t)
+            self.disturbance_output = self.disturbance.disturb(self.current_time)
         else:
             self.disturbance_output = 0
 
