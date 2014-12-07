@@ -30,7 +30,6 @@ class BallBeamGui(QtGui.QMainWindow):
     '''
 
     runSimulation = pyqtSignal()
-    newData = pyqtSignal()
     playbackTimeChanged = pyqtSignal()
     
     def __init__(self):
@@ -41,6 +40,7 @@ class BallBeamGui(QtGui.QMainWindow):
         self.sim = SimulatorInteractor(self)
         self.runSimulation.connect(self.sim.runSimulation)
         self.sim.simulationFinished(self.simulationFinished)
+        self.sim.simulationFailed(self.simulationFailed)
 
         # sim setup viewer
         self.targetView = SimulatorView(self)
@@ -72,11 +72,15 @@ class BallBeamGui(QtGui.QMainWindow):
         self.area.addDock(self.plotDocks[-1], 'right')
         
         #paramter widget
-        self.parameter = Parameter()
+        #self.parameter = Parameter()
         
         # add widgets to the docks
-        self.paramDock.addWidget(self.parameter)        
+        #self.paramDock.addWidget(self.parameter)        
+        self.paramDock.addWidget(self.targetView)        
         
+        #create model for display
+        self.model = BallBeamModel()
+
         # vtk window
         self.vtkLayout = QtGui.QVBoxLayout()
         self.frame = QtGui.QFrame()
@@ -195,15 +199,13 @@ class BallBeamGui(QtGui.QMainWindow):
         integration finished, enable play button and update plots
         '''
         print 'Gui(): simulation finished'
-        self.simThread.quit()
         self.actSimulate.setDisabled(False)
         self.actPlayPause.setDisabled(False)
         self.actStop.setDisabled(False)
         self.speedDial.setDisabled(False)
-        self.simData = self.simulator.getValues()
-        self.validData = True
-        self.newData.emit()
         self.timeSlider.triggerAction(QtGui.QAbstractSlider.SliderToMinimum)
+
+        self.readResults()
         self.playAnimation()
 
     def simulationFailed(self):
@@ -216,6 +218,12 @@ class BallBeamGui(QtGui.QMainWindow):
         box.setText('The timestep integration failed!')
         box.exec_()
         self.simulationFinished()
+
+    def readResults(self):
+        self.currentDataset = copy.deepcopy(self.sim.simData)
+        self.currentStepSize = self.currentDataset['solver']['step size']
+        self.currentEndTime = self.currentDataset['solver']['end time']
+        self.validData = True
 
     def updatePlots(self):
         '''
@@ -230,10 +238,10 @@ class BallBeamGui(QtGui.QMainWindow):
         '''
         go one step forward in playback
         '''
-        if self.playbackTime + self.simulator.stepSize*self.playbackGain \
-                <= self.simulator.endTime:
-            self.playbackTime += self.simulator.stepSize*self.playbackGain
-            pos = self.playbackTime / self.simulator.endTime * self.timeSliderRange
+        if self.playbackTime + self.currentStepSize*self.playbackGain \
+                <= self.currentEndTime:
+            self.playbackTime += self.currentStepSize*self.playbackGain
+            pos = self.playbackTime / self.currentEndTime * self.timeSliderRange
             self.timeSlider.blockSignals(True)
             self.timeSlider.setValue(pos)
             self.timeSlider.blockSignals(False)
@@ -254,7 +262,7 @@ class BallBeamGui(QtGui.QMainWindow):
         '''
         adjust playback time to slider value
         '''
-        self.playbackTime = 1.0*self.timeSlider.value()/self.timeSliderRange * self.simulator.endTime
+        self.playbackTime = 1.0*self.timeSlider.value()/self.timeSliderRange * self.currentEndTime
         self.playbackTimeChanged.emit()
         return
 
@@ -267,8 +275,8 @@ class BallBeamGui(QtGui.QMainWindow):
 
         #update state of rendering
         state = [self.interpolate(self.simData['model_output.q'+str(i)]) \
-                for i in range(1, self.simulator.model.getStates()+1)]
-        r_beam, T_beam, r_ball, T_ball = self.simulator.model.calcPositions(state)
+                for i in range(1, self.model.getStates()+1)]
+        r_beam, T_beam, r_ball, T_ball = self.model.calcPositions(state)
         self.visualizer.updateScene(r_beam, T_beam, r_ball, T_ball)
 
     def interpolate(self, data):
@@ -288,7 +296,7 @@ class BallBeamGui(QtGui.QMainWindow):
 
     def updateDataList(self):
         self.dataList.clear()
-        for key, val in self.simData.iteritems():
+        for key, val in self.simData['results'].iteritems():
             self.dataList.insertItem(0, key)
 
     def createPlot(self, item):

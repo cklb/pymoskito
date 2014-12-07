@@ -105,11 +105,16 @@ class SimulatorView(QtGui.QTreeView):
 
 class SimulatorInteractor(QtCore.QObject):
 
+
+    #qt general
+    simulationFinished = pyqtSignal()
+    simulationFailed = pyqtSignal()
+    newData = pyqtSignal()
+
     def __init__(self, parent=None):
         QtCore.QObject.__init__(self, parent)
         self._setupModel()
         self.sim = None
-        self.simData = None
 
     def _setupModel(self):
         self.target_model = SimulatorModel(self)
@@ -180,8 +185,8 @@ class SimulatorInteractor(QtCore.QObject):
 
         return
 
-    def _getSettings(self, module):
-        item = self.current_model.findItem(module)
+    def _getSettings(self, model, module):
+        item = model.findItem(module)
 
         settings = {}
         for row in range(item.rowCount()):
@@ -204,11 +209,16 @@ class SimulatorInteractor(QtCore.QObject):
             self.sim.setattr(str(item.text()), subModule())
 
             # get settings for module and apply them
-            settings = self._getSettings(module)
+            settings = self._getSettings(self.target_model, module)
             getattr(self.sim, module).setattr('settings', settings)
+
+            # store settings in simData
+            self.simData.update({'settings': {module, settings}})
 
 
     def runSimulation(self):
+        self.simData = {}
+
         #copy settings from target model
         self.current_model = copy.deepcopy(self.target_model)
 
@@ -219,12 +229,26 @@ class SimulatorInteractor(QtCore.QObject):
         self.simThread = QThread()
         self.sim.moveToThread(self.simThread)
         self.simThread.started.connect(self.simulator.run)
-        self.sim.finished.connect(self.simulationFinished)
-        self.sim.failed.connect(self.simulationFailed)
+        self.sim.finished.connect(self.simFinished)
+        self.sim.failed.connect(self.simFailed)
 
         #run
         self.simThread.start()
 
-    def _simulationFinished(self):
+    def _simAftercare(self):
+        #stop thread
+        self.simThread.quit()
+        
+        #copy result data
+        self.simData.update({'results':copy.deepcopy(self.sim.getValues())})
+        
+        #delete simulator
+        del(self.sim)
 
-    def _simulationFailed(self):
+    def simFinished(self):
+        self._simAftercare()
+        self.simulationFinished.emit()
+
+    def simFailed(self):
+        self._simAftercare()
+        self.simulationFailed.emit()
