@@ -23,6 +23,7 @@ from trajectory import HarmonicGenerator, FixedPointGenerator, TwoPointSwitching
 from control import PController, FController, GController, JController, LSSController, IOLController
 from visualization import VtkVisualizer
 from observer import LuenbergerObserver
+import linearization as lin
 #from sensor import DeadTimeSensor, NoiseSensor
 
 class Gui(QtGui.QMainWindow):
@@ -156,14 +157,15 @@ class Gui(QtGui.QMainWindow):
         self.trajG = TwoPointSwitchingGenerator()
         self.trajG.setPositions(0.5,-0.5)
         self.trajG.setNumberOfChange(10)
-
+        self.linearization = lin.Linearization(st.q_op, st.tau_op)
+        
         # Control
-        #self.cont = FController()
-        #self.cont = GController()
-        self.cont = JController()
-        #self.cont = PController()
-#        self.cont = LSSController()
-        #self.cont = IOLController()
+#        self.cont = FController()
+#        self.cont = GController()
+#        self.cont = JController()
+#        self.cont = PController()
+        self.cont = LSSController(self.linearization)
+#        self.cont = IOLController()
 
         #Measurement
         #self.sen = DeadTimeSensor(10)

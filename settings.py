@@ -12,7 +12,7 @@ int_mode = 'vode'
 int_method='adams'
 int_rtol=1e-6
 int_atol=1e-9
-sim_time = 100
+sim_time = 50
 
 # System
 M = 0.05    # kg
@@ -21,6 +21,13 @@ J = 0.02    # kgm^2
 Jb = 2e-6   # kgm^2
 G = 9.81    # m/s^2
 B = M/(Jb/R**2+M)
+
+# operating point
+q_op = [0, 0, 0, 0]
+tau_op = 0
+
+# poles for LSSController
+poles_LSSController = [-2, -2, -2, -2]
 
 # Visualization
 beam_width = 0.01   # m

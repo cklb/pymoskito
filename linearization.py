@@ -65,7 +65,7 @@ class Linearization:
         # Steuerbarkeitsmatrix
         # Qs = Matrix([C, C*A, C*A**2, C*A**3])
     
-    def polesToAckermann(self, poles):
+    def calcFeedbackGain(self, poles):
         
         A = self.A
         B = self.B

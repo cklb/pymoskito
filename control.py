@@ -2,11 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import numpy as np
-
-from settings import *
-import linearization as lin
-
-
+import settings as st
 
 #---------------------------------------------------------------------
 # controller base class 
@@ -73,8 +69,8 @@ class FController(Controller):
         # calculate nonlinear terms phi
         phi1 = x[0]
         phi2 = x[1]  
-        phi3 = -B*G*np.sin(x[2])
-        phi4 = -B*G*x[3]*np.cos(x[2])
+        phi3 = -st.B*st.G*np.sin(x[2])
+        phi4 = -st.B*st.G*x[3]*np.cos(x[2])
         
         # calculate fictional input v
         v = yd[4] + \
@@ -84,9 +80,9 @@ class FController(Controller):
                 self.k0*(yd[0] - phi1)
         
         # calculate a(x)
-        a = -B*G*np.cos(x[2])
+        a = -st.B*st.G*np.cos(x[2])
         # calculate b(x)
-        b = B*G*x[3]**2*np.sin(x[2])
+        b = st.B*st.G*x[3]**2*np.sin(x[2])
         
         # calculate u
         u = (v-b)/a
@@ -115,8 +111,8 @@ class GController(Controller):
         # calculate nonlinear terms phi
         phi1 = x[0]
         phi2 = x[1]  
-        phi3 = -B*G*np.sin(x[2]) + B*x[0]*x[3]**2
-        phi4 = -B*G*x[3]*np.cos(x[2]) + B*x[1]*x[3]**2
+        phi3 = -st.B*st.G*np.sin(x[2]) + st.B*x[0]*x[3]**2
+        phi4 = -st.B*st.G*x[3]*np.cos(x[2]) + st.B*x[1]*x[3]**2
         
         # calculate fictional input v
         v = yd[4] + \
@@ -126,9 +122,9 @@ class GController(Controller):
                 self.k0*(yd[0] - phi1)
         
         # calculate a(x)
-        a = -B*G*np.cos(x[2]) + 2*B*x[1]*x[3]
+        a = -st.B*st.G*np.cos(x[2]) + 2*st.B*x[1]*x[3]
         # calculate b(x)
-        b = B**2+x[0]*x[3]**4 + B*G*(1 - B)*x[3]**2*np.sin(x[2])
+        b = st.B**2+x[0]*x[3]**4 + st.B*st.G*(1 - st.B)*x[3]**2*np.sin(x[2])
         
         # calculate u
         u = (v-b)/a
@@ -155,8 +151,8 @@ class JController(Controller):
         # calculate linear terms phi
         phi1 = x[0]
         phi2 = x[1]  
-        phi3 = -B*G*x[2]
-        phi4 = -B*G*x[3]
+        phi3 = -st.B*st.G*x[2]
+        phi4 = -st.B*st.G*x[3]
         
         # calculate fictional input v
         v = yd[4] + \
@@ -166,9 +162,9 @@ class JController(Controller):
                 self.k0*(yd[0] - phi1)
         
         # calculate a(x)
-        a = -B*G/(J + Jb)
+        a = -st.B*st.G/(st.J + st.Jb)
         # calculate b(x)
-        b = B*M*G**2*x[0]/(J + Jb)
+        b = st.B*st.M*st.G**2*x[0]/(st.J + st.Jb)
         
         # calculate u
         u = (v-b)/a
@@ -187,12 +183,11 @@ class LSSController(Controller):
 #    K = np.array([-0.5362, -0.0913, 0.48, 0.16])
 #    V = -0.0457
     
-    def __init__(self, logger=None):
+    def __init__(self, linearization=None, logger=None):
         Controller.__init__(self, logger)
     
-        l = lin.Linearization(x0=[0,0,0,0],tau0=0)
-        self.K = l.polesToAckermann([-2,-2,-2,-2])
-        self.V = l.prefilter(self.K)
+        self.K = linearization.calcFeedbackGain(st.poles_LSSController)
+        self.V = linearization.prefilter(self.K)
         self.order = 0
         
     def calcOutput(self, x, yd):
@@ -226,7 +221,7 @@ class IOLController(Controller):
         # calculate y terms
         y = x[0]
         y_d = x[1]
-        y_dd = B*x[0]*x[3]**2 -B*G*np.sin(x[2]) 
+        y_dd = st.B*x[0]*x[3]**2 -st.B*st.G*np.sin(x[2]) 
         
         # calculate fictional input v
         v = yd[3] + \
@@ -235,9 +230,9 @@ class IOLController(Controller):
                 self.k0*(yd[0] - y)
         
         # calculate a(x)
-        a = 2*B*x[0]*x[3]
+        a = 2*st.B*x[0]*x[3]
         # calculate b(x)
-        b = B*x[1]*x[3]**2 - B*G*x[3]*np.cos(x[2])
+        b = st.B*x[1]*x[3]**2 - st.B*st.G*x[3]*np.cos(x[2])
         
         # calculate u
         if np.absolute(a) < 0.3:     

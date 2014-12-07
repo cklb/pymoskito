@@ -48,7 +48,7 @@ class LuenbergerObserver:
         
         return [dx1s, dx2s, dx3s, dx4s]
         
-    def estimate(self, sensor_output=None):
+    def estimate(self, controller_output=None, sensor_output=None):
         
 #        self.sensor_output = sensor_output
 #        
