@@ -38,6 +38,7 @@ class Simulator(QObject):
         self.controller_output = 0
         self.model_output = 0
         self.sensor_output = 0
+        self.observer_output = 0
 
     def initStorage(self):
         self.storage = {'simTime':[],\
@@ -50,6 +51,10 @@ class Simulator(QObject):
                 'model_output.q4':[],\
                 #'sensor_output':[]
                 'sensor_output.q1':[],\
+                'oberserver_output.q1_o':[],\
+                'oberserver_output.q2_o':[],\
+                'oberserver_output.q3_o':[],\
+                'oberserver_output.q4_o':[],\
                 }
 
     def setupSolver(self, intMode=st.int_mode, intMethod=st.int_method, rTol=st.int_rtol, aTol=st.int_atol):
@@ -69,6 +74,9 @@ class Simulator(QObject):
         self.controller = controller
         self.tOrder = controller.getOrder()
 
+    def setObserver(self, observer):
+        self.observer = observer
+    
     def setSensor(self, sensor):
         self.sensor = sensor
 
@@ -98,13 +106,19 @@ class Simulator(QObject):
         else:
             self.sensor_output = self.model_output
 
+        #perform observation
+        if hasattr(self, 'observer'):
+            self.observer_output = self.observer.estimate(self.sensor_output)
+        else:
+            self.observer_output = self.sensor_output
+            
         #get desired values
         if hasattr(self, 'trajectory'):
             self.traj_output = self.trajectory.getValues(s.t, self.tOrder)
-
+            
         #perform control
         if hasattr(self, 'controller'):
-            self.controller_output = self.controller.control(self.sensor_output, self.traj_output)
+            self.controller_output = self.controller.control(self.observer_output, self.traj_output)
 
         return 
 
@@ -119,6 +133,10 @@ class Simulator(QObject):
         self.storage['model_output.q4'].append(self.model_output[3])
         self.storage['sensor_output.q1'].append(self.sensor_output[0])
         #self.storage['sensor_output'].append(self.sensor_output)
+        self.storage['oberserver_output.q1_o'].append(self.observer_output[0])
+        self.storage['oberserver_output.q2_o'].append(self.observer_output[1])
+        self.storage['oberserver_output.q3_o'].append(self.observer_output[2])
+        self.storage['oberserver_output.q4_o'].append(self.observer_output[3])
     
     def run(self):
         try:

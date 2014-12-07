@@ -22,6 +22,7 @@ from model import BallBeamModel
 from trajectory import HarmonicGenerator, FixedPointGenerator, TwoPointSwitchingGenerator
 from control import PController, FController, GController, JController, LSSController, IOLController
 from visualization import VtkVisualizer
+from observer import LuenbergerObserver
 #from sensor import DeadTimeSensor, NoiseSensor
 
 class Gui(QtGui.QMainWindow):
@@ -168,11 +169,15 @@ class Gui(QtGui.QMainWindow):
         #self.sen = DeadTimeSensor(10)
 #        self.sen = NoiseSensor(sigma=0.1)
 
+        # Observer
+        self.obs = LuenbergerObserver()
+        
         self.simulator.setupSolver()
         self.simulator.setInitialValues(st.q0)
         self.simulator.setEndTime(st.sim_time)
         self.simulator.setController(self.cont)
         #self.simulator.setSensor(self.sen)
+        self.simulator.setObserver(self.obs)        
         self.simulator.setTrajectoryGenerator(self.trajG)
         #until here  <<<
  
