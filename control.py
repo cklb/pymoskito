@@ -187,14 +187,14 @@ class LSSController(Controller):
         Controller.__init__(self, logger)
     
         self.K = linearization.calcFeedbackGain(st.poles_LSSController)
-        self.V = linearization.prefilter(self.K)
+        self.V = linearization.calcPrefilter(self.K)
         self.order = 0
         
     def calcOutput(self, x, yd):
         # calculate u
         u = np.dot(-self.K,np.transpose(x)) + yd[0]*self.V
         
-        return u[0]
+        return u
         
 #---------------------------------------------------------------------
 # Input-Output-Linearization
@@ -215,8 +215,6 @@ class IOLController(Controller):
         Controller.__init__(self, logger)
         
     def calcOutput(self, x, yd):
-        print 'x:',x
-        print 'yd:',yd
 
         # calculate y terms
         y = x[0]
@@ -240,8 +238,4 @@ class IOLController(Controller):
         else:
             u = (v-b)/a
 
-        print 'u', u
         return u
-    
-        #print 'x1=%f , x2=%f, x3=%f, x4=%f, u=%f, yd=%f' % (x[0],x[1],x[2],x[3],u,yd[0])
-
