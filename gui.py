@@ -172,7 +172,7 @@ class Gui(QtGui.QMainWindow):
 #        self.sen = NoiseSensor(sigma=0.1)
 
         # Observer
-        self.obs = LuenbergerObserver()
+        self.obs = LuenbergerObserver(self.linearization)
         
         self.simulator.setupSolver()
         self.simulator.setInitialValues(st.q0)

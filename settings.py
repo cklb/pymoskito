@@ -12,7 +12,7 @@ int_mode = 'vode'
 int_method='adams'
 int_rtol=1e-6
 int_atol=1e-9
-sim_time = 50
+sim_time = 20
 
 # System
 M = 0.05    # kg
@@ -28,6 +28,9 @@ tau_op = 0
 
 # poles for LSSController
 poles_LSSController = [-2, -2, -2, -2]
+
+# poles for LuenbergerObserver
+poles_LuenbergerObserver = [-3, -3, -3, -3]
 
 # Visualization
 beam_width = 0.01   # m

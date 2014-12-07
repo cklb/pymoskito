@@ -94,7 +94,8 @@ class Simulator(QObject):
         # integrate model
         self.model.setInput(self.controller_output)
         s = self.solver
-        self.model_output = s.integrate(s.t+self.stepSize) 
+        self.model_output = s.integrate(s.t + self.stepSize)
+        # save time
         self.simTime = s.t
 
         #check credibility
@@ -108,7 +109,7 @@ class Simulator(QObject):
 
         #perform observation
         if hasattr(self, 'observer'):
-            self.observer_output = self.observer.estimate(self.controller_output, self.sensor_output)
+            self.observer_output = self.observer.estimate(s.t, self.controller_output, self.sensor_output)
         else:
             self.observer_output = self.sensor_output
             

@@ -134,7 +134,6 @@ class Linearization:
                      (np.dot(self.C, np.linalg.matrix_power(self.A, 2)))[0],\
                      (np.dot(self.C, np.linalg.matrix_power(self.A, 3)))[0]])
                      
-        print Qb
         if np.absolute(np.linalg.det(Qb)) < 0.0001:
             print 'Warning: System might be not observable'
             print 'det(Qb):'
@@ -213,16 +212,22 @@ class Linearization:
                 numArray[i,j] = symMatrix[i,j]
         return numArray
 
-# operating point
-q_op = [0, 0, 0, 0]
-tau_op = 0
-poles_LSSController = [-2, -2, -2, -2]
-
-l = Linearization(q_op,tau_op)
-K = l.calcFeedbackGain(poles_LSSController)
-print K
-V = l.calcPrefilter(K)
-print V
-
-L = l.calcObserver([-3,-3,-3,-3])
-print L
+## operating point
+#q_op = [0, 0, 0, 0]
+#tau_op = 0
+#poles_LSSController = [-2, -2, -2, -2]
+#
+#l = Linearization(q_op,tau_op)
+#K = l.calcFeedbackGain(poles_LSSController)
+#print K
+#V = l.calcPrefilter(K)
+#print V
+#
+#L = l.calcObserver([-3,-3,-3,-3])
+#print L
+#y = np.array([[ 0.99184978,  4.88263649, -1.50785714, -5.07418735]])
+#u = -0.707076434896608
+#y = np.dot(l.C, y.transpose())
+#x_o =  np.array([ [0.99184978],  [4.88263649], [-1.50785714], [-5.07418735]])
+#dx_o = np.dot(l.A - np.dot(L, l.C), x_o) + np.dot(l.B, u) + np.dot(L, y)
+#print 'dx_o: ',dx_o

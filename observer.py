@@ -5,84 +5,63 @@ Created on Tue Dec 02 21:47:52 2014
 @author: cle
 """
 
-import sympy as sp
 import numpy as np
 
 from scipy.integrate import ode
-from settings import *
+import settings as st
 
 class LuenbergerObserver:
     
-    x0 = q0
+        
     
-    def __init__(self, A=None, B=None, C=None, K=None, L=None):
-        self.A = A
-        self.B = B
-        self.C = C
-        self.L = L
-        self.K = K
+    def __init__(self, linearization):
+        self.A = linearization.A
+        self.B = linearization.B
+        self.C = linearization.C
+        self.L = linearization.calcObserver(st.poles_LuenbergerObserver)
         
-    def stateFncApprox(self, t, q):
-        A = self.A
-        B = self.B
-        C = self.C
-        L = self.L
-        K = self.K                  
+        self.solver = ode(self.stateFuncApprox)
+        self.solver.set_integrator('dopri5', method = st.int_method, rtol=st.int_rtol, atol=st.int_atol)
+        self.solver.set_initial_value(st.q0)
+    
+        self.x0 = st.q0        
         
-        #FIXME: welches u nehmen, nehme einfach u=-k * x_dach
-        x1s, x2s, x3s, x4s = q
+    def stateFuncApprox(self, t, q):
+      
+        x1_o, x2_o, x3_o, x4_o = q
         y = self.sensor_output
+        u = self.controller_output
+#        print 'y: ',y
+#        print 'u: ',u
+#        print 'type(y): ',type(y)
+#        print 'type(u): ',type(u)
+        x_o = np.array([[x1_o],\
+                      [x2_o],\
+                      [x3_o],\
+                      [x4_o]])
+        #FIXME: sensorausgang mit C vermanschen
+        # ACHTUNG!!!! y[0] überdenken für mehrgrößenfall
+        y = np.dot(self.C, y.transpose())
+        dx_o = np.dot(self.A - np.dot(self.L, self.C), x_o) + np.dot(self.B, u) + np.dot(self.L, y[0])
+#        print 'dx_o: ',dx_o
         
-        xs = np.array([[x1s],\
-                      [x2s],\
-                      [x3s],\
-                      [x4s]])        
         
-        dxs = np.dot(A - np.dot(B,K) - np.dot(L, C), xs) + np.dot(L, self.y)
-        
-        dx1s = dxs[0, 0]
-        dx2s = dxs[1, 0]
-        dx3s = dxs[2, 0]
-        dx4s = dxs[3, 0]
+        dx1_o = dx_o[0, 0]
+        dx2_o = dx_o[1, 0]
+        dx3_o = dx_o[2, 0]
+        dx4_o = dx_o[3, 0]
         
         
-        return [dx1s, dx2s, dx3s, dx4s]
+        return [dx1_o, dx2_o, dx3_o, dx4_o]
         
-    def estimate(self, controller_output=None, sensor_output=None):
+    def estimate(self, t, controller_output=None, sensor_output=None):
         
-#        self.sensor_output = sensor_output
-#        
-#        
-#        x0 = self.x0
-#        
-#        solver = ode(self.stateFncApprox)
-#        solver.set_initial_value(x0)
-#        
-#        int_mode = 'vode'
-#        int_method='adams'
-#        int_rtol=1e-6
-#        int_atol=1e-9
-#        solver.set_integrator(int_mode, method=int_method, rtol=int_rtol, atol=int_atol)
-#        
-#        
-#        tend = dt
-#        dtObserv = dt / 10.0
-#        a1 = []
-#        a2 = []
-#        while solver.successful() and solver.t < tend:
-#            solver.integrate(solver.t+dtObserv)
-##            print ("%g %g" % (solver.t, solver.y))
-#            a1.append(solver.t)
-#            a2.append(solver.y)
-#            
-
-#        xs = solver.y[-1]
-#            
-#        #FIXME: wirklcih so???
-#            
-#        self.x0 = [xs[0], xs[1], xs[2], xs[3]]
-#        
-#        return [xs[0], xs[1], xs[2], xs[3]]
-        return sensor_output
+        self.sensor_output = sensor_output
+        self.controller_output = controller_output
+        
+        # sim_core Timer ist bereits einen Zeitschritt weiter
+        observer_output = self.solver.integrate(t)           
+        
+        return observer_output
   
         
