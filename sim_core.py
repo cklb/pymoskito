@@ -147,7 +147,6 @@ class Simulator(QObject):
             return
 
         self.finished.emit(self.storage)
-        print 'done.'
         return
 
     def listModules(self):

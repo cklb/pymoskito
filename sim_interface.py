@@ -120,6 +120,9 @@ class SimulatorInteractor(QtCore.QObject):
         self.target_model.itemChanged.connect(self.itemChanged)
         self.current_model = None
 
+        #insert header
+        self.target_model.setHorizontalHeaderLabels(['Property', 'Value'])
+
         #insert main items
         for module in Simulator.moduleList:
             newItems = []
@@ -128,6 +131,8 @@ class SimulatorInteractor(QtCore.QObject):
                 value = QStandardItem('BallBeamModel')
             elif module == 'solver':
                 value = QStandardItem('VODESolver')
+            elif module == 'trajectory':
+                value = QStandardItem('FixedPointTrajectory')
             else:
                 value = QStandardItem('None')
             
@@ -147,15 +152,8 @@ class SimulatorInteractor(QtCore.QObject):
         settings = self._readSettings(moduleName, subModuleName)
         for key, val in settings.iteritems():
             settingName = QStandardItem(key)
-            if not isinstance(val, list):
-                val = [val]
-
-            settingValues = []
-            for data in val:
-                settingValues.append(QStandardItem(str(data)))
-
-            settingValues.insert(0, settingName)
-            parent.appendRow(settingValues)    
+            settingValue = QStandardItem(str(val))
+            parent.appendRow([settingName, settingValue])    
             
     def _readSettings(self, moduleName, className):
         ''' 
@@ -191,9 +189,21 @@ class SimulatorInteractor(QtCore.QObject):
 
         settings = {}
         for row in range(item.rowCount()):
-            settings.update({ \
-                    str(item.child(row, 0).text()): str(item.child(row, 1).text())\
-                    })
+            propName = str(item.child(row, 0).text())
+            propVal = None
+            #TODO this is not the good way
+            if propName == 'Method':
+                propVal = str(item.child(row, 1).text())
+            else:
+                valStr = str(item.child(row, 1).text())
+                if '[' in valStr:
+                    #parse vector
+                    propVal = [float(x) for x in valStr[1:-1].split(',')]
+                else:
+                    #parse skalar
+                    propVal = float(valStr)
+
+            settings.update({propName: propVal})
 
         return settings
 
@@ -220,7 +230,10 @@ class SimulatorInteractor(QtCore.QObject):
                 elif moduleName == 'sensor':
                     slot = subModule(sim.model.getOutputDimension())
                 elif moduleName == 'trajectory':
-                    slot = subModule(sim.controller.getOrder())
+                    if hasattr(sim, 'controller'):
+                        slot = subModule(sim.controller.getOrder())
+                    else:
+                        slot = subModule(0)
                 else:
                     slot = subModule()
 

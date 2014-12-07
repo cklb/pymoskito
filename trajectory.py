@@ -29,7 +29,7 @@ class HarmonicTrajectory(Trajectory):
     ''' provide a harmonic signal with derivatives
     '''
 
-    settings = {'Amplitude': 1.0}
+    settings = {'Amplitude': 0.5}
 
     def __init__(self, derivateOrder):
         Trajectory.__init__(self, derivateOrder+1)
@@ -53,7 +53,7 @@ class FixedPointTrajectory(Trajectory):
     ''' provides a fixed signal
     '''
     
-    settings = {'Position': 1.0}
+    settings = {'Position': 0.5}
     
     def __init__(self, derivateOrder):
         Trajectory.__init__(self, derivateOrder+1)

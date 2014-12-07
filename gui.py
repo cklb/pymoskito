@@ -45,6 +45,9 @@ class BallBeamGui(QtGui.QMainWindow):
         # sim setup viewer
         self.targetView = SimulatorView(self)
         self.targetView.setModel(self.sim.target_model)
+        self.targetView.setColumnWidth(1, 100)
+        self.targetView.expanded.connect(self.targetViewChanged)
+        self.targetView.collapsed.connect(self.targetViewChanged)
 
         # sim results viewer
         self.resultview = QtGui.QTreeView()
@@ -59,24 +62,20 @@ class BallBeamGui(QtGui.QMainWindow):
         self.setWindowIcon(QtGui.QIcon('data/ball_and_beam.png'))
         
         # create docks
-        self.paramDock = pg.dockarea.Dock('Parameter')
+        self.propertyDock = pg.dockarea.Dock('Properties', size=(1, 100))
         self.vtkDock = pg.dockarea.Dock('Simulation')
         self.dataDock = pg.dockarea.Dock('Data')
         self.plotDocks = []
         self.plotDocks.append(pg.dockarea.Dock('Placeholder'))
         
         # arrange docks
-        self.area.addDock(self.vtkDock, 'left')
-        self.area.addDock(self.paramDock, 'bottom', self.vtkDock)
-        self.area.addDock(self.dataDock, 'bottom', self.paramDock)
-        self.area.addDock(self.plotDocks[-1], 'right')
-        
-        #paramter widget
-        #self.parameter = Parameter()
+        self.area.addDock(self.vtkDock, 'right')
+        self.area.addDock(self.propertyDock, 'left', self.vtkDock)
+        self.area.addDock(self.dataDock, 'bottom', self.propertyDock)
+        self.area.addDock(self.plotDocks[-1], 'bottom', self.vtkDock)
         
         # add widgets to the docks
-        #self.paramDock.addWidget(self.parameter)        
-        self.paramDock.addWidget(self.targetView)        
+        self.propertyDock.addWidget(self.targetView)        
         
         #create model for display
         self.model = BallBeamModel()
@@ -207,6 +206,9 @@ class BallBeamGui(QtGui.QMainWindow):
         self.currentDataset = data
         self._readResults()
         self._updateDataList()
+        self._updatePlots()
+
+        self.stopAnimation()
         self.playAnimation()
 
     def simulationFailed(self, data):
@@ -221,15 +223,11 @@ class BallBeamGui(QtGui.QMainWindow):
         self.simulationFinished(data)
 
     def _readResults(self):
-        self.currentStepSize = float(self.currentDataset['modules']['solver']['step size'])
-        self.currentEndTime = float(self.currentDataset['modules']['solver']['end time'])
+        self.currentStepSize = self.currentDataset['modules']['solver']['step size']
+        self.currentEndTime = self.currentDataset['modules']['solver']['end time']
         self.validData = True
 
-    def updatePlots(self):
-        '''
-        plot the fresh simulation data
-        '''
-        return
+
     
     def addPlotToDock(self, plotWidget):
         self.d3.addWidget(plotWidget)
@@ -311,58 +309,17 @@ class BallBeamGui(QtGui.QMainWindow):
         dock.addWidget(plot)
         self.plotDocks.append(dock)
 
-class Parameter(pg.parametertree.ParameterTree):
-    '''
-    shows all system parameter in a widget
-    '''
-    
-    def __init__(self):
-        # constructor of the base class
-        pg.parametertree.ParameterTree.__init__(self)
-        
-        self.params = [
-            {'name': 'System parameter', 'type': 'group', 'children': [
-                {'name': 'Mass of the ball in [kg]', 'type': 'float', 'value': st.M, 'step': 0.01},
-                {'name': 'Radius of the ball in [m]', 'type': 'float', 'value': st.R, 'step': 0.01},
-                {'name': 'Moment of inertia of the ball in [kgm^2]', 'type': 'float', 'value': st.J},
-                {'name': 'Moment of inertia of the beam in [kgm^2]', 'type': 'float', 'value': st.Jb},
-                {'name': 'Beam length (min=1,max=6) in [m]', 'type': 'float', 'value': st.beam_length, 'step': 0.5, 'limits': (1,6)},
-            ]},
-            {'name': 'Initial States', 'type': 'group', 'children': [
-                {'name': 'Initial radius in [m]', 'type': 'float', 'value': st.q0[0], 'step': 0.1, 'limits': (-st.beam_length/2,st.beam_length/2)},
-                {'name': 'Initial velocity in [m/s]', 'type': 'float', 'value': st.q0[1]},
-                {'name': 'Initial rotation angle in [Grad]', 'type': 'float', 'value': st.q0[2]*180/np.pi, 'step': 1},
-                {'name': 'Initial rotation velocity in [Grad/s]', 'type': 'float', 'value': st.q0[3]*180/np.pi, 'step': 1},
-            ]},
-        ]
-        
-        # create a tree of parameter objects
-        self.p = pg.parametertree.Parameter.create(name='params', types='group', children=self.params)
-        self.setParameters(self.p, showTop = False)
-        
-        self.p.sigTreeStateChanged.connect(self.change)
-        
-        
-    def change(self, parameter, changes):
+    def _updatePlots(self):
         '''
-        detect the changes in parametertree and save the changes in settings
+        plot the fresh simulation data
         '''
-        print parameter
-        for param, change, data in changes:
-            path = parameter.childPath(param)
-            if path is not None:
-                childName = '.'.join(path)
-            else:
-                childName = param.name()
-            print('  parameter: %s'% childName)
-            print('  change:    %s'% change)
-            print('  data:      %s'% str(data))
-            print('  ----------')
-        if childName == 'Initial States.Initial radius in [m]':
-            print'r: ',st.q0[0]
-            st.q0[0] = data
-            print'r: ',st.q0[0]
+        for dock in self.plotDocks:
+            for widget in dock.widgets:
+                widget.getPlotItem().setData(self.currentDataset['results']['simTime'],
+                        self.currentDataset['results'][dock.name()])
 
+    def targetViewChanged(self, index):
+        self.targetView.resizeColumnToContents(0)
 
 class TestGui(QtGui.QMainWindow):
     

@@ -46,11 +46,11 @@ class BallBeamModel(SimulationModel):
         '''
         if self.firstRun:
             #abbreviations
-            self.M = float(self.settings['M'])
-            self.R = float(self.settings['R'])
-            self.J = float(self.settings['J'])
-            self.Jb = float(self.settings['Jb'])
-            self.G = float(self.settings['G'])
+            self.M = self.settings['M']
+            self.R = self.settings['R']
+            self.J = self.settings['J']
+            self.Jb = self.settings['Jb']
+            self.G = self.settings['G']
             self.B = self.M/(self.Jb/self.R**2+self.M)
             self.firstRun = False
 
