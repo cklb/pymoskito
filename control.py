@@ -190,7 +190,7 @@ class LSSController(Controller):
     def __init__(self, logger=None):
         Controller.__init__(self, logger)
     
-        l = lin.Linearization(x0=[0.5,0,0,0],tau0=0)
+        l = lin.Linearization(x0=[0,0,0,0],tau0=0)
         self.K = l.polesToAckermann([-2,-2,-2,-2])
         self.V = l.prefilter(self.K)
         self.order = 0

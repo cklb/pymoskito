@@ -19,10 +19,10 @@ from vtk.qt4.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 import settings as st
 from sim_core import Simulator
 from model import BallBeamModel
-from trajectory import HarmonicGenerator, FixedPointGenerator
+from trajectory import HarmonicGenerator, FixedPointGenerator, TwoPointSwitchingGenerator
 from control import PController, FController, GController, JController, LSSController, IOLController
 from visualization import VtkVisualizer
-from sensor import DeadTimeSensor, NoiseSensor
+#from sensor import DeadTimeSensor, NoiseSensor
 
 class Gui(QtGui.QMainWindow):
     '''
@@ -149,20 +149,24 @@ class Gui(QtGui.QMainWindow):
         # Trajectory
         #self.trajG = HarmonicGenerator()
         #self.trajG.setAmplitude(0.5)
-        self.trajG = FixedPointGenerator()
-        self.trajG.setPosition(0.5)
+#        self.trajG = FixedPointGenerator()
+#        self.trajG.setPosition(0.5)
+        
+        self.trajG = TwoPointSwitchingGenerator()
+        self.trajG.setPositions(0.5,-0.5)
+        self.trajG.setNumberOfChange(10)
 
         # Control
         #self.cont = FController()
         #self.cont = GController()
-        #self.cont = JController()
+        self.cont = JController()
         #self.cont = PController()
-        self.cont = LSSController()
+#        self.cont = LSSController()
         #self.cont = IOLController()
 
         #Measurement
         #self.sen = DeadTimeSensor(10)
-        self.sen = NoiseSensor(sigma=0.1)
+#        self.sen = NoiseSensor(sigma=0.1)
 
         self.simulator.setupSolver()
         self.simulator.setInitialValues(st.q0)
