@@ -4,7 +4,6 @@ Created on Mon Dec 01 21:52:06 2014
 
 Linearization in x_0
 
-@author: Topher
 """
 
 import sympy as sp
@@ -50,11 +49,12 @@ B = Matrix([[jac_B1[0]],\
 # Ausgangsmatrix
 C = Matrix([[1, 0, 0, 0]])
 
-# Steuerbarkeitsmatrix
-Qs = Matrix([C, C*A, C*A**2, C*A**3])
-poles = [-2, -2, -2, -2]
+# Beobachtbarkeitsmatrix
+Qb = Matrix([C, C*A, C*A**2, C*A**3])
+print 'Qb: ',Qb
 
-def polesToAckermann(A, B, poles):
+
+def calcFeedbackGain(A, B, poles):
     n = len(poles)
     param = sp.symbols('s, t1T1, t1T2, t1T3, t1T4')
     s, t1T1, t1T2, t1T3, t1T4 = param
@@ -68,8 +68,8 @@ def polesToAckermann(A, B, poles):
     
     # calculate the coefficient of characteric polynom
     for i in range(n):
-        print i
-        print poly.subs([(s,0)])
+#        print i
+#        print poly.subs([(s,0)])
         p.append(poly.subs([(s,0)]))
         poly = poly - p[i]
         poly = poly/s
@@ -82,8 +82,9 @@ def polesToAckermann(A, B, poles):
                  (A**2*B).transpose(),\
                  (A**3*B).transpose()])
     Qs = QsT.transpose()
+    print 'Qs: ',Qs
     det_Qs = Qs.det()
-    print det_Qs.expand()
+#    print det_Qs.expand()
     
     
     t1T = Matrix([t1T1, t1T2, t1T3, t1T4])
@@ -94,10 +95,7 @@ def polesToAckermann(A, B, poles):
     
     K = t1T*(A**4 + p[3]*A**(3) + p[2]*A**2 + p[1]*A + p[0]*sp.eye(4))
     return K
-    
-K = polesToAckermann(A, B, poles)
 
-print K
-    
-    
-    
+poles = [-2, -2, -2, -2]
+K = calcFeedbackGain(A, B, poles)
+#print 'K: ',K
