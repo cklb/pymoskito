@@ -1,35 +1,60 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-from settings import *
 from numpy import sin, cos, pi
 from numpy import array as narray
+
+from sim_core import SimulationModule
 
 #---------------------------------------------------------------------
 # implementation of the system in state space form
 #--------------------------------------------------------------------- 
-#TODO create BaseClass
-
 class ModelException(Exception):
     pass
 
-class BallBeamModel:
+class SimulationModel(SimulationModule):
 
-    def __init__(self, logger=None):
+    def __init__(self):
+        SimulationModule.__init__(self)
+
+    def getOutputDimension(self):
+        return self.states
+
+class BallBeamModel(SimulationModel):
+
+    settings = {'M': 0.05,  \
+            'R': 0.01,      \
+            'J': 0.02,      \
+            'Jb': 2e-6,     \
+            'G': 9.81,      \
+            'beam length': 2.0,      \
+            'beam width': 0.01,      \
+            'beam depth': 0.03,      \
+            }
+
+    def __init__(self):
+        SimulationModule.__init__(self)
         self.tau = 0
         self.states = 4
-        self.logger = logger
+        self.firstRun = True
 
     def setInput(self, model_input):
         self.tau = model_input
-
-    def getStates(self):
-        return self.states
 
     def stateFunc(self, t, q):
         '''
         Calculations of system state changes
         '''
+        if self.firstRun:
+            #abbreviations
+            self.M = self.settings['M']
+            self.R = self.settings['R']
+            self.J = self.settings['J']
+            self.Jb = self.settings['Jb']
+            self.G = self.settings['G']
+            self.B = self.M/(self.Jb/self.R**2+self.M)
+            self.firstRun = False
+
         #definitoric
         x1 = q[0]
         x2 = q[1]
@@ -38,17 +63,11 @@ class BallBeamModel:
         y = x1
 
         dx1 = x2
-        dx2 = B*(x1*x4**2 - G*sin(x3))
+        dx2 = self.B*(x1*x4**2 - self.G*sin(x3))
         dx3 = x4
 
-        #if self.tau > 1e3:
-            #print '*************'
-            #print 'BallBeamModel(): Error controller wants:', self.tau
-            #print '*************'
-            #self.tau = 0
-
         #inverse nonliniear system transformation
-        u = (self.tau - M* (2*x1*x2*x4 + G*x1*cos(x3))) / (M*x1**2 + J + Jb)
+        u = (self.tau - self.M* (2*x1*x2*x4 + self.G*x1*cos(x3))) / (self.M*x1**2 + self.J + self.Jb)
         dx4 = u
        
         return [dx1, dx2, dx3, dx4]
@@ -56,7 +75,7 @@ class BallBeamModel:
     def checkConsistancy(self, state):
         ''' Checks if the model rules are violated
         '''
-        if abs(state[0]) > beam_length/2:
+        if abs(state[0]) > float(self.settings['beam length'])/2:
             raise ModelException('Ball fell down.')
         if abs(state[2]) > pi/2:
             raise ModelException('Beam reached critical angle.')
@@ -65,9 +84,8 @@ class BallBeamModel:
         '''
         Calculate stationary vectors and rot. matrices for bodies
         '''
-
         #beam
-        r_beam = [0, -R/2 - beam_width, 0]
+        r_beam = [0, -self.settings['R']/2 - self.settings['beam width'], 0]
         T_beam = narray([[cos(q[2]), -sin(q[2]), 0], [sin(q[2]), cos(q[2]), 0], [0, 0, 1]])
 
         #ball

@@ -1,37 +1,30 @@
 # -*- coding: utf-8 -*-
 
 #system
-from numpy import pi
+import numpy as np
 
 #Qt
+from PyQt4 import QtCore, QtGui
 from PyQt4.QtCore import QTimer, QThread, pyqtSignal
 
 #pyqtgraph
 import pyqtgraph as pg
-from pyqtgraph.Qt import QtCore, QtGui
-from pyqtgraph.dockarea import *
-import pyqtgraph.parametertree
+import pyqtgraph.dockarea
 
 #vtk
 from vtk.qt4.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 
 #own
-import settings as st
-from sim_core import Simulator
-from model import BallBeamModel
-from trajectory import HarmonicGenerator, FixedPointGenerator, TwoPointSwitchingGenerator
-from control import PController, FController, GController, JController, LSSController, IOLController
+from sim_interface import SimulatorInteractor, SimulatorView
 from visualization import VtkVisualizer
-from observer import LuenbergerObserver
-import linearization as lin
-#from sensor import DeadTimeSensor, NoiseSensor
+from model import BallBeamModel
 
-class Gui(QtGui.QMainWindow):
+class BallBeamGui(QtGui.QMainWindow):
     '''
     class for the graphical user interface
     '''
 
-    newData = pyqtSignal()
+    runSimulation = pyqtSignal()
     playbackTimeChanged = pyqtSignal()
     
     def __init__(self):
@@ -39,18 +32,23 @@ class Gui(QtGui.QMainWindow):
         QtGui.QMainWindow.__init__(self)
 
         # Create Simulation Backend
-        self.simData = {}
-        self.validData = False
-        self.model = BallBeamModel()
-        self.simulator = Simulator(self.model)
-        self.simThread = QThread()
-        self.simulator.moveToThread(self.simThread)
-        self.simThread.started.connect(self.simulator.run)
-        self.simulator.finished.connect(self.simulationFinished)
-        self.simulator.failed.connect(self.simulationFailed)
+        self.sim = SimulatorInteractor(self)
+        self.runSimulation.connect(self.sim.runSimulation)
+        self.sim.simulationFinished.connect(self.simulationFinished)
+        self.sim.simulationFailed.connect(self.simulationFailed)
+
+        # sim setup viewer
+        self.targetView = SimulatorView(self)
+        self.targetView.setModel(self.sim.target_model)
+        self.targetView.setColumnWidth(1, 10)
+        self.targetView.expanded.connect(self.targetViewChanged)
+        self.targetView.collapsed.connect(self.targetViewChanged)
+
+        # sim results viewer
+        self.resultview = QtGui.QTreeView()
 
         # dockarea allows to rearrange the user interface at runtime
-        self.area = DockArea()
+        self.area = pg.dockarea.DockArea()
         
         # Window properties
         self.setCentralWidget(self.area)
@@ -59,24 +57,26 @@ class Gui(QtGui.QMainWindow):
         self.setWindowIcon(QtGui.QIcon('data/ball_and_beam.png'))
         
         # create docks
-        self.paramDock = Dock('Parameter')
-        self.vtkDock = Dock('Simulation')
-        self.dataDock = Dock('Data')
+        self.propertyDock = pg.dockarea.Dock('Properties', size=(1, 10))
+        self.vtkDock = pg.dockarea.Dock('Simulation')
+        self.dataDock = pg.dockarea.Dock('Data')
         self.plotDocks = []
-        self.plotDocks.append(Dock('Placeholder'))
-        
+        self.plotDocks.append(pg.dockarea.Dock('Placeholder'))
+        self.plots = []
+        self.plotItems = []
+
         # arrange docks
-        self.area.addDock(self.vtkDock, 'left')
-        self.area.addDock(self.paramDock, 'bottom', self.vtkDock)
-        self.area.addDock(self.dataDock, 'bottom', self.paramDock)
-        self.area.addDock(self.plotDocks[-1], 'right')
-        
-        #paramter widget
-        self.parameter = Parameter()
+        self.area.addDock(self.vtkDock, 'right')
+        self.area.addDock(self.propertyDock, 'left', self.vtkDock)
+        self.area.addDock(self.dataDock, 'bottom', self.propertyDock)
+        self.area.addDock(self.plotDocks[-1], 'bottom', self.vtkDock)
         
         # add widgets to the docks
-        self.paramDock.addWidget(self.parameter)        
+        self.propertyDock.addWidget(self.targetView)        
         
+        #create model for display
+        self.model = BallBeamModel()
+
         # vtk window
         self.vtkLayout = QtGui.QVBoxLayout()
         self.frame = QtGui.QFrame()
@@ -89,7 +89,6 @@ class Gui(QtGui.QMainWindow):
         #data window
         self.dataList = QtGui.QListWidget(self)
         self.dataDock.addWidget(self.dataList)
-        self.newData.connect(self.updateDataList)
         self.dataList.itemDoubleClicked.connect(self.createPlot)
         
         # action for simulation control
@@ -145,44 +144,6 @@ class Gui(QtGui.QMainWindow):
         self.toolbarSim.addWidget(self.speedDial)
         self.toolbarSim.addWidget(self.timeSlider)
 
-
-
-        #TODO make them settable and remove this static stuff  << from here
-        # Trajectory
-        #self.trajG = HarmonicGenerator()
-        #self.trajG.setAmplitude(0.5)
-#        self.trajG = FixedPointGenerator()
-#        self.trajG.setPosition(0.5)
-        
-        self.trajG = TwoPointSwitchingGenerator()
-        self.trajG.setPositions(0.5,-0.5)
-        self.trajG.setNumberOfChange(10)
-        self.linearization = lin.Linearization(st.q_op, st.tau_op)
-        
-        # Control
-#        self.cont = FController()
-#        self.cont = GController()
-#        self.cont = JController()
-#        self.cont = PController()
-        self.cont = LSSController(self.linearization)
-#        self.cont = IOLController()
-
-        #Measurement
-        #self.sen = DeadTimeSensor(10)
-#        self.sen = NoiseSensor(sigma=0.1)
-
-        # Observer
-        self.obs = LuenbergerObserver(self.linearization)
-        
-        self.simulator.setupSolver()
-        self.simulator.setInitialValues(st.q0)
-        self.simulator.setEndTime(st.sim_time)
-        self.simulator.setController(self.cont)
-        #self.simulator.setSensor(self.sen)
-        self.simulator.setObserver(self.obs)        
-        self.simulator.setTrajectoryGenerator(self.trajG)
-        #until here  <<<
- 
     def playAnimation(self):
         '''
         play the animation
@@ -226,26 +187,28 @@ class Gui(QtGui.QMainWindow):
         '''
         print 'Gui(): launching simulation'
         self.actSimulate.setDisabled(True)
-        self.simulator.reset()
-        self.simThread.start()
+        self.runSimulation.emit()
 
-    def simulationFinished(self):
+    def simulationFinished(self, data):
         '''
         integration finished, enable play button and update plots
         '''
         print 'Gui(): simulation finished'
-        self.simThread.quit()
         self.actSimulate.setDisabled(False)
         self.actPlayPause.setDisabled(False)
         self.actStop.setDisabled(False)
         self.speedDial.setDisabled(False)
-        self.simData = self.simulator.getValues()
-        self.validData = True
-        self.newData.emit()
         self.timeSlider.triggerAction(QtGui.QAbstractSlider.SliderToMinimum)
+
+        self.currentDataset = data
+        self._readResults()
+        self._updateDataList()
+        self._updatePlots()
+
+        self.stopAnimation()
         self.playAnimation()
 
-    def simulationFailed(self):
+    def simulationFailed(self, data):
         '''
         integration failed, enable play button and update plots
         #TODO write warning window
@@ -254,13 +217,14 @@ class Gui(QtGui.QMainWindow):
         box = QtGui.QMessageBox()
         box.setText('The timestep integration failed!')
         box.exec_()
-        self.simulationFinished()
+        self.simulationFinished(data)
 
-    def updatePlots(self):
-        '''
-        plot the fresh simulation data
-        '''
-        return
+    def _readResults(self):
+        self.currentStepSize = self.currentDataset['modules']['solver']['step size']
+        self.currentEndTime = self.currentDataset['modules']['solver']['end time']
+        self.validData = True
+
+
     
     def addPlotToDock(self, plotWidget):
         self.d3.addWidget(plotWidget)
@@ -269,10 +233,10 @@ class Gui(QtGui.QMainWindow):
         '''
         go one step forward in playback
         '''
-        if self.playbackTime + self.simulator.stepSize*self.playbackGain \
-                <= self.simulator.endTime:
-            self.playbackTime += self.simulator.stepSize*self.playbackGain
-            pos = self.playbackTime / self.simulator.endTime * self.timeSliderRange
+        if self.playbackTime + self.currentStepSize*self.playbackGain \
+                <= self.currentEndTime:
+            self.playbackTime += self.currentStepSize*self.playbackGain
+            pos = self.playbackTime / self.currentEndTime * self.timeSliderRange
             self.timeSlider.blockSignals(True)
             self.timeSlider.setValue(pos)
             self.timeSlider.blockSignals(False)
@@ -286,14 +250,14 @@ class Gui(QtGui.QMainWindow):
         adjust playback time to slider value
         '''
         self.playbackGain = 10**(   \
-                10.0*(val - self.speedDial.maximum()/2)/self.speedDial.maximum() \
+                5.0*(val - self.speedDial.maximum()/2)/self.speedDial.maximum() \
                 )
 
     def updatePlaybackTime(self):
         '''
         adjust playback time to slider value
         '''
-        self.playbackTime = 1.0*self.timeSlider.value()/self.timeSliderRange * self.simulator.endTime
+        self.playbackTime = 1.0*self.timeSlider.value()/self.timeSliderRange * self.currentEndTime
         self.playbackTimeChanged.emit()
         return
 
@@ -305,16 +269,16 @@ class Gui(QtGui.QMainWindow):
         #TODO
 
         #update state of rendering
-        state = [self.interpolate(self.simData['model_output.q'+str(i)]) \
-                for i in range(1, self.simulator.model.getStates()+1)]
-        r_beam, T_beam, r_ball, T_ball = self.simulator.model.calcPositions(state)
+        state = [self.interpolate(self.currentDataset['results']['model_output.'+str(i)]) \
+                for i in range(self.model.getOutputDimension())]
+        r_beam, T_beam, r_ball, T_ball = self.model.calcPositions(state)
         self.visualizer.updateScene(r_beam, T_beam, r_ball, T_ball)
 
     def interpolate(self, data):
         #find corresponding index in dataset that fitts the current playback time
         #TODO implement real interpolation
         index = 0
-        for elem in self.simData['simTime']:
+        for elem in self.currentDataset['results']['simTime']:
             if elem > self.playbackTime:
                 break
             else:
@@ -325,73 +289,49 @@ class Gui(QtGui.QMainWindow):
         else:
             return data[index]
 
-    def updateDataList(self):
+    def _updateDataList(self):
         self.dataList.clear()
-        for key, val in self.simData.iteritems():
+        for key, val in self.currentDataset['results'].iteritems():
             self.dataList.insertItem(0, key)
 
     def createPlot(self, item):
         ''' creates a plot widget corresponding to the ListItem
         '''
         title = str(item.text())
-        data = self.simData[title]
-        dock = Dock(title)
+        data = self.currentDataset['results'][title]
+        dock = pg.dockarea.Dock(title)
         self.area.addDock(dock, 'above', self.plotDocks[-1])
-        plot = pg.PlotWidget(title=title)
-        plot.plot(self.simData['simTime'], data)
-        dock.addWidget(plot)
+        self.plots.append(pg.PlotWidget(title=title))
+        self.plotItems.append(self.plots[-1].plot(x=self.currentDataset['results']['simTime'], y=data))
+        dock.addWidget(self.plots[-1])
         self.plotDocks.append(dock)
 
-class Parameter(pyqtgraph.parametertree.ParameterTree):
-    '''
-    shows all system parameter in a widget
-    '''
+    def _updatePlots(self):
+        '''
+        plot the fresh simulation data
+        '''
+        for dock in self.plotDocks:
+            for widget in dock.widgets:
+                widget.getPlotItem().clear()
+                widget.getPlotItem().plot(x=self.currentDataset['results']['simTime'],\
+                        y=self.currentDataset['results'][dock.name()])
+
+    def targetViewChanged(self, index):
+        self.targetView.resizeColumnToContents(0)
+
+class TestGui(QtGui.QMainWindow):
     
     def __init__(self):
         # constructor of the base class
-        pyqtgraph.parametertree.ParameterTree.__init__(self)
-        
-        self.params = [
-            {'name': 'System parameter', 'type': 'group', 'children': [
-                {'name': 'Mass of the ball in [kg]', 'type': 'float', 'value': st.M, 'step': 0.01},
-                {'name': 'Radius of the ball in [m]', 'type': 'float', 'value': st.R, 'step': 0.01},
-                {'name': 'Moment of inertia of the ball in [kgm^2]', 'type': 'float', 'value': st.J},
-                {'name': 'Moment of inertia of the beam in [kgm^2]', 'type': 'float', 'value': st.Jb},
-                {'name': 'Beam length (min=1,max=6) in [m]', 'type': 'float', 'value': st.beam_length, 'step': 0.5, 'limits': (1,6)},
-            ]},
-            {'name': 'Initial States', 'type': 'group', 'children': [
-                {'name': 'Initial radius in [m]', 'type': 'float', 'value': st.q0[0], 'step': 0.1, 'limits': (-st.beam_length/2,st.beam_length/2)},
-                {'name': 'Initial velocity in [m/s]', 'type': 'float', 'value': st.q0[1]},
-                {'name': 'Initial rotation angle in [Grad]', 'type': 'float', 'value': st.q0[2]*180/pi, 'step': 1},
-                {'name': 'Initial rotation velocity in [Grad/s]', 'type': 'float', 'value': st.q0[3]*180/pi, 'step': 1},
-            ]},
-        ]
-        
-        # create a tree of parameter objects
-        self.p = pyqtgraph.parametertree.Parameter.create(name='params', types='group', children=self.params)
-        self.setParameters(self.p, showTop = False)
-        
-        self.p.sigTreeStateChanged.connect(self.change)
-        
-        
-    def change(self, parameter, changes):
-        '''
-        detect the changes in parametertree and save the changes in settings
-        '''
-        print parameter
-        for param, change, data in changes:
-            path = parameter.childPath(param)
-            if path is not None:
-                childName = '.'.join(path)
-            else:
-                childName = param.name()
-            print('  parameter: %s'% childName)
-            print('  change:    %s'% change)
-            print('  data:      %s'% str(data))
-            print('  ----------')
-        if childName == 'Initial States.Initial radius in [m]':
-            print'r: ',st.q0[0]
-            st.q0[0] = data
-            print'r: ',st.q0[0]
+        QtGui.QMainWindow.__init__(self)
+        self.sim = SimulatorInteractor(self)
 
-# weitere if Anweisungen fuer andere Parameter, sehr umstaendlich: HILFE
+        #viewer
+        self.targetView = SimulatorView(self)
+        self.targetView.setModel(self.sim.target_model)
+
+        # Window properties
+        self.setCentralWidget(self.targetView)
+        self.resize(500, 500)
+        self.setWindowTitle('Sim Test')
+       

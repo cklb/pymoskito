@@ -1,125 +1,108 @@
-#!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+from __future__ import division
 from numpy import sin, cos, pi
+<<<<<<< HEAD
 import settings as sp
+=======
+
+from sim_core import SimulationModule
+>>>>>>> model_view_architecture
 
 #---------------------------------------------------------------------
 # trajectory generation
 #---------------------------------------------------------------------
-class TrajectoryGenerator:
+class Trajectory(SimulationModule):
     '''
     base class for trajectory generators
     '''
 
-    def __init__(self, logger=None):
-        self.logger = logger
+    def __init__(self, outputDimension):
+        SimulationModule.__init__(self)
+        self.output_dim = outputDimension
+        return
 
-    def getValues(self, t, order):
+    def getOutputDimension(self):
+        return self.output_dim
+
+    def getValues(self, t):
         yd = self.calcValues(t)
-        return [yd[i] for i in range(order+1)]
+        return [yd[i] for i in range(self.output_dim)]
 
-class HarmonicGenerator(TrajectoryGenerator):
-    ''' 
-    provide a harmonic signal with derivatives
+
+class HarmonicTrajectory(Trajectory):
+    ''' provide a harmonic signal with derivatives
     '''
 
-    def __init__(self, logger=None):
-        TrajectoryGenerator.__init__(self, logger)
-        self.A = 1
+    settings = {'Amplitude': 0.5}
 
-    def setAmplitude(self, Amplitude):
-        self.A = Amplitude
+    def __init__(self, derivateOrder):
+        Trajectory.__init__(self, derivateOrder+1)
+        if derivateOrder > 4:
+            print 'Error: not enough derivates implemented!'
 
     def calcValues(self, t):
         '''
         Calculates desired trajectory for ball position
         '''
         yd = []
-        yd.append(self.A * cos(pi*t/5))
-        yd.append(-self.A * (pi/5) * sin(pi*t/5))
-        yd.append(-self.A * (pi/5)**2 * cos(pi*t/5))
-        yd.append(self.A * (pi/5)**3 * sin(pi*t/5))
-        yd.append(self.A * (pi/5)**4 * cos(pi*t/5))
-
+        A = float(self.settings['Amplitude'])
+        yd.append(A * cos(pi*t/5))
+        yd.append(-A * (pi/5) * sin(pi*t/5))
+        yd.append(-A * (pi/5)**2 * cos(pi*t/5))
+        yd.append(A * (pi/5)**3 * sin(pi*t/5))
+        yd.append(A * (pi/5)**4 * cos(pi*t/5))
         return yd
 
-class FixedPointGenerator(TrajectoryGenerator):
-    ''' 
-    provides a fixed signal
+
+class FixedPointTrajectory(Trajectory):
+    ''' provides a fixed signal
     '''
     
-    pos = 0
+    settings = {'Position': 0.5}
     
-    def __init__(self, logger=None):
-        TrajectoryGenerator.__init__(self, logger)
-    
-    def setPosition(self, position):
-        if abs(position) <= sp.beam_length/2:
-            self.pos = position
-        else:
-            print 'This position is not on the beam, it is set to r = 0'
-            self.pos = 0
+    def __init__(self, derivateOrder):
+        Trajectory.__init__(self, derivateOrder+1)
     
     def calcValues(self, t):
         '''
         Calculates desired trajectory for ball position
         '''
         yd = []
-        yd.append(self.pos)
+        yd.append(float(self.settings['Position']))
         yd.append(0.)
         yd.append(0.)
         yd.append(0.)
         yd.append(0.)
-
         return yd
 
-class TwoPointSwitchingGenerator(TrajectoryGenerator):
+class TwoPointSwitchingTrajectoy(TrajectoryGenerator):
     '''
-    provides a signal which switched between two different points
+    provides a signal switching between two points
     '''
-    pos1 = sp.beam_length/2
-    pos2 = -sp.beam_length/2
-    counter = 1
-    change = 5
-    changeTime = sp.sim_time/change
+
+    settings = {'Positions': [0.5, -0.5],\
+            'change time': 5} #keine Ahnung was das ist
     
-    def __init__(self, logger=None):
-        TrajectoryGenerator.__init__(self, logger)
+    def __init__(self, derivateOrder):
+        Trajectory.__init__(self, derivateOrder+1)
+        self.switchCount = 1
     
-    def setPositions(self, position1, position2):
-        '''
-        set the position1 and position2
-        '''
-        if (abs(position1) <= sp.beam_length/2) and (abs(position2) <= sp.beam_length/2):
-                self.pos1 = position1
-                self.pos2 = position2
-        else:
-                print 'One of the positions is not on the beam, it is set to r = 0.5 and r = -0.5'
-                self.pos1 = sp.beam_length/2
-                self.pos2 = -sp.beam_length/2
-                
-    def setNumberOfChange(self, change):
-        '''
-        Set the number of change between two points
-        '''
-        self.change = change
-        self.changeTime = sp.sim_time/change
-        
-            
     def calcValues(self, t):
         '''
         Calculates desired trajectory for ball position
         '''
+
         yd = []
+        if t > self.settings['change time']*self.switchCount:
+            #time to switch
+            if self.side == 0:
+                self.side = 1
+            else:
+                self.side = 0
+            self.switchCount += 1
         
-        if t < self.changeTime*self.counter:
-            yd.append(self.pos1)
-        else:
-            yd.append(self.pos2)
-            if t > self.changeTime*(self.counter + 1):
-                self.counter = self.counter + 2
-        
+        yd.append(self.settings['Positions'][self.side])
         yd.append(0.)
         yd.append(0.)
         yd.append(0.)

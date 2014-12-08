@@ -2,11 +2,28 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import division
-from scipy.integrate import ode
+from collections import OrderedDict
 
 #Qt
 from PyQt4 import QtGui
-from PyQt4.QtCore import QObject, pyqtSignal
+from PyQt4.QtCore import QObject, pyqtSignal, pyqtSlot
+
+class SimulationModule(QObject):
+    """ Smallest Unit in Simulation Process
+        Provides neccessary functions like output calculation and holds
+        all settings is 'settings' all available settings have to be added
+        to this dict and have to be known a priori.
+    """
+    settings = OrderedDict()
+
+    def __init__(self, parent=None):
+        QObject.__init__(self, parent)
+
+    def getOutputDimension(self):
+        raise Exception()
+
+
+
 
 #own
 from model import ModelException
@@ -18,149 +35,123 @@ import settings as st
 class Simulator(QObject):
     """ Simulation Wrapper
     
-    This Class exceutes the timestep integration.
+        This Class exceutes the timestep integration.
     """
 
-    finished = pyqtSignal()
-    failed = pyqtSignal()
-
-    def __init__(self, model, parent=None):
-        QObject.__init__(self, parent)
-        self.model = model
+    #qt general
+    finished = pyqtSignal(dict)
+    failed = pyqtSignal(dict)
         
-        self.initStates() 
-        self.initStorage()
+    #abilities (should match the module names)
+    moduleList = ['model', 'solver', 'disturbance', 'sensor', 'observer', 'controller', 'trajectory']
 
-    def initStates(self):
-        self.simTime = 0
-        self.stepSize = st.dt
-        self.traj_output = 0
-        self.controller_output = 0
-        self.model_output = 0
-        self.sensor_output = 0
-        self.observer_output = 0
 
-    def initStorage(self):
-        self.storage = {'simTime':[],\
-                'traj_output':[],\
-                'controller_output':[],\
-                #'model_output':[],\
-                'model_output.q1':[],\
-                'model_output.q2':[],\
-                'model_output.q3':[],\
-                'model_output.q4':[],\
-                #'sensor_output':[]
-                'sensor_output.q1':[],\
-                'oberserver_output.q1_o':[],\
-                'oberserver_output.q2_o':[],\
-                'oberserver_output.q3_o':[],\
-                'oberserver_output.q4_o':[],\
-                }
+    def __init__(self, parent=None):
+        QObject.__init__(self, parent)
 
-    def setupSolver(self, intMode=st.int_mode, intMethod=st.int_method, rTol=st.int_rtol, aTol=st.int_atol):
-        self.solver = ode(self.model.stateFunc)
-        self.solver.set_integrator(intMode, method=intMethod, rtol=rTol, atol=aTol)
+    def _initStates(self):
+        #init fields with known dimension
+        self.current_time = 0
 
-    def setInitialValues(self, values):
-        if self.solver is None:
-            print('Error: setup solver first!')
-        else:
-            self.solver.set_initial_value(values)
+        #init fields with variing names
+        for elem in self.moduleList:
+            setattr(self, (elem+'_output'), 0)
 
-    def setTrajectoryGenerator(self, generator):
-        self.trajectory = generator
+    def _initStorage(self):
+        #init fields with fixed dimensions
+        self.storage = {\
+               'simTime':[],\
+               }
 
-    def setController(self, controller):
-        self.controller = controller
-        self.tOrder = controller.getOrder()
+        #init fields with variable dimensions
+        for moduleName in self.moduleList:
+            if hasattr(self, moduleName):
+                module = getattr(self, moduleName)
+            else:
+                continue
 
-    def setObserver(self, observer):
-        self.observer = observer
-    
-    def setSensor(self, sensor):
-        self.sensor = sensor
+            for idx in range(module.getOutputDimension()):
+                self.storage.update({(moduleName + '_output.' + str(idx)): []})
 
-    def setStepSize(self, stepSize):
-        self.stepSize = stepSize
-
-    def setEndTime(self, endTime):
-        self.endTime = endTime
-
-    def calcStep(self):
+    def _calcStep(self):
         '''
         Calcualte one step in simulation
         '''
         
         # integrate model
         self.model.setInput(self.controller_output)
-        s = self.solver
-        self.model_output = s.integrate(s.t + self.stepSize)
-        # save time
-        self.simTime = s.t
+
+        self.current_time = self.solver.getTime()
+        self.solver_output = self.solver.integrate(self.current_time) 
 
         #check credibility
-        self.model.checkConsistancy(self.model_output)
+        self.model.checkConsistancy(self.solver_output)
+        self.model_output = self.solver_output
+
+        #perform disturbance
+        if hasattr(self, 'disturbance'):
+            self.disturbance_output = self.disturbance.disturb(self.current_time)
+        else:
+            self.disturbance_output = 0
 
         #perform measurement
         if hasattr(self, 'sensor'):
-            self.sensor_output = self.sensor.measure(s.t, self.model_output)
+            self.sensor_output = self.sensor.measure(self.current_time,\
+                    self.model_output + self.disturbance_output)
         else:
             self.sensor_output = self.model_output
 
         #perform observation
         if hasattr(self, 'observer'):
-            self.observer_output = self.observer.estimate(s.t, self.controller_output, self.sensor_output)
+            self.observer_output = self.oberver.observe(self.current_time,\
+                    self.controller_output, self.sensor_output)
         else:
             self.observer_output = self.sensor_output
-            
+
         #get desired values
         if hasattr(self, 'trajectory'):
-            self.traj_output = self.trajectory.getValues(s.t, self.tOrder)
-            
+            self.trajectory_output = self.trajectory.getValues(self.current_time)
+
         #perform control
         if hasattr(self, 'controller'):
-            self.controller_output = self.controller.control(self.observer_output, self.traj_output)
+            self.controller_output = self.controller.control(self.observer_output, self.trajectory_output)
 
         return 
 
-    def storeValues(self):
-        self.storage['simTime'].append(self.simTime)
-        self.storage['traj_output'].append(self.traj_output)
-        self.storage['controller_output'].append(self.controller_output)
-        #self.storage['model_output'].append(self.model_output)
-        self.storage['model_output.q1'].append(self.model_output[0])
-        self.storage['model_output.q2'].append(self.model_output[1])
-        self.storage['model_output.q3'].append(self.model_output[2])
-        self.storage['model_output.q4'].append(self.model_output[3])
-        self.storage['sensor_output.q1'].append(self.sensor_output[0])
-        #self.storage['sensor_output'].append(self.sensor_output)
-        self.storage['oberserver_output.q1_o'].append(self.observer_output[0])
-        self.storage['oberserver_output.q2_o'].append(self.observer_output[1])
-        self.storage['oberserver_output.q3_o'].append(self.observer_output[2])
-        self.storage['oberserver_output.q4_o'].append(self.observer_output[3])
+    def _storeValues(self):
+        self.storage['simTime'].append(self.current_time)
+        for module in self.moduleList:
+            if not hasattr(self, module):
+                continue
+
+            module_values = getattr(self, module+'_output')
+            if isinstance(module_values, float) or isinstance(module_values, int):
+                module_values = [module_values]
+
+            for idx, val in enumerate(module_values):
+                self.storage[module + '_output.' + str(idx)].append(val)
     
+    @pyqtSlot()
     def run(self):
+        #initialize
+        self._initStates()
+        self._initStorage()
+        self.solver.initialize()
+
+        #simulate
         try:
-            while self.simTime <= self.endTime:
-                self.calcStep()
-                self.storeValues()
+            while self.current_time <= float(self.solver.settings['end time']):
+                self._calcStep()
+                self._storeValues()
 
         except ModelException as e:
             print 'Simulator.run(): Model ERROR: ', e.args[0]
-            self.endTime = self.simTime
-            self.failed.emit()
+            self.solver.settings['end time'] = self.current_time
+            self.failed.emit(self.storage)
             return
 
-        self.finished.emit()
+        self.finished.emit(self.storage)
         return
 
-    def getValues(self):
-        return self.storage
-
-    def reset(self):
-        '''
-        reset to initial state
-        '''
-        self.initStates() 
-        self.initStorage()
-
+    def listModules(self):
+        return self.moduleList

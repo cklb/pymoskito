@@ -5,33 +5,20 @@
 import sys
 import getopt
 import traceback
-#Qt
-from PyQt4.QtCore import QObject, QThread, pyqtSignal, QTimer
 
-#pyqtgraph related
-from pyqtgraph.Qt import QtCore, QtGui
+#Qt
+from PyQt4 import QtGui
 
 #own
-from ballbeam import BallBeam
-from trajectory import HarmonicGenerator, FixedPointGenerator
-from control import PController, FController, GController, JController, LSSController, IOLController
-from sim_core import Simulator
-from model import BallBeamModel, ModelException
-from visualization import VtkVisualizer
-from plotting import PyQtGraphPlotter
-from gui import Gui
+from gui import BallBeamGui, TestGui
 
-import settings as st
 #--------------------------------------------------------------------- 
 # Main Application
 #--------------------------------------------------------------------- 
 def process(arg):
+    # TODO parse command line options
     pass
 
-'''
-Ball and Beam Simulation Toolkit
-'''
-# parse command line options TODO
 try:
     opts, args = getopt.getopt(sys.argv[1:], "h", ["help"])
 except getopt.error, msg:
@@ -54,33 +41,13 @@ for arg in args:
 # Create Gui
 #----------------------------------------------------------------
 app = QtGui.QApplication([])
-gui = Gui()
+gui = BallBeamGui()
+#gui = TestGui()
 gui.show()
-
-
-#----------------------------------------------------------------
-# pyqt windows
-#----------------------------------------------------------------
-#create plotter for x1
-#plotX1 = PyQtGraphPlotter(['x1'], l)
-#d3.addWidget(plotX1.getWidget())
-##create plotter for x2
-#plotX2 = PyQtGraphPlotter(['x2'], l)
-#d3.addWidget(plotX2.getWidget())
-##create plotter for x3
-#plotX3 = PyQtGraphPlotter(['x3'], l)
-#d3.addWidget(plotX3.getWidget())
-##create plotter for x4
-#plotX4 = PyQtGraphPlotter(['x4'], l)
-#d3.addWidget(plotX4.getWidget())
-
-#create plotter for u
-#d4.addWidget(PyQtGraphPlotter(['u'], l).getWidget())
-
-
 
 ## Start Qt event loop unless running in interactive mode or using pyside.
 if __name__ == '__main__':
     import sys
     if (sys.flags.interactive != 1) or not hasattr(QtCore, 'PYQT_VERSION'):
         QtGui.QApplication.instance().exec_()
+
