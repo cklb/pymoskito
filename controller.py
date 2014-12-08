@@ -16,6 +16,12 @@ class Controller(SimulationModule):
 
     def __init__(self):
         SimulationModule.__init__(self)
+        self.M = st.M
+        self.R = st.R
+        self.J = st.J
+        self.Jb = st.Jb
+        self.G = st.G
+        self.B = self.M/(self.Jb/self.R**2+self.M)
         return
 
     def getOrder(self):
@@ -30,24 +36,24 @@ class Controller(SimulationModule):
         return u
 
 #---------------------------------------------------------------------
-# P controller
+#P controller
 #---------------------------------------------------------------------
-class PController(Controller):
-    '''
-    PController
-    - e.g. inital states x = [0, 0.2, 0, 0], desired position r = 0
-    '''
+#class PController(Controller):
+    #'''
+    #PController
+    #- e.g. inital states x = [0, 0.2, 0, 0], desired position r = 0
+    #'''
     
-    # controller gain
-    Kp = -0.6
+    #controller gain
+    #Kp = -0.6
     
-    def __init__(self):
-        self.order = 0
-        Controller.__init__(self)
+    #def __init__(self):
+        #self.order = 0
+        #Controller.__init__(self)
         
-    def calcOutput(self, x, w):
-        u = self.Kp*(w[0]-x[0])
-        return u
+    #def calcOutput(self, x, w):
+        #u = self.Kp*(w[0]-x[0])
+        #return u
 
 #---------------------------------------------------------------------
 # controller created by changing f(x) 
@@ -136,11 +142,9 @@ class GController(Controller):
 #---------------------------------------------------------------------
 class JController(Controller):
     
-    # controller gains
-    k0 = 16.0
-    k1 = 32.0
-    k2 = 24.0
-    k3 = 8.0
+    settings = {\
+            'k' : [16.0, 32.0, 24.0, 8.0],\
+        }
     
     def __init__(self):
         self.order = 4
@@ -151,20 +155,20 @@ class JController(Controller):
         # calculate linear terms phi
         phi1 = x[0]
         phi2 = x[1]  
-        phi3 = -st.B*st.G*x[2]
-        phi4 = -st.B*st.G*x[3]
+        phi3 = -self.B*self.G*x[2]
+        phi4 = -self.B*self.G*x[3]
         
         # calculate fictional input v
         v = yd[4] + \
-                self.k3*(yd[3] - phi4) + \
-                self.k2*(yd[2] - phi3) + \
-                self.k1*(yd[1] - phi2) + \
-                self.k0*(yd[0] - phi1)
+                self.settings['k'][3]*(yd[3] - phi4) + \
+                self.settings['k'][2]*(yd[2] - phi3) + \
+                self.settings['k'][1]*(yd[1] - phi2) + \
+                self.settings['k'][0]*(yd[0] - phi1)
         
         # calculate a(x)
-        a = -st.B*st.G/(st.J + st.Jb)
+        a = -self.B*self.G/(self.J + self.Jb)
         # calculate b(x)
-        b = st.B*st.M*st.G**2*x[0]/(st.J + st.Jb)
+        b = self.B*self.M*self.G**2*x[0]/(self.J + self.Jb)
         
         # calculate u
         u = (v-b)/a
@@ -182,14 +186,9 @@ class LSSController(Controller):
 
     settings = {\
             'poles': [-2, -2, -2, -2],\
-            'lin state': [0, 0, 0, 0],\
-            'lin tau': 0,\
+            'r0': 0,\
             }
 
-    # Zustandsrückführung mit Eigenwerten bei -2
-#    K = np.array([-0.5362, -0.0913, 0.48, 0.16])
-#    V = -0.0457
-    
     def __init__(self):
         Controller.__init__(self)
         self.firstRun = True
@@ -197,12 +196,14 @@ class LSSController(Controller):
         
     def calcOutput(self, x, yd):
         if self.firstRun:
-            self.lin = Linearization(self.settings['lin state'], self.settings['lin tau'])
+            self.lin = Linearization([self.settings['r0'], 0, 0, 0],\
+                    self.settings['r0'] * self.M*self.G)
             self.K = self.lin.calcFeedbackGain(self.settings['poles'])
             self.V = self.lin.calcPrefilter(self.K)
             firstRun = False
 
         # calculate u
+        #TODO check value type
         u = np.dot(-self.K,np.transpose(x)) + yd[0]*self.V 
         return float(u)
         
@@ -216,9 +217,9 @@ class IOLController(Controller):
     - this controller fails!!!
     '''
     # controller gains
-    k0 = 8
-    k1 = 12
-    k2 = 6
+    settings = {\
+            'k' : [8.0, 12.0, 6.0],\
+        }
     
     def __init__(self):
         self.order = 3
@@ -233,9 +234,9 @@ class IOLController(Controller):
         
         # calculate fictional input v
         v = yd[3] + \
-                self.k2*(yd[2] - y_dd) + \
-                self.k1*(yd[1] - y_d) + \
-                self.k0*(yd[0] - y)
+                self.settings['k'][2]*(yd[2] - y_dd) + \
+                self.settings['k'][1]*(yd[1] - y_d) + \
+                self.settings['k'][0]*(yd[0] - y)
         
         # calculate a(x)
         a = 2*st.B*x[0]*x[3]

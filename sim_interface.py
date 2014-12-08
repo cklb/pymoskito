@@ -283,11 +283,22 @@ class SimulatorInteractor(QtCore.QObject):
             del(module)
 
         del(self.sim)
+
+    def _postprocessing(self):
+        #calc main error
+        a = 'model_output.0'
+        b = 'trajectory_output.0'
+        self.simData['results'].update({'epsilon':self._getDiff(a,b)})
+
+    def _getDiff(self, a, b):
+        data = self.simData['results']
+        return [(data[a][i] - data[b][i]) for i in range(len(data['simTime']))]
         
     @QtCore.pyqtSlot(dict)
     def simFinished(self, data):
         self.simData.update({'results':copy.deepcopy(data)})
         self._simAftercare()
+        self._postprocessing()
         self.simulationFinished.emit(self.simData)
 
     @QtCore.pyqtSlot(dict)

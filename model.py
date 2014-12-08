@@ -5,6 +5,7 @@ from numpy import sin, cos, pi
 from numpy import array as narray
 
 from sim_core import SimulationModule
+import settings as st
 
 #---------------------------------------------------------------------
 # implementation of the system in state space form
@@ -22,14 +23,14 @@ class SimulationModel(SimulationModule):
 
 class BallBeamModel(SimulationModel):
 
-    settings = {'M': 0.05,  \
-            'R': 0.01,      \
-            'J': 0.02,      \
-            'Jb': 2e-6,     \
-            'G': 9.81,      \
-            'beam length': 2.0,      \
-            'beam width': 0.01,      \
-            'beam depth': 0.03,      \
+    settings = {'M': st.M,  \
+            'R': st.R,      \
+            'J': st.J,      \
+            'Jb': st.Jb,     \
+            'G': st.G,      \
+            'beam length': st.beam_length,      \
+            'beam width': st.beam_width,      \
+            'beam depth': st.beam_depth,      \
             }
 
     def __init__(self):

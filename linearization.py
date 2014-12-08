@@ -10,6 +10,7 @@ Linearization in x_0
 import sympy as sp
 import numpy as np
 from sympy import sin,cos, Matrix
+
 import settings as st
 
 class Linearization:
@@ -94,6 +95,7 @@ class Linearization:
                      (np.dot(np.linalg.matrix_power(self.A,3),self.B)).transpose()[0]])
         Qs = QsT.transpose()
         
+        #TODO check rank and throw exception
         if np.absolute(np.linalg.det(Qs)) < 0.0001:
             print 'Warning: System might not be controllable'
             print 'det(Qs):'
@@ -133,6 +135,7 @@ class Linearization:
                      (np.dot(self.C, np.linalg.matrix_power(self.A, 2)))[0],\
                      (np.dot(self.C, np.linalg.matrix_power(self.A, 3)))[0]])
                      
+        #TODO check rank and throw exception
         if np.absolute(np.linalg.det(Qb)) < 0.0001:
             print 'Warning: System might be not observable'
             print 'det(Qb):'
