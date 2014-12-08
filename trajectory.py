@@ -2,12 +2,8 @@
 
 from __future__ import division
 from numpy import sin, cos, pi
-<<<<<<< HEAD
-import settings as sp
-=======
 
 from sim_core import SimulationModule
->>>>>>> model_view_architecture
 
 #---------------------------------------------------------------------
 # trajectory generation
@@ -76,17 +72,19 @@ class FixedPointTrajectory(Trajectory):
         yd.append(0.)
         return yd
 
-class TwoPointSwitchingTrajectoy(TrajectoryGenerator):
+class TwoPointSwitchingTrajectory(Trajectory):
     '''
     provides a signal switching between two points
     '''
 
     settings = {'Positions': [0.5, -0.5],\
-            'change time': 5} #keine Ahnung was das ist
+            'change time': 5,\
+            }
     
     def __init__(self, derivateOrder):
         Trajectory.__init__(self, derivateOrder+1)
         self.switchCount = 1
+        self.side = 0
     
     def calcValues(self, t):
         '''

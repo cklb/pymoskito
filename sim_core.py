@@ -103,7 +103,7 @@ class Simulator(QObject):
 
         #perform observation
         if hasattr(self, 'observer'):
-            self.observer_output = self.oberver.observe(self.current_time,\
+            self.observer_output = self.observer.observe(self.current_time,\
                     self.controller_output, self.sensor_output)
         else:
             self.observer_output = self.sensor_output

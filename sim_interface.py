@@ -128,6 +128,7 @@ class SimulatorInteractor(QtCore.QObject):
         for module in Simulator.moduleList:
             newItems = []
             name = QStandardItem(module)
+            #defualts for tesing purposes TODO read from config
             if module == 'model':
                 value = QStandardItem('BallBeamModel')
             elif module == 'solver':
@@ -210,7 +211,7 @@ class SimulatorInteractor(QtCore.QObject):
 
     def _setupSimlator(self, model):
         sim = Simulator()
-    
+   
         # setup simulation Modules
         for row in range(model.rowCount()):
             # build correct object and add it to the simulator

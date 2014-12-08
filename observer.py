@@ -3,6 +3,7 @@ import numpy as np
 from scipy.integrate import ode
 
 from sim_core import SimulationModule
+from linearization import Linearization
 
 #---------------------------------------------------------------------
 # obeserver base class 
@@ -16,9 +17,9 @@ class Observer(SimulationModule):
     def getOutputDimension(self):
         return self.output_dim
 
-    def obeserve(self, u):
-        u = self.calcOutput(u)
-        return u
+    def observe(self, t, u, r):
+        y = self.calcOutput(t, u, r)
+        return y
 
 #---------------------------------------------------------------------
 # Luenberger Observer
@@ -35,31 +36,18 @@ class LuenbergerObserver(Observer):
             'end time': 10,\
             'initial state': [0, 0, 0, 0],\
             'poles': [-3, -3, -3, -3],\
+            'lin state': [0, 0, 0, 0],\
+            'lin tau': 0,\
             }
 
-    def __init__(self, linearization):
+    def __init__(self):
         self.output_dim = 4 #oberver complete state
         Observer.__init__(self)
         self.firstRun = True
               
     def stateFuncApprox(self, t, q):
-        if self.firstRun:
-            self.A = linearization.A
-            self.B = linearization.B
-            self.C = linearization.C
-            self.L = linearization.calcObserver(self.settings['poles'])
-            
-            self.solver = ode(self.stateFuncApprox)
-            self.solver.set_integrator('dopri5', method=self.settings['method'], \
-                    rtol=self.settings['rTol',\
-                    atol=self.settings['aTol')
-            self.solver.set_initial_value(self.settings['initial state'])
-        
-            self.x0 = self.settings['initial state']     
-            self.firstRun = False
-      
         x1_o, x2_o, x3_o, x4_o = q
-        y = self.sensor_output
+        y = np.array(self.sensor_output)
         u = self.controller_output
 #        print 'y: ',y
 #        print 'u: ',u
@@ -84,7 +72,25 @@ class LuenbergerObserver(Observer):
         
         return [dx1_o, dx2_o, dx3_o, dx4_o]
         
-    def calcOutput(self, t, controller_output=None, sensor_output):
+    def calcOutput(self, t, controller_output, sensor_output):
+        if self.firstRun:
+            self.lin = Linearization(self.settings['lin state'], self.settings['lin tau'])
+
+            self.A = self.lin.A
+            self.B = self.lin.B
+            self.C = self.lin.C
+            self.L = self.lin.calcObserver(self.settings['poles'])
+            
+            self.solver = ode(self.stateFuncApprox)
+            self.solver.set_integrator('dopri5', method=self.settings['Method'], \
+                    rtol=self.settings['rTol'],\
+                    atol=self.settings['aTol'])
+            self.solver.set_initial_value(self.settings['initial state'])
+        
+            self.x0 = self.settings['initial state']     
+            self.firstRun = False
+
+
         self.sensor_output = sensor_output
         self.controller_output = controller_output
         

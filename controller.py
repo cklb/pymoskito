@@ -2,14 +2,10 @@
 # -*- coding: utf-8 -*-
 
 import numpy as np
-<<<<<<< HEAD:python/control.py
-import settings as st
-=======
 
-from settings import *
-import linearization as lin
+import settings as st       #TODO remove this dependancy
+from linearization import Linearization
 from sim_core import SimulationModule
->>>>>>> model_view_architecture:python/controller.py
 
 #---------------------------------------------------------------------
 # controller base class 
@@ -183,27 +179,32 @@ class LSSController(Controller):
     linear statespace controller
     System is linearised by tau = 0 and x = [0,0,0,0]
     '''
+
+    settings = {\
+            'poles': [-2, -2, -2, -2],\
+            'lin state': [0, 0, 0, 0],\
+            'lin tau': 0,\
+            }
+
     # Zustandsrückführung mit Eigenwerten bei -2
 #    K = np.array([-0.5362, -0.0913, 0.48, 0.16])
 #    V = -0.0457
     
-<<<<<<< HEAD:python/control.py
-    def __init__(self, linearization=None, logger=None):
-        Controller.__init__(self, logger)
-=======
     def __init__(self):
         Controller.__init__(self)
->>>>>>> model_view_architecture:python/controller.py
-    
-        self.K = linearization.calcFeedbackGain(st.poles_LSSController)
-        self.V = linearization.calcPrefilter(self.K)
+        self.firstRun = True
         self.order = 0
         
     def calcOutput(self, x, yd):
+        if self.firstRun:
+            self.lin = Linearization(self.settings['lin state'], self.settings['lin tau'])
+            self.K = self.lin.calcFeedbackGain(self.settings['poles'])
+            self.V = self.lin.calcPrefilter(self.K)
+            firstRun = False
+
         # calculate u
-        u = np.dot(-self.K,np.transpose(x)) + yd[0]*self.V
-        
-        return u
+        u = np.dot(-self.K,np.transpose(x)) + yd[0]*self.V 
+        return float(u)
         
 #---------------------------------------------------------------------
 # Input-Output-Linearization

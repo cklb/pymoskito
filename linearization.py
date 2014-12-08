@@ -12,9 +12,9 @@ import numpy as np
 from sympy import sin,cos, Matrix
 import settings as st
 
-
 class Linearization:
-    def __init__(self, x0 = None, tau0 = None):
+
+    def __init__(self, x0, tau0):
         params = sp.symbols('x, x1, x2, x3, x4, u1, tau, M , G , J , J_ball , R, B')
         x, x1, x2, x3, x4, u1, tau, M , G , J , J_ball , R, B = params
 
@@ -22,7 +22,6 @@ class Linearization:
         x02 = x0[1]
         x03 = x0[2]
         x04 = x0[3]
-        tau0 = tau0
         
         #f1 = ddr
         f1 = B*(x1*x4**2 - G*sin(x3))
