@@ -99,7 +99,7 @@ class Simulator(QObject):
             self.sensor_output = self.sensor.measure(self.current_time,\
                     self.model_output + self.disturbance_output)
         else:
-            self.sensor_output = self.model_output
+            self.sensor_output = self.model_output + self.disturbance_output
 
         #perform observation
         if hasattr(self, 'observer'):

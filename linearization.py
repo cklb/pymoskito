@@ -119,7 +119,7 @@ class Linearization:
 
         return V
     
-    def calcObserver(self, poles=None):
+    def calcObserver(self, poles):
         
 #        A = self.A
 #        B = self.B

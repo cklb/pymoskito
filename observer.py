@@ -59,7 +59,7 @@ class LuenbergerObserver(Observer):
                       [x4_o]])
         #FIXME: sensorausgang mit C vermanschen
         # ACHTUNG!!!! y[0] überdenken für mehrgrößenfall
-        y = np.dot(self.C, y.transpose())
+        #y = np.dot(self.C, y.transpose())
         dx_o = np.dot(self.A - np.dot(self.L, self.C), x_o) + np.dot(self.B, u) + np.dot(self.L, y[0])
 #        print 'dx_o: ',dx_o
         
