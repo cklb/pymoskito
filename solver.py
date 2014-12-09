@@ -22,8 +22,12 @@ class Solver(SimulationModule):
                 method=self.settings['Method'],\
                 rtol=self.settings['rTol'],\
                 atol=self.settings['aTol'],\
+                max_step=0.1*self.settings['step size']\
                 ) 
         self.solver.set_initial_value(self.settings['initial state'])
+
+    def setInput(self, inputValue):
+        self.solver.set_f_params(inputValue)
 
     def integrate(self, t):
         return self.calcOutput(t)
