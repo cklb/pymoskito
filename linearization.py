@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+﻿# -*- coding: utf-8 -*-
 """
 Created on Mon Dec 01 21:52:06 2014
 
@@ -70,6 +70,9 @@ class Linearization:
         # Qs = Matrix([C, C*A, C*A**2, C*A**3])
     
     def calcFeedbackGain(self, poles):
+        '''        
+        calculate FeedbackGain and return a numpy row-matrix        
+        '''
         n = len(poles)
         s = sp.symbols('s')
         
@@ -101,7 +104,7 @@ class Linearization:
             print 'det(Qs):'
             print Qs.det()
         
-        e_4 = np.array([0,0,0,1])
+        e_4 = np.array([[0,0,0,1]])
         
         t1T = np.dot(e_4,np.linalg.inv(Qs))
         
@@ -113,13 +116,16 @@ class Linearization:
         return K
         
     def calcPrefilter(self, K = None):
+        '''
+        calculate the prefilter and return a float
+        '''
         # Vorfilter V = -[C(A-BK)^-1*B]^-1
         if K is not None:
             V = -np.linalg.inv(np.dot(np.dot(self.C,(np.linalg.inv(self.A-self.B*K))),self.B))[0][0]
         else:
             return 0
-
-        return V
+            
+        return float(V)
     
     def calcObserver(self, poles):
         

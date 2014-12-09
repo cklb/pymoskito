@@ -7,7 +7,7 @@ import getopt
 import traceback
 
 #Qt
-from PyQt4 import QtGui
+from PyQt4 import QtGui, QtCore
 
 #own
 from gui import BallBeamGui, TestGui

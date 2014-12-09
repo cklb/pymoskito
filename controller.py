@@ -195,17 +195,19 @@ class LSSController(Controller):
         self.order = 0
         
     def calcOutput(self, x, yd):
+        # x as row-matrix
+        x = np.array([[x[0],x[1],x[2],x[3]]])
         if self.firstRun:
             self.lin = Linearization([self.settings['r0'], 0, 0, 0],\
                     self.settings['r0'] * self.M*self.G)
             self.K = self.lin.calcFeedbackGain(self.settings['poles'])
             self.V = self.lin.calcPrefilter(self.K)
-            firstRun = False
-
+            self.firstRun = False
+        
         # calculate u
-        #TODO check value type
-        u = np.dot(-self.K,np.transpose(x)) + yd[0]*self.V 
-        return float(u)
+        u = float(np.dot(-self.K,np.transpose(x))[0,0] + yd[0]*self.V)
+
+        return u
         
 #---------------------------------------------------------------------
 # Input-Output-Linearization
