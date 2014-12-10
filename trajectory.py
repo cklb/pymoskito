@@ -33,7 +33,9 @@ class HarmonicTrajectory(Trajectory):
     ''' provide a harmonic signal with derivatives
     '''
 
-    settings = {'Amplitude': 0.5}
+    settings = {'Amplitude': 0.5,\
+            'Frequency': 5,
+            }
 
     def __init__(self, derivateOrder):
         Trajectory.__init__(self, derivateOrder+1)
@@ -45,12 +47,13 @@ class HarmonicTrajectory(Trajectory):
         Calculates desired trajectory for ball position
         '''
         yd = []
-        A = float(self.settings['Amplitude'])
-        yd.append(A * cos(pi*t/5))
-        yd.append(-A * (pi/5) * sin(pi*t/5))
-        yd.append(-A * (pi/5)**2 * cos(pi*t/5))
-        yd.append(A * (pi/5)**3 * sin(pi*t/5))
-        yd.append(A * (pi/5)**4 * cos(pi*t/5))
+        A = self.settings['Amplitude']
+        f = self.settings['Frequency']
+        yd.append(A * cos(pi*t*f))
+        yd.append(-A * (pi/f) * sin(pi*t/f))
+        yd.append(-A * (pi/f)**2 * cos(pi*t/f))
+        yd.append(A * (pi/f)**3 * sin(pi*t/f))
+        yd.append(A * (pi/f)**4 * cos(pi*t/f))
         return yd
 
 
@@ -114,11 +117,11 @@ class TwoPointSwitchingTrajectory(Trajectory):
 
 class SmoothTransitionTrajectory(Trajectory):
     '''
-    provides a trajektory from one state to the other
+    provides a smooth trajectory from one state to the other
     '''
 
     settings = {'Positions': [0, 0.5],\
-            'start time': 1,\
+            'start time': 0,\
             'delta t': 3,\
             }
     

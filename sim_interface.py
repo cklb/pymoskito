@@ -134,7 +134,9 @@ class SimulatorInteractor(QtCore.QObject):
             elif module == 'solver':
                 value = QStandardItem('VODESolver')
             elif module == 'trajectory':
-                value = QStandardItem('FixedPointTrajectory')
+                value = QStandardItem('SmoothTransitionTrajectory')
+            elif module == 'controller':
+                value = QStandardItem('LSSController')
             else:
                 value = QStandardItem('None')
             

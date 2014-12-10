@@ -24,8 +24,6 @@ class SimulationModule(QObject):
         raise Exception()
 
 
-
-
 #own
 from model import ModelException
 import settings as st
@@ -53,28 +51,18 @@ class Simulator(QObject):
     def _initStates(self):
         #init fields with known dimension
         self.current_time = 0
+        
+        #init model output with current state
+        self.model_output = self.solver.settings['initial state']
 
-        #init fields with variing names
-        #for elem in self.moduleList:
-            #if hasattr(self, elem):
-                #value =  [0 for i in range(getattr(self, elem).getOutputDimension())]
-                #setattr(self, (elem+'_output'), value)
+        if hasattr(self, 'controller'):
+            self.controller_output = [0] * self.controller.getOutputDimension()
 
     def _initStorage(self):
         #init fields with fixed dimensions
         self.storage = {\
                'simTime':[],\
                }
-
-        #init fields with variable dimensions
-        #for moduleName in self.moduleList:
-            #if hasattr(self, moduleName):
-                #module = getattr(self, moduleName)
-            #else:
-                #continue
-
-            #for idx in range(module.getOutputDimension()):
-                #self.storage.update({(moduleName + '_output.' + str(idx)): []})
 
     def _calcStep(self):
         '''
@@ -147,8 +135,6 @@ class Simulator(QObject):
         self.solver.initialize()
 
         #simulate
-        #init model output with current state
-        self.model_output = self.solver.settings['initial state']
         try:
             while self.current_time <= self.solver.settings['end time']:
                 self._calcStep()
