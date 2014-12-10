@@ -41,7 +41,7 @@ class LuenbergerObserver(Observer):
             }
 
     def __init__(self):
-        self.output_dim = 4 #oberver complete state
+        self.output_dim = 4 #observer complete state
         Observer.__init__(self)
         self.firstRun = True
               

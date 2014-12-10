@@ -220,7 +220,7 @@ class BallBeamGui(QtGui.QMainWindow):
         self.simulationFinished(data)
 
     def _readResults(self):
-        self.currentStepSize = self.currentDataset['modules']['solver']['step size']
+        self.currentStepSize = 1/self.currentDataset['modules']['solver']['measure rate']
         self.currentEndTime = self.currentDataset['modules']['solver']['end time']
         self.validData = True
 
@@ -312,9 +312,14 @@ class BallBeamGui(QtGui.QMainWindow):
         '''
         for dock in self.plotDocks:
             for widget in dock.widgets:
-                widget.getPlotItem().clear()
-                widget.getPlotItem().plot(x=self.currentDataset['results']['simTime'],\
-                        y=self.currentDataset['results'][dock.name()])
+                print self.dataList.findItems(dock.name(), QtCore.Qt.MatchExactly)
+                if not self.dataList.findItems(dock.name(), QtCore.Qt.MatchExactly):
+                    #no data for this plot -> reset it
+                    widget.getPlotItem().clear()
+                else:
+                    widget.getPlotItem().clear()
+                    widget.getPlotItem().plot(x=self.currentDataset['results']['simTime'],\
+                            y=self.currentDataset['results'][dock.name()])
 
     def targetViewChanged(self, index):
         self.targetView.resizeColumnToContents(0)

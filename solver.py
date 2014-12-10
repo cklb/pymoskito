@@ -22,7 +22,7 @@ class Solver(SimulationModule):
                 method=self.settings['Method'],\
                 rtol=self.settings['rTol'],\
                 atol=self.settings['aTol'],\
-                max_step=0.1*self.settings['step size']\
+                max_step=self.settings['step size']\
                 ) 
         self.solver.set_initial_value(self.settings['initial state'])
 
@@ -45,6 +45,7 @@ class VODESolver(Solver):
 
     #solver specific
     settings = {'Method': 'adams',\
+            'measure rate': 100,\
             'step size': 0.01,\
             'rTol': 1e-6,\
             'aTol': 1e-9,\
@@ -58,6 +59,6 @@ class VODESolver(Solver):
         self.solver = ode(stateFunction)
         
     def calcOutput(self, t):
-        q = self.solver.integrate(t + self.settings['step size'])
+        q = self.solver.integrate(t + 1/self.settings['measure rate'])
         return q
 
