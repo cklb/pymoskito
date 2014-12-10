@@ -274,6 +274,9 @@ class PIFeedbackController(Controller):
         self.e_old = 0
         
     def calcOutput(self, x, yd):
+        
+        # x as row-matrix
+        x = np.array([[x[0],x[1],x[2],x[3]]])
         if self.firstRun:
             self.lin = Linearization([self.settings['r0'], 0, 0, 0],\
                     self.settings['r0'] * self.M*self.G)
@@ -305,16 +308,11 @@ class PIFeedbackController(Controller):
             # calculate V
             self.V = self.lin.calcPrefilter(self.K)
             self.firstRun = False
-
         
         # calculate e
-        e = (yd-x[0])*st.step_size + self.e_old
+        e = (yd-x[0,0])*st.step_size + self.e_old
         self.e_old = e                        
-        
-        # x as row-matrix
-        x = np.array([[x[0], x[1], x[2], x[3]]])
-        
-        
+
         # calculate u
         u = float(np.dot(-self.K,np.transpose(x))[0,0] + self.K_I*e + self.V*yd[0])
 
