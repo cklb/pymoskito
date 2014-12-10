@@ -181,7 +181,7 @@ class JController(Controller):
 class LSSController(Controller):
     '''
     linear statespace controller
-    System is linearised by tau = 0 and x = [0,0,0,0]
+    System is linearised by tau0 and x = [x01,x02,x03,x04]
     '''
 
     settings = {\
@@ -199,11 +199,11 @@ class LSSController(Controller):
         x = np.array([[x[0],x[1],x[2],x[3]]])
         if self.firstRun:
             self.lin = Linearization([self.settings['r0'], 0, 0, 0],\
-                    self.settings['r0'] * self.M*self.G)
-            self.K = self.lin.calcFeedbackGain(self.settings['poles'])
+                    self.settings['r0'] * self.M*self.G)         
+            self.K = self.lin.ackerSISO(self.lin.A, self.lin.B, self.settings['poles'])
             self.V = self.lin.calcPrefilter(self.K)
             self.firstRun = False
-        
+            
         # calculate u
         u = float(np.dot(-self.K,np.transpose(x))[0,0] + yd[0]*self.V)
 
@@ -250,5 +250,72 @@ class IOLController(Controller):
             u = 0
         else:
             u = (v-b)/a
+
+        return u
+
+#---------------------------------------------------------------------
+# PIFeedbackController
+#---------------------------------------------------------------------
+class PIFeedbackController(Controller):
+    '''
+    linear statespace controller
+    System is linearised by tau0 and x = [x01,x02,x03,x04]
+    with I-controller
+    '''
+    settings = {\
+            'poles': [-2, -2, -2, -2, -2],\
+            'r0': 0,\
+            }
+
+    def __init__(self):
+        Controller.__init__(self)
+        self.firstRun = True
+        self.order = 0
+        self.e_old = 0
+        
+    def calcOutput(self, x, yd):
+        if self.firstRun:
+            self.lin = Linearization([self.settings['r0'], 0, 0, 0],\
+                    self.settings['r0'] * self.M*self.G)
+            
+            # build a A and B matrix with a new component of e for error of the position
+            A_trans = np.concatenate((self.lin.A, self.lin.C), axis = 0)
+            
+            # now we have to add zeros with r rows and c columns
+            c = A_trans.shape[0]
+            r = A_trans.shape[0]-A_trans.shape[1]
+            zero = np.zeros((c,r))
+            A_trans = np.concatenate((A_trans, zero), axis=1)
+            
+            B_trans = self.lin.B
+            # now we have to add zeros with r rows and c columns
+            c = 1
+            r = B_trans.shape[1]
+            zero = np.zeros((c,r))
+            B_trans = np.concatenate((self.lin.B,zero), axis=0)
+            self.K_trans = self.lin.ackerSISO(A_trans, B_trans, self.settings['poles'])
+
+            # split K_trans in K and K_I          
+            # select all element in row matrix of K_trans except the last one
+            # and create numpy row matrix
+            self.K = np.array([self.K_trans[0,0:(len(self.K_trans[0])-1)]])
+            # last element in row matrix of K_trans
+            self.K_I = self.K_trans[0,-1]
+            
+            # calculate V
+            self.V = self.lin.calcPrefilter(self.K)
+            self.firstRun = False
+
+        
+        # calculate e
+        e = (yd-x[0])*st.step_size + self.e_old
+        self.e_old = e                        
+        
+        # x as row-matrix
+        x = np.array([[x[0], x[1], x[2], x[3]]])
+        
+        
+        # calculate u
+        u = float(np.dot(-self.K,np.transpose(x))[0,0] + self.K_I*e + self.V*yd[0])
 
         return u

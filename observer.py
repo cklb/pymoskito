@@ -49,10 +49,7 @@ class LuenbergerObserver(Observer):
         x1_o, x2_o, x3_o, x4_o = q
         y = np.array(self.sensor_output)
         u = self.controller_output
-#        print 'y: ',y
-#        print 'u: ',u
-#        print 'type(y): ',type(y)
-#        print 'type(u): ',type(u)
+
         x_o = np.array([[x1_o],\
                       [x2_o],\
                       [x3_o],\
@@ -61,8 +58,6 @@ class LuenbergerObserver(Observer):
         # ACHTUNG!!!! y[0] überdenken für mehrgrößenfall
         #y = np.dot(self.C, y.transpose())
         dx_o = np.dot(self.A - np.dot(self.L, self.C), x_o) + np.dot(self.B, u) + np.dot(self.L, y[0])
-#        print 'dx_o: ',dx_o
-        
         
         dx1_o = dx_o[0, 0]
         dx2_o = dx_o[1, 0]
@@ -79,7 +74,8 @@ class LuenbergerObserver(Observer):
             self.A = self.lin.A
             self.B = self.lin.B
             self.C = self.lin.C
-            self.L = self.lin.calcObserver(self.settings['poles'])
+            L_T = self.lin.ackerSISO(self.lin.A.transpose(),self.lin.C.transpose(),self.settings['poles'])
+            self.L = L_T.transpose()
             
             self.solver = ode(self.stateFuncApprox)
             self.solver.set_integrator('dopri5', method=self.settings['Method'], \

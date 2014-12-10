@@ -68,12 +68,39 @@ class Linearization:
         
         # Steuerbarkeitsmatrix
         # Qs = Matrix([C, C*A, C*A**2, C*A**3])
-    
-    def calcFeedbackGain(self, poles):
-        '''        
-        calculate FeedbackGain and return a numpy row-matrix        
+        
+    def calcPrefilter(self, K = None):
         '''
-        n = len(poles)
+        calculate the prefilter and return a float
+        '''
+        # Vorfilter V = -[C(A-BK)^-1*B]^-1
+        if K is not None:
+            V = -np.linalg.inv(np.dot(np.dot(self.C,(np.linalg.inv(self.A-self.B*K))),self.B))[0][0]
+        else:
+            return 0
+            
+        return float(V)   
+    
+    def ackerSISO(self, A, B, poles):
+        '''        
+        place poles and return a numpy row-matrix
+           - place poles for a state feedback: you have to not transpose A and B
+           - place poles for a observer: you have to transpose A and C,
+             you will get a transposed L  
+            
+        '''
+        
+        #check consistency
+        # TODO: Exception!?!
+        
+        assert A.shape[0] == A.shape[1], 'A is not square'
+        assert A.shape[0] == B.shape[0], 'dim(A) and dim (B) does not match'
+        assert B.shape[1] == 1, 'dim(B) is not for SISO case'
+        assert len(poles) == A.shape[0], 'dim(A) and dim(poles) does not match '
+        
+        n = A.shape[0]
+        
+        #n = len(poles)
         s = sp.symbols('s')
         
         poly = 1    
@@ -92,126 +119,28 @@ class Linearization:
         
         
         # calculate controllability matrix
-        QsT = np.array([self.B.transpose()[0],\
-                     (np.dot(self.A, self.B)).transpose()[0],\
-                     (np.dot(np.linalg.matrix_power(self.A,2),self.B)).transpose()[0],\
-                     (np.dot(np.linalg.matrix_power(self.A,3),self.B)).transpose()[0]])
-        Qs = QsT.transpose()
+        QT = np.zeros((n, n))
+        for i in range(n):
+            QT[i, :] = (np.dot(np.linalg.matrix_power(A, i), B)).transpose()[0]
+ 
+        Q = QT.transpose()
+
+        # check rank and throw exception
+        if (np.linalg.matrix_rank(Q) != n):
+            raise Exception('System might not be controllable or observable')
+            
+        e_4 = np.zeros((1,n))
+        e_4[0, n-1] = 1
         
-        #TODO check rank and throw exception
-        if np.absolute(np.linalg.det(Qs)) < 0.0001:
-            print 'Warning: System might not be controllable'
-            print 'det(Qs):'
-            print Qs.det()
+        t1T = np.dot(e_4, np.linalg.inv(Q))
         
-        e_4 = np.array([[0,0,0,1]])
+        cm = np.linalg.matrix_power(A, n)
+        for i in range(n):
+            cm = cm + p[i] * np.linalg.matrix_power(A, i)
         
-        t1T = np.dot(e_4,np.linalg.inv(Qs))
-        
-        K = np.dot(t1T,(np.linalg.matrix_power(self.A,4) + \
-                        p[3]*np.linalg.matrix_power(self.A,3) + \
-                        p[2]*np.linalg.matrix_power(self.A,2) + \
-                        p[1]*self.A + \
-                        p[0]*np.eye(4)))
+        K = np.dot(t1T, cm)
         return K
         
-    def calcPrefilter(self, K = None):
-        '''
-        calculate the prefilter and return a float
-        '''
-        # Vorfilter V = -[C(A-BK)^-1*B]^-1
-        if K is not None:
-            V = -np.linalg.inv(np.dot(np.dot(self.C,(np.linalg.inv(self.A-self.B*K))),self.B))[0][0]
-        else:
-            return 0
-            
-        return float(V)
-    
-    def calcObserver(self, poles):
-        
-#        A = self.A
-#        B = self.B
-#        C = self.C
-        
-        n = len(poles)
-        
-        # check the observability
-        Qb = np.array([(self.C)[0],\
-                     (np.dot(self.C, self.A))[0],\
-                     (np.dot(self.C, np.linalg.matrix_power(self.A, 2)))[0],\
-                     (np.dot(self.C, np.linalg.matrix_power(self.A, 3)))[0]])
-                     
-        #TODO check rank and throw exception
-        if np.absolute(np.linalg.det(Qb)) < 0.0001:
-            print 'Warning: System might be not observable'
-            print 'det(Qb):'
-            print Qb.det()
-            
-        # just for special case x1, x3 measured
-        cDesire = np.array([[1, 0, 0, 0], [0, 0, 1, 0]])
-
-        # SISO System, works for every x0, tau0   
-        if self.C.shape[0] is 1:
-            print 'observer: SISO'
-            
-            #TODO: per GUI die Messgröße, dh C einstellen lassen
-            
-            s = sp.symbols('s')
-
-            # CLCP desire
-            poly = 1    
-            for s_i in poles:
-                poly = (s-s_i)*poly
-            poly = poly.expand()
-            
-            # calculate the coefficient of characteric polynom
-            p = []
-            for i in range(n):
-                p.append(poly.subs([(s,0)]))
-                poly = poly - p[i]
-                poly = poly/s
-                poly = poly.expand()
-            
-            # last column of the inverted observer matrix
-            en_4 = np.array([[0],[0],[0],[1]])
-            v1 = np.dot(np.linalg.inv(Qb), en_4)
-            
-            # there where some 
-            p0 = p[0]
-            p1 = p[1]
-            p2 = p[2]
-            p3 = p[3]
-            
-            L = np.dot(p[0]*np.eye(n) + \
-                        p[1]*self.A + \
-                        p[2]*np.linalg.matrix_power(self.A, 2) + \
-                        p[3]*np.linalg.matrix_power(self.A, 3) + \
-                        np.linalg.matrix_power(self.A, 4), v1)
-                        
-        
-        # useable for C =[1, 0 ,0 ,0;
-        #                 0, 0, 1, 0]
-        # and x0 = 0 and tau0 = 0
-        #TODO: noch AP in if-Bedigung checken, muss dann aber anders übergeben
-        # werden
-        elif (self.C.shape[0] is 2) and (np.array_equal(self.C, cDesire)):
-            
-            print 'observer: SIMO'
-            # place(A', C',poles) of Matlab did not work
-            # so l21=l22=l32=l42 = 1 setted
-            # poles are placed by [-3,-3,-3,-3]
-            L = np.array([[11, 1],\
-                          [34.9712, 1],\
-                          [-7.0288, 1],\
-                          [-30.2717, 1]])
-            
-        elif min(self.C.shape) > 1:
-            print 'momentan nicht implementiert, vllt durch Carsten Skript'
-            print 'brauche place MIMO'
-            L = np.array([[0],[0],[0],[0]])
-        
-        return L    
-    
     def symMatrixToNumArray(self, symMatrix = None):
         symMatrixShape = symMatrix.shape        
         numArray = np.zeros(symMatrixShape)
@@ -219,23 +148,3 @@ class Linearization:
             for j in range(0,symMatrixShape[1]):
                 numArray[i,j] = symMatrix[i,j]
         return numArray
-
-## operating point
-#q_op = [0, 0, 0, 0]
-#tau_op = 0
-#poles_LSSController = [-2, -2, -2, -2]
-#
-#l = Linearization(q_op,tau_op)
-#K = l.calcFeedbackGain(poles_LSSController)
-#print K
-#V = l.calcPrefilter(K)
-#print V
-#
-#L = l.calcObserver([-3,-3,-3,-3])
-#print L
-#y = np.array([[ 0.99184978,  4.88263649, -1.50785714, -5.07418735]])
-#u = -0.707076434896608
-#y = np.dot(l.C, y.transpose())
-#x_o =  np.array([ [0.99184978],  [4.88263649], [-1.50785714], [-5.07418735]])
-#dx_o = np.dot(l.A - np.dot(L, l.C), x_o) + np.dot(l.B, u) + np.dot(L, y)
-#print 'dx_o: ',dx_o
