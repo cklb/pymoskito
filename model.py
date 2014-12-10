@@ -35,14 +35,10 @@ class BallBeamModel(SimulationModel):
 
     def __init__(self):
         SimulationModule.__init__(self)
-        self.tau = 0
         self.states = 4
         self.firstRun = True
 
-    def setInput(self, model_input):
-        self.tau = model_input
-
-    def stateFunc(self, t, q):
+    def stateFunc(self, t, q, tau=0):
         '''
         Calculations of system state changes
         '''
@@ -68,7 +64,7 @@ class BallBeamModel(SimulationModel):
         dx3 = x4
 
         #inverse nonliniear system transformation
-        u = (self.tau - self.M* (2*x1*x2*x4 + self.G*x1*cos(x3))) / (self.M*x1**2 + self.J + self.Jb)
+        u = (tau - self.M* (2*x1*x2*x4 + self.G*x1*cos(x3))) / (self.M*x1**2 + self.J + self.Jb)
         dx4 = u
        
         return [dx1, dx2, dx3, dx4]

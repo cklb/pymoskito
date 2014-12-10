@@ -1,7 +1,10 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import division
+import sympy as sp
+
 from numpy import sin, cos, pi
+from scipy import special
 
 from sim_core import SimulationModule
 
@@ -65,7 +68,7 @@ class FixedPointTrajectory(Trajectory):
         Calculates desired trajectory for ball position
         '''
         yd = []
-        yd.append(float(self.settings['Position']))
+        yd.append(self.settings['Position'])
         yd.append(0.)
         yd.append(0.)
         yd.append(0.)
@@ -107,3 +110,56 @@ class TwoPointSwitchingTrajectory(Trajectory):
         yd.append(0.)
     
         return yd
+
+
+class SmoothTransitionTrajectory(Trajectory):
+    '''
+    provides a trajektory from one state to the other
+    '''
+
+    settings = {'Positions': [0, 0.5],\
+            'start time': 1,\
+            'delta t': 3,\
+            }
+    
+    def __init__(self, derivateOrder):
+        Trajectory.__init__(self, derivateOrder+1)
+        
+        #setup symbolic expressions
+        tau, k = sp.symbols('tau, k')
+
+        gamma = derivateOrder
+        alpha = sp.factorial(2*gamma+1)
+
+        f = sp.binomial(gamma, k) * (-1)**k * tau**(gamma+k+1) / (gamma+k+1)
+        phi = alpha/sp.factorial(gamma)**2 * sp.summation(f, (k, 0, gamma))
+
+        #diff
+        dphi_sym = [phi]
+        for order in range(derivateOrder):
+            dphi_sym.append(dphi_sym[-1].diff(tau))
+        
+        #lambdify
+        self.dphi_num = []
+        for der in dphi_sym:
+            self.dphi_num.append(sp.lambdify(tau, der, 'numpy'))
+
+    def calcValues(self, t):
+        '''
+        Calculates desired trajectory for ball position
+        '''
+
+        y = [0]*self.output_dim
+        yd = self.settings['Positions']
+        t0 = self.settings['start time']
+        dt = self.settings['delta t']
+
+        if t < t0:
+            y[0] = yd[0]
+        elif t > t0+dt:
+            y[0] = yd[1]
+        else:
+            for order, dphi in enumerate(self.dphi_num):
+                y[order] = yd[0] + (yd[1]-yd[0])*dphi((t-t0)/dt) * 1/dt**order
+
+        return y
