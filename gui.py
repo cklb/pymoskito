@@ -2,6 +2,7 @@
 
 #system
 import numpy as np
+import sys, time
 
 #Qt
 from PyQt4 import QtCore, QtGui
@@ -133,11 +134,18 @@ class BallBeamGui(QtGui.QMainWindow):
         self.playbackTimer.timeout.connect(self.incrementPlaybackTime)
         self.playbackTimeChanged.connect(self.updateGui)
         
+        self.actSave = QtGui.QAction(self)
+        self.actSave.setText('Save')
+        self.actSave.setIcon(QtGui.QIcon('data/save.png'))
+        self.actSave.setDisabled(True)
+        self.actSave.triggered.connect(self.saveData)
+        
         # toolbar for control
         self.toolbarSim = QtGui.QToolBar('Simulation')
         self.toolbarSim.setIconSize(QtCore.QSize(24,24))
         self.addToolBar(self.toolbarSim)
         self.toolbarSim.addAction(self.actSimulate)
+        self.toolbarSim.addAction(self.actSave)
         self.toolbarSim.addSeparator()
         self.toolbarSim.addAction(self.actPlayPause)
         self.toolbarSim.addAction(self.actStop)
@@ -188,6 +196,16 @@ class BallBeamGui(QtGui.QMainWindow):
         print 'Gui(): launching simulation'
         self.actSimulate.setDisabled(True)
         self.runSimulation.emit()
+        
+    def saveData(self):
+        '''
+        pause the animation
+        '''
+        print 'Gui(): dumping data'
+        filename = '../output/'+time.strftime('%Y%m%d-%H%M%S')+'_logdata'
+        
+        with open(filename, 'w+') as f:
+            f.write(repr(self.currentDataset))
 
     def simulationFinished(self, data):
         '''
@@ -197,7 +215,9 @@ class BallBeamGui(QtGui.QMainWindow):
         self.actSimulate.setDisabled(False)
         self.actPlayPause.setDisabled(False)
         self.actStop.setDisabled(False)
+        self.actSave.setDisabled(False)
         self.speedDial.setDisabled(False)
+
         self.timeSlider.triggerAction(QtGui.QAbstractSlider.SliderToMinimum)
 
         self.currentDataset = data
