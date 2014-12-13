@@ -285,23 +285,25 @@ class PIFeedbackController(Controller):
             A_trans = np.concatenate((self.lin.A, self.lin.C), axis = 0)
             
             # now we have to add zeros with r rows and c columns
-            c = A_trans.shape[0]
-            r = A_trans.shape[0]-A_trans.shape[1]
-            zero = np.zeros((c,r))
+            r = A_trans.shape[0]
+            c = A_trans.shape[0]-A_trans.shape[1]
+            zero = np.zeros((r,c))
             A_trans = np.concatenate((A_trans, zero), axis=1)
             
             B_trans = self.lin.B
             # now we have to add zeros with r rows and c columns
-            c = 1
-            r = B_trans.shape[1]
-            zero = np.zeros((c,r))
-            B_trans = np.concatenate((self.lin.B,zero), axis=0)
+            r = A_trans.shape[0] - self.lin.B.shape[0]
+            c = B_trans.shape[1]
+            zero = np.zeros((r,c))
+            B_trans = np.concatenate((self.lin.B, zero), axis=0)
             self.K_trans = self.lin.ackerSISO(A_trans, B_trans, self.settings['poles'])
 
             # split K_trans in K and K_I          
             # select all element in row matrix of K_trans except the last one
             # and create numpy row matrix
-            self.K = np.array([self.K_trans[0,0:(len(self.K_trans[0])-1)]])
+            # the syntax is necessary for numpy's characteristics:
+            # somehow, getting row number one reduces the dimension of the tensor 
+            self.K = np.array([self.K_trans[0,0:-1]])
             # last element in row matrix of K_trans
             self.K_I = self.K_trans[0,-1]
             
