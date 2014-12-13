@@ -46,7 +46,7 @@ class VODESolver(Solver):
     #solver specific
     settings = {'Method': 'adams',\
             'measure rate': 100,\
-            'step size': 0.01,\
+            'step size': 0.001,\
             'rTol': 1e-6,\
             'aTol': 1e-9,\
             'end time': 10,\

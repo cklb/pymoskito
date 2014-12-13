@@ -4,6 +4,7 @@
 from __future__ import division
 from collections import OrderedDict
 from operator import add
+import numpy as np
 
 #Qt
 from PyQt4 import QtGui
@@ -53,9 +54,19 @@ class Simulator(QObject):
         self.current_time = 0
         
         #init model output with current state
-        self.model_output = self.solver.settings['initial state']
+        self.solver_output = self.solver.settings['initial state']
+        
+        #init observer
+        if hasattr(self, 'observer'):
+            self.observer_counter = self.observer.settings['tick divider']
+            self.observer.setStepWidth(1/self.solver.settings['measure rate'])
+#            self.observer_output = [0] * self.observer.getOutputDimension()
 
+        #init controller
         if hasattr(self, 'controller'):
+            if 'tick divider' in self.controller.settings:
+                self.controller_counter = self.controller.settings['tick divider']
+
             self.controller_output = [0] * self.controller.getOutputDimension()
 
     def _initStorage(self):
@@ -70,6 +81,9 @@ class Simulator(QObject):
         '''
         self.current_time = self.solver.getTime()
 
+        #write new output
+        self.model_output = self.solver_output
+        
         #perform disturbance
         if hasattr(self, 'disturbance'):
             self.disturbance_output = self.disturbance.disturb(self.current_time)
@@ -79,14 +93,18 @@ class Simulator(QObject):
         #perform measurement
         if hasattr(self, 'sensor'):
             self.sensor_output = self.sensor.measure(self.current_time,\
-                    self.model_output + self.disturbance_output)
+                    map(add ,self.model_output, self.disturbance_output))
         else:
             self.sensor_output = map(add ,self.model_output, self.disturbance_output)
 
         #perform observation
         if hasattr(self, 'observer'):
-            self.observer_output = self.observer.observe(self.current_time,\
-                    self.controller_output, self.sensor_output)
+            if self.observer_counter == self.observer.settings['tick divider']:   
+                self.observer_output = self.observer.observe(self.current_time,\
+                        self.controller_output, self.sensor_output)
+                self.observer_counter = 1
+            else:
+                self.observer_counter += 1
         else:
             self.observer_output = self.sensor_output
 
@@ -96,7 +114,17 @@ class Simulator(QObject):
 
         #perform control
         if hasattr(self, 'controller'):
-            self.controller_output = self.controller.control(self.observer_output, self.trajectory_output)
+            if 'tick divider' in self.controller.settings:
+                if self.controller_counter == self.controller.settings['tick divider']:
+                    self.controller_output = self.controller.control(self.observer_output,\
+                                                    self.trajectory_output)
+                    self.controller_counter = 1
+                else:
+                    self.controller_counter += 1
+                    
+            else:
+                self.controller_output = self.controller.control(self.observer_output,\
+                                                self.trajectory_output)
         else:
             self.controller_output = 0
 
@@ -107,23 +135,19 @@ class Simulator(QObject):
         #check credibility
         self.model.checkConsistancy(self.solver_output)
 
-        #write new output
-        self.model_output = self.solver_output
-
         return 
 
     def _storeValues(self):
         self.storage['simTime'].append(self.current_time)
         for module in self.moduleList:
             module_values = getattr(self, module+'_output')
-            #TODO change to isscalar()
-            if isinstance(module_values, float) or isinstance(module_values, int):
+            if np.isscalar(module_values):
                 module_values = [module_values]
 
             for idx, val in enumerate(module_values):
                 signalName = module + '_output.' + str(idx)
                 if signalName in self.storage:
-                    self.storage[module + '_output.' + str(idx)].append(val)
+                    self.storage[signalName].append(val)
                 else:
                     self.storage.update({signalName: [val]})
     

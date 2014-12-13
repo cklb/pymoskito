@@ -131,7 +131,7 @@ class SmoothTransitionTrajectory(Trajectory):
         #setup symbolic expressions
         tau, k = sp.symbols('tau, k')
 
-        gamma = derivateOrder
+        gamma = derivateOrder + 1
         alpha = sp.factorial(2*gamma+1)
 
         f = sp.binomial(gamma, k) * (-1)**k * tau**(gamma+k+1) / (gamma+k+1)

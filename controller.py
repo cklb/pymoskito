@@ -65,6 +65,7 @@ class FController(Controller):
     k1 = 32.
     k2 = 24.
     k3 = 8.
+    settings = {}
 
     def __init__(self):
         self.order = 4
@@ -107,6 +108,7 @@ class GController(Controller):
     k1 = 32
     k2 = 24
     k3 = 8
+    settings = {}
     
     def __init__(self):
         self.order = 4
@@ -144,6 +146,7 @@ class JController(Controller):
     
     settings = {\
             'k' : [16.0, 32.0, 24.0, 8.0],\
+            'tick divider': 1,\
         }
     
     def __init__(self):
@@ -187,6 +190,7 @@ class LSSController(Controller):
     settings = {\
             'poles': [-2, -2, -2, -2],\
             'r0': 0,\
+            'tick divider': 1,\
             }
 
     def __init__(self):
@@ -221,6 +225,7 @@ class IOLController(Controller):
     # controller gains
     settings = {\
             'k' : [8.0, 12.0, 6.0],\
+            'tick divider': 1,\
         }
     
     def __init__(self):
@@ -244,7 +249,7 @@ class IOLController(Controller):
         a = 2*st.B*x[0]*x[3]
         # calculate b(x)
         b = st.B*x[1]*x[3]**2 - st.B*st.G*x[3]*np.cos(x[2])
-        
+    
         # calculate u
         if np.absolute(a) < 0.3:     
             u = 0
@@ -265,6 +270,7 @@ class PIFeedbackController(Controller):
     settings = {\
             'poles': [-2, -2, -2, -2, -2],\
             'r0': 0,\
+            'tick divider': 1,\
             }
 
     def __init__(self):

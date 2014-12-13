@@ -299,6 +299,12 @@ class BallBeamGui(QtGui.QMainWindow):
         '''
         title = str(item.text())
         data = self.currentDataset['results'][title]
+        #TODO check all data types
+#        if title == 'observer_output.0':
+#            print type(data)
+#            print type(data[0])
+#            print len(data)
+            
         dock = pg.dockarea.Dock(title)
         self.area.addDock(dock, 'above', self.plotDocks[-1])
         self.plots.append(pg.PlotWidget(title=title))
@@ -312,7 +318,6 @@ class BallBeamGui(QtGui.QMainWindow):
         '''
         for dock in self.plotDocks:
             for widget in dock.widgets:
-                print self.dataList.findItems(dock.name(), QtCore.Qt.MatchExactly)
                 if not self.dataList.findItems(dock.name(), QtCore.Qt.MatchExactly):
                     #no data for this plot -> reset it
                     widget.getPlotItem().clear()

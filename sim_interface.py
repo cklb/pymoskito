@@ -290,7 +290,9 @@ class SimulatorInteractor(QtCore.QObject):
         #calc main error
         a = 'model_output.0'
         b = 'trajectory_output.0'
+        c = 'observer_output.0'
         self.simData['results'].update({'epsilon':self._getDiff(a,b)})
+        self.simData['results'].update({'epsilon_o':self._getDiff(a, c)})
 
     def _getDiff(self, a, b):
         data = self.simData['results']
@@ -307,4 +309,5 @@ class SimulatorInteractor(QtCore.QObject):
     def simFailed(self, data):
         self.simData.update({'results':copy.deepcopy(data)})
         self._simAftercare()
+        self._postprocessing()
         self.simulationFailed.emit(self.simData)
