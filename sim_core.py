@@ -43,7 +43,7 @@ class Simulator(QObject):
     failed = pyqtSignal(dict)
         
     #abilities (should match the module names)
-    moduleList = ['model', 'solver', 'disturbance', 'sensor', 'observer', 'controller', 'trajectory']
+    moduleList = ['model', 'solver', 'disturbance', 'sensor', 'observer', 'controller', 'feedforward', 'trajectory']
 
 
     def __init__(self, parent=None):
@@ -127,9 +127,16 @@ class Simulator(QObject):
                                                 self.trajectory_output)
         else:
             self.controller_output = 0
-
+            
+        #get feedforward values
+        if hasattr(self, 'feedforward'):
+            self.feedforward_output = self.feedforward.feed(self.trajectory_output)
+        else:
+            self.feedforward_output = 0
+        
         # integrate model
-        self.solver.setInput(self.controller_output)
+        self.solver.setInput(self.feedforward_output \
+                                +self.controller_output)
         self.solver_output = self.solver.integrate(self.current_time) 
 
         #check credibility

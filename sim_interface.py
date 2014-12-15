@@ -234,10 +234,13 @@ class SimulatorInteractor(QtCore.QObject):
                 elif moduleName == 'sensor':
                     slot = subModule(sim.model.getOutputDimension())
                 elif moduleName == 'trajectory':
+                    cOrder = 0
+                    fOrder = 0
                     if hasattr(sim, 'controller'):
-                        slot = subModule(sim.controller.getOrder())
-                    else:
-                        slot = subModule(0)
+                        cOrder = sim.controller.getOrder()
+                    if hasattr(sim, 'feedforward'):
+                        fOrder = sim.feedforward.getOrder()
+                    slot = subModule(max([cOrder, fOrder]))
                 else:
                     slot = subModule()
 
