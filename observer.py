@@ -143,10 +143,11 @@ class HighGainObserver(Observer):
     
         
     def calcOutput(self, t, controller_output, sensor_output):
-        params = sp.symbols('x1, x2, x3, x4, u1, tau, M , G , J , J_ball , R, B')
-        x1, x2, x3, x4, u1, tau, M , G , J , J_ball , R, B = params
+        params = sp.symbols('x1, x2, x3, x4, tau')
+        x1, x2, x3, x4, tau = params
         if self.firstRun:
-            
+            standards = sp.symbols('M , G , J , J_ball , R, B')
+            M , G , J , J_ball , R, B = standards
             
             x = [x1, x2, x3, x4]
             self.h = sp.Matrix([[x1]])
@@ -177,7 +178,12 @@ class HighGainObserver(Observer):
 #            print 'k', k    
             
             #ATTENTION: I am in sympy so * should work
-            self.l = dq.inv() * k
+            l = dq.inv() * k
+            subs_list = [(B,st.B),(J,st.J),(J_ball, st.Jb),(M,st.M),(G,st.G),(R,st.R)]
+            self.l = l.subs(subs_list)
+            self.f = self.f.subs(subs_list)
+            self.h = self.h.subs(subs_list)
+#            print 'l', self.l
             
             self.x0 = self.settings['initial state']    
             self.nextObserver_output = np.array([self.x0]).reshape(4,1)
@@ -211,10 +217,10 @@ class HighGainObserver(Observer):
                      (x2, self.observer_output[1,0]),\
                      (x3, self.observer_output[2,0]),\
                      (x4, self.observer_output[3,0]),\
-                     (tau, u),\
-                     (B,st.B),(J,st.J),(J_ball, st.Jb),(M,st.M),(G,st.G),(R,st.R)]
+                     (tau, u)]
 #        print
         dy = dy.subs(subs_list)
+#        print 'dy', dy
         dy = self.symMatrixToNumArray(dy)
         # EULER integration
         self.nextObserver_output = self.observer_output + dt * dy
@@ -278,8 +284,9 @@ class LuenbergerObserverReduced(Observer):
                 
             # sort A,B,C for measured and unmeasured states                
             self.A = self.swap_cols(self.A, 0, self.switch)
+            print 'A', self.A
             self.A = self.swap_rows(self.A, 0, self.switch)
-            
+            print 'A', self.A
             self.C = self.swap_cols(self.C, 0, self.switch)
             
             self.B = self.swap_rows(self.B, 0, self.switch)
