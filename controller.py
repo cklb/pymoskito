@@ -302,16 +302,16 @@ class PIFeedbackController(Controller):
             c = B_trans.shape[1]
             zero = np.zeros((r,c))
             B_trans = np.concatenate((self.lin.B, zero), axis=0)
-            self.K_trans = self.lin.ackerSISO(A_trans, B_trans, self.settings['poles'])
+            K_trans = self.lin.ackerSISO(A_trans, B_trans, self.settings['poles'])
 
             # split K_trans in K and K_I          
             # select all element in row matrix of K_trans except the last one
             # and create numpy row matrix
             # the syntax is necessary for numpy's characteristics:
             # somehow, getting row number one reduces the dimension of the tensor 
-            self.K = np.array([self.K_trans[0,0:-1]])
+            self.K = np.array([K_trans[0,0:-1]])
             # last element in row matrix of K_trans
-            self.K_I = self.K_trans[0,-1]
+            self.K_I = K_trans[0,-1]
             
             # calculate V
             self.V = self.lin.calcPrefilter(self.K)
@@ -322,6 +322,6 @@ class PIFeedbackController(Controller):
         self.e_old = e                        
 
         # calculate u
-        u = float(np.dot(-self.K,np.transpose(x))[0,0] + self.K_I*e + self.V*yd[0])
+        u = np.dot(-self.K,np.transpose(x))[0,0] + self.K_I*e + self.V*yd[0]
 
         return u
