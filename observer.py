@@ -1,10 +1,11 @@
-# -*- coding: utf-8 -*-
+﻿# -*- coding: utf-8 -*-
 import numpy as np
 import sympy as sp
 from sympy import sin,cos
 from scipy.integrate import ode
 import settings as st
 
+import tools as tools
 from sim_core import SimulationModule
 from linearization import Linearization
 
@@ -94,7 +95,7 @@ class HighGainObserver(Observer):
 
     settings = {\
            'initial state': [0, 0, 0, 0],\
-            'poles': [-3, -3, -3, -3],\
+            'poles': [-10, -10, -10, -10],\
             'tick divider': 1,\
             }
 
@@ -427,3 +428,211 @@ class LuenbergerObserverInt(Observer):
         self.nextObserver_output = self.solver.integrate(t)           
         
         return self.observer_output
+
+#---------------------------------------------------------------------
+# Nonlinear HighGainObserver von Christoph
+#---------------------------------------------------------------------
+class HighGainObserverChristoph(Observer):
+    '''
+    High Gain Observer for nonlinear systems
+    '''
+
+    settings = {\
+           'initial state': [0, 0, 0, 0],\
+            'poles': [-10, -10, -10, -10],\
+            'tick divider': 1,\
+            }
+
+    def __init__(self):
+        self.output_dim = 4 #observer complete state
+        Observer.__init__(self)
+        self.firstRun = True
+        
+        x1, x2, x3, x4, u = sp.symbols('x1, x2, x3, x4, u')
+        x = [x1, x2, x3, x4]
+        
+        h = sp.Matrix([[x1]])
+        f = sp.Matrix([ [x2],\
+                        [st.B*x1*x4**2 - st.B*st.G*sp.sin(x3)],\
+                        [x4],\
+                        [(u - 2*st.M*x1*x2*x4 - st.M*st.G*x1*sp.cos(x3))/(st.M*x1**2 + st.J + st.Jb)]])
+#                        #[u]])
+
+        q = sp.zeros(len(x), 1)
+#        print 'f',f
+#        print 'q', q
+#        print 'type(q)', type(q)
+        for i in range(len(x)):
+            q[i, 0] = tools.lieDerivative(h, f, x, i)
+        
+        print 'q', q
+        print 'type(q)', type(q)
+            
+        Q = q.jacobian(x)
+#        print 'Q', Q
+#        print 'type(Q)', type(Q)
+        
+        # gets p = [p0, p1, ... pn-1] as row-vector
+        p = tools.getCoefficients(self.settings['poles'])
+        print 'p', p
+        print 'type(p)', type(p[0,0])
+        self.k = np.zeros((p.shape[1], 1))           
+        for i in range(1, p.shape[1] + 1):
+            self.k[i - 1, 0] = p[0, -i]
+        
+#        print 'k', self.k
+#        print 'type(k)', type(self.k)
+        
+        inv_Q = Q.inv()
+        # create a lambda function which convert the Q and f matrix with the arguments 
+        # of x1,x2,x3,x4 into a numpy array
+        mat2array = [{'ImmutableMatrix': np.array}, 'numpy']
+        self.inv_Q_func = sp.lambdify((x1,x2,x3,x4,u), inv_Q, modules = mat2array)
+        self.f_func = sp.lambdify((x1,x2,x3,x4,u), f, modules = mat2array)
+        
+        
+        
+
+    def setStepWidth(self, width):
+        self.step_width = width
+        
+    def stateFunc(self, x_o):
+        h_x_o = np.array([x_o[0,0]])
+        # measurment of r
+        y = np.array([[self.sensor_output[0]]])
+        u = self.controller_output
+     
+        Q_inv_np = self.inv_Q_func(x_o[0,0], x_o[1,0], x_o[2,0], x_o[3,0], u)
+        f_np = self.f_func(x_o[0,0], x_o[1,0], x_o[2,0], x_o[3,0], u)
+        
+         
+        dx_o = f_np + np.dot(np.dot(Q_inv_np,self.k),(y - h_x_o))
+        
+#        print 'x_o',x_o
+#        print 'y',y
+#        print 'u',u
+#        print 'Q_inv_np',Q_inv_np
+#        print 'f_np',f_np
+#        print 'dx_o',dx_o
+#        
+#        print 'np.dot(Q_inv_np,self.k',np.dot(Q_inv_np,self.k)
+#        print 'y - h_x_o',(y - h_x_o)
+#        print 'np.dot(np.dot(Q_inv_np,self.k),(y - h_x_o))',np.dot(np.dot(Q_inv_np,self.k),(y - h_x_o))
+        
+        return dx_o
+    
+        
+    def calcOutput(self, t, controller_output, sensor_output):
+        
+        self.controller_output = controller_output
+        self.sensor_output = sensor_output
+
+        if self.firstRun:
+            self.x0 = self.settings['initial state']    
+            self.nextObserver_output = np.array([self.x0]).reshape(4,1)
+            self.firstRun = False
+
+        self.observer_output = self.nextObserver_output
+        
+        # ObserverOdeSolver reduced to EULER --> better performance
+        # the output is calculated in a reduced transformated system
+        
+        dt = self.settings['tick divider']*self.step_width
+        # EULER integration
+#        self.nextObserver_output = self.observer_output + dt * dy
+        
+        self.nextObserver_output = self.observer_output + dt * self.stateFunc(self.observer_output)
+        # we have the convention to return a list with shape (1, 4)
+        return [float(self.observer_output[i, 0]) for i in range(self.observer_output.shape[0])]
+
+
+class HighGainObserverRefactored(Observer):
+    '''
+    High Gain Observer for nonlinear systems
+    '''
+
+    settings = {\
+           'initial state': [0, 0, 0, 0],\
+            'poles': [-10, -10, -10, -10],\
+            'tick divider': 1,\
+            }
+
+    def __init__(self):
+        self.output_dim = 4 #observer complete state
+        Observer.__init__(self)
+        self.firstRun = True
+
+    def setStepWidth(self, width):
+        self.step_width = width
+        
+    def calcOutput(self, t, controller_output, sensor_output):
+        
+        if self.firstRun: 
+            params = sp.symbols('x1, x2, x3, x4, tau')
+            x1, x2, x3, x4, tau = params
+            x = [x1, x2, x3, x4]
+            h = sp.Matrix([[x1]])
+            f = sp.Matrix([[x2],\
+                           [st.B*x1*x4**2 - st.B*st.G*sin(x3)],\
+                           [x4],\
+                           [(tau - 2*st.M*x1*x2*x4 - st.M*st.G*x1*cos(x3))/(st.M*x1**2 + st.J + st.Jb)]])
+             
+            q = sp.zeros(len(x), 1)
+            for i in range(len(x)):
+                q[i, 0] = tools.lieDerivative(h, f, x, i)
+                
+            dq = q.jacobian(x)
+            
+            if (dq.rank() != len(x)):
+                raise Exception('System might not be observable')
+             
+            # gets p = [p0, p1, ... pn-1]
+            p = tools.getCoefficients(self.settings['poles'])
+            print 'type(p)', type(p[0,0])
+                
+            k = np.zeros((p.shape[1], 1))           
+            for i in range(1, p.shape[1] + 1):
+                k[i - 1, 0] = p[0, -i]    
+            
+            #ATTENTION: I am in sympy so * should work
+            l = dq.inv() * k
+            
+            mat2array = [{'ImmutableMatrix': np.array}, 'numpy']
+            self.h_func = sp.lambdify((x1,x2,x3,x4,tau), h, modules = mat2array)
+            self.l_func = sp.lambdify((x1,x2,x3,x4,tau), l, modules = mat2array)
+            self.f_func = sp.lambdify((x1,x2,x3,x4,tau), f, modules = mat2array)
+            
+            self.x0 = self.settings['initial state']    
+            self.nextObserver_output = np.array([self.x0]).reshape(4,1)
+            self.firstRun = False
+
+        self.observer_output = self.nextObserver_output
+                
+        dt = self.settings['tick divider']*self.step_width  
+              
+        # FIXME: sensor_output is here a (1,4) list but should only be the 
+        # measured value and check sensor_output order after transformation
+        # here: y is r, the distance
+        y = np.array([[sensor_output[0]]])
+        u = controller_output
+        
+        l_np = self.l_func(self.observer_output[0,0],\
+                           self.observer_output[1,0],\
+                           self.observer_output[2,0],\
+                           self.observer_output[3,0],\
+                           u)
+        f_np = self.f_func(self.observer_output[0,0],\
+                           self.observer_output[1,0],\
+                           self.observer_output[2,0],\
+                           self.observer_output[3,0],\
+                           u)
+        h_x_o = self.h_func(self.observer_output[0,0], 0, 0, 0, 0)
+        dx_o = f_np + np.dot(l_np,(y - h_x_o))
+        
+        # EULER integration
+        self.nextObserver_output = self.observer_output + dt * dx_o
+
+        # we have the convention to return a list with shape (1, 4)
+        return [float(self.observer_output[i, 0]) for i in range(self.observer_output.shape[0])]
+
+
