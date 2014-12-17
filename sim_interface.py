@@ -102,9 +102,7 @@ class SimulatorView(QtGui.QTreeView):
         QtGui.QTreeView.__init__(self, parent)
         self.setItemDelegateForColumn(1, PropertyDelegate(self))
 
-
 class SimulatorInteractor(QtCore.QObject):
-
 
     #qt general
     simulationFinished = QtCore.pyqtSignal(dict)
@@ -113,6 +111,7 @@ class SimulatorInteractor(QtCore.QObject):
     def __init__(self, parent=None):
         QtCore.QObject.__init__(self, parent)
         self._setupModel()
+        
         self.sim = None
         self.simThread = QtCore.QThread()
 
@@ -124,22 +123,15 @@ class SimulatorInteractor(QtCore.QObject):
         #insert header
         self.target_model.setHorizontalHeaderLabels(['Property', 'Value'])
 
+        #insert items
+        self._setupModelItems()
+
+    def _setupModelItems(self):
         #insert main items
         for module in Simulator.moduleList:
             newItems = []
             name = QStandardItem(module)
-            #defualts for tesing purposes TODO read from config
-            if module == 'model':
-                value = QStandardItem('BallBeamModel')
-            elif module == 'solver':
-                value = QStandardItem('VODESolver')
-            elif module == 'trajectory':
-                value = QStandardItem('SmoothTransitionTrajectory')
-            elif module == 'controller':
-                value = QStandardItem('LSSController')
-            else:
-                value = QStandardItem('None')
-            
+            value = QStandardItem('None')
             newItems = [name, value]
             self.target_model.appendRow(newItems)
 
@@ -256,6 +248,58 @@ class SimulatorInteractor(QtCore.QObject):
             self.simData['modules'].update({moduleName: settings})
 
         return sim
+
+    def setRegime(self, reg):
+        if reg is None:
+            return
+        if isinstance(reg, list):
+            print 'setRegime(): only one allowed!'
+            return
+
+        self._applyRegime(reg)
+
+    def _applyRegime(self, reg):
+        '''
+        sets all module settings to those provided in the regime
+        '''
+        if reg['clear previous']:
+            #delete all items
+            self.target_model.removeRows(0, self.target_model.rowCount())
+
+            #load module defaults
+            self._setupModelItems()
+
+        #overwrite all settings with the provided ones
+        for moduleName, value in reg.iteritems():
+            if moduleName not in Simulator.moduleList:
+                continue
+
+            moduleItem = self.target_model.findItems(moduleName).pop(0)
+            moduleType = value['type']
+        
+            moduleIndex = moduleItem.index()
+            moduleTypeIndex = moduleIndex.model().index(moduleIndex.row(), 1)
+            moduleIndex.model().setData(moduleTypeIndex, moduleType)
+            #due to signal connections, default settings are loaded automatically in the back
+
+            #overwrite specific settings
+            for key, val in value.iteritems():
+                if key == 'type':
+                    continue
+
+                found = False
+                for row in range(moduleItem.rowCount()):
+                    if str(moduleItem.child(row, 0).text()) == key:
+                        valueIndex = self.target_model.index(row, 1, moduleIndex)
+                        self.target_model.setData(valueIndex, str(val))
+                        found = True
+                        break
+                    
+                if not found:
+                    print '_applyRegime(): setting ', key, 'not available for ', moduleType
+                    continue
+
+
 
     def runSimulation(self):
         self.simData = {'modules': {}}

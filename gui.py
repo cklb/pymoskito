@@ -2,7 +2,8 @@
 
 #system
 import numpy as np
-import sys, time
+import sys, time, os
+import yaml
 
 #Qt
 from PyQt4 import QtCore, QtGui
@@ -27,6 +28,8 @@ class BallBeamGui(QtGui.QMainWindow):
 
     runSimulation = pyqtSignal()
     playbackTimeChanged = pyqtSignal()
+    regimeFinished = pyqtSignal()
+    finishedRegimeBatch = pyqtSignal()
     
     def __init__(self):
         # constructor of the base class
@@ -60,6 +63,7 @@ class BallBeamGui(QtGui.QMainWindow):
         # create docks
         self.propertyDock = pg.dockarea.Dock('Properties', size=(1, 10))
         self.vtkDock = pg.dockarea.Dock('Simulation')
+        self.regimeDock = pg.dockarea.Dock('Regimes')
         self.dataDock = pg.dockarea.Dock('Data')
         self.plotDocks = []
         self.plotDocks.append(pg.dockarea.Dock('Placeholder'))
@@ -68,7 +72,8 @@ class BallBeamGui(QtGui.QMainWindow):
 
         # arrange docks
         self.area.addDock(self.vtkDock, 'right')
-        self.area.addDock(self.propertyDock, 'left', self.vtkDock)
+        self.area.addDock(self.regimeDock, 'left', self.vtkDock)
+        self.area.addDock(self.propertyDock, 'bottom', self.regimeDock)
         self.area.addDock(self.dataDock, 'bottom', self.propertyDock)
         self.area.addDock(self.plotDocks[-1], 'bottom', self.vtkDock)
         
@@ -86,6 +91,11 @@ class BallBeamGui(QtGui.QMainWindow):
         self.frame.setLayout(self.vtkLayout)
         self.vtkDock.addWidget(self.frame)
         self.visualizer = VtkVisualizer(self.vtkWidget)
+
+        #regime window
+        self.regimeList = QtGui.QListWidget(self)
+        self.regimeDock.addWidget(self.regimeList)
+        self.regimeList.itemDoubleClicked.connect(self.regimeDoubleClicked)
 
         #data window
         self.dataList = QtGui.QListWidget(self)
@@ -139,18 +149,43 @@ class BallBeamGui(QtGui.QMainWindow):
         self.actSave.setIcon(QtGui.QIcon('data/save.png'))
         self.actSave.setDisabled(True)
         self.actSave.triggered.connect(self.saveData)
+
+        self.actLoadRegimes = QtGui.QAction(self)
+        self.actLoadRegimes.setText('load regimes')
+        self.actLoadRegimes.setIcon(QtGui.QIcon('data/load.png'))
+        self.actLoadRegimes.setDisabled(False)
+        self.actLoadRegimes.triggered.connect(self.loadRegimeClicked)
+
+        self.actExecuteRegimes = QtGui.QAction(self)
+        self.actExecuteRegimes.setText('execute all regimes')
+        self.actExecuteRegimes.setIcon(QtGui.QIcon('data/execute_regimes.png'))
+        self.actExecuteRegimes.setDisabled(True)
+        self.actExecuteRegimes.triggered.connect(self.executeRegimesClicked)
         
         # toolbar for control
         self.toolbarSim = QtGui.QToolBar('Simulation')
         self.toolbarSim.setIconSize(QtCore.QSize(24,24))
         self.addToolBar(self.toolbarSim)
-        self.toolbarSim.addAction(self.actSimulate)
+        self.toolbarSim.addAction(self.actLoadRegimes)
         self.toolbarSim.addAction(self.actSave)
+        self.toolbarSim.addSeparator()
+        self.toolbarSim.addAction(self.actSimulate)
+        self.toolbarSim.addAction(self.actExecuteRegimes)
         self.toolbarSim.addSeparator()
         self.toolbarSim.addAction(self.actPlayPause)
         self.toolbarSim.addAction(self.actStop)
         self.toolbarSim.addWidget(self.speedDial)
         self.toolbarSim.addWidget(self.timeSlider)
+
+        #load default config
+        self.runningBatch = False
+        self.currentRegimeIndex = 0
+        self.regimes = None
+        configFile = os.path.join('..', 'regimes', 'default.sreg')
+        self._loadRegimes(configFile)
+        self._applyRegime(self.currentRegimeIndex)
+        self.regimeFinished.connect(self.runNextRegime)
+        self.finishedRegimeBatch.connect(self.regimeBatchFinished)
 
     def playAnimation(self):
         '''
@@ -197,15 +232,88 @@ class BallBeamGui(QtGui.QMainWindow):
         self.actSimulate.setDisabled(True)
         self.runSimulation.emit()
         
-    def saveData(self):
+    def saveData(self, name='_'):
         '''
         pause the animation
         '''
         print 'Gui(): dumping data'
-        filename = '../output/'+time.strftime('%Y%m%d-%H%M%S')+'_logdata'
-        
-        with open(filename, 'w+') as f:
+        fileName = os.path.join('..', 'results', time.strftime('%Y%m%d-%H%M%S') +'_'+name+'.bbr')
+        with open(fileName, 'w+') as f:
             f.write(repr(self.currentDataset))
+
+    def loadRegimeClicked(self):
+        repPath = os.path.join('../regimes/')
+        fileName = QtGui.QFileDialog.getOpenFileName(self,\
+                    "Open Regime File",\
+                    repPath,\
+                    "Simulation Regime files (*.sreg)")
+        self._loadRegimes(fileName)
+
+    def _loadRegimes(self, fileName=None):
+        '''
+        load simulation regime from file
+        '''
+        print 'Gui(): loading regime file:', fileName
+        with open(fileName, 'r') as f:
+            self.regimes = yaml.load(f)
+
+        self._updateRegimeList()
+        
+        if self.regimes:
+            self.actExecuteRegimes.setDisabled(False)
+        
+        return
+        
+    def _updateRegimeList(self):
+        self.regimeList.clear()
+        for reg in self.regimes:
+            self.regimeList.addItem(reg['name'])
+
+    def regimeDoubleClicked(self, item):
+        '''
+        applies the selected regime to the current target
+        '''
+        regName = str(item.text())
+        print 'Gui(): applying regime: ', regName
+
+        self.sim.setRegime(next((reg for reg in self.regimes if reg['name']==regName), None))
+
+    def _applyRegime(self, index=0):
+        if index >= len(self.regimes):
+            print 'applyRegime(): index error!'
+            return
+
+        self.sim.setRegime(self.regimes[index])
+            
+    def executeRegimesClicked(self):
+        '''
+        execute all regimes in the current list
+        '''
+        self.runningBatch = True
+        self.actExecuteRegimes.setDisabled(True)
+        self.currentRegimeIndex = -1
+        self.regimeFinished.emit()
+        
+    def runNextRegime(self):
+        '''
+        executes the next regime
+        '''
+        self.currentRegimeIndex += 1
+        #are we finished?
+        if self.currentRegimeIndex >= len(self.regimes):
+            self.finishedRegimeBatch.emit()
+            return
+
+        self._applyRegime(self.currentRegimeIndex)
+        self.startSimulation()
+
+    def regimeBatchFinished(self):
+        self.runningBatch = False
+        self.actExecuteRegimes.setDisabled(False)
+        self.currentRegimeIndex = 0
+        box = QtGui.QMessageBox()
+        box.setText('All regimes have been simulated!')
+        box.exec_()
 
     def simulationFinished(self, data):
         '''
@@ -228,6 +336,11 @@ class BallBeamGui(QtGui.QMainWindow):
         self.stopAnimation()
         self.playAnimation()
 
+        if self.runningBatch:
+            regName = self.regimes[self.currentRegimeIndex]['name']
+            self.saveData(regName)
+            self.regimeFinished.emit()
+
     def simulationFailed(self, data):
         '''
         integration failed, enable play button and update plots
@@ -244,8 +357,6 @@ class BallBeamGui(QtGui.QMainWindow):
         self.currentEndTime = self.currentDataset['modules']['solver']['end time']
         self.validData = True
 
-
-    
     def addPlotToDock(self, plotWidget):
         self.d3.addWidget(plotWidget)
     
