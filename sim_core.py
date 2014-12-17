@@ -153,10 +153,11 @@ class Simulator(QObject):
 
             for idx, val in enumerate(module_values):
                 signalName = module + '_output.' + str(idx)
+                #print 'Signal: ', signalName, type(val)
                 if signalName in self.storage:
-                    self.storage[signalName].append(val)
+                    self.storage[signalName].append(float(val))
                 else:
-                    self.storage.update({signalName: [val]})
+                    self.storage.update({signalName: [float(val)]})
     
     @pyqtSlot()
     def run(self):

@@ -67,10 +67,6 @@ class Linearization:
         self.B = np.array(B).astype(float)
         self.C = np.array(C).astype(float)
 
-        #self.A = self.symMatrixToNumArray(A)
-        #self.B = self.symMatrixToNumArray(B)
-        #self.C = self.symMatrixToNumArray(C)
-        
         # Steuerbarkeitsmatrix
         # Qs = Matrix([C, C*A, C*A**2, C*A**3])
         
@@ -84,7 +80,7 @@ class Linearization:
         else:
             return 0
             
-        return float(V)   
+        return V   
     
     def ackerSISO(self, A, B, poles):
         '''        
@@ -150,10 +146,3 @@ class Linearization:
         K = np.dot(t1T, cm)
         return K
         
-    #def symMatrixToNumArray(self, symMatrix = None):
-        #symMatrixShape = symMatrix.shape        
-        #numArray = np.zeros(symMatrixShape)
-        #for i in range(0,symMatrixShape[0]):
-            #for j in range(0,symMatrixShape[1]):
-                #numArray[i,j] = symMatrix[i,j]
-        #return numArray

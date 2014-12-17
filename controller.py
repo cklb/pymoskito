@@ -209,7 +209,7 @@ class LSSController(Controller):
             self.firstRun = False
             
         # calculate u
-        u = float(np.dot(-self.K,np.transpose(x))[0,0] + yd[0]*self.V)
+        u = np.dot(-self.K,np.transpose(x))[0,0] + yd[0]*self.V
 
         return u
         
@@ -286,7 +286,8 @@ class PIFeedbackController(Controller):
         if self.firstRun:
             self.lin = Linearization([self.settings['r0'], 0, 0, 0],\
                     self.settings['r0'] * self.M*self.G)
-            
+
+
             # build a A and B matrix with a new component of e for error of the position
             A_trans = np.concatenate((self.lin.A, self.lin.C), axis = 0)
             
@@ -303,7 +304,6 @@ class PIFeedbackController(Controller):
             zero = np.zeros((r,c))
             B_trans = np.concatenate((self.lin.B, zero), axis=0)
             K_trans = self.lin.ackerSISO(A_trans, B_trans, self.settings['poles'])
-
             # split K_trans in K and K_I          
             # select all element in row matrix of K_trans except the last one
             # and create numpy row matrix
