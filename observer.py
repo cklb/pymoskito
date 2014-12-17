@@ -140,9 +140,9 @@ class LuenbergerObserverReduced(Observer):
                 
             # sort A,B,C for measured and unmeasured states                
             self.A = self.swap_cols(self.A, 0, self.switch)
-            print 'A', self.A
+#            print 'A', self.A
             self.A = self.swap_rows(self.A, 0, self.switch)
-            print 'A', self.A
+#            print 'A', self.A
             self.C = self.swap_cols(self.C, 0, self.switch)
             
             self.B = self.swap_rows(self.B, 0, self.switch)
