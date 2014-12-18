@@ -21,6 +21,8 @@ from sim_interface import SimulatorInteractor, SimulatorView
 from visualization import VtkVisualizer
 from model import BallBeamModel
 
+from postprocessing import PostProcessor
+
 class BallBeamGui(QtGui.QMainWindow):
     '''
     class for the graphical user interface
@@ -161,6 +163,12 @@ class BallBeamGui(QtGui.QMainWindow):
         self.actExecuteRegimes.setDisabled(True)
         self.actExecuteRegimes.triggered.connect(self.executeRegimesClicked)
         
+        self.actPostprocessing = QtGui.QAction(self)
+        self.actPostprocessing.setText('launch postprocessor')
+        self.actPostprocessing.setIcon(QtGui.QIcon('data/postprocessing.png'))
+        self.actPostprocessing.setDisabled(False)
+        self.actPostprocessing.triggered.connect(self.postprocessingClicked)
+
         # toolbar for control
         self.toolbarSim = QtGui.QToolBar('Simulation')
         self.toolbarSim.setIconSize(QtCore.QSize(24,24))
@@ -175,6 +183,7 @@ class BallBeamGui(QtGui.QMainWindow):
         self.toolbarSim.addAction(self.actStop)
         self.toolbarSim.addWidget(self.speedDial)
         self.toolbarSim.addWidget(self.timeSlider)
+        self.toolbarSim.addAction(self.actPostprocessing)
 
         #load default config
         self.runningBatch = False
@@ -470,6 +479,11 @@ class BallBeamGui(QtGui.QMainWindow):
 
     def targetViewChanged(self, index):
         self.targetView.resizeColumnToContents(0)
+
+    def postprocessingClicked(self):
+        return
+        self.post = Postprocessor()
+        self.post.show()
 
 class TestGui(QtGui.QMainWindow):
     
