@@ -103,7 +103,7 @@ class SimulatorView(QtGui.QTreeView):
         self.setItemDelegateForColumn(1, PropertyDelegate(self))
     
     def sizeHint(self):
-        return QtCore.QSize(300, 300)
+        return QtCore.QSize(300, 150)
 
     def minimumSizeHint(self):
         return self.sizeHint()
