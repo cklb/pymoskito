@@ -5,7 +5,6 @@ Tools, functions and other funny things
 import sympy as sp
 import numpy as np
 
-
 def lieDerivative(h, f, x, n):
     '''
     calculates the Lie-Derivative from a skalarfield h(x) along a vectorfield f(x)
