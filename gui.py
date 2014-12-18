@@ -187,6 +187,12 @@ class BallBeamGui(QtGui.QMainWindow):
         self.regimeFinished.connect(self.runNextRegime)
         self.finishedRegimeBatch.connect(self.regimeBatchFinished)
 
+        #statusbar
+        self.statusBar = QtGui.QStatusBar(self)
+        self.setStatusBar(self.statusBar)
+
+
+
     def playAnimation(self):
         '''
         play the animation
@@ -226,10 +232,14 @@ class BallBeamGui(QtGui.QMainWindow):
 
     def startSimulation(self):
         '''
-        start the simulation and disable start bottom
+        start the simulation and disable start button
         '''
         print 'Gui(): launching simulation'
         self.actSimulate.setDisabled(True)
+        self.actExecuteRegimes.setDisabled(True)
+        self.simProgress = QtGui.QProgressBar(self)
+        self.sim.simulationProgressChanged.connect(self.simProgress.setValue)
+        self.statusBar.addWidget(self.simProgress)
         self.runSimulation.emit()
         
     def saveData(self, name='_'):
@@ -290,7 +300,6 @@ class BallBeamGui(QtGui.QMainWindow):
         execute all regimes in the current list
         '''
         self.runningBatch = True
-        self.actExecuteRegimes.setDisabled(True)
         self.currentRegimeIndex = -1
         self.regimeFinished.emit()
         
@@ -325,6 +334,9 @@ class BallBeamGui(QtGui.QMainWindow):
         self.actStop.setDisabled(False)
         self.actSave.setDisabled(False)
         self.speedDial.setDisabled(False)
+        self.statusBar.removeWidget(self.simProgress)
+        self.sim.simulationProgressChanged.disconnect(self.simProgress.setValue)
+        del(self.simProgress)
 
         self.timeSlider.triggerAction(QtGui.QAbstractSlider.SliderToMinimum)
 

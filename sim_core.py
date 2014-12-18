@@ -41,6 +41,7 @@ class Simulator(QObject):
     #qt general
     finished = pyqtSignal(dict)
     failed = pyqtSignal(dict)
+    timeChanged = pyqtSignal(float)
         
     #abilities (should match the module names)
     moduleList = ['model', 'solver', 'disturbance', 'sensor', 'observer', 'controller', 'feedforward', 'trajectory']
@@ -74,6 +75,7 @@ class Simulator(QObject):
         self.storage = {\
                'simTime':[],\
                }
+        self.updated_time = 0
 
     def _calcStep(self):
         '''
@@ -158,6 +160,11 @@ class Simulator(QObject):
                     self.storage[signalName].append(float(val))
                 else:
                     self.storage.update({signalName: [float(val)]})
+
+    def _checkTime(self):
+        if self.current_time - self.updated_time > 1:
+            self.timeChanged.emit(self.current_time)
+            self.updated_time = self.current_time
     
     @pyqtSlot()
     def run(self):
@@ -171,6 +178,7 @@ class Simulator(QObject):
             while self.current_time <= self.solver.settings['end time']:
                 self._calcStep()
                 self._storeValues()
+                self._checkTime()
 
         except ModelException as e:
             print 'Simulator.run(): Model ERROR: ', e.args[0]

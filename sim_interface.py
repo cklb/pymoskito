@@ -107,6 +107,7 @@ class SimulatorInteractor(QtCore.QObject):
     #qt general
     simulationFinished = QtCore.pyqtSignal(dict)
     simulationFailed = QtCore.pyqtSignal(dict)
+    simulationProgressChanged = QtCore.pyqtSignal(int)
 
     def __init__(self, parent=None):
         QtCore.QObject.__init__(self, parent)
@@ -319,9 +320,21 @@ class SimulatorInteractor(QtCore.QObject):
         self.simThread.started.connect(self.sim.run)
         self.sim.finished.connect(self.simFinished)
         self.sim.failed.connect(self.simFailed)
+        self.sim.timeChanged.connect(self.simulationStateChanged)
+        self.endTime = self.sim.solver.settings['end time']
+        self.lastProgress = 0
 
         #run
         self.simThread.start()
+
+    def simulationStateChanged(self, t):
+        '''
+        calculate overall progress
+        '''
+        progress = int(t/self.endTime * 100)
+        if progress != self.lastProgress:
+            self.simulationProgressChanged.emit(progress)
+            self.lastProgress = progress
 
     def _simAftercare(self):
         #stop thread
