@@ -205,7 +205,9 @@ class LuenbergerObserverReduced(Observer):
         # we have the convention to return a list with shape (1, 4)
         return [float(self.observer_output[i, 0]) for i in range(self.observer_output.shape[0])]
 
-
+#---------------------------------------------------------------------
+# High Gain Observer
+#---------------------------------------------------------------------
 class HighGainObserver(Observer):
     '''
     High Gain Observer for nonlinear systems
@@ -296,11 +298,11 @@ class HighGainObserver(Observer):
 
 
 #---------------------------------------------------------------------
-# Luenberger Observer
+# Luenberger Observer with integrator
 #---------------------------------------------------------------------
 class LuenbergerObserverInt(Observer):
     '''
-    Luenberger Observer uses solver to integrate
+    Luenberger Observer that uses solver to integrate
     '''
 
     settings = {'Method': 'adams',\
