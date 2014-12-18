@@ -44,7 +44,6 @@ class BallBeamGui(QtGui.QMainWindow):
         # sim setup viewer
         self.targetView = SimulatorView(self)
         self.targetView.setModel(self.sim.target_model)
-        self.targetView.setColumnWidth(1, 10)
         self.targetView.expanded.connect(self.targetViewChanged)
         self.targetView.collapsed.connect(self.targetViewChanged)
 
@@ -61,7 +60,7 @@ class BallBeamGui(QtGui.QMainWindow):
         self.setWindowIcon(QtGui.QIcon('data/ball_and_beam.png'))
         
         # create docks
-        self.propertyDock = pg.dockarea.Dock('Properties', size=(1, 10))
+        self.propertyDock = pg.dockarea.Dock('Properties')
         self.vtkDock = pg.dockarea.Dock('Simulation')
         self.regimeDock = pg.dockarea.Dock('Regimes')
         self.dataDock = pg.dockarea.Dock('Data')
@@ -485,6 +484,7 @@ class TestGui(QtGui.QMainWindow):
 
         # Window properties
         self.setCentralWidget(self.targetView)
-        self.resize(500, 500)
+        self.adjustSize()
+        #self.resize(500, 500)
         self.setWindowTitle('Sim Test')
        

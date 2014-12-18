@@ -101,6 +101,12 @@ class SimulatorView(QtGui.QTreeView):
     def __init__(self, parent=None):
         QtGui.QTreeView.__init__(self, parent)
         self.setItemDelegateForColumn(1, PropertyDelegate(self))
+    
+    def sizeHint(self):
+        return QtCore.QSize(300, 300)
+
+    def minimumSizeHint(self):
+        return self.sizeHint()
 
 class SimulatorInteractor(QtCore.QObject):
 
