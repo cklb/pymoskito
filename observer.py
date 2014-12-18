@@ -4,6 +4,7 @@ import sympy as sp
 from sympy import sin,cos
 from scipy.integrate import ode
 import settings as st
+import tools as tools
 
 #import tools as tools
 from sim_core import SimulationModule
