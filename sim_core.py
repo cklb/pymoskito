@@ -62,6 +62,10 @@ class Simulator(QObject):
             self.observer_counter = self.observer.settings['tick divider']
             self.observer.setStepWidth(1/self.solver.settings['measure rate'])
 #            self.observer_output = [0] * self.observer.getOutputDimension()
+        
+        #init feedforward
+        if hasattr(self, 'feedforward'):
+            self.feedforward.setStepWidth(1/self.solver.settings['measure rate'])
 
         #init controller
         if hasattr(self, 'controller'):
