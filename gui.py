@@ -181,7 +181,7 @@ class BallBeamGui(QtGui.QMainWindow):
         self.toolbarSim.addSeparator()
         self.toolbarSim.addAction(self.actPlayPause)
         self.toolbarSim.addAction(self.actStop)
-        self.toolbarSim.addWidget(self.speedDial)
+        self.toolbarSim.addWidgetvde (self.speedDial)
         self.toolbarSim.addWidget(self.timeSlider)
         self.toolbarSim.addAction(self.actPostprocessing)
 
