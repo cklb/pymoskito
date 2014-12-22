@@ -24,15 +24,19 @@ class Sensor(SimulationModule):
 
 class DeadTimeSensor(Sensor):
 
-    settings = {'output': '[0]', \
-            'delay': 1}
+    settings = {'output': '[0,1,2,3]', \
+                'delay': 1,\
+                }
 
     def __init__(self, inputDimension):
         Sensor.__init__(self)
-        self.storage = [[i for i in range(inputDimension)] \
-                for x in range(self.settings['delay'])]
-
+        self.inputDimension = inputDimension
+        self.firtRun = True
+        
     def calcOutput(self, t, y):
+        if self.firtRun == True:
+            self.storage = [[0.0 for i in range(self.inputDimension)] for x in range(int(self.settings['delay']))]
+            self.firtRun = False
         self.storage.append(y)
         return self.storage.pop(0)
 

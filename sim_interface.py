@@ -357,8 +357,11 @@ class SimulatorInteractor(QtCore.QObject):
         a = 'model_output.0'
         b = 'trajectory_output.0'
         c = 'observer_output.0'
+        d = 'model_output.2'
+        e = 'observer_output.2'
         self.simData['results'].update({'epsilon':self._getDiff(a,b)})
         self.simData['results'].update({'epsilon_o':self._getDiff(a, c)})
+        self.simData['results'].update({'epsilon_o2':self._getDiff(d, e)})
 
     def _getDiff(self, a, b):
         data = self.simData['results']

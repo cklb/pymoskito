@@ -83,7 +83,7 @@ class Simulator(QObject):
 
     def _calcStep(self):
         '''
-        Calcualte one step in simulation
+        Calculate one step in simulation
         '''
         self.current_time = self.solver.getTime()
 
@@ -102,7 +102,7 @@ class Simulator(QObject):
                     map(add ,self.model_output, self.disturbance_output))
         else:
             self.sensor_output = map(add ,self.model_output, self.disturbance_output)
-
+        
         #perform observation
         if hasattr(self, 'observer'):
             if self.observer_counter == self.observer.settings['tick divider']:   
