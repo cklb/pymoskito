@@ -6,6 +6,7 @@ from PyQt4.QtCore import pyqtSignal
 
 #std
 import os
+import numpy as np
 
 #own
 
@@ -85,16 +86,37 @@ class PostProcessor(QtGui.QMainWindow):
             self.resultList.addItem(name)
 
     def runPostprocessor(self, item):
-        if self.results:
+        if not self.results:
             print 'runPostprocessor(): Error no result file loaded!'
+            return
 
         name = str(item.text())
+        print 'PostProcessor() running: ', name
+
         processFunc = getattr(self, name)
         for res in self.results:
             processFunc(res)
 
+    def diff(self, a, b):
+        return a-b
+
+    def sum(self, a, b):
+        return a+b
+
     #define your own functions here
     def hauserDiagrams(self, data):
-        print 'test'
+        '''
+        create diagrams like hauser did
+        '''
 
+        #calculate datasets
+        t = data['results']['simTime']
+        yd = data['results']['trajectory_output.0']
+        y = []
+        for i in range(3):
+            y.append(data['results']['model_output.'+str(i)]  )
 
+        vDiff = np.vectorize(self.diff)
+        eps = vDiff(yd[0], y[0])
+
+        #TODO phi one to three

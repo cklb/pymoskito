@@ -70,6 +70,7 @@ class BallBeamGui(QtGui.QMainWindow):
         self.plotDocks.append(pg.dockarea.Dock('Placeholder'))
         self.plots = []
         self.plotItems = []
+        self.timeLines = []
 
         # arrange docks
         self.area.addDock(self.vtkDock, 'right')
@@ -373,6 +374,9 @@ class BallBeamGui(QtGui.QMainWindow):
 
     def _readResults(self):
         self.currentStepSize = 1/self.currentDataset['modules']['solver']['measure rate']
+        if self.currentStepSize < 1/100:
+            self.currentStepSize = 1/100
+
         self.currentEndTime = self.currentDataset['modules']['solver']['end time']
         self.validData = True
 
@@ -416,7 +420,7 @@ class BallBeamGui(QtGui.QMainWindow):
             return
 
         #update time cursor in plots
-        #TODO
+        self._updateTimeCursor()
 
         #update state of rendering
         state = [self.interpolate(self.currentDataset['results']['model_output.'+str(i)]) \
@@ -459,8 +463,18 @@ class BallBeamGui(QtGui.QMainWindow):
         self.area.addDock(dock, 'above', self.plotDocks[-1])
         self.plots.append(pg.PlotWidget(title=title))
         self.plotItems.append(self.plots[-1].plot(x=self.currentDataset['results']['simTime'], y=data))
+        timeLine = pg.InfiniteLine(0, angle=90, movable=False, pen=pg.mkPen('#FF0000', width=2.0))
+        self.plots[-1].addItem(timeLine)
+        self.timeLines.append(timeLine)
         dock.addWidget(self.plots[-1])
         self.plotDocks.append(dock)
+
+    def _updateTimeCursor(self):
+        '''
+        updates the timelines of all plot windows
+        '''
+        for line in self.timeLines:
+            line.setValue(self.playbackTime)
 
     def _updatePlots(self):
         '''
