@@ -10,6 +10,8 @@ import copy
 #Qt
 from PyQt4 import QtCore, QtGui
 from PyQt4.QtGui import QStandardItemModel, QStandardItem, QItemDelegate, QComboBox
+
+#own
 from sim_core import Simulator
 
 class SimulatorModel(QStandardItemModel):

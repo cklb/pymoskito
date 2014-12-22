@@ -181,7 +181,7 @@ class BallBeamGui(QtGui.QMainWindow):
         self.toolbarSim.addSeparator()
         self.toolbarSim.addAction(self.actPlayPause)
         self.toolbarSim.addAction(self.actStop)
-        self.toolbarSim.addWidgetvde (self.speedDial)
+        self.toolbarSim.addWidget(self.speedDial)
         self.toolbarSim.addWidget(self.timeSlider)
         self.toolbarSim.addAction(self.actPostprocessing)
 
@@ -198,8 +198,6 @@ class BallBeamGui(QtGui.QMainWindow):
         #statusbar
         self.statusBar = QtGui.QStatusBar(self)
         self.setStatusBar(self.statusBar)
-
-
 
     def playAnimation(self):
         '''
@@ -252,9 +250,10 @@ class BallBeamGui(QtGui.QMainWindow):
         
     def saveData(self, name='_'):
         '''
-        pause the animation
+        save current dataset
         '''
         print 'Gui(): dumping data'
+        self.currentDataset.update({'regime name':name})
         fileName = os.path.join('..', 'results', time.strftime('%Y%m%d-%H%M%S') +'_'+name+'.bbr')
         with open(fileName, 'w+') as f:
             f.write(repr(self.currentDataset))
@@ -481,8 +480,7 @@ class BallBeamGui(QtGui.QMainWindow):
         self.targetView.resizeColumnToContents(0)
 
     def postprocessingClicked(self):
-        return
-        self.post = Postprocessor()
+        self.post = PostProcessor(self)
         self.post.show()
 
 class TestGui(QtGui.QMainWindow):
