@@ -11,6 +11,7 @@ from PyQt4 import QtGui, QtCore
 
 #own
 from gui import BallBeamGui, TestGui
+from postprocessing import PostProcessor
 
 #--------------------------------------------------------------------- 
 # Main Application
@@ -43,6 +44,7 @@ for arg in args:
 app = QtGui.QApplication([])
 gui = BallBeamGui()
 #gui = TestGui()
+#gui = PostProcessor()
 gui.show()
 
 ## Start Qt event loop unless running in interactive mode or using pyside.
