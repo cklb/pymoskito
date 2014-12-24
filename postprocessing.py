@@ -24,7 +24,7 @@ class PostProcessor(QtGui.QMainWindow):
         self.setWindowIcon(QtGui.QIcon('data/postprocessing.png'))
         self.frame = QtGui.QFrame()
         self.setCentralWidget(self.frame)
-        self.resize(600, 400)
+        self.resize(500, 400)
 
         #toolbar
         self.toolBar = QtGui.QToolBar('file control')
