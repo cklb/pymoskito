@@ -4,15 +4,19 @@
 from PyQt4 import QtCore, QtGui
 from PyQt4.QtCore import pyqtSignal
 
+import pyqtgraph as pg
+
 #std
 import os
 import numpy as np
+import scipy as sp
 
 #own
 
 class PostProcessor(QtGui.QMainWindow):
 
     resultsChanged = pyqtSignal()
+    figuresChanged = pyqtSignal()
 
     def __init__(self, parent=None):
         QtGui.QMainWindow.__init__(self, parent)
@@ -20,7 +24,7 @@ class PostProcessor(QtGui.QMainWindow):
         self.setWindowIcon(QtGui.QIcon('data/postprocessing.png'))
         self.frame = QtGui.QFrame()
         self.setCentralWidget(self.frame)
-        self.resize(400, 400)
+        self.resize(600, 400)
 
         #toolbar
         self.toolBar = QtGui.QToolBar('file control')
@@ -46,15 +50,25 @@ class PostProcessor(QtGui.QMainWindow):
         
         self.resultList = QtGui.QListWidget(self)
         #self.resultList.itemDoubleClicked.connect(self.runPostprocessor)
-
-        #self.spacer = QtGui.QSpacerItem(300, 300)
         self.resultsChanged.connect(self.updateResultList)
 
-        self.plotView = QtGui.QGraphicsView()
+        #self.spacer = QtGui.QSpacerItem(300, 300)
 
-        self.grid.addWidget(self.resultList, 0, 0)
-        self.grid.addWidget(self.methodList, 1, 0)
-        self.grid.addWidget(self.plotView, 0, 1)
+        self.figureList = QtGui.QListWidget(self)
+        self.figureList.itemDoubleClicked.connect(self.figureDoubleClicked)
+        self.figuresChanged.connect(self.updateFigureList)
+        
+        self.plotView = QtGui.QGraphicsView()
+        self.current_figures = []
+
+        
+        self.grid.addWidget(QtGui.QLabel('result files:'), 0, 0)
+        self.grid.addWidget(self.resultList, 1, 0)
+        self.grid.addWidget(QtGui.QLabel('postprocessors:'), 2, 0)
+        self.grid.addWidget(self.methodList, 3, 0)
+        self.grid.addWidget(QtGui.QLabel('figures:'), 4, 0)
+        self.grid.addWidget(self.figureList, 5, 0)
+        self.grid.addWidget(QtGui.QLabel('selected figure:'), 0, 1)
 
         #statusbar
         self.statusBar = QtGui.QStatusBar(self)
@@ -90,12 +104,28 @@ class PostProcessor(QtGui.QMainWindow):
             print 'runPostprocessor(): Error no result file loaded!'
             return
 
+        #TODO
+        #self.grid.removeWidget()
+        #self.current_figures.clear()
         name = str(item.text())
         print 'PostProcessor() running: ', name
 
         processFunc = getattr(self, name)
         for res in self.results:
-            processFunc(res)
+            self.current_figures.append({'name':'_'.join([res['regime name'], name]),\
+                    'figure': processFunc(res)})
+
+        self.figuresChanged.emit()
+    
+    def updateFigureList(self):
+        print self.current_figures
+        for fig in self.current_figures:
+            name = fig['name']
+            self.figureList.addItem(name)
+        
+    def figureDoubleClicked(self, item):
+        figWidget = next((figure['figure'] for figure in self.current_figures if figure['name']==str(item.text())), None)
+        self.grid.addWidget(figWidget, 1, 1, 5, 1)
 
     def diff(self, a, b):
         return a-b
@@ -120,3 +150,16 @@ class PostProcessor(QtGui.QMainWindow):
         eps = vDiff(yd[0], y[0])
 
         #TODO phi one to three
+
+
+        plots = pg.GraphicsLayoutWidget()
+        p1 = pg.PlotItem(name='Sollwertfehler', lables={'left': 'epsilon', 'bottom':'t'})
+        p1.plot(t, eps)
+        p2 = pg.PlotItem(name='Sollwertfehler', lables={'left': 'epsilon', 'bottom':'t'})
+        p2.plot(t, eps)
+
+
+        plots.addItem(p1, 0, 0)
+        plots.addItem(p2, 1, 0)
+
+        return plots

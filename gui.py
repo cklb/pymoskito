@@ -197,14 +197,16 @@ class BallBeamGui(QtGui.QMainWindow):
         self.finishedRegimeBatch.connect(self.regimeBatchFinished)
 
         #statusbar
-        self.statusBar = QtGui.QStatusBar(self)
-        self.setStatusBar(self.statusBar)
+        self.status= QtGui.QStatusBar(self)
+        self.setStatusBar(self.status)
+        self.statusLabel = QtGui.QLabel('Ready.')
+        self.statusBar().addWidget(self.statusLabel)
 
     def playAnimation(self):
         '''
         play the animation
         '''
-        print 'Gui(): playing animation'
+        self.statusLabel.setText('playing animation')
         self.actPlayPause.setText('Pause')
         self.actPlayPause.setIcon(QtGui.QIcon('data/pause.png'))
         self.actPlayPause.triggered.disconnect(self.playAnimation)
@@ -215,7 +217,7 @@ class BallBeamGui(QtGui.QMainWindow):
         '''
         pause the animation
         '''
-        print 'Gui(): pausing animation'
+        self.statusLabel.setText('pausing animation')
         self.playbackTimer.stop()
         self.actPlayPause.setText('Play')
         self.actPlayPause.setIcon(QtGui.QIcon('data/play.png'))
@@ -226,7 +228,7 @@ class BallBeamGui(QtGui.QMainWindow):
         '''
         pause the animation
         '''
-        print 'Gui(): stopping animation'
+        self.statusLabel.setText('stopping animation')
         if self.actPlayPause.text() == 'Pause':
             #animation is playing -> stop it
             self.playbackTimer.stop()
@@ -241,19 +243,20 @@ class BallBeamGui(QtGui.QMainWindow):
         '''
         start the simulation and disable start button
         '''
-        print 'Gui(): launching simulation'
+        regName =  str(self.regimeList.item(self.currentRegimeIndex).text())
+        self.statusLabel.setText('simulating '+regName+':')
         self.actSimulate.setDisabled(True)
         self.actExecuteRegimes.setDisabled(True)
         self.simProgress = QtGui.QProgressBar(self)
         self.sim.simulationProgressChanged.connect(self.simProgress.setValue)
-        self.statusBar.addWidget(self.simProgress)
+        self.statusBar().addWidget(self.simProgress)
         self.runSimulation.emit()
         
     def saveData(self, name='_'):
         '''
         save current dataset
         '''
-        print 'Gui(): dumping data'
+        self.statusLabel.setText('dumping data')
         self.currentDataset.update({'regime name':name})
         fileName = os.path.join('..', 'results', time.strftime('%Y%m%d-%H%M%S') +'_'+name+'.bbr')
         with open(fileName, 'w+') as f:
@@ -271,7 +274,6 @@ class BallBeamGui(QtGui.QMainWindow):
         '''
         load simulation regime from file
         '''
-        print 'Gui(): loading regime file:', fileName
         with open(fileName, 'r') as f:
             self.regimes = yaml.load(f)
 
@@ -280,6 +282,7 @@ class BallBeamGui(QtGui.QMainWindow):
         if self.regimes:
             self.actExecuteRegimes.setDisabled(False)
         
+        self.statusBar().showMessage('loaded '+str(len(self.regimes))+' regimes.', 1000)
         return
         
     def _updateRegimeList(self):
@@ -292,8 +295,7 @@ class BallBeamGui(QtGui.QMainWindow):
         applies the selected regime to the current target
         '''
         regName = str(item.text())
-        print 'Gui(): applying regime: ', regName
-
+        self.statusBar().showMessage('applying regime: '+regName, 1000)
         self.sim.setRegime(next((reg for reg in self.regimes if reg['name']==regName), None))
 
     def _applyRegime(self, index=0):
@@ -328,21 +330,19 @@ class BallBeamGui(QtGui.QMainWindow):
         self.runningBatch = False
         self.actExecuteRegimes.setDisabled(False)
         self.currentRegimeIndex = 0
-        box = QtGui.QMessageBox()
-        box.setText('All regimes have been simulated!')
-        box.exec_()
+        self.statusLabel.setText('All regimes have been simulated!')
 
     def simulationFinished(self, data):
         '''
         integration finished, enable play button and update plots
         '''
-        print 'Gui(): simulation finished'
         self.actSimulate.setDisabled(False)
         self.actPlayPause.setDisabled(False)
         self.actStop.setDisabled(False)
         self.actSave.setDisabled(False)
         self.speedDial.setDisabled(False)
-        self.statusBar.removeWidget(self.simProgress)
+        self.statusBar().removeWidget(self.simProgress)
+        self.statusLabel.setText('simulation finished.')
         self.sim.simulationProgressChanged.disconnect(self.simProgress.setValue)
         del(self.simProgress)
 
@@ -360,16 +360,15 @@ class BallBeamGui(QtGui.QMainWindow):
             regName = self.regimes[self.currentRegimeIndex]['name']
             self.saveData(regName)
             self.regimeFinished.emit()
+        else:
+            self.actExecuteRegimes.setDisabled(False)
 
     def simulationFailed(self, data):
         '''
         integration failed, enable play button and update plots
         #TODO write warning window
         '''
-        print 'Gui(): simulation failed'
-        box = QtGui.QMessageBox()
-        box.setText('The timestep integration failed!')
-        box.exec_()
+        self.statusLabel.setText('simulation failed!')
         self.simulationFinished(data)
 
     def _readResults(self):
@@ -494,6 +493,7 @@ class BallBeamGui(QtGui.QMainWindow):
         self.targetView.resizeColumnToContents(0)
 
     def postprocessingClicked(self):
+        self.statusBar().showMessage('launching postprocessor', 1000)
         self.post = PostProcessor(self)
         self.post.show()
 
