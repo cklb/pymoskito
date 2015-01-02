@@ -4,6 +4,7 @@
 import numpy as np
 
 import settings as st       #TODO remove this dependancy
+from tools import getCoefficients
 from linearization import Linearization
 from sim_core import SimulationModule
 
@@ -60,19 +61,21 @@ class Controller(SimulationModule):
 #---------------------------------------------------------------------
 class FController(Controller):
 
+    settings = {\
+                'poles': [-2, -2, -2, -2],\
+                'tick divider': 1,\
+                }
     # controller gains
-    k0 = 16.
-    k1 = 32.
-    k2 = 24.
-    k3 = 8.
-    settings = {}
 
     def __init__(self):
         self.order = 4
+        self.firstRun = True
         Controller.__init__(self)
 
     def calcOutput(self, x, yd):
-        
+        if self.firstRun:
+            self.k = getCoefficients(self.settings['poles'])[0]
+            self.firstRun = False
         # calculate nonlinear terms phi
         phi1 = x[0]
         phi2 = x[1]  
@@ -81,10 +84,10 @@ class FController(Controller):
         
         # calculate fictional input v
         v = yd[4] + \
-                self.k3*(yd[3] - phi4) + \
-                self.k2*(yd[2] - phi3) + \
-                self.k1*(yd[1] - phi2) + \
-                self.k0*(yd[0] - phi1)
+                self.k[3]*(yd[3] - phi4) + \
+                self.k[2]*(yd[2] - phi3) + \
+                self.k[1]*(yd[1] - phi2) + \
+                self.k[0]*(yd[0] - phi1)
         
         # calculate a(x)
         a = -st.B*st.G*np.cos(x[2])
@@ -103,19 +106,21 @@ class FController(Controller):
 #---------------------------------------------------------------------
 class GController(Controller):
     
-    # controller gains
-    k0 = 16
-    k1 = 32
-    k2 = 24
-    k3 = 8
-    settings = {}
+    settings = {\
+                'poles': [-2, -2, -2, -2],\
+                'tick divider': 1,\
+                }
     
     def __init__(self):
         self.order = 4
+        self.firstRun = True
         Controller.__init__(self)
         
     def calcOutput(self, x, yd):
-        
+        if self.firstRun:
+            self.k = getCoefficients(self.settings['poles'])[0]
+            self.firstRun = False
+            
         # calculate nonlinear terms phi
         phi1 = x[0]
         phi2 = x[1]  
@@ -124,10 +129,10 @@ class GController(Controller):
         
         # calculate fictional input v
         v = yd[4] + \
-                self.k3*(yd[3] - phi4) + \
-                self.k2*(yd[2] - phi3) + \
-                self.k1*(yd[1] - phi2) + \
-                self.k0*(yd[0] - phi1)
+                self.k[3]*(yd[3] - phi4) + \
+                self.k[2]*(yd[2] - phi3) + \
+                self.k[1]*(yd[1] - phi2) + \
+                self.k[0]*(yd[0] - phi1)
         
         # calculate a(x)
         a = -st.B*st.G*np.cos(x[2]) + 2*st.B*x[1]*x[3]
@@ -145,15 +150,19 @@ class GController(Controller):
 class JController(Controller):
     
     settings = {\
-            'k' : [16.0, 32.0, 24.0, 8.0],\
-            'tick divider': 1,\
-        }
-    
+                'poles': [-2, -2, -2, -2],\
+                'tick divider': 1,\
+                }
+
     def __init__(self):
         self.order = 4
+        self.firstRun = True
         Controller.__init__(self)
     
     def calcOutput(self, x, yd):
+        if self.firstRun:
+            self.k = getCoefficients(self.settings['poles'])[0]
+            self.firstRun = False
         
         # calculate linear terms phi
         phi1 = x[0]
@@ -163,10 +172,10 @@ class JController(Controller):
         
         # calculate fictional input v
         v = yd[4] + \
-                self.settings['k'][3]*(yd[3] - phi4) + \
-                self.settings['k'][2]*(yd[2] - phi3) + \
-                self.settings['k'][1]*(yd[1] - phi2) + \
-                self.settings['k'][0]*(yd[0] - phi1)
+                self.k[3]*(yd[3] - phi4) + \
+                self.k[2]*(yd[2] - phi3) + \
+                self.k[1]*(yd[1] - phi2) + \
+                self.k[0]*(yd[0] - phi1)
         
         # calculate a(x)
         a = -self.B*self.G/(self.J + self.Jb)
