@@ -152,7 +152,6 @@ class PostProcessor(QtGui.QMainWindow):
         self.grid.addWidget(figWidget, 1, 1, 5, 1)
 
 
-
 class PostProcessingModule:
     '''
     Base Class for Postprocessing Modules
