@@ -17,9 +17,8 @@ class PostProcessor(QtGui.QMainWindow):
         QtGui.QMainWindow.__init__(self, parent)
         self.setWindowTitle('Postprocessing')
         self.setWindowIcon(QtGui.QIcon('data/postprocessing.png'))
-        self.frame = QtGui.QFrame()
-        self.setCentralWidget(self.frame)
-        self.resize(500, 400)
+        self.mainFrame = QtGui.QWidget(self)
+        self.resize(700, 400)
 
         #toolbar
         self.toolBar = QtGui.QToolBar('file control')
@@ -42,8 +41,7 @@ class PostProcessor(QtGui.QMainWindow):
         self.toolBar.addAction(self.actReloadMethods)
 
         #main window
-        self.grid = QtGui.QGridLayout(self)
-        self.frame.setLayout(self.grid)
+        self.grid = QtGui.QGridLayout(self.mainFrame)
 
         self.methodList = QtGui.QListWidget(self)
         self.methodList.itemDoubleClicked.connect(self.runPostprocessor)
@@ -72,10 +70,18 @@ class PostProcessor(QtGui.QMainWindow):
         self.grid.addWidget(self.figureList, 5, 0)
         self.grid.addWidget(QtGui.QLabel('selected figure:'), 0, 1)
 
+        self.mainFrame.setLayout(self.grid)
+        self.setCentralWidget(self.mainFrame)
+
         #statusbar
         self.statusBar = QtGui.QStatusBar(self)
         self.setStatusBar(self.statusBar)
         #self.statusBar.setMessage('no datset loaded')
+
+
+        #load test results
+        filePath = os.path.join(os.pardir, 'results', '20141222-143449_test-linear.bbr')
+        self._loadResultFile(filePath)
     
     def loadResultFilesClicked(self):
         path = os.path.join('../results/')
@@ -90,9 +96,16 @@ class PostProcessor(QtGui.QMainWindow):
 
         if files:
             for selectedFile in files:
-                with open(selectedFile, 'r') as f:
-                    self.results.append(eval(f.read()))
-        
+                self._loadResultFile(selectedFile)
+
+
+    def _loadResultFile(self, fileName):
+        '''
+        loads a result file
+        '''
+        with open(fileName, 'r') as f:
+            self.results.append(eval(f.read()))
+
         self.resultsChanged.emit()
 
     def updateResultList(self):
@@ -142,7 +155,6 @@ class PostProcessor(QtGui.QMainWindow):
         self.figuresChanged.emit()
     
     def updateFigureList(self):
-        print self.current_figures
         for fig in self.current_figures:
             name = fig['name']
             self.figureList.addItem(name)

@@ -2,8 +2,12 @@
 import numpy as np
 import scipy as sp
 
-from PyQt4 import QtCore
-import pyqtgraph as pg
+import matplotlib
+matplotlib.use("Qt4Agg")
+#from matplotlib.backends import qt4_compat
+from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.figure import Figure
+from matplotlib.lines import Line2D as line
 
 from postprocessing import PostProcessingModule
 
@@ -13,11 +17,15 @@ class eval_A1(PostProcessingModule):
     create diagrams for evaluation step A1
     '''
 
+    line_color = '#aaaaaa'
+
     def __init__(self):
         PostProcessingModule.__init__(self)
         return
 
     def run(self, data):
+        fig = Figure()
+        canvas = FigureCanvas(fig)
         epsPercent = 2.5
 
         #calculate datasets
@@ -25,17 +33,17 @@ class eval_A1(PostProcessingModule):
         y = data['results']['model_output.0']
         yd = data['results']['trajectory_output.0'][-1]
 
-        #calc rise-time
-        tr = t[y.index([x for x in y if x > yd*0.9][0])]
-        print 'tr: ', tr
+        #calc attack-time
+        ta = t[y.index([x for x in y if x > yd*0.9][0])]
+        attackLine = line([ta, ta], [0, y[t.index(ta)]], ls='--', c=self.line_color)
 
-        #calc control-time
-        tc = t[y.index([x for x in y if x > yd][0])]
-        print 'tc: ', tc
+        #calc rise-time
+        tr = t[y.index([x for x in y if x > yd][0])]
+        riseLine = line([tr, tr], [0, y[t.index(tr)]], ls='--', c=self.line_color)
 
         #calc overshoot time
         lastval = 0
-        for val in y[t.index(tc):]:
+        for val in y[t.index(tr):]:
             if val < lastval:
                 break
             else:
@@ -44,6 +52,7 @@ class eval_A1(PostProcessingModule):
         to = t[y.index(val)]
         do = val - yd
         doPercent = do/yd * 100
+        overLine = line([to, to], [0, y[t.index(to)]], ls='--', c=self.line_color)
 
         #calc damping-time
         eps = epsPercent*yd/100
@@ -57,35 +66,27 @@ class eval_A1(PostProcessingModule):
                     enterIdx = -1
         
         td = t[enterIdx]
+        dampLine = line([td, td], [0, y[t.index(td)]], ls='--', c=self.line_color)
 
         #calc stationary deviation
         ys = y[-1] - yd
 
-        plots = pg.GraphicsLayoutWidget()
-        plots.setBackground(background=None)
-        linePen = pg.mkPen('#888888', width=1.0, style=QtCore.Qt.DashLine)
-        fgPen = pg.mkPen('#000000', width=1, style=QtCore.Qt.SolidLine)
-        thickPen = pg.mkPen('#000000', width=1.5, style=QtCore.Qt.SolidLine)
+        axes = fig.add_subplot(111)
+        axes.set_title=(r'\textbf{Sprungantwort}')
+        axes.set_xlabel=('test') #r'\textit{Zeit [s]}')
+        axes.set_ylabel=(r'\textit{Ballposition r(t) [m]}')
+        axes.plot(t, y, c='k')
+        axes.add_line(attackLine)
+        axes.add_line(riseLine)
+        axes.add_line(overLine)
+        axes.add_line(dampLine)
 
-        p1 = pg.PlotItem(title='Sprungantwort', labels={'left': 'yd', 'bottom':'t'})
-        p1.getAxis('left').setPen(fgPen)
-        p1.getAxis('bottom').setPen(fgPen)
-        p1.plot(t, y, pen=thickPen)
-        #p1.showGrid(x=True, y=True, alpha=0.9)
+        positions = [ta, tr, to, td]
+        names = [r'$T_r$', r'$T_a$', r'$T_m$', r'$T_{\epsilon}$']
 
-        p1.addLine(y=yd, movable=False, pen=thickPen)
-        p1.addLine(y=yd+eps, movable=False, pen=linePen)
-        p1.addLine(y=yd-eps, movable=False, pen=linePen)
-        p1.addLine(x=tr, movable=False, pen=linePen)
-        p1.addLine(x=tc, movable=False, pen=linePen)
-        p1.addLine(x=to, movable=False, pen=linePen)
-        p1.addLine(x=td, movable=False, pen=linePen)
-        plots.addItem(p1, 0, 0)
+        for idx, name in enumerate(names):
+            axes.text(positions[idx], .1, name)
 
+        fig.savefig('test.svg')
 
-        #exporter = pg.exporters.ImageExporter.ImageExporter(p1)
-        #exporter.parameters()['width'] = 500
-        #exporter.parameters()['height'] = 500
-        #exporter.export('test.png')
-
-        return plots
+        return canvas
