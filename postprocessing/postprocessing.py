@@ -80,7 +80,7 @@ class PostProcessor(QtGui.QMainWindow):
 
 
         #load test results
-        filePath = os.path.join(os.pardir, 'results', '20141222-143449_test-linear.bbr')
+        filePath = os.path.join(os.pardir, 'results', 'test.bbr')
         self._loadResultFile(filePath)
     
     def loadResultFilesClicked(self):
