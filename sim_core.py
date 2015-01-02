@@ -73,6 +73,8 @@ class Simulator(QObject):
                 self.controller_counter = self.controller.settings['tick divider']
 
             self.controller_output = 0 * self.controller.getOutputDimension()
+        else:
+            self.controller_output = 0
 
     def _initStorage(self):
         #init fields with fixed dimensions
