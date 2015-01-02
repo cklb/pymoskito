@@ -4,15 +4,10 @@
 from PyQt4 import QtCore, QtGui
 from PyQt4.QtCore import pyqtSignal
 
-import pyqtgraph as pg
-
 #std
 import os
-import numpy as np
-import scipy as sp
 
 #own
-
 class PostProcessor(QtGui.QMainWindow):
 
     resultsChanged = pyqtSignal()
@@ -36,9 +31,15 @@ class PostProcessor(QtGui.QMainWindow):
         self.actLoad.setIcon(QtGui.QIcon('data/load.png'))
         self.actLoad.setDisabled(False)
         self.actLoad.triggered.connect(self.loadResultFilesClicked)
-        self.results = []
+        
+        self.actReloadMethods= QtGui.QAction(self)
+        self.actReloadMethods.setText('reload methods')
+        self.actReloadMethods.setIcon(QtGui.QIcon('data/reload.png'))
+        self.actReloadMethods.setDisabled(False)
+        self.actReloadMethods.triggered.connect(self.updateMethodList)
 
         self.toolBar.addAction(self.actLoad)
+        self.toolBar.addAction(self.actReloadMethods)
 
         #main window
         self.grid = QtGui.QGridLayout(self)
@@ -46,11 +47,12 @@ class PostProcessor(QtGui.QMainWindow):
 
         self.methodList = QtGui.QListWidget(self)
         self.methodList.itemDoubleClicked.connect(self.runPostprocessor)
-        self.methodList.insertItem(0, 'hauserDiagrams')
+        self.updateMethodList()
         
         self.resultList = QtGui.QListWidget(self)
         #self.resultList.itemDoubleClicked.connect(self.runPostprocessor)
         self.resultsChanged.connect(self.updateResultList)
+        self.results = []
 
         #self.spacer = QtGui.QSpacerItem(300, 300)
 
@@ -99,6 +101,25 @@ class PostProcessor(QtGui.QMainWindow):
             name = res['regime name']
             self.resultList.addItem(name)
 
+    def updateMethodList(self):
+        self.methodList.clear()
+
+        # import all modules in current directory and display their names
+        moduleNames = []
+        path = os.path.join(os.curdir, 'postprocessing')
+        for f in os.listdir(path):
+            if not os.path.isfile(os.path.join(path, f)):
+                continue
+            elif f == 'postprocessing.py' or f == '__init__.py':
+                continue
+            elif f[-3:] != '.py':
+                continue
+            else:
+                moduleNames.append(f[:-3])
+
+        for module in moduleNames:
+            self.methodList.addItem(module)
+
     def runPostprocessor(self, item):
         if not self.results:
             print 'runPostprocessor(): Error no result file loaded!'
@@ -110,7 +131,10 @@ class PostProcessor(QtGui.QMainWindow):
         name = str(item.text())
         print 'PostProcessor() running: ', name
 
-        processFunc = getattr(self, name)
+        module = __import__('.'.join(['postprocessing',name]))
+        processor = getattr(getattr(module, name), name)()
+
+        processFunc = processor.run
         for res in self.results:
             self.current_figures.append({'name':'_'.join([res['regime name'], name]),\
                     'figure': processFunc(res)})
@@ -127,39 +151,19 @@ class PostProcessor(QtGui.QMainWindow):
         figWidget = next((figure['figure'] for figure in self.current_figures if figure['name']==str(item.text())), None)
         self.grid.addWidget(figWidget, 1, 1, 5, 1)
 
+
+
+class PostProcessingModule:
+    '''
+    Base Class for Postprocessing Modules
+    defines some basic functions that can later be vectorized
+    '''
+    def __init__(self):
+        return
+
     def diff(self, a, b):
         return a-b
 
     def sum(self, a, b):
         return a+b
 
-    #define your own functions here
-    def hauserDiagrams(self, data):
-        '''
-        create diagrams like hauser did
-        '''
-
-        #calculate datasets
-        t = data['results']['simTime']
-        yd = data['results']['trajectory_output.0']
-        y = []
-        for i in range(3):
-            y.append(data['results']['model_output.'+str(i)]  )
-
-        vDiff = np.vectorize(self.diff)
-        eps = vDiff(yd[0], y[0])
-
-        #TODO phi one to three
-
-
-        plots = pg.GraphicsLayoutWidget()
-        p1 = pg.PlotItem(name='Sollwertfehler', lables={'left': 'epsilon', 'bottom':'t'})
-        p1.plot(t, eps)
-        p2 = pg.PlotItem(name='Sollwertfehler', lables={'left': 'epsilon', 'bottom':'t'})
-        p2.plot(t, eps)
-
-
-        plots.addItem(p1, 0, 0)
-        plots.addItem(p2, 1, 0)
-
-        return plots

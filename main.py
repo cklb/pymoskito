@@ -11,7 +11,7 @@ from PyQt4 import QtGui, QtCore
 
 #own
 from gui import BallBeamGui, TestGui
-from postprocessing import PostProcessor
+from postprocessing.postprocessing import PostProcessor
 
 #--------------------------------------------------------------------- 
 # Main Application

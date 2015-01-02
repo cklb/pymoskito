@@ -21,7 +21,7 @@ from sim_interface import SimulatorInteractor, SimulatorView
 from visualization import VtkVisualizer
 from model import BallBeamModel
 
-from postprocessing import PostProcessor
+from postprocessing.postprocessing import PostProcessor
 
 class BallBeamGui(QtGui.QMainWindow):
     '''
