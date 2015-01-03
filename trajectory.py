@@ -47,11 +47,11 @@ class HarmonicTrajectory(Trajectory):
         yd = []
         A = self.settings['Amplitude']
         f = self.settings['Frequency']
-        yd.append(A * cos(pi*t*f))
-        yd.append(-A * (pi/f) * sin(pi*t/f))
-        yd.append(-A * (pi/f)**2 * cos(pi*t/f))
-        yd.append(A * (pi/f)**3 * sin(pi*t/f))
-        yd.append(A * (pi/f)**4 * cos(pi*t/f))
+        yd.append(A * cos(2*pi*f*t))
+        yd.append(-A * 2*pi*f * sin(2*pi*f*t))
+        yd.append(-A * (2*pi*f)**2 * cos(2*pi*f*t))
+        yd.append(A * (2*pi*f)**3 * sin(2*pi*f*t))
+        yd.append(A * (2*pi*f)**4 * cos(2*pi*f*t))
         return yd
 
 

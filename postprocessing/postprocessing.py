@@ -46,7 +46,6 @@ class PostProcessor(QtGui.QMainWindow):
         self.grid.setColumnStretch(0, 0)
         self.grid.setColumnStretch(1, 1)
 
-
         self.methodList = QtGui.QListWidget(self)
         self.methodList.itemDoubleClicked.connect(self.runPostprocessor)
         self.updateMethodList()
@@ -57,14 +56,14 @@ class PostProcessor(QtGui.QMainWindow):
         self.delShort = QtGui.QShortcut(QtGui.QKeySequence(QtCore.Qt.Key_Delete), self.resultList)
         self.delShort.activated.connect(self.removeResultItem)
 
-        #self.spacer = QtGui.QSpacerItem(300, 300)
-
         self.figureList = QtGui.QListWidget(self)
         self.figureList.currentItemChanged.connect(self.currentFigureChanged)
         self.figuresChanged.connect(self.updateFigureList)
-        
-        self.plotView = QtGui.QGraphicsView()
         self.current_figures = []
+        
+        self.plotView = QtGui.QScrollArea()
+        #self.plotView.setFixedHeight(600)
+        #self.plotView.setFixedWidth(800)
         
         self.grid.addWidget(QtGui.QLabel('result files:'), 0, 0)
         self.grid.addWidget(self.resultList, 1, 0)
@@ -73,6 +72,7 @@ class PostProcessor(QtGui.QMainWindow):
         self.grid.addWidget(QtGui.QLabel('figures:'), 4, 0)
         self.grid.addWidget(self.figureList, 5, 0)
         self.grid.addWidget(QtGui.QLabel('selected figure:'), 0, 1)
+        self.grid.addWidget(self.plotView, 1, 1, 5, 1)
 
         self.mainFrame.setLayout(self.grid)
         self.setCentralWidget(self.mainFrame)
@@ -80,15 +80,13 @@ class PostProcessor(QtGui.QMainWindow):
         #statusbar
         self.statusBar = QtGui.QStatusBar(self)
         self.setStatusBar(self.statusBar)
-        #self.statusBar.setMessage('no datset loaded')
-
 
         #load test results
-        filePath = os.path.join(os.pardir, 'results', 'test.bbr')
+        filePath = os.path.join(os.pardir, 'results', 'simulation', 'default', 'example.bbr')
         self._loadResultFile(filePath)
     
     def loadResultFilesClicked(self):
-        path = os.path.join('../results/')
+        path = os.path.join(os.path.pardir, 'results', 'simulation')
         dialog = QtGui.QFileDialog(self)
         dialog.setFileMode(QtGui.QFileDialog.ExistingFiles)
         dialog.setDirectory(path)
@@ -174,14 +172,15 @@ class PostProcessor(QtGui.QMainWindow):
         if lastItem:
             print 'last:',lastItem.text()
             oldWidget = next((figure['figure'] for figure in self.current_figures if figure['name']==str(lastItem.text())), None)
-            self.grid.removeWidget(oldWidget)
+            #self.grid.removeWidget(oldWidget)
 
         if currItem:
             print 'new:', currItem.text()
             print self.figureList.currentRow()
             figWidget = self.current_figures[self.figureList.currentRow()]['figure']
             print 'new figure:', figWidget
-            self.grid.addWidget(figWidget, 1, 1, 5, 1)
+            self.plotView.setWidget(figWidget)
+            #self.grid.addWidget(figWidget, 1, 1, 5, 1)
         
 
 class PostProcessingModule:
@@ -197,4 +196,18 @@ class PostProcessingModule:
 
     def sum(self, a, b):
         return a+b
-
+        
+    def add(self, a, b):
+        return a+b
+        
+    def subt(self, a, b):
+        return a-b
+    
+    def mul(self, a, b):
+        return a*b
+        
+    def div(self, a, b):
+        if b == 0:
+            raise Exception('Division through 0 is impossible')
+            return        
+        return a/b
