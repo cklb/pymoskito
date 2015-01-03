@@ -3,7 +3,7 @@
 
 import numpy as np
 
-import settings as st       #TODO remove this dependancy
+import settings as st
 from tools import getCoefficients
 from linearization import Linearization
 from sim_core import SimulationModule
@@ -17,13 +17,6 @@ class Controller(SimulationModule):
 
     def __init__(self):
         SimulationModule.__init__(self)
-        self.M = st.M
-        self.R = st.R
-        self.J = st.J
-        self.Jb = st.Jb
-        self.G = st.G
-        self.B = self.M/(self.Jb/self.R**2+self.M)
-        return
 
     def getOrder(self):
         return self.order
@@ -170,8 +163,8 @@ class JController(Controller):
         # calculate linear terms phi
         phi1 = x[0]
         phi2 = x[1]  
-        phi3 = -self.B*self.G*x[2]
-        phi4 = -self.B*self.G*x[3]
+        phi3 = -st.B*st.G*x[2]
+        phi4 = -st.B*st.G*x[3]
         
         # calculate fictional input v
         v = yd[4] + \
@@ -181,9 +174,9 @@ class JController(Controller):
                 self.k[0]*(yd[0] - phi1)
         
         # calculate a(x)
-        a = -self.B*self.G/(self.J + self.Jb)
+        a = -st.B*st.G/(st.J + st.Jb)
         # calculate b(x)
-        b = self.B*self.M*self.G**2*x[0]/(self.J + self.Jb)
+        b = st.B*st.M*st.G**2*x[0]/(st.J + st.Jb)
         
         # calculate u
         u = (v-b)/a
@@ -215,7 +208,7 @@ class LSSController(Controller):
         x = np.array([[x[0],x[1],x[2],x[3]]])
         if self.firstRun:
             self.lin = Linearization([self.settings['r0'], 0, 0, 0],\
-                    self.settings['r0'] * self.M*self.G)         
+                    self.settings['r0'] * st.M*st.G)         
             self.K = self.lin.ackerSISO(self.lin.A, self.lin.B, self.settings['poles'])
             self.V = self.lin.calcPrefilter(self.K)
             self.firstRun = False
@@ -300,7 +293,7 @@ class PIFeedbackController(Controller):
         x = np.array([[x[0],x[1],x[2],x[3]]])
         if self.firstRun:
             self.lin = Linearization([self.settings['r0'], 0, 0, 0],\
-                    self.settings['r0'] * self.M*self.G)
+                    self.settings['r0'] * st.M*st.G)
 
 
             # build a A and B matrix with a new component of e for error of the position

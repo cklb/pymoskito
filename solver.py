@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-import numpy as np
 from scipy.integrate import ode
 from sim_core import SimulationModule
 

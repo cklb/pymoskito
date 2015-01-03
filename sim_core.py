@@ -27,7 +27,6 @@ class SimulationModule(QObject):
 
 #own
 from model import ModelException
-import settings as st
 
 #--------------------------------------------------------------------- 
 # Core of the physical simulation
