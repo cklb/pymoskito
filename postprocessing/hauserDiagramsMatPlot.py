@@ -95,7 +95,6 @@ class hauserDiagramsMatPlot(PostProcessingModule):
         axes4.set_xlabel(r'$t /s$')
         axes4.set_ylabel(r'$\tau$')
         
-
         #collect results
         output = {'epsilon_max': 0}
 

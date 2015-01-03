@@ -82,7 +82,7 @@ class PostProcessor(QtGui.QMainWindow):
         self.setStatusBar(self.statusBar)
 
         #load test results
-        filePath = os.path.join(os.pardir, 'results', 'simulation', 'example.bbr')
+        filePath = os.path.join(os.pardir, 'results', 'simulation', 'default', 'example.bbr')
         self._loadResultFile(filePath)
     
     def loadResultFilesClicked(self):

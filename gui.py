@@ -206,7 +206,7 @@ class BallBeamGui(QtGui.QMainWindow):
         '''
         play the animation
         '''
-        self.statusLabel.setText('playing animation')
+        #self.statusLabel.setText('playing animation')
         self.actPlayPause.setText('Pause')
         self.actPlayPause.setIcon(QtGui.QIcon('data/pause.png'))
         self.actPlayPause.triggered.disconnect(self.playAnimation)
@@ -217,7 +217,7 @@ class BallBeamGui(QtGui.QMainWindow):
         '''
         pause the animation
         '''
-        self.statusLabel.setText('pausing animation')
+        #self.statusLabel.setText('pausing animation')
         self.playbackTimer.stop()
         self.actPlayPause.setText('Play')
         self.actPlayPause.setIcon(QtGui.QIcon('data/play.png'))
@@ -228,7 +228,7 @@ class BallBeamGui(QtGui.QMainWindow):
         '''
         pause the animation
         '''
-        self.statusLabel.setText('stopping animation')
+        #self.statusLabel.setText('stopping animation')
         if self.actPlayPause.text() == 'Pause':
             #animation is playing -> stop it
             self.playbackTimer.stop()
@@ -245,6 +245,8 @@ class BallBeamGui(QtGui.QMainWindow):
         '''
         regName =  str(self.regimeList.item(self.currentRegimeIndex).text())
         self.statusLabel.setText('simulating '+regName+':')
+        print 'Simulating: ', regName
+
         self.actSimulate.setDisabled(True)
         self.actExecuteRegimes.setDisabled(True)
         self.simProgress = QtGui.QProgressBar(self)
@@ -252,13 +254,24 @@ class BallBeamGui(QtGui.QMainWindow):
         self.statusBar().addWidget(self.simProgress)
         self.runSimulation.emit()
         
-    def saveData(self, name='_'):
+    def saveData(self, name=None):
         '''
         save current dataset
         '''
+
+        if not name:
+            name = QtGui.QInputDialog.getText(self, \
+                    'Please specify regime name',\
+                    'regime name')
+            if not name[1]:
+                return
+            else:
+                name = str(name[0])
+
         self.statusLabel.setText('dumping data')
-        self.currentDataset.update({'regime name':name})
-        path = os.path.join(os.path.pardir, 'results', 'simulation')
+        self.currentDataset.update({'regime name': name})
+        path = os.path.join(os.path.pardir, 'results', 'simulation', self.regimeFileName)
+        print self.regimeFileName
 
         #check for path existance
         if not os.path.isdir(path):
@@ -274,12 +287,17 @@ class BallBeamGui(QtGui.QMainWindow):
                     "Open Regime File",\
                     repPath,\
                     "Simulation Regime files (*.sreg)")
-        self._loadRegimes(fileName)
+        if not fileName:
+            return
 
-    def _loadRegimes(self, fileName=None):
+        self._loadRegimes(str(fileName))
+
+    def _loadRegimes(self, fileName):
         '''
         load simulation regime from file
         '''
+        self.regimeFileName = os.path.split(fileName)[-1][:-5]
+        print 'loading regime file: ', self.regimeFileName
         with open(fileName, 'r') as f:
             self.regimes = yaml.load(f)
 
