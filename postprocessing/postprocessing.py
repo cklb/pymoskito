@@ -86,7 +86,7 @@ class PostProcessor(QtGui.QMainWindow):
         self._loadResultFile(filePath)
     
     def loadResultFilesClicked(self):
-        path = os.path.join('../results/')
+        path = os.path.join(os.path.pardir, 'results', 'simulation')
         dialog = QtGui.QFileDialog(self)
         dialog.setFileMode(QtGui.QFileDialog.ExistingFiles)
         dialog.setDirectory(path)
