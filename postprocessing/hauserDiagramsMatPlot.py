@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import numpy as np
 import scipy as sp
+import os
 
 import matplotlib as mpl
 mpl.use("Qt4Agg")
@@ -55,7 +56,7 @@ class hauserDiagramsMatPlot(PostProcessingModule):
             psi = vMul(vMul(np.dot(2*B, y[0]), y[3]), u)
         elif data['modules']['controller']['type'] == 'JController':
             psi = vAdd(vMul(np.dot(B,y[0]), np.power(y[3], 2)),\
-                       np.dot(B*G, vSubt(y[2] - np.sin(y[2]))))
+                       np.dot(B*G, vSubt(y[2], np.sin(y[2]))))
         else:
             raise Exception('psi is useless')
             psi = np.dot(0, t)
@@ -94,8 +95,21 @@ class hauserDiagramsMatPlot(PostProcessingModule):
         axes4.set_xlabel(r'$t /s$')
         axes4.set_ylabel(r'$\tau$')
         
-        canvas = FigureCanvas(fig)
-        fig.savefig('testc.svg')
+
+        #collect results
+        output = {'epsilon_max': 0}
+
+        #write results
+        filePath = os.path.join(os.path.pardir, 'results', 'postprocessing', 'HauserDiagrams')
+        if not os.path.isdir(filePath):
+            os.makedirs(filePath)
         
+        fileName = os.path.join(filePath, data['regime name'])
+        with open(fileName+'.pof', 'w') as f: #POF - Postprocessing Output File
+            f.write(repr(output))
+
+        canvas = FigureCanvas(fig)
+        fig.savefig(fileName+'.svg')
+
         return canvas
 
