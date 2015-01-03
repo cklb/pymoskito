@@ -176,5 +176,3 @@ class PostProcessingModule:
     def mul(self, a, b):
         return a*b
         
-    def power(self, a, exp):
-        return a**exp

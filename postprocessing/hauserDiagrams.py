@@ -22,14 +22,13 @@ class hauserDiagrams(PostProcessingModule):
         # vectorise skalar functions
         vSubt = np.vectorize(self.subt)
         vMul = np.vectorize(self.mul)
-        vPower = np.vectorize(self.power)
         vAdd = np.vectorize(self.add)
           
         #calculate datasets
         t = data['results']['simTime']
         yd = data['results']['trajectory_output.0']
         y = []
-        for i in range(3):
+        for i in range(4):
             y.append(data['results']['model_output.'+str(i)]  )
             
         eps = vSubt(yd[0], y[0])
@@ -46,11 +45,11 @@ class hauserDiagrams(PostProcessingModule):
 
         
         if data['modules']['controller']['type'] == 'FController':
-            psi = vMul(np.dot(B, y[0]), vPower(y[3],2))
+            psi = vMul(np.dot(B, y[0]), np.power(y[3],2))
         elif data['modules']['controller']['type'] == 'GController':
             psi = vMul(vMul(np.dot(2*B, y[0]), y[3]), u)
         elif data['modules']['controller']['type'] == 'JController':
-            psi = vAdd(vMul(np.dot(B,y[0]), vPower(y[3], 2)),\
+            psi = vAdd(vMul(np.dot(B,y[0]), np.power(y[3], 2)),\
                        np.dot(B*G, vSubt(y[2] - np.sin(y[2]))))
         else:
             raise Exception('psi is useless')
