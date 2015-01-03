@@ -65,7 +65,7 @@ class hauserDiagramsMatPlot(PostProcessingModule):
             psi = vAdd(vMul(np.dot(B,y[0]), np.power(y[3], 2)),\
                        np.dot(B*G, vSubt(y[2], np.sin(y[2]))))
         else:
-            raise Exception('psi is useless')
+            print 'psi is useless'
             psi = np.dot(0, t)
 
         # plots
