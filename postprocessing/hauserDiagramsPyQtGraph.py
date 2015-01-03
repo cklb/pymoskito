@@ -8,7 +8,7 @@ from postprocessing import PostProcessingModule
 import settings as st
 
 #define your own functions here
-class hauserDiagrams(PostProcessingModule):
+class hauserDiagramsPyQtGraph(PostProcessingModule):
     '''
     create diagrams like hauser did
     '''
