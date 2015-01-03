@@ -8,7 +8,7 @@ controllerList = ['FController', 'GController', 'JController',\
                 'LSSController', 'PIFeedbackController']
 
 print 'Regimefile Generator'
-print 'Choose a one of the following controller: (0-4)'
+print 'Choose one of the following controller: (0-4)'
 print controllerList
 number = -1
 while not(number >= 0 and number <= 4):
@@ -42,7 +42,7 @@ with open(filePath, 'r') as f:
     head = f.read()
 
 
-poles = np.arange(poleRange[0],poleRange[1] - 0.1, -1)
+poles = np.arange(poleRange[0],poleRange[1] - 0.1, -0.1)
 lines += '\n'
 
 for pole in poles:

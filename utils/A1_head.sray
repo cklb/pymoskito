@@ -20,7 +20,7 @@
    step size: 0.001
    rTol: 1e-6
    aTol: 1e-9
-   end time: 15
+   end time: 20
    initial state: [0, 0, 0, 0]
 
   trajectory:
