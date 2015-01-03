@@ -35,7 +35,7 @@ class hauserDiagramsPyQtGraph(PostProcessingModule):
 
         #TODO phi one to three
         #FIXME: durchdenke welches u gemeint ist: u=tau oder u = u
-        u = data['results']['controller_output.0']
+        tau = data['results']['controller_output.0']
         
         # Parameter from Controller -> make modelling (estimate/meausre paramters)
         # and then neglect psi therm
@@ -50,7 +50,7 @@ class hauserDiagramsPyQtGraph(PostProcessingModule):
             psi = vMul(vMul(np.dot(2*B, y[0]), y[3]), u)
         elif data['modules']['controller']['type'] == 'JController':
             psi = vAdd(vMul(np.dot(B,y[0]), np.power(y[3], 2)),\
-                       np.dot(B*G, vSubt(y[2] - np.sin(y[2]))))
+                       np.dot(B*G, vSubt(y[2], np.sin(y[2]))))
         else:
             raise Exception('psi is useless')
             psi = np.dot(0, t)
@@ -66,7 +66,7 @@ class hauserDiagramsPyQtGraph(PostProcessingModule):
         p3.plot(t, psi)
         
         p4 = pg.PlotItem(name='Tau', lables={'left': 'Tau', 'bottom':'t'})
-        p4.plot(t, data['results']['controller_output.0'])
+        p4.plot(t, tau)
 
 
         plots.addItem(p1, 0, 0)

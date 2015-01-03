@@ -206,4 +206,9 @@ class PostProcessingModule:
     
     def mul(self, a, b):
         return a*b
-       
+
+    def div(self, a, b):
+        if b == 0:
+            raise Exception('Division through 0 is impossible')
+            return        
+        return a/b
