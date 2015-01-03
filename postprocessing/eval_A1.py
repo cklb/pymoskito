@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import numpy as np
 import scipy as sp
+import os
 
 import matplotlib as mpl
 mpl.use("Qt4Agg")
@@ -31,9 +32,10 @@ class eval_A1(PostProcessingModule):
 
     def run(self, data):
         print 'processing ',data['regime name']
-        fig = Figure()
+        
         #dict for calculated values
         output = {}
+
         #reset counter
         self.counter = 0
         
@@ -45,6 +47,7 @@ class eval_A1(PostProcessingModule):
         self.posLabel = np.arange(np.min(y) + 0.1*yd, yd, (yd-np.min(y))/4)
             
         #create plot
+        fig = Figure()
         axes = fig.add_subplot(111)
         axes.set_title(r'\textbf{Sprungantwort}')
         axes.plot(t, y, c='k')
@@ -128,10 +131,21 @@ class eval_A1(PostProcessingModule):
 
         #calc stationary deviation
         ys = y[-1] - yd
-        output.update({'ys': ys})      
+        output.update({'ys': ys})   
+
+        self.calcMetrics(data, output)
+
+        #write results
+        filePath = os.path.join(os.path.pardir, 'results', 'postprocessing', 'A1')
+        if not os.path.isdir(filePath):
+            os.makedirs(filePath)
+        
+        fileName = os.path.join(filePath, data['regime name'])
+        with open(fileName+'.pof', 'w') as f: #POF - Postprocessing Output File
+            f.write(repr(output))
 
         canvas = FigureCanvas(fig)
-        fig.savefig('test.svg')
+        fig.savefig(fileName+'.svg')
         return canvas
         
     def createTimeLine(self, axes, t, y, time_value, label):
@@ -145,3 +159,23 @@ class eval_A1(PostProcessingModule):
             #create label
             axes.text(time_value + self.spacing, self.posLabel[self.counter], label, size = self.font_size)
             self.counter = self.counter + 1
+
+    def calcMetrics(self, data, output):
+        '''
+        calculate metrics for comaprism
+        '''
+
+        #calculate datasets
+        t = data['results']['simTime']
+        y = data['results']['model_output.0']
+        yd = data['results']['trajectory_output.0'][-1]
+
+        #calc ITAE criterium
+        dt = 1.0/data['modules']['solver']['measure rate']
+        
+        errorIntegral = 0
+        for k, val in enumerate(y):
+            errorIntegral += abs(val-yd)*dt**2*k
+
+        print 'ITAE score: ', errorIntegral
+        output.update({'ITAE': errorIntegral})
