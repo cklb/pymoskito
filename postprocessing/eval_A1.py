@@ -43,7 +43,6 @@ class eval_A1(PostProcessingModule):
         yd = data['results']['trajectory_output.0'][-1]
 
         self.posLabel = np.arange(np.min(y) + 0.1*yd, yd, (yd-np.min(y))/4)
-        
             
         #create plot
         axes = fig.add_subplot(111)
@@ -64,8 +63,8 @@ class eval_A1(PostProcessingModule):
             self.createTimeLine(axes, t, y, tr, r'$T_r$')
             output.update({'tr': tr})
         except IndexError:
-            print 'AttackLine is not defined'
             output.update({'tr': None})
+            #print 'AttackLine is not defined'
         
         #calc correction-time (Anregelzeit)
         try:
@@ -74,7 +73,7 @@ class eval_A1(PostProcessingModule):
             self.createTimeLine(axes, t, y, tanr, r'$T_{anr}$')
             output.update({'tanr': tanr})
         except IndexError:
-            print 'RiseLine is not defined'
+            #print 'RiseLine is not defined'
             output.update({'tanr': None})
         
         #calc overshoot-time and overshoot in percent (Überschwingzeit und Überschwingen)
@@ -99,7 +98,7 @@ class eval_A1(PostProcessingModule):
             self.createTimeLine(axes, t, y, to, r'$T_m$')
             output.update({'to': to, 'do': do, 'doPercent': doPercent})
         else:
-            print 'OvershootLine is not defined'
+            #print 'OvershootLine is not defined'
             output.update({'to': None, 'do': None, 'doPercent': None})
 
         #calc damping-time (Beruhigungszeit)
@@ -118,7 +117,7 @@ class eval_A1(PostProcessingModule):
             self.createTimeLine(axes, t, y, td, r'$T_{\epsilon}$')
             output.update({'td': td})
         except IndexError:
-            print 'DampingLine is not defined'
+            #print 'DampingLine is not defined'
             output.update({'td': None})
         
         #create epsilon tube

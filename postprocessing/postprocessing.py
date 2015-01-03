@@ -169,19 +169,14 @@ class PostProcessor(QtGui.QMainWindow):
 
     def currentFigureChanged(self, currItem, lastItem):
         if lastItem:
-            print 'last:',lastItem.text()
             oldWidget = next((figure['figure'] for figure in self.current_figures if figure['name']==str(lastItem.text())), None)
             self.grid.removeWidget(oldWidget)
+            oldWidget.setVisible(False)
 
         if currItem:
-            print 'new:', currItem.text()
-            print self.figureList.currentRow()
             figWidget = self.current_figures[self.figureList.currentRow()]['figure']
-            print 'new figure:', figWidget
-            figWidget.draw()
-            #self.plotView.setWidget(figWidget)
             self.grid.addWidget(figWidget, 1, 1, 5, 1)
-            figWidget.draw()
+            figWidget.setVisible(True)
         
 
 class PostProcessingModule:
