@@ -174,8 +174,11 @@ class eval_A1(PostProcessingModule):
         dt = 1.0/data['modules']['solver']['measure rate']
         
         errorIntegral = 0
-        for k, val in enumerate(y):
-            errorIntegral += abs(val-yd)*dt**2*k
+        if not data['results']['finished']:
+            errorIntegral = None
+        else:
+            for k, val in enumerate(y):
+                errorIntegral += abs(val-yd)*dt**2*k
 
         print 'ITAE score: ', errorIntegral
         output.update({'ITAE': errorIntegral})
