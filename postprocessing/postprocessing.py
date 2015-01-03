@@ -80,11 +80,9 @@ class PostProcessor(QtGui.QMainWindow):
         #statusbar
         self.statusBar = QtGui.QStatusBar(self)
         self.setStatusBar(self.statusBar)
-        #self.statusBar.setMessage('no datset loaded')
-
 
         #load test results
-        filePath = os.path.join(os.pardir, 'results', 'test.bbr')
+        filePath = os.path.join(os.pardir, 'results', 'simulation', 'example.bbr')
         self._loadResultFile(filePath)
     
     def loadResultFilesClicked(self):
