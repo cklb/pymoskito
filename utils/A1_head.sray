@@ -1,4 +1,4 @@
- # A1
+# A1
 
 - name: A1-simulation-setup
   clear previous: !!python/bool True # decide whether previous settings should remain or not
@@ -26,3 +26,7 @@
   trajectory:
    type: FixedPointTrajectory
    Position: 3
+
+  controller:
+   type: PIFeedbackController
+   r0: 3
