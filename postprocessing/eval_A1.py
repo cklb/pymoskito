@@ -34,6 +34,7 @@ class eval_A1(PostProcessingModule):
         t = data['results']['simTime']
         y = data['results']['model_output.0']
         yd = data['results']['trajectory_output.0'][-1]
+        desiredLine = line([0, t[-1]], [yd, yd], lw=1, ls=self.line_style, c='k')
 
         #calc attack-time
         ta = t[y.index([x for x in y if x > yd*0.9][0])]
@@ -84,14 +85,16 @@ class eval_A1(PostProcessingModule):
         axes.add_line(riseLine)
         axes.add_line(overLine)
         axes.add_line(dampLine)
+        axes.add_line(desiredLine)
         axes.add_line(lowerBoundLine)
         axes.add_line(upperBoundLine)
 
         positions = [ta, tr, to, td]
         names = [r'$T_r$', r'$T_a$', r'$T_m$', r'$T_{\epsilon}$']
 
+        spacing = 0.1
         for idx, name in enumerate(names):
-            axes.text(positions[idx], .1, name)
+            axes.text(positions[idx]+spacing, .1, name)
 
         axes.set_xlabel(r'\textit{Zeit [s]}')
         axes.set_ylabel(r'\textit{Ballposition r(t) [m]}')

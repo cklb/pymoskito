@@ -18,7 +18,7 @@ class PostProcessor(QtGui.QMainWindow):
         self.setWindowTitle('Postprocessing')
         self.setWindowIcon(QtGui.QIcon('data/postprocessing.png'))
         self.mainFrame = QtGui.QWidget(self)
-        self.resize(700, 400)
+        self.resize(1000, 600)
 
         #toolbar
         self.toolBar = QtGui.QToolBar('file control')
@@ -42,6 +42,10 @@ class PostProcessor(QtGui.QMainWindow):
 
         #main window
         self.grid = QtGui.QGridLayout(self.mainFrame)
+        self.grid.setColumnMinimumWidth(0, 70)
+        self.grid.setColumnStretch(0, 0)
+        self.grid.setColumnStretch(1, 1)
+
 
         self.methodList = QtGui.QListWidget(self)
         self.methodList.itemDoubleClicked.connect(self.runPostprocessor)
@@ -60,7 +64,6 @@ class PostProcessor(QtGui.QMainWindow):
         
         self.plotView = QtGui.QGraphicsView()
         self.current_figures = []
-
         
         self.grid.addWidget(QtGui.QLabel('result files:'), 0, 0)
         self.grid.addWidget(self.resultList, 1, 0)
