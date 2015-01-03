@@ -36,6 +36,9 @@ class Controller(SimulationModule):
         u = self.calcOutput(x, w)
         return u
 
+    def setStepWidth(self, width):
+        return
+
 #---------------------------------------------------------------------
 #P controller
 #---------------------------------------------------------------------
