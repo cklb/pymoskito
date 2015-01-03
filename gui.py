@@ -331,6 +331,7 @@ class BallBeamGui(QtGui.QMainWindow):
         self.actExecuteRegimes.setDisabled(False)
         self.currentRegimeIndex = 0
         self.statusLabel.setText('All regimes have been simulated!')
+        self.actSave.setDisabled(True)
 
     def simulationFinished(self, data):
         '''

@@ -18,7 +18,7 @@ class PostProcessor(QtGui.QMainWindow):
         self.setWindowTitle('Postprocessing')
         self.setWindowIcon(QtGui.QIcon('data/postprocessing.png'))
         self.mainFrame = QtGui.QWidget(self)
-        self.resize(700, 400)
+        self.resize(1000, 600)
 
         #toolbar
         self.toolBar = QtGui.QToolBar('file control')
@@ -42,25 +42,29 @@ class PostProcessor(QtGui.QMainWindow):
 
         #main window
         self.grid = QtGui.QGridLayout(self.mainFrame)
+        self.grid.setColumnMinimumWidth(0, 70)
+        self.grid.setColumnStretch(0, 0)
+        self.grid.setColumnStretch(1, 1)
+
 
         self.methodList = QtGui.QListWidget(self)
         self.methodList.itemDoubleClicked.connect(self.runPostprocessor)
         self.updateMethodList()
         
         self.resultList = QtGui.QListWidget(self)
-        #self.resultList.itemDoubleClicked.connect(self.runPostprocessor)
         self.resultsChanged.connect(self.updateResultList)
         self.results = []
+        self.delShort = QtGui.QShortcut(QtGui.QKeySequence(QtCore.Qt.Key_Delete), self.resultList)
+        self.delShort.activated.connect(self.removeResultItem)
 
         #self.spacer = QtGui.QSpacerItem(300, 300)
 
         self.figureList = QtGui.QListWidget(self)
-        self.figureList.itemDoubleClicked.connect(self.figureDoubleClicked)
+        self.figureList.currentItemChanged.connect(self.currentFigureChanged)
         self.figuresChanged.connect(self.updateFigureList)
         
         self.plotView = QtGui.QGraphicsView()
         self.current_figures = []
-
         
         self.grid.addWidget(QtGui.QLabel('result files:'), 0, 0)
         self.grid.addWidget(self.resultList, 1, 0)
@@ -98,7 +102,6 @@ class PostProcessor(QtGui.QMainWindow):
             for selectedFile in files:
                 self._loadResultFile(selectedFile)
 
-
     def _loadResultFile(self, fileName):
         '''
         loads a result file
@@ -113,6 +116,10 @@ class PostProcessor(QtGui.QMainWindow):
         for res in self.results:
             name = res['regime name']
             self.resultList.addItem(name)
+
+    def removeResultItem(self):
+        del self.results[self.resultList.currentRow()]
+        self.resultList.takeItem(self.resultList.currentRow())
 
     def updateMethodList(self):
         self.methodList.clear()
@@ -138,9 +145,10 @@ class PostProcessor(QtGui.QMainWindow):
             print 'runPostprocessor(): Error no result file loaded!'
             return
 
-        #TODO
-        #self.grid.removeWidget()
-        #self.current_figures.clear()
+        if self.figureList.currentRow()>=0:
+            self.grid.removeWidget(self.current_figures[self.figureList.currentRow()]['figure'])
+        del self.current_figures[:]
+
         name = str(item.text())
         print 'PostProcessor() running: ', name
 
@@ -155,14 +163,26 @@ class PostProcessor(QtGui.QMainWindow):
         self.figuresChanged.emit()
     
     def updateFigureList(self):
+        self.figureList.clear()
         for fig in self.current_figures:
             name = fig['name']
             self.figureList.addItem(name)
-        
-    def figureDoubleClicked(self, item):
-        figWidget = next((figure['figure'] for figure in self.current_figures if figure['name']==str(item.text())), None)
-        self.grid.addWidget(figWidget, 1, 1, 5, 1)
 
+        self.figureList.setCurrentItem(self.figureList.item(0))
+
+    def currentFigureChanged(self, currItem, lastItem):
+        if lastItem:
+            print 'last:',lastItem.text()
+            oldWidget = next((figure['figure'] for figure in self.current_figures if figure['name']==str(lastItem.text())), None)
+            self.grid.removeWidget(oldWidget)
+
+        if currItem:
+            print 'new:', currItem.text()
+            print self.figureList.currentRow()
+            figWidget = self.current_figures[self.figureList.currentRow()]['figure']
+            print 'new figure:', figWidget
+            self.grid.addWidget(figWidget, 1, 1, 5, 1)
+        
 
 class PostProcessingModule:
     '''
