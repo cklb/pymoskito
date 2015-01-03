@@ -77,7 +77,7 @@ class VtkVisualizer:
         # actor
         self.ballActor = vtk.vtkLODActor()
         self.ballActor.SetMapper(self.ballMapper)
-        self.ballActor.SetScale(st.scale)
+        self.ballActor.SetScale(2*st.scale)
 
         # make it look nice
         self.ballProp = self.ballActor.GetProperty()
