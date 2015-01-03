@@ -111,7 +111,8 @@ class hauserDiagramsMatPlot(PostProcessingModule):
         # calculate epsilon_max
         start = 40
         end = 60
-        
+        indStart = t[0]
+        indEnd = t[-1]
         for i in t:
             if i >= start:
                 indStart = t.index(i)
