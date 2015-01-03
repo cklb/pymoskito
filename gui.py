@@ -172,7 +172,7 @@ class BallBeamGui(QtGui.QMainWindow):
 
         # toolbar for control
         self.toolbarSim = QtGui.QToolBar('Simulation')
-        self.toolbarSim.setIconSize(QtCore.QSize(24,24))
+        self.toolbarSim.setIconSize(QtCore.QSize(32, 32))
         self.addToolBar(self.toolbarSim)
         self.toolbarSim.addAction(self.actLoadRegimes)
         self.toolbarSim.addAction(self.actSave)
@@ -271,7 +271,6 @@ class BallBeamGui(QtGui.QMainWindow):
         self.statusLabel.setText('dumping data')
         self.currentDataset.update({'regime name': name})
         path = os.path.join(os.path.pardir, 'results', 'simulation', self.regimeFileName)
-        print self.regimeFileName
 
         #check for path existance
         if not os.path.isdir(path):

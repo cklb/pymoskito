@@ -61,7 +61,7 @@ class PostProcessor(QtGui.QMainWindow):
         self.figuresChanged.connect(self.updateFigureList)
         self.current_figures = []
         
-        self.plotView = QtGui.QScrollArea()
+        self.plotView = QtGui.QWidget()
         #self.plotView.setFixedHeight(600)
         #self.plotView.setFixedWidth(800)
         
@@ -72,7 +72,6 @@ class PostProcessor(QtGui.QMainWindow):
         self.grid.addWidget(QtGui.QLabel('figures:'), 4, 0)
         self.grid.addWidget(self.figureList, 5, 0)
         self.grid.addWidget(QtGui.QLabel('selected figure:'), 0, 1)
-        self.grid.addWidget(self.plotView, 1, 1, 5, 1)
 
         self.mainFrame.setLayout(self.grid)
         self.setCentralWidget(self.mainFrame)
@@ -170,17 +169,14 @@ class PostProcessor(QtGui.QMainWindow):
 
     def currentFigureChanged(self, currItem, lastItem):
         if lastItem:
-            print 'last:',lastItem.text()
             oldWidget = next((figure['figure'] for figure in self.current_figures if figure['name']==str(lastItem.text())), None)
-            #self.grid.removeWidget(oldWidget)
+            self.grid.removeWidget(oldWidget)
+            oldWidget.setVisible(False)
 
         if currItem:
-            print 'new:', currItem.text()
-            print self.figureList.currentRow()
             figWidget = self.current_figures[self.figureList.currentRow()]['figure']
-            print 'new figure:', figWidget
-            self.plotView.setWidget(figWidget)
-            #self.grid.addWidget(figWidget, 1, 1, 5, 1)
+            self.grid.addWidget(figWidget, 1, 1, 5, 1)
+            figWidget.setVisible(True)
         
 
 class PostProcessingModule:
@@ -205,7 +201,7 @@ class PostProcessingModule:
     
     def mul(self, a, b):
         return a*b
-        
+
     def div(self, a, b):
         if b == 0:
             raise Exception('Division through 0 is impossible')
