@@ -258,7 +258,13 @@ class BallBeamGui(QtGui.QMainWindow):
         '''
         self.statusLabel.setText('dumping data')
         self.currentDataset.update({'regime name':name})
-        fileName = os.path.join('..', 'results', time.strftime('%Y%m%d-%H%M%S') +'_'+name+'.bbr')
+        path = os.path.join(os.path.pardir, 'results', 'simulation')
+
+        #check for path existance
+        if not os.path.isdir(path):
+            os.makedirs(path)
+
+        fileName = os.path.join(path, time.strftime('%Y%m%d-%H%M%S') +'_'+name+'.bbr')
         with open(fileName, 'w+') as f:
             f.write(repr(self.currentDataset))
 
