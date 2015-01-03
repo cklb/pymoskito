@@ -166,4 +166,15 @@ class PostProcessingModule:
 
     def sum(self, a, b):
         return a+b
-
+        
+    def add(self, a, b):
+        return a+b
+        
+    def subt(self, a, b):
+        return a-b
+    
+    def mul(self, a, b):
+        return a*b
+        
+    def power(self, a, exp):
+        return a**exp
