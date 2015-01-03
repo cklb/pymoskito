@@ -69,6 +69,7 @@ class Simulator(QObject):
 
         #init controller
         if hasattr(self, 'controller'):
+            self.controller.setStepWidth(1/self.solver.settings['measure rate'])
             if 'tick divider' in self.controller.settings:
                 self.controller_counter = self.controller.settings['tick divider']
 

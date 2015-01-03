@@ -287,7 +287,10 @@ class PIFeedbackController(Controller):
         self.firstRun = True
         self.order = 0
         self.e_old = 0
-        
+
+    def setStepWidth(self, width):
+        self.step_width = width
+
     def calcOutput(self, x, yd):
         
         # x as row-matrix
@@ -327,7 +330,7 @@ class PIFeedbackController(Controller):
             self.firstRun = False
         
         # calculate e
-        e = (yd-x[0,0])*st.step_size + self.e_old
+        e = (yd-x[0,0])*self.step_width + self.e_old
         self.e_old = e                        
 
         # calculate u
