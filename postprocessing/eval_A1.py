@@ -2,9 +2,10 @@
 import numpy as np
 import scipy as sp
 
-import matplotlib
-matplotlib.use("Qt4Agg")
-#from matplotlib.backends import qt4_compat
+import matplotlib as mpl
+mpl.use("Qt4Agg")
+mpl.rcParams['text.usetex']=True
+mpl.rcParams['text.latex.unicode']=True
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 from matplotlib.lines import Line2D as line
@@ -18,6 +19,7 @@ class eval_A1(PostProcessingModule):
     '''
 
     line_color = '#aaaaaa'
+    line_style = '-'
 
     def __init__(self):
         PostProcessingModule.__init__(self)
@@ -25,7 +27,7 @@ class eval_A1(PostProcessingModule):
 
     def run(self, data):
         fig = Figure()
-        canvas = FigureCanvas(fig)
+
         epsPercent = 2.5
 
         #calculate datasets
@@ -35,13 +37,13 @@ class eval_A1(PostProcessingModule):
 
         #calc attack-time
         ta = t[y.index([x for x in y if x > yd*0.9][0])]
-        attackLine = line([ta, ta], [0, y[t.index(ta)]], ls='--', c=self.line_color)
+        attackLine = line([ta, ta], [0, y[t.index(ta)]], ls=self.line_style, c=self.line_color)
 
         #calc rise-time
         tr = t[y.index([x for x in y if x > yd][0])]
-        riseLine = line([tr, tr], [0, y[t.index(tr)]], ls='--', c=self.line_color)
+        riseLine = line([tr, tr], [0, y[t.index(tr)]], ls=self.line_style, c=self.line_color)
 
-        #calc overshoot time
+        #calc overshoot-time
         lastval = 0
         for val in y[t.index(tr):]:
             if val < lastval:
@@ -52,7 +54,7 @@ class eval_A1(PostProcessingModule):
         to = t[y.index(val)]
         do = val - yd
         doPercent = do/yd * 100
-        overLine = line([to, to], [0, y[t.index(to)]], ls='--', c=self.line_color)
+        overLine = line([to, to], [0, y[t.index(to)]], ls=self.line_style, c=self.line_color)
 
         #calc damping-time
         eps = epsPercent*yd/100
@@ -66,20 +68,24 @@ class eval_A1(PostProcessingModule):
                     enterIdx = -1
         
         td = t[enterIdx]
-        dampLine = line([td, td], [0, y[t.index(td)]], ls='--', c=self.line_color)
+        dampLine = line([td, td], [0, y[t.index(td)]], ls=self.line_style, c=self.line_color)
+        upperBoundLine = line([0, t[-1]], [yd+eps, yd+eps], ls='--', c=self.line_color)
+        lowerBoundLine = line([0, t[-1]], [yd-eps, yd-eps], ls='--', c=self.line_color)
 
         #calc stationary deviation
         ys = y[-1] - yd
 
         axes = fig.add_subplot(111)
-        axes.set_title=(r'\textbf{Sprungantwort}')
-        axes.set_xlabel=('test') #r'\textit{Zeit [s]}')
-        axes.set_ylabel=(r'\textit{Ballposition r(t) [m]}')
+        axes.set_title(r'\textbf{Sprungantwort}')
         axes.plot(t, y, c='k')
+        axes.set_xlim(left=0, right=t[-1])
+
         axes.add_line(attackLine)
         axes.add_line(riseLine)
         axes.add_line(overLine)
         axes.add_line(dampLine)
+        axes.add_line(lowerBoundLine)
+        axes.add_line(upperBoundLine)
 
         positions = [ta, tr, to, td]
         names = [r'$T_r$', r'$T_a$', r'$T_m$', r'$T_{\epsilon}$']
@@ -87,6 +93,9 @@ class eval_A1(PostProcessingModule):
         for idx, name in enumerate(names):
             axes.text(positions[idx], .1, name)
 
-        fig.savefig('test.svg')
+        axes.set_xlabel(r'\textit{Zeit [s]}')
+        axes.set_ylabel(r'\textit{Ballposition r(t) [m]}')
 
+        canvas = FigureCanvas(fig)
+        fig.savefig('test.svg')
         return canvas
