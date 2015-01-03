@@ -6,7 +6,7 @@
 #--------------------------------------------------------------------- 
 
 import vtk
-from settings import *
+import settings as st
 
 class VtkVisualizer:
     ren = None
@@ -40,9 +40,9 @@ class VtkVisualizer:
         #-------- add the beam ----
         # geometry
         self.beam = vtk.vtkCubeSource()
-        self.beam.SetXLength(beam_length)
-        self.beam.SetYLength(beam_width)
-        self.beam.SetZLength(beam_depth)
+        self.beam.SetXLength(st.beam_length)
+        self.beam.SetYLength(st.beam_width)
+        self.beam.SetZLength(st.beam_depth)
 
         #mapper
         self.beamMapper = vtk.vtkPolyDataMapper()
@@ -51,7 +51,7 @@ class VtkVisualizer:
         # actor
         self.beamActor = vtk.vtkLODActor()
         self.beamActor.SetMapper(self.beamMapper)
-        self.beamActor.SetScale(scale)
+        self.beamActor.SetScale(st.scale)
 
         #make it look nice
         self.beamProp = self.beamActor.GetProperty()
@@ -66,7 +66,7 @@ class VtkVisualizer:
         #-------- add the ball ----
         # geometry
         self.ball = vtk.vtkSphereSource()
-        self.ball.SetRadius(R)
+        self.ball.SetRadius(st.R)
         self.ball.SetThetaResolution(20)
         self.ball.SetPhiResolution(20)
 
@@ -77,7 +77,7 @@ class VtkVisualizer:
         # actor
         self.ballActor = vtk.vtkLODActor()
         self.ballActor.SetMapper(self.ballMapper)
-        self.ballActor.SetScale(scale)
+        self.ballActor.SetScale(st.scale)
 
         # make it look nice
         self.ballProp = self.ballActor.GetProperty()

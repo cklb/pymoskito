@@ -4,8 +4,6 @@ from __future__ import division
 import sympy as sp
 
 from numpy import sin, cos, pi
-from scipy import special
-
 from sim_core import SimulationModule
 
 #---------------------------------------------------------------------

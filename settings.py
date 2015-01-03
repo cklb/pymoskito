@@ -34,5 +34,5 @@ poles_LuenbergerObserver = [-3, -3, -3, -3]
 # Visualization
 beam_width = 0.01   # m
 beam_depth = 0.03   # m
-beam_length = 2     # m
+beam_length = 9     # m
 scale = 1
