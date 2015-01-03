@@ -77,7 +77,7 @@ class VtkVisualizer:
         # actor
         self.ballActor = vtk.vtkLODActor()
         self.ballActor.SetMapper(self.ballMapper)
-        self.ballActor.SetScale(st.scale)
+        self.ballActor.SetScale(st.ballScale)
 
         # make it look nice
         self.ballProp = self.ballActor.GetProperty()
@@ -102,7 +102,7 @@ class VtkVisualizer:
         # actor
         self.vPlaneActor = vtk.vtkLODActor()
         self.vPlaneActor.SetMapper(self.vPlaneMapper)
-        self.vPlaneActor.SetScale(2.5,1,1)
+        self.vPlaneActor.SetScale(5,2,1)
 
         # make it look nice
         self.vPlaneProp = self.vPlaneActor.GetProperty()
@@ -133,6 +133,10 @@ class VtkVisualizer:
             poke.SetElement(i, 3, r[i])
 
         actor.PokeMatrix(poke)
+
+        #HACK rescale ball
+        if actor == self.ballActor:
+            actor.SetScale(st.ballScale)
 
     def updateScene(self, r_beam, T_beam, r_ball, T_ball):
         ''' 

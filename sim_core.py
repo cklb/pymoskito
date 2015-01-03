@@ -189,9 +189,11 @@ class Simulator(QObject):
         except ModelException as e:
             print 'Simulator.run(): Model ERROR: ', e.args[0]
             self.solver.settings['end time'] = self.current_time
+            self.storage.update({'finished': False})
             self.failed.emit(self.storage)
             return
 
+        self.storage.update({'finished': True})
         self.finished.emit(self.storage)
         return
 
