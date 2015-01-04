@@ -49,7 +49,7 @@ class eval_A2(PostProcessingModule):
         axes.plot(t, eps, c='k')
         axes.set_xlim(left=0, right=t[-1])
         axes.set_xlabel(r'$t /s$')
-        axes.set_ylabel(r'$output error = yd - x0 /m$')
+        axes.set_ylabel(r'$output error = x_{0} - y_{d} /m$')
            
         
         # calculate results
