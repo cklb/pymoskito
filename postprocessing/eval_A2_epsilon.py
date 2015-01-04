@@ -9,20 +9,15 @@ mpl.use("Qt4Agg")
 #mpl.rcParams['text.latex.unicode']=True
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
-from matplotlib.lines import Line2D as line
 
-from postprocessor import PostProcessingModule
+from postprocessing import PostProcessingModule
 import settings as st
 
 #define your own functions here
-class eval_A2(PostProcessingModule):
+class eval_A2_epsilon(PostProcessingModule):
     '''
     create diagrams like hauser did
     '''
-    line_color = '#aaaaaa'
-    line_style = '-'
-
-    name = 'A2'
 
     def __init__(self):
         PostProcessingModule.__init__(self)
@@ -44,35 +39,18 @@ class eval_A2(PostProcessingModule):
             y.append(data['results']['model_output.'+str(i)]  )
                
         eps = vSubt(y[0], yd)
-        traj = data['results']['trajectory_output.0']
         
         # plots
         fig = Figure()
-        fig.subplots_adjust(wspace=0.3, hspace=0.25)
-    
-        axes1 = fig.add_subplot(2, 1, 1)
-        #axes2.set_title(r'\textbf{Beam Angle}')
-        axes1.plot(t, traj, c='b', ls='-', label='w(t)')
-        axes1.plot(t, y[0], c = 'k', ls='-', label='y(t)')
-        axes1.set_xlim(left=0, right=t[-1])
-        axes1.set_xlabel(r'$t [s]$')
-        axes1.set_ylabel(r'$r [m]$') 
-        
-        axes2 = fig.add_subplot(2, 1, 2)
-#        axes.set_title(r'output error = yd - x0')        
-        deltaE = 0.01
-        eMax = line([0, t[-1]], [deltaE, deltaE], lw=1,\
-                            ls='--', c=self.line_color)
-        eMin = line([0, t[-1]], [-deltaE, -deltaE], lw=1,\
-                            ls='--', c=self.line_color)        
-        axes2.add_line(eMax)
-        axes2.add_line(eMin)
-        
-        axes2.plot(t, eps, c='k')
-        axes2.set_xlim(left=0, right=t[-1])
-        axes2.set_ylim(top=0.4, bottom=-0.4)
-        axes2.set_xlabel(r'$t [s]$')
-        axes2.set_ylabel(r'$output error = x_{0} - y_{d} [m]$') 
+#        fig.subplots_adjust(wspace=0.3, hspace=0.25)
+
+        axes = fig.add_subplot(1, 1, 1)
+#        axes.set_title(r'output error = yd - x0')
+        axes.plot(t, eps, c='k')
+        axes.set_xlim(left=0, right=t[-1])
+        axes.set_xlabel(r'$t [s]$')
+        axes.set_ylabel(r'$output error = x_{0} - y_{d} [m]$')
+           
         
         # calculate results
         errorIntegral = self.calcErrorIntegral(data)
@@ -80,7 +58,7 @@ class eval_A2(PostProcessingModule):
         output.update({'error_L1Norm': errorIntegral})
         
         #write results
-        filePath = os.path.join(os.path.pardir, 'results', 'postprocessing', 'A2')
+        filePath = os.path.join(os.path.pardir, 'results', 'postprocessing', 'A2_epsilon')
         if not os.path.isdir(filePath):
             os.makedirs(filePath)
         
@@ -90,9 +68,7 @@ class eval_A2(PostProcessingModule):
 
         canvas = FigureCanvas(fig)
         fig.savefig(fileName+'.svg')
-
-        return {'name':'_'.join([data['regime name'], self.name]),\
-                    'figure': canvas}
+        return canvas             
         
     def calcErrorIntegral(self, data):
         '''
