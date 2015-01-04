@@ -37,3 +37,11 @@ beam_depth = 0.2   # m
 beam_length = 9     # m
 scale = 1
 ballScale = 20
+
+#best konwon poles - gained in A1
+poles = {'FController': -3.6,\
+        'GController': -3,\
+        'JController': -2,\
+        'LSSController': -3.3,\
+        'PIFeedbackController': -1.5,\
+        }
