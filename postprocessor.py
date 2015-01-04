@@ -269,10 +269,13 @@ class PostProcessor(QtGui.QMainWindow):
         module = __import__('.'.join(['postprocessing',name]))
         processor = getattr(getattr(module, name), name)()
 
-        processFunc = processor.run
-        for res in self.results:
-            self.current_figures.append({'name':'_'.join([res['regime name'], name]),\
-                    'figure': processFunc(res)})
+        processFunc = processor.process
+        self.current_figures = processFunc(self.results)
+
+
+        #for res in self.results:
+            #self.current_figures.append({'name':'_'.join([res['regime name'], name]),\
+                    #'figure': processFunc(res)})
 
         self.figureList.setFocus()
         self.figuresChanged.emit()
@@ -355,6 +358,21 @@ class PostProcessingModule:
     def __init__(self):
         return
 
+    def process(self, files):
+        '''
+        function that processes an array of result files
+        This is an convinience wrapper for simple processor
+        implementaion. Overload to add more functionality
+        '''
+        output = []
+        for res in files:
+            output.append(self.run(res))
+
+        return output
+
+    #def run(self, data):
+        #return
+
     def diff(self, a, b):
         return a-b
 
@@ -382,3 +400,5 @@ class PostPostProcessingModule:
     '''
     def __init__(self):
         return
+
+

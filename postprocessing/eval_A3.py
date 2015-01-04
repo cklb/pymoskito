@@ -18,6 +18,8 @@ class eval_A3(PostProcessingModule):
     create diagrams for evaluation step A3
     '''
 
+    name = 'A3'
+
     line_color = '#aaaaaa'
     line_style = '-'
     font_size = 20
@@ -105,7 +107,7 @@ class eval_A3(PostProcessingModule):
         self.calcMetrics(data, output)
 
         #write results
-        filePath = os.path.join(os.path.pardir, 'results', 'postprocessing', 'A3')
+        filePath = os.path.join(os.path.pardir, 'results', 'postprocessing', self.name)
         if not os.path.isdir(filePath):
             os.makedirs(filePath)
         
@@ -115,7 +117,8 @@ class eval_A3(PostProcessingModule):
 
         canvas = FigureCanvas(fig)
         fig.savefig(fileName+'.svg')
-        return canvas
+        return {'name':'_'.join([data['regime name'], self.name]),\
+                    'figure': canvas}
         
     def createTimeLine(self, axes, t, y, time_value, label):
         if time_value != t[-1]:

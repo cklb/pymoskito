@@ -15,10 +15,12 @@ from postprocessor import PostProcessingModule
 import settings as st
 
 #define your own functions here
-class hauserDiagramsMatPlot(PostProcessingModule):
+class eval_A2Hauser(PostProcessingModule):
     '''
     create diagrams like hauser did
     '''
+
+    name = 'A2_hauser'
 
     def __init__(self):
         PostProcessingModule.__init__(self)
@@ -138,5 +140,6 @@ class hauserDiagramsMatPlot(PostProcessingModule):
         canvas = FigureCanvas(fig)
         fig.savefig(fileName+'.svg')
 
-        return canvas
+        return {'name':'_'.join([data['regime name'], self.name]),\
+                    'figure': canvas}
 
