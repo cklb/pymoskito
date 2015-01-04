@@ -152,5 +152,6 @@ class eval_A3(PostProcessingModule):
 
         for k, val in enumerate(y):
             errorIntegral += abs(val-yd)*dt**2*k
+
         print 'ITAE score: ', errorIntegral
         output.update({'ITAE': errorIntegral})

@@ -6,25 +6,25 @@ import os
 
 controllerList = ['FController', 'GController', 'JController',\
                 'LSSController', 'PIFeedbackController']
+parameterList = ['Jb', 'M']
+lines = ''
 
 print 'Regimefile Generator'
-print 'Choose one of the following controller: (0-4)'
-print controllerList
+print 'Choose one of the following parameters: (0-1)'
+print parameterList
 number = -1
 while not(number >= 0 and number <= 4):
     print 'Number: '
     number = input()
 
-lines = ''
-controller = controllerList[number]
+parameter = parameterList[number]
 
 
 # load head file
-filePath = os.path.join(os.curdir, 'A3_head.sray')
+filePath = os.path.join(os.curdir, 'B_head.sray')
 with open(filePath, 'r') as f:
     head = f.read()
 
-delta_t = np.arange(1, 11, 1)
 lines += '\n'
 
 # how many poles?
@@ -39,23 +39,22 @@ if controller == 'FController':
 elif controller == 'GController':
     pole = -3
 elif controller == 'JController':
-    pole = -2
+    pole == -2
 elif controller == 'LSSController':
     pole = -3.3
 elif controller == 'PIFeedbackController':
     pole = -1.5
 
+Jb = np.arange(0.5e-6, 10.5e-6, 1e-6)
     
-for t in delta_t:
-        lines += '- name: A3_' + controller + '_poles(' + str(pole) \
-                    + ')_delta_t(' + str(t) + ')\n'
+for jb in Jb:
+        lines += '- name: B1_' + controller + '_poles(' + str(pole) \
+                    + ')_Jb(' + str(jb) + ')\n'
         lines += '  clear previous: !!python/bool False' + '\n'
         lines += '\n'
-        lines += '  trajectory:' + '\n'
-        lines += '   type: SmoothTransitionTrajectory' + '\n'
-        lines += '   Positions: [0, 3]' + '\n'
-        lines += '   start time: 0' + '\n'
-        lines += '   delta t: ' + str(t) + '\n'
+        lines += '  model:' + '\n'
+        lines += '   type: BallBeamModel' + '\n'
+        lines += '   Jb: ' + str(jb) + '\n'
         lines += '\n'
         lines += '  controller: ' + '\n'
         lines += '   type: '  + controller + '\n'
@@ -64,14 +63,9 @@ for t in delta_t:
             lines += '   r0: 3'
         lines += '\n'
 
-dirPath = os.path.join(os.path.pardir, os.path.pardir, 'regimes', 'generated')
-if not os.path.isdir(dirPath):
-    os.makedirs(dirPath)
-    
-fileName = 'A3_' + controller + '_poles' + str(pole) \
-                    + '_delta_t(' + str(delta_t[0]) + ',' + str(delta_t[-1]) + ').sreg'
-filePath = os.path.join(dirPath, fileName)
-
+fileName = 'B1_' + controller + '_poles' + str(pole) \
+                    + '_Jb(' + str(Jb[0]) + ',' + str(Jb[-1]) + ').sreg'
+filePath = os.path.join(os.curdir, fileName)
 with open(filePath, 'w') as f:
     f.write(head)    
     f.write(lines)
