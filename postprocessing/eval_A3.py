@@ -105,7 +105,7 @@ class eval_A3(PostProcessingModule):
         self.calcMetrics(data, output)
 
         #write results
-        filePath = os.path.join(os.path.pardir, 'results', 'postprocessing', 'A1')
+        filePath = os.path.join(os.path.pardir, 'results', 'postprocessing', 'A3')
         if not os.path.isdir(filePath):
             os.makedirs(filePath)
         
