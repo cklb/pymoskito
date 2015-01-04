@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import numpy as np
-import scipy as sp
 import os
 
 import matplotlib as mpl
@@ -14,9 +13,9 @@ from matplotlib.lines import Line2D as line
 from postprocessing import PostProcessingModule
 
 #define your own functions here
-class eval_A1(PostProcessingModule):
+class eval_A3(PostProcessingModule):
     '''
-    create diagrams for evaluation step A1
+    create diagrams for evaluation step A3
     '''
 
     line_color = '#aaaaaa'
@@ -32,7 +31,7 @@ class eval_A1(PostProcessingModule):
 
     def run(self, data):
         print 'processing ',data['regime name']
-        
+
         #dict for calculated values
         output = {}
 
@@ -42,67 +41,33 @@ class eval_A1(PostProcessingModule):
         #calculate datasets
         t = data['results']['simTime']
         y = data['results']['model_output.0']
+        traj = data['results']['trajectory_output.0']
         yd = data['results']['trajectory_output.0'][-1]
+#        t_desired = data['modules']['trajectory']['delta t']
+        
 
         self.posLabel = np.arange(np.min(y) + 0.1*yd, yd, (yd-np.min(y))/4)
             
         #create plot
         fig = Figure()
         axes = fig.add_subplot(111)
-        axes.set_title(r'\textbf{Sprungantwort}')
-        axes.plot(t, y, c='k')
+        axes.set_title(r'\textbf{Vergleich Signalverlaeufe (Systemantwort und Trajektorie)}')
+        axes.plot(t, traj, c='b', ls='-', label='w(t)')
+        #create t_desired line
+        #search time value for t_desired
+        t_desired = t[traj.index(yd)]
+        self.createTimeLine(axes, t, traj, t_desired, r'$T_{des}$')
+        #plot y(t)
+        axes.plot(t, y, c = 'k', ls='-', label='y(t)')
         axes.set_xlim(left=0, right=t[-1])
         axes.set_xlabel(r'\textit{Zeit [s]}')
         axes.set_ylabel(r'\textit{Ballposition r(t) [m]}')
+        axes.legend(loc=4)
         
         #create desired line
         desiredLine = line([0, t[-1]], [yd, yd], lw=1, ls=self.line_style, c='k')
         axes.add_line(desiredLine)
-
-        #calc rise-time (Anstiegszeit)
-        try:            
-            tr = t[y.index([x for x in y if x > yd*0.9][0])]
-            #create and add line
-            self.createTimeLine(axes, t, y, tr, r'$T_r$')
-            output.update({'tr': tr})
-        except IndexError:
-            output.update({'tr': None})
-            #print 'AttackLine is not defined'
         
-        #calc correction-time (Anregelzeit)
-        try:
-            tanr = t[y.index([x for x in y if x > yd][0])]
-            #create and add line
-            self.createTimeLine(axes, t, y, tanr, r'$T_{anr}$')
-            output.update({'tanr': tanr})
-        except IndexError:
-            #print 'RiseLine is not defined'
-            output.update({'tanr': None})
-        
-        #calc overshoot-time and overshoot in percent (Überschwingzeit und Überschwingen)
-        if output['tanr']:
-            if yd > 0:
-                y_max = np.max(y[t.index(tanr):])
-            else:
-                y_max = np.min(y[t.index(tanr):])
-#            lastval = 0
-#            for val in y[t.index(tanr):]:
-#                y_max = (val - yd)*yd
-                
-#                if val < lastval:
-#                    break
-#                else:
-#                    lastval = val
-            to = t[y.index(y_max)]
-#            to = t[y.index(val)]
-            do = y_max - yd
-            doPercent = do/yd * 100
-            #create and add line
-            self.createTimeLine(axes, t, y, to, r'$T_m$')
-            output.update({'to': to, 'do': do, 'doPercent': doPercent})
-        else:
-            #print 'OvershootLine is not defined'
-            output.update({'to': None, 'do': None, 'doPercent': None})
 
         #calc damping-time (Beruhigungszeit)
         try:                
@@ -131,7 +96,11 @@ class eval_A1(PostProcessingModule):
 
         #calc stationary deviation
         ys = y[-1] - yd
-        output.update({'ys': ys})   
+        output.update({'ys': ys})
+        
+        #calc time error
+        t_error = (td - t_desired)*t_desired
+        print 't_error: ', t_error
 
         self.calcMetrics(data, output)
 
