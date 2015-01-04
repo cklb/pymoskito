@@ -19,6 +19,8 @@ class eval_A1(PostProcessingModule):
     create diagrams for evaluation step A1
     '''
 
+    name = 'A1'
+
     line_color = '#aaaaaa'
     line_style = '-'
     font_size = 20
@@ -138,7 +140,7 @@ class eval_A1(PostProcessingModule):
         output.update({'modules':data['modules']})
 
         #write results
-        filePath = os.path.join(os.path.pardir, 'results', 'postprocessing', 'A1')
+        filePath = os.path.join(os.path.pardir, 'results', 'postprocessing', self.name)
         if not os.path.isdir(filePath):
             os.makedirs(filePath)
         
@@ -148,7 +150,9 @@ class eval_A1(PostProcessingModule):
 
         canvas = FigureCanvas(fig)
         fig.savefig(fileName+'.svg')
-        return canvas
+
+        return {'name':'_'.join([data['regime name'], self.name]),\
+                    'figure': canvas}
         
     def createTimeLine(self, axes, t, y, time_value, label):
         if time_value != t[-1]:

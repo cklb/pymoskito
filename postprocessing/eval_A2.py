@@ -10,7 +10,7 @@ mpl.use("Qt4Agg")
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 
-from postprocessing import PostProcessingModule
+from postprocessor import PostProcessingModule
 import settings as st
 
 #define your own functions here
@@ -18,6 +18,8 @@ class eval_A2(PostProcessingModule):
     '''
     create diagrams like hauser did
     '''
+
+    name = 'A2'
 
     def __init__(self):
         PostProcessingModule.__init__(self)
@@ -68,7 +70,9 @@ class eval_A2(PostProcessingModule):
 
         canvas = FigureCanvas(fig)
         fig.savefig(fileName+'.svg')
-        return canvas             
+
+        return {'name':'_'.join([data['regime name'], self.name]),\
+                    'figure': canvas}
         
     def calcErrorIntegral(self, data):
         '''
@@ -85,15 +89,7 @@ class eval_A2(PostProcessingModule):
         
         errorIntegral = 0
 
-#        print data['results']['simTime'][-1]
-#        print data['modules']['solver']['end time']
-#        print y
-#        print yd
-
-        #FIXME: finish gibt es nicht?? und solver end time ist auch nicht die
-        # eingestellte sondern die aktuelle abgebrochene
-#        if not data['results']['finished']:       
-        if False: # data['results']['simTime'][-1] != data['modules']['solver']['end time']:
+        if not data['results']['finished']:       
             errorIntegral = None
         else:
             for k, val in enumerate(y):
