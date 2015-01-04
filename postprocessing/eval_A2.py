@@ -9,13 +9,12 @@ mpl.use("Qt4Agg")
 #mpl.rcParams['text.latex.unicode']=True
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
-from matplotlib.figure import Figure
 
 from postprocessing import PostProcessingModule
 import settings as st
 
 #define your own functions here
-class hauserDiagramsMatPlot(PostProcessingModule):
+class eval_A2(PostProcessingModule):
     '''
     create diagrams like hauser did
     '''
@@ -39,7 +38,7 @@ class hauserDiagramsMatPlot(PostProcessingModule):
         for i in range(4):
             y.append(data['results']['model_output.'+str(i)]  )
                
-        eps = vSubt(yd[0], y[0])
+        eps = vSubt(y[0], yd)
         
         # plots
         fig = Figure()
@@ -59,7 +58,7 @@ class hauserDiagramsMatPlot(PostProcessingModule):
         output.update({'error_L1Norm': errorIntegral})
         
         #write results
-        filePath = os.path.join(os.path.pardir, 'results', 'postprocessing', 'A1')
+        filePath = os.path.join(os.path.pardir, 'results', 'postprocessing', 'A2')
         if not os.path.isdir(filePath):
             os.makedirs(filePath)
         
@@ -85,7 +84,16 @@ class hauserDiagramsMatPlot(PostProcessingModule):
         dt = 1.0/data['modules']['solver']['measure rate']
         
         errorIntegral = 0
-        if not data['results']['finished']:
+
+#        print data['results']['simTime'][-1]
+#        print data['modules']['solver']['end time']
+#        print y
+#        print yd
+
+        #FIXME: finish gibt es nicht?? und solver end time ist auch nicht die
+        # eingestellte sondern die aktuelle abgebrochene
+#        if not data['results']['finished']:       
+        if False: # data['results']['simTime'][-1] != data['modules']['solver']['end time']:
             errorIntegral = None
         else:
             for k, val in enumerate(y):

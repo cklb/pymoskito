@@ -10,7 +10,7 @@ controllerList = ['FController', 'GController', 'JController',\
 #TODO: überlege, in welchem Punkt Regler linearisiert werden und dazu Pole
 number = 0
 poles = [-3.6, -3.6, -3.6, -3.6]
-fRange = [0.02, 2]
+fRange = [0.02, 0.24]
 fStepSize = 0.02
 
 lines = ''
@@ -34,7 +34,8 @@ for f in fs:
         lines += '   poles: ' + str(poles) + '\n'
         lines += '\n'
         lines += '  trajectory:' +'\n'
-        lines += '   Frequency:' + str(f) + '\n'
+        lines += '   type: HarmonicTrajectory' + '\n'
+        lines += '   Frequency: ' + str(f) + '\n'
         lines += '\n'
                
 #write results
