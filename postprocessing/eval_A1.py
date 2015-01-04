@@ -11,7 +11,7 @@ from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 from matplotlib.lines import Line2D as line
 
-from postprocessing import PostProcessingModule
+from postprocessor import PostProcessingModule
 
 #define your own functions here
 class eval_A1(PostProcessingModule):
@@ -134,6 +134,8 @@ class eval_A1(PostProcessingModule):
         output.update({'ys': ys})   
 
         self.calcMetrics(data, output)
+        #copy module settings to output
+        output.update({'modules':data['modules']})
 
         #write results
         filePath = os.path.join(os.path.pardir, 'results', 'postprocessing', 'A1')

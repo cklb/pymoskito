@@ -21,7 +21,7 @@ from sim_interface import SimulatorInteractor, SimulatorView
 from visualization import VtkVisualizer
 from model import BallBeamModel
 
-from postprocessing.postprocessing import PostProcessor
+from postprocessor import PostProcessor
 
 class BallBeamGui(QtGui.QMainWindow):
     '''
@@ -138,6 +138,7 @@ class BallBeamGui(QtGui.QMainWindow):
         self.timeSlider.setMaximum(self.timeSliderRange)
         self.timeSlider.setTickInterval(1)
         self.timeSlider.setTracking(True)
+        self.timeSlider.setDisabled(True)
         self.timeSlider.valueChanged.connect(self.updatePlaybackTime)
 
         self.playbackTime = 0
@@ -365,6 +366,7 @@ class BallBeamGui(QtGui.QMainWindow):
         self.actStop.setDisabled(False)
         self.actSave.setDisabled(False)
         self.speedDial.setDisabled(False)
+        self.timeSlider.setDisabled(False)
         self.statusBar().removeWidget(self.simProgress)
         self.statusLabel.setText('simulation finished.')
         self.sim.simulationProgressChanged.disconnect(self.simProgress.setValue)

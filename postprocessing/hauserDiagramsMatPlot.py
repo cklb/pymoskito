@@ -11,7 +11,7 @@ from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 from matplotlib.figure import Figure
 
-from postprocessing import PostProcessingModule
+from postprocessor import PostProcessingModule
 import settings as st
 
 #define your own functions here
@@ -123,6 +123,7 @@ class hauserDiagramsMatPlot(PostProcessingModule):
         
         #collect results
         output = {'epsilon_max': epsilon_max}
+        output.update({'modules':data['modules']})
 
         #write results
         filePath = os.path.join(os.path.pardir, 'results', 'postprocessing', 'HauserDiagrams')
