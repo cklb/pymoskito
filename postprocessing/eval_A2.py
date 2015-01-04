@@ -79,6 +79,9 @@ class eval_A2(PostProcessingModule):
         
         output.update({'error_L1Norm': errorIntegral})
         
+        #copy module settings to output
+        output.update({'modules':data['modules']})
+        
         #write results
         filePath = os.path.join(os.path.pardir, 'results', 'postprocessing', 'A2')
         if not os.path.isdir(filePath):

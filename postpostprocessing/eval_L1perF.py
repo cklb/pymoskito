@@ -79,16 +79,17 @@ class eval_L1perF(PostPostProcessingModule):
         LSS = self.sortLists(LSS)
         PIF = self.sortLists(PIF)
         
-        fMax = max(F['f'][-1], G['f'][-1], J['f'][-1], LSS['f'][-1], PIF['f'][-1])
+        #fMax = max(F['x'][-1]), G['x'][-1], J['x'][-1], LSS['x'][-1], PIF['x'][-1])
+        fMax = F['x'][-1]
         fig = Figure()
         
-        axes = fig.add_subplot(2, 1, 1)
+        axes = fig.add_subplot(1, 1, 1)
         #axes2.set_title(r'\textbf{Beam Angle}')
         axes.plot(F['x'], F['e'], c='b', ls='-')
-        axes.plot(G['x'], F['e'], c='b', ls='-')
-        axes.plot(J['x'], F['e'], c='b', ls='-')
-        axes.plot(LSS['x'], F['e'], c='b', ls='-')
-        axes.plot(PIF['x'], F['e'], c='b', ls='-')
+        axes.plot(G['x'], G['e'], c='b', ls='-')
+        axes.plot(J['x'], J['e'], c='b', ls='-')
+        axes.plot(LSS['x'], LSS['e'], c='b', ls='-')
+        axes.plot(PIF['x'], PIF['e'], c='b', ls='-')
         
         axes.set_xlim(left=0, right=fMax)
         axes.set_xlabel(r'$'+xLabel+'$')
