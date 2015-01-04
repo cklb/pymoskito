@@ -40,7 +40,7 @@ class hauserDiagramsMatPlot(PostProcessingModule):
         for i in range(4):
             y.append(data['results']['model_output.'+str(i)]  )
             
-        eps = vSubt(yd[0], y[0])
+        eps = vSubt(y[0], yd)
         
         # controlleroutput is a torque
         tau = data['results']['controller_output.0']
@@ -65,7 +65,7 @@ class hauserDiagramsMatPlot(PostProcessingModule):
             psi = vAdd(vMul(np.dot(B,y[0]), np.power(y[3], 2)),\
                        np.dot(B*G, vSubt(y[2], np.sin(y[2]))))
         else:
-            raise Exception('psi is useless')
+            print 'psi is useless'
             psi = np.dot(0, t)
 
         # plots
@@ -111,7 +111,8 @@ class hauserDiagramsMatPlot(PostProcessingModule):
         # calculate epsilon_max
         start = 40
         end = 60
-        
+        indStart = t[0]
+        indEnd = t[-1]
         for i in t:
             if i >= start:
                 indStart = t.index(i)
