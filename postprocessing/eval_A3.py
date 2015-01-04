@@ -10,7 +10,7 @@ from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 from matplotlib.lines import Line2D as line
 
-from postprocessing import PostProcessingModule
+from postprocessor import PostProcessingModule
 
 #define your own functions here
 class eval_A3(PostProcessingModule):
