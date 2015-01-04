@@ -85,15 +85,7 @@ class eval_A2(PostProcessingModule):
         
         errorIntegral = 0
 
-#        print data['results']['simTime'][-1]
-#        print data['modules']['solver']['end time']
-#        print y
-#        print yd
-
-        #FIXME: finish gibt es nicht?? und solver end time ist auch nicht die
-        # eingestellte sondern die aktuelle abgebrochene
-#        if not data['results']['finished']:       
-        if False: # data['results']['simTime'][-1] != data['modules']['solver']['end time']:
+        if not data['results']['finished']:       
             errorIntegral = None
         else:
             for k, val in enumerate(y):
