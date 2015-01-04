@@ -40,7 +40,7 @@ class hauserDiagramsMatPlot(PostProcessingModule):
         for i in range(4):
             y.append(data['results']['model_output.'+str(i)]  )
             
-        eps = vSubt(yd[0], y[0])
+        eps = vSubt(y[0], yd)
         
         # controlleroutput is a torque
         tau = data['results']['controller_output.0']
