@@ -24,7 +24,7 @@ class eval_A1(PostProcessingModule):
     line_color = '#aaaaaa'
     line_style = '-'
     font_size = 20
-    epsPercent = 2.5
+    epsPercent = 2./5
     spacing = 0.01
     counter = 0
     
@@ -136,8 +136,14 @@ class eval_A1(PostProcessingModule):
         output.update({'ys': ys})   
 
         self.calcMetrics(data, output)
-        #copy module settings to output
-        output.update({'modules':data['modules']})
+
+        #check for sim succes
+        if not res['results']['finished']:
+            for key in output.keys():
+                output[key] = None
+
+        #add settings
+        output.update({'modules':res['modules']})
 
         #write results
         filePath = os.path.join(os.path.pardir, 'results', 'postprocessing', self.name)
@@ -183,11 +189,8 @@ class eval_A1(PostProcessingModule):
         dt = 1.0/data['modules']['solver']['measure rate']
         
         errorIntegral = 0
-        if not data['results']['finished']:
-            errorIntegral = None
-        else:
-            for k, val in enumerate(y):
-                errorIntegral += abs(val-yd)*dt**2*k
+        for k, val in enumerate(y):
+            errorIntegral += abs(val-yd)*dt**2*k
                     
         print 'ITAE score: ', errorIntegral
         output.update({'ITAE': errorIntegral})

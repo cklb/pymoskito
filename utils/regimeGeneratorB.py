@@ -11,10 +11,6 @@ import settings as st
 #-------------------------------------------------------------
 # settings
 #-------------------------------------------------------------
-parameterList = ['M', 'Jb']
-toleranceList = [.2, .1]
-
-paramBounds = [0.01, 1]
 scale = 2
 
 controllerList = ['FController', 'GController', 'JController',\
@@ -26,15 +22,15 @@ controllerList = ['FController', 'GController', 'JController',\
 print '\n ### Regimefile Generator Eval B ### \n'
 
 print 'Choose parameter to test: '
-for idx, param in enumerate(parameterList):
+for idx, param in enumerate(st.paramVariiationList):
     print '\t',idx,' - ', param
 
 paramIdx = -1
-while paramIdx not in range(0, len(parameterList)):
+while paramIdx not in range(0, len(st.paramVariiationList)):
     paramIdx = input()
 
-parameter = parameterList[paramIdx]
-tol = toleranceList[paramIdx]
+parameter = st.paramVariiationList[paramIdx]
+tol = st.paramToleranceList[paramIdx]
 
 paramRealValue = getattr(st, parameter)
 paramTolMinValue = paramRealValue - paramRealValue*tol
@@ -109,6 +105,7 @@ lines += writeRegime(controller, pole, parameter, paramTolMaxValue, 'paramTolMax
 lines += writeModel(parameter, paramTolMaxValue)
 lines += writeController(controller, pole, multiplicator)
 
+paramBounds = st.paramStabilityLimits[controller][parameter]
 simLimits = np.arange(paramBounds[0], paramBounds[1], paramRealValue/scale)
 
 #search limits

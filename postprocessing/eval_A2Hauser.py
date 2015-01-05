@@ -123,9 +123,15 @@ class eval_A2Hauser(PostProcessingModule):
                 break
         epsilon_max = max(eps[indStart:indEnd +1])
         
-        
         #collect results
         output = {'epsilon_max': epsilon_max}
+
+        #check for sim succes
+        if not res['results']['finished']:
+            for key in output.keys():
+                output[key] = None
+
+
         output.update({'modules':data['modules']})
 
         #write results

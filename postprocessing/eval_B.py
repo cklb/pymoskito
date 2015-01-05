@@ -21,13 +21,13 @@ class eval_B(PostProcessingModule):
     '''
 
     name = 'B'
-    padding = .5
+    padding = .2
     offset = 0
 
     line_color = '#aaaaaa'
     line_style = '-'
     font_size = 20
-    #epsPercent = 2.5
+    epsPercent = 2.5
     #spacing = 0.01
     #counter = 0
     
@@ -54,17 +54,33 @@ class eval_B(PostProcessingModule):
         modDataList = sorted(dataList, key=lambda k: k['modules']['model'][par], reverse=True)
 
         #find minimal stable iteration
-        y_pAbsMin = next((res['results']['model_output.0'] \
+        resAbsMin = next((res \
                 for res in modDataList if res['results']['finished']), None)
-
+        y_pAbsMin = resAbsMin['results']['model_output.0']
         #find maximum stable iteration
-        y_pAbsMax = next((res['results']['model_output.0'] \
+        resAbsMax = next((res \
                 for res in reversed(modDataList) if res['results']['finished']), None)
+        y_pAbsMax = resAbsMax['results']['model_output.0']
         
+        output.update({'parameter': par,\
+                'minLimit': resAbsMin['modules']['model'][par],\
+                'maxLimit': resAbsMax['modules']['model'][par],\
+                })
+
         #create plot
         fig = Figure()
         axes = fig.add_subplot(111)
         axes.set_title(r'\textbf{Vergleich Signalverlaeufe}')
+
+        #create epsilon tub
+        eps = self.epsPercent*yd/100
+        upperBoundLine = line([0, t[-1]], [yd+eps, yd+eps], ls='--', c=self.line_color)
+        axes.add_line(upperBoundLine)
+        lowerBoundLine = line([0, t[-1]], [yd-eps, yd-eps], ls='--', c=self.line_color)
+        axes.add_line(lowerBoundLine)
+        
+        #create signals
+        axes.add_line(lowerBoundLine)
         axes.plot(t, y_ideal,   c='k', ls='-', label='parameter ideal')
         axes.plot(t, y_desired, c='b', ls='-', label='w(t)')
         axes.plot(t, y_pTolMin, c='c', ls='-', label='unteres Toleranzlimit')
@@ -72,12 +88,13 @@ class eval_B(PostProcessingModule):
         axes.plot(t, y_pAbsMin, c='orange', ls='-', label='untere Stabilitaetsgrenze')
         axes.plot(t, y_pAbsMax, c='r', ls='-', label='obere Stabilitaetsgrenze')
 
+
         #customize
         axes.set_xlim(left=0, right=t[-1])
-        axes.set_ylim(bottom=(self.offset+yd*(1-self.padding))) #,\
-                #top=(self.offset+yd*(1+self.padding)))
+        axes.set_ylim(bottom=(self.offset+yd*(1-self.padding/2)),\
+                top=(self.offset+yd*(1+self.padding)))
 
-        axes.legend(loc=4)
+        axes.legend(loc=0, fontsize='small')
          
         #write results
         filePath = os.path.join(os.path.pardir, 'results', 'postprocessing', self.name)

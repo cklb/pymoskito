@@ -51,3 +51,33 @@ poles = {'FController': -3.6,\
         'LSSController': -3.3,\
         'PIFeedbackController': -1.5,\
         }
+#-----------------------------------------------
+# TestCase B - Paramter Variiation
+#-----------------------------------------------
+#parameter variation list
+paramVariiationList = ['M', 'Jb']
+paramToleranceList = [.2, .1]
+
+#parameter stability limits for best known poles
+paramStabilityLimits = {\
+        'FController': {\
+            'M': [0, 1],\
+            'Jb': [0, 3e-6],\
+            },\
+        'GController': {\
+            'M': [0, 1],\
+            'Jb': [0, 3e-6],\
+            },\
+        'JController': {\
+            'M': [0, 1],\
+            'Jb': [0, 3e-6],\
+            },\
+        'LSSController': {\
+            'M': [0, 1],\
+            'Jb': [0, 3e-6],\
+            },\
+        'PIFeedbackController': {\
+            'M': [0, 1],\
+            'Jb': [0, 3e-6],\
+            },\
+        }

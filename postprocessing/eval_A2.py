@@ -76,7 +76,12 @@ class eval_A2(PostProcessingModule):
         
         # calculate results
         errorIntegral = self.calcErrorIntegral(data)
-        
+
+        #check for sim succes
+        if not res['results']['finished']:
+            for key in output.keys():
+                output[key] = None
+
         output.update({'error_L1Norm': errorIntegral})
         
         #write results
@@ -109,12 +114,9 @@ class eval_A2(PostProcessingModule):
         
         errorIntegral = 0
 
-        if not data['results']['finished']:       
-            errorIntegral = None
-        else:
-            for k, val in enumerate(y):
-                #vgl. Betragskriterium L^1
-                errorIntegral += abs(val-yd[k])*dt
+        for k, val in enumerate(y):
+            #vgl. Betragskriterium L^1
+            errorIntegral += abs(val-yd[k])*dt
 
         print 'errorIntegral: ', errorIntegral
         return errorIntegral
