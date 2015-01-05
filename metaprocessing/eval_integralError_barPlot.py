@@ -70,7 +70,7 @@ class eval_integralError_barPlot(MetaProcessingModule):
         axes.legend()
         
         #write results
-        filePath = os.path.join(os.path.pardir, 'results', 'postpostprocessing', 'A1')
+        filePath = os.path.join(os.path.pardir, 'results', 'metaprocessing', 'A1')
         if not os.path.isdir(filePath):
             os.makedirs(filePath)
         

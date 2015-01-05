@@ -14,8 +14,8 @@ import settings as st
 parameterList = ['M', 'Jb']
 toleranceList = [.2, .1]
 
-paramBounds = [0.01, 10]
-scale = 0.5
+paramBounds = [0.01, 1]
+scale = 2
 
 controllerList = ['FController', 'GController', 'JController',\
                 'LSSController', 'PIFeedbackController']

@@ -71,7 +71,7 @@ class eval_integralError_linePlot(MetaProcessingModule):
         axes.set_ylabel(r'$E \, \lbrack m^{2}\rbrack$', size=st.label_size)
         
         #write results
-        filePath = os.path.join(os.path.pardir, 'results', 'postpostprocessing', 'A1')
+        filePath = os.path.join(os.path.pardir, 'results', 'metaprocessing', 'A1')
         if not os.path.isdir(filePath):
             os.makedirs(filePath)
         

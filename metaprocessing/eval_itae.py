@@ -44,7 +44,7 @@ class eval_itae(MetaProcessingModule):
         #axes.set_ylabel(r'\textit{Ballposition r(t) [m]}')
         
         #write results
-        filePath = os.path.join(os.path.pardir, 'results', 'postpostprocessing', 'A1')
+        filePath = os.path.join(os.path.pardir, 'results', 'metaprocessing', 'A1')
         if not os.path.isdir(filePath):
             os.makedirs(filePath)
         
