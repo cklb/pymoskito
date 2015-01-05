@@ -52,20 +52,25 @@ class eval_B(PostProcessingModule):
         y_pTolMin = self.extractValues(dataList, 'paramTolMin', 'model_output.0')
         y_pTolMax = self.extractValues(dataList, 'paramTolMax', 'model_output.0')
 
-        par = next((param for param in st.paramVariiationList if param in regName), None)
-        print 'assuiming that', par, 'has been variied.'
+        par = next((param for param in st.paramVariationListB if param in regName), None)
+        print 'assuiming that', par, 'has been varied.'
 
         #sort files by variied parameter
-        modDataList = sorted(dataList, key=lambda k: k['modules']['model'][par], reverse=True)
+        modDataList = sorted(dataList, key=lambda k: k['modules']['model'][par], reverse=False)
 
         #find minimal stable iteration
         resAbsMin = next((res \
                 for res in modDataList if res['results']['finished']), None)
         y_pAbsMin = resAbsMin['results']['model_output.0']
+
         #find maximum stable iteration
         resAbsMax = next((res \
                 for res in reversed(modDataList) if res['results']['finished']), None)
         y_pAbsMax = resAbsMax['results']['model_output.0']
+        print len(y_pAbsMin), len(y_pAbsMax), len(y_ideal)
+
+        print 'stablity limits are:',\
+                resAbsMin['modules']['model'][par], '/', resAbsMax['modules']['model'][par]
         
         output.update({'parameter': par,\
                 'minLimit': resAbsMin['modules']['model'][par],\

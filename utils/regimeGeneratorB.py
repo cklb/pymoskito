@@ -11,7 +11,7 @@ import settings as st
 #-------------------------------------------------------------
 # settings
 #-------------------------------------------------------------
-scale = 2
+scale = 10 #in % of param ideal value
 
 controllerList = ['FController', 'GController', 'JController',\
                 'LSSController', 'PIFeedbackController']

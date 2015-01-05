@@ -65,7 +65,7 @@ paramToleranceList = [0.2, 0.1]
 #parameter stability limits for best known poles
 paramStabilityLimits = {\
         'FController': {\
-            'M': [0, 1],\
+            'M': [0.01, 0.5],\
             'Jb': [0, 3e-6],\
             },\
         'GController': {\
