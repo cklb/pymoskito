@@ -81,6 +81,7 @@ class eval_L1perA(MetaProcessingModule):
         fileName = os.path.join(filePath, metaName)
         canvas = FigureCanvas(fig)
         fig.savefig(fileName+'.svg')
+        fig.savefig(fileName+'.png')
 
         results = [{'figure': canvas, 'name': metaName},\
                 ]

@@ -6,7 +6,7 @@ import os
 
 observerList = ['LuenbergerObserver', 'HighGainObserver']
                
-number = 0
+number = 1
 
 #poles = [pol, pol, pol, pol]
 pRange = [50, 2000]
@@ -31,6 +31,7 @@ for pol in pList:
     lines += '  clear previous: !!python/bool False' + '\n'
     lines += '\n'
     lines += '  solver:' + '\n'
+    lines += '   type: VODESolver' + '\n'
     lines += '   initial state: [-4, 4.91768866, -0.2, -0.7]' + '\n'
     lines += '  controller: ' + '\n'
     lines += '   type: None\n'
