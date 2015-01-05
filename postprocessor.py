@@ -89,6 +89,7 @@ class PostProcessor(QtGui.QMainWindow):
         self.resultList = QtGui.QListWidget(self)
         self.resultsChanged.connect(self.updateResultList)
         self.results = []
+
         self.delShort = QtGui.QShortcut(QtGui.QKeySequence(QtCore.Qt.Key_Delete), self.resultList)
         self.delShort.activated.connect(self.removeResultItem)
 
@@ -429,15 +430,18 @@ class MetaProcessingModule(ProcessingModule):
         ProcessingModule.__init__(self)
         return
     
+    def sortLists(self, a, b):
+        b = [x for (y, x) in sorted(zip(a, b))]
+        a = sorted(a)
+        return a, b
+
     def plotSettings(self, axes, titel, grid, xlabel, ylabel):
         axes.set_title(titel, size=st.title_size)
         if grid == True:
             axes.grid(color='#ababab', linestyle='--')
         axes.set_xlabel(xlabel, size=st.label_size)
         axes.set_ylabel(ylabel, size=st.label_size)
-        axes.legend(fontsize='small')
-
-        
+        axes.legend(loc=0, fontsize='small')
         return axes
     
     def plotVariousController(self, dic, axes, x, y, typ):
@@ -446,12 +450,13 @@ class MetaProcessingModule(ProcessingModule):
         counter = 0
         x_all = []
         
-        for i in dic:
-            controller = i
-            xList = dic[i][x]
-            yList = dic[i][y]
+        for controller in dic:
+            xList = dic[controller][x]
+            yList = dic[controller][y]
+
+            xList, yList = self.sortLists(xList, yList)
             
-            #add times to t_all
+            #add values to x_all
             for j in xList:
                 if x_all.count(j) == 0:
                     x_all.append(j)
@@ -478,13 +483,14 @@ class MetaProcessingModule(ProcessingModule):
                         width,\
                         label=controller,\
                         color=st.color_cycle[controller])
-            
-            counter += 1            
+                counter += 1            
         
         
         x_all.sort()
+        
         #remove all None from x_all
         x_all[:] = [i for i in x_all if i]
+
         # does not work for all constellations
         spacing = (x_all[-1] - x_all[0])/(len(x_all) - 1)
         x_all.append(spacing + x_all[-1])
@@ -497,13 +503,13 @@ class MetaProcessingModule(ProcessingModule):
         if typ=='bar':
             x_all[:] = [i + width*counter for i in x_all]
 
-        axes.set_xticks(x_all)
-        axes.set_xticklabels(x_all_label)
+        #axes.set_xticks(x_all)
+        #axes.set_xticklabels(x_all_label)
         
         return axes
             
     
-    def createDictonary(self, data):
+    def createDictionary(self, data):
                 
         dic = {}
         for i in data:
@@ -513,17 +519,23 @@ class MetaProcessingModule(ProcessingModule):
             t_diff = self.extractT_diff(i)
 #            trajectoryName = self.extractTrajectoryName(i)
             frequency = self.extractFrequency(i)
+            M = self._getSubElement(i, ['modules', 'model', 'M'])
+            Jb = self._getSubElement(i, ['modules', 'model', 'Jb'])
             
             if dic.has_key(controllerName):
                 dic[controllerName]['delta_t'].append(delta_t)
                 dic[controllerName]['integralError'].append(integralError)
                 dic[controllerName]['t_diff'].append(t_diff)
                 dic[controllerName]['frequency'].append(frequency)
+                dic[controllerName]['M'].append(M)
+                dic[controllerName]['Jb'].append(Jb)
             else:
                 dic.update({controllerName: {'delta_t': [delta_t],\
                                         'integralError': [integralError],\
                                         't_diff': [t_diff],\
                                         'frequency': [frequency],\
+                                        'M': [M],\
+                                        'Jb': [Jb],\
                                         }})
         return dic
         

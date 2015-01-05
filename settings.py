@@ -77,23 +77,24 @@ paramToleranceList = [0.2, 0.1]
 #parameter stability limits for best known poles
 paramStabilityLimits = {\
         'FController': {\
-            'M': [0.01, 0.5],\
+            'M': [0.01, 0.32],\
             'Jb': [0, 3e-6],\
             },\
         'GController': {\
-            'M': [0, 1],\
+            'M': [0.01, 0.26],\
             'Jb': [0, 3e-6],\
             },\
+            #J FAILS
         'JController': {\
-            'M': [0, 1],\
+            'M': [0.01, 1],\
             'Jb': [0, 3e-6],\
             },\
         'LSSController': {\
-            'M': [0, 1],\
+            'M': [0.01, .155],\
             'Jb': [0, 3e-6],\
             },\
         'PIFeedbackController': {\
-            'M': [0, 1],\
+            'M': [0.01, 0.09],\
             'Jb': [0, 3e-6],\
             },\
         }

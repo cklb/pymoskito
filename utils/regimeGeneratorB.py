@@ -56,7 +56,7 @@ else:
 #set correct poles
 pole = st.poles[controller]
 
-# load head file
+#load head file
 filePath = os.path.join(os.curdir, 'B_head.sray')
 with open(filePath, 'r') as f:
     head = f.read()
@@ -75,19 +75,32 @@ def writeRegime(cName, pole, param, paramVal, appendix):
                     + '  clear previous: !!python/bool False \n\n'
 
 def writeModel(param, paramVal):
-        return '  model:' + '\n'\
-                + '   type: BallBeamModel' + '\n'\
-                + '   ' + parameter + ': ' + str(paramVal) + '\n\n'
+    return '  model:' + '\n'\
+            + '   type: BallBeamModel' + '\n'\
+            + '   ' + parameter + ': ' + str(paramVal) + '\n\n'
 
 def writeController(cName, pole, multiplicator):
-        tmp = '  controller: ' + '\n'\
-                + '   type: '  + controller + '\n'\
-                + '   poles: ' + str([pole]*multiplicator) + '\n'
+    tmp = '  controller: ' + '\n'\
+            + '   type: '  + controller + '\n'\
+            + '   poles: ' + str([pole]*multiplicator) + '\n'
 
-        if (controller == 'PIFeedbackController' or controller == 'LSSController'):
-            tmp += '   r0: 3'
-        tmp += '\n'
-        return tmp
+    if (controller == 'PIFeedbackController' or controller == 'LSSController'):
+        tmp += '   r0: 3'
+    tmp += '\n'
+    return tmp
+
+def writeSolver(simTime):
+    tmp = '\
+  solver:\n\
+   type: VODESolver\n\
+   Method: adams\n\
+   measure rate: 1000\n\
+   step size: 0.001\n\
+   rTol: 1e-6\n\
+   aTol: 1e-9\n\
+   initial state: [0, 0, 0, 0]\n'
+    tmp += '   end time: 20 '+2*'\n'
+    return tmp
 
 #-------------------------------------------------------------
 # main
@@ -108,7 +121,7 @@ lines += writeController(controller, pole, multiplicator)
 paramBounds = st.paramStabilityLimits[controller][parameter]
 simLimits = np.arange(paramBounds[0], paramBounds[1], paramRealValue/scale)
 
-#search limits
+#search upper limit
 for val in simLimits:
     lines += writeRegime(controller, pole, parameter, val, 'paramAbs')
     lines += writeModel(parameter, val)

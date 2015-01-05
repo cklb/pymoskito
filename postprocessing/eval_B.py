@@ -22,7 +22,8 @@ class eval_B(PostProcessingModule):
     '''
 
     name = 'B'
-    padding = .2
+    #padding = .2
+    padding = .5
     offset = 0
 
     line_color = '#aaaaaa'
@@ -94,7 +95,7 @@ class eval_B(PostProcessingModule):
         axes.plot(t, y_ideal,   c='k', ls='-', label='parameter ideal')
         axes.plot(t, y_desired, c='b', ls='-', label='w(t)')
         axes.plot(t, y_pTolMin, c='c', ls='-', label='unteres Toleranzlimit')
-        axes.plot(t, y_pTolMax, c='g', ls='-', label='oberes Toleranzlimit')
+        axes.plot(t, y_pTolMax, c='lime', ls='-', label='oberes Toleranzlimit')
         axes.plot(t, y_pAbsMin, c='orange', ls='-', label='untere Stabilitaetsgrenze')
         axes.plot(t, y_pAbsMax, c='r', ls='-', label='obere Stabilitaetsgrenze')
 
@@ -116,7 +117,8 @@ class eval_B(PostProcessingModule):
             f.write(repr(output))
 
         canvas = FigureCanvas(fig)
-        fig.savefig(fileName+'.svg')
+        #fig.savefig(fileName+'.svg')
+        fig.savefig(fileName+'.png')
         
         result = [\
                 {'name': '_'.join([regName, self.name]), 'figure': canvas},\

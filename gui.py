@@ -98,6 +98,8 @@ class BallBeamGui(QtGui.QMainWindow):
         self.regimeList = QtGui.QListWidget(self)
         self.regimeDock.addWidget(self.regimeList)
         self.regimeList.itemDoubleClicked.connect(self.regimeDoubleClicked)
+        self.delShort = QtGui.QShortcut(QtGui.QKeySequence(QtCore.Qt.Key_Delete), self.regimeList)
+        self.delShort.activated.connect(self.removeRegimeItem)
 
         #data window
         self.dataList = QtGui.QListWidget(self)
@@ -314,6 +316,11 @@ class BallBeamGui(QtGui.QMainWindow):
         for reg in self.regimes:
             self.regimeList.addItem(reg['name'])
 
+    def removeRegimeItem(self):
+        if self.regimeList.currentRow()>=0:
+            del self.regimes[self.regimeList.currentRow()]
+            self.regimeList.takeItem(self.regimeList.currentRow())
+
     def regimeDoubleClicked(self, item):
         '''
         applies the selected regime to the current target
@@ -380,7 +387,7 @@ class BallBeamGui(QtGui.QMainWindow):
         self._updatePlots()
 
         self.stopAnimation()
-        self.playAnimation()
+        #self.playAnimation()
 
         if self.runningBatch:
             regName = self.regimes[self.currentRegimeIndex]['name']
