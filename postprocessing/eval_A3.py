@@ -57,6 +57,8 @@ class eval_A3(PostProcessingModule):
         #search time value for t_desired
         t_desired = t[traj.index(yd)]
         self.createTimeLine(axes, t, traj, t_desired, r'$T_{des}$')
+        # add real t_desired to dict output
+        output.update({'t_desired': data['modules']['trajectory']['delta t']})
         #plot y(t)
         axes.plot(t, y, c = 'k', ls='-', label='y(t)')
         # axes scaling
@@ -77,23 +79,24 @@ class eval_A3(PostProcessingModule):
         
 
         #calc damping-time (Beruhigungszeit)
-        try:                
-            eps = self.epsPercent*yd/100
-            enterIdx = -1
-            for idx, val in enumerate(y):
-                if enterIdx == -1:
-                    if abs(val - yd) < eps:
-                        enterIdx = idx
-                else:
-                    if abs(val - yd) >= eps:
-                        enterIdx = -1
+        eps = self.epsPercent*yd/100
+        enterIdx = -1
+        for idx, val in enumerate(y):
+            if enterIdx == -1:
+                if abs(val - yd) < eps:
+                    enterIdx = idx
+            else:
+                if abs(val - yd) >= eps:
+                    enterIdx = -1
+        if enterIdx == -1:
+            #print 'DampingLine is not defined'
+            output.update({'td': None})
+        else:
             td = t[enterIdx]
             #create and add line
             self.createTimeLine(axes, t, y, td, r'$T_{\epsilon}$')
             output.update({'td': td})
-        except IndexError:
-            #print 'DampingLine is not defined'
-            output.update({'td': None})
+
         
         #create epsilon tube
         upperBoundLine = line([0, t[-1]], [yd+eps, yd+eps], ls='--', c=self.line_color)
@@ -162,7 +165,15 @@ class eval_A3(PostProcessingModule):
                
         print 'ITAE score: ', integralITAE
         print 'integralError', integralError
+        
+        # calculate time difference
+        if output['td'] == None:
+            t_diff = None
+        else:
+            t_diff = output['td'] - data['modules']['trajectory']['delta t']
+        
+        
         output.update({ 'delta_t': delta_t,\
                         'ITAE': integralITAE,\
-                        'integralError': integralError})
-        
+                        'integralError': integralError,\
+                        't_diff': t_diff })

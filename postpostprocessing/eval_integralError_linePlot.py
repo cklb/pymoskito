@@ -28,31 +28,43 @@ class eval_integralError_linePlot(PostPostProcessingModule):
             controller = i['modules']['controller']['type']
             integralError = i['integralError']
             delta_t = i['delta_t']
+            t_diff = i['t_diff']
             if dic.has_key(controller):
                 dic[controller]['delta_t'].append(delta_t)
                 dic[controller]['integralError'].append(integralError)
+                dic[controller]['t_diff'].append(t_diff)
             else:
                 dic.update({controller: {'delta_t': [delta_t],\
-                                        'integralError': [integralError]}})
+                                        'integralError': [integralError],\
+                                        't_diff': [t_diff],\
+                                        }})
         
         #create plot
         fig = Figure()
-        axes = fig.add_subplot(111)
+        #plot for integralError
+        axes = fig.add_subplot(211)
         axes.set_title(r'Fehlerintegral w(t) und y(t)', size=st.title_size)
         axes.grid(color='#ababab', linestyle='--')
+        #plot for time-difference
+        axes1 = fig.add_subplot(212)
+        axes1.set_title(r'\"Ubergangszeitfehler \"uber $\Delta t$', size=st.title_size)
+        
         counter = 0
         t_all = []
         
         for i in dic:
             title = i
-            t = dic[i]['delta_t']
+            delta_t = dic[i]['delta_t']
+            t_diff = dic[i]['t_diff']
             integralError = dic[i]['integralError']
+            
             #add times to t_all
-            for j in t:
+            for j in delta_t:
                 if t_all.count(j) == 0:
                     t_all.append(j)
                 
-            axes.plot(t, integralError, 'o-', label=title, color=mpl.rcParams['axes.color_cycle'][counter])
+            axes.plot(delta_t, integralError, 'o-', label=title, color=mpl.rcParams['axes.color_cycle'][counter])
+            axes1.plot(delta_t, t_diff, 'o-', label=title, color=mpl.rcParams['axes.color_cycle'][counter])
             counter += 1            
         
         
@@ -66,9 +78,17 @@ class eval_integralError_linePlot(PostPostProcessingModule):
         t_all_label = [r'$' + str(x) + '$' for x in t_all]
         axes.set_xticks(t_all)
         axes.set_xticklabels(t_all_label)
-        axes.legend()
+        axes.legend(loc=0)
         axes.set_xlabel(r'$\Delta t \, \lbrack s\rbrack$', size=st.label_size)
         axes.set_ylabel(r'$E \, \lbrack m^{2}\rbrack$', size=st.label_size)
+        
+        axes1.set_xticks(t_all)
+        axes1.set_xticklabels(t_all_label)
+        axes1.legend(loc=0)
+        axes1.set_xlabel(r'$\Delta t \, \lbrack s\rbrack$', size=st.label_size)
+        axes1.set_ylabel(r'$e_{t} \, \lbrack m^{2}\rbrack$', size=st.label_size)
+        
+                
         
         #write results
         filePath = os.path.join(os.path.pardir, 'results', 'postpostprocessing', 'A1')
