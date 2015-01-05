@@ -13,6 +13,7 @@ from matplotlib.figure import Figure
 from matplotlib.lines import Line2D as line
 
 from postprocessor import PostProcessingModule
+import settings as st
 
 #define your own functions here
 class eval_B(PostProcessingModule):
@@ -38,6 +39,10 @@ class eval_B(PostProcessingModule):
     def process(self, dataList):
         print 'process() of B called'
         output = {}
+        
+        #ideal regime name
+        regName = next((result['regime name']\
+                for result in dataList if 'ideal' in result['regime name']), None)
 
         #extract the needed curves
         t = self.extractValues(dataList, 'ideal', 'simTime')
@@ -47,8 +52,8 @@ class eval_B(PostProcessingModule):
         y_pTolMin = self.extractValues(dataList, 'paramTolMin', 'model_output.0')
         y_pTolMax = self.extractValues(dataList, 'paramTolMax', 'model_output.0')
 
-        #TODO extract variied parameter
-        par = 'M'
+        par = next((param for param in st.paramVariiationList if param in regName), None)
+        print 'assuiming that', par, 'has been variied.'
 
         #sort files by variied parameter
         modDataList = sorted(dataList, key=lambda k: k['modules']['model'][par], reverse=True)
@@ -101,8 +106,6 @@ class eval_B(PostProcessingModule):
         if not os.path.isdir(filePath):
             os.makedirs(filePath)
         
-        regName = next((result['regime name']\
-                for result in dataList if 'ideal' in result['regime name']), None)
         fileName = os.path.join(filePath, regName)
         with open(fileName+'.pof', 'w') as f: #POF - Postprocessing Output File
             f.write(repr(output))

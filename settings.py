@@ -44,6 +44,9 @@ latex_font_size = 14
 label_size = 1*latex_font_size
 title_size = 1.5*latex_font_size
 
+#-----------------------------------------------
+# TestCase A - Step and other Responses
+#-----------------------------------------------
 #best konwon poles - gained in A1
 poles = {'FController': -3.6,\
         'GController': -3,\
@@ -51,6 +54,7 @@ poles = {'FController': -3.6,\
         'LSSController': -3.3,\
         'PIFeedbackController': -1.5,\
         }
+
 #-----------------------------------------------
 # TestCase B - Paramter Variiation
 #-----------------------------------------------
