@@ -23,12 +23,12 @@ class Disturbance(SimulationModule):
 #---------------------------------------------------------------------
 # Gaussion Noise
 #---------------------------------------------------------------------
-class GaussionNoiseDisturbance(Disturbance):
-    ''' Gaussion Noise
+class GaussianNoiseDisturbance(Disturbance):
+    ''' Gaussian Noise
         
     '''
     settings = {'mean value': 0,\
-                'sigma': .1, \
+                'sigma': 0, \
                 }
 
     def __init__(self, outputDimension):

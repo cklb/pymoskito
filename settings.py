@@ -56,11 +56,11 @@ poles = {'FController': -3.6,\
         }
 
 #-----------------------------------------------
-# TestCase B - Paramter Variiation
+# TestCase B - Paramter Variation
 #-----------------------------------------------
 #parameter variation list
-paramVariiationList = ['M', 'Jb']
-paramToleranceList = [.2, .1]
+paramVariationListB = ['M', 'Jb']
+paramToleranceList = [0.2, 0.1]
 
 #parameter stability limits for best known poles
 paramStabilityLimits = {\
@@ -85,3 +85,22 @@ paramStabilityLimits = {\
             'Jb': [0, 3e-6],\
             },\
         }
+
+#-----------------------------------------------
+# TestCase C - Paramter Variation
+#-----------------------------------------------
+paramVariationListC = ['sigma', 'delay']
+                                 #lower_bound = 0 is not possible
+paramVariationDictC = {'sigma': {'lower_bound': 0.01,\
+                                 'upper_bound': 0.4,\
+                                 'step_size': 0.05},\
+                       'delay': {'lower_bound': 0,\
+                                 'upper_bound': 3,\
+                                 'step_size': 0.5,\
+                                 }}
+
+
+
+
+
+

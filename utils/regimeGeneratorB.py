@@ -22,14 +22,14 @@ controllerList = ['FController', 'GController', 'JController',\
 print '\n ### Regimefile Generator Eval B ### \n'
 
 print 'Choose parameter to test: '
-for idx, param in enumerate(st.paramVariiationList):
+for idx, param in enumerate(st.paramVariationListB):
     print '\t',idx,' - ', param
 
 paramIdx = -1
-while paramIdx not in range(0, len(st.paramVariiationList)):
+while paramIdx not in range(0, len(st.paramVariationListB)):
     paramIdx = input()
 
-parameter = st.paramVariiationList[paramIdx]
+parameter = st.paramVariationListB[paramIdx]
 tol = st.paramToleranceList[paramIdx]
 
 paramRealValue = getattr(st, parameter)

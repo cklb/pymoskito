@@ -138,12 +138,12 @@ class eval_A1(PostProcessingModule):
         self.calcMetrics(data, output)
 
         #check for sim succes
-        if not res['results']['finished']:
+        if not data['results']['finished']:
             for key in output.keys():
                 output[key] = None
 
         #add settings
-        output.update({'modules':res['modules']})
+        output.update({'modules': data['modules']})
 
         #write results
         filePath = os.path.join(os.path.pardir, 'results', 'postprocessing', self.name)
