@@ -11,9 +11,9 @@ from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 from matplotlib.lines import Line2D as line
 
-from postprocessor import PostPostProcessingModule
+from postprocessor import MetaProcessingModule
 
-class eval_L1perFA3(PostPostProcessingModule):
+class eval_L1perFA05(MetaProcessingModule):
     '''
     create diagrams for evaluation of itea metric
     '''
@@ -26,7 +26,7 @@ class eval_L1perFA3(PostPostProcessingModule):
     counter = 0
     
     def __init__(self):
-        PostPostProcessingModule.__init__(self)
+        MetaProcessingModule.__init__(self)
         return
         
     def sortLists(self, val):
@@ -68,20 +68,21 @@ class eval_L1perFA3(PostPostProcessingModule):
                     fMax = controllerDict[elem][0][-1]       
         axes.legend(leg, loc=1)
         axes.set_xlim(left=0.1, right=fMax)
-        axes.set_ylim(top=6.0, bottom=3)
+#        axes.set_ylim(top=6.0, bottom=3)
         axes.set_xlabel(r'$'+xLabel+'$')
         axes.set_ylabel(r'$'+yLabel+'$') 
         
         #write results
-        filePath = os.path.join(os.path.pardir, 'results', 'postpostprocessing', 'A2')
+        filePath = os.path.join(os.path.pardir, 'results', 'metaprocessing', 'A2')
         if not os.path.isdir(filePath):
             os.makedirs(filePath)
         
-        fileName = os.path.join(filePath, 'L1-plot')
+        metaName = 'L1-plotFA05'
+        fileName = os.path.join(filePath, metaName)
         canvas = FigureCanvas(fig)
         fig.savefig(fileName+'.svg')
 
-        results = [{'figure': canvas, 'name': 'L1-plot'},\
+        results = [{'figure': canvas, 'name': metaName},\
                 ]
 
         return results

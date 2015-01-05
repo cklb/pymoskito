@@ -127,7 +127,7 @@ class eval_A2Hauser(PostProcessingModule):
         output = {'epsilon_max': epsilon_max}
 
         #check for sim succes
-        if not res['results']['finished']:
+        if not data['results']['finished']:
             for key in output.keys():
                 output[key] = None
 

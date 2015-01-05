@@ -10,7 +10,7 @@ mpl.use("Qt4Agg")
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 
-from postprocessing import PostProcessingModule
+from postprocessor import PostProcessingModule
 import settings as st
 
 #define your own functions here
@@ -56,7 +56,7 @@ class eval_A2_epsilon(PostProcessingModule):
         errorIntegral = self.calcErrorIntegral(data)
 
         #check for sim succes
-        if not res['results']['finished']:
+        if not data['results']['finished']:
             for key in output.keys():
                 output[key] = None
 
