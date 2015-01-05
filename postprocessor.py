@@ -461,7 +461,6 @@ class MetaProcessingModule(ProcessingModule):
 #                if value == None:
 #                    yList[index] = 0
             if typ == 'line':
-                print 'xList: ',xList
                 axes.plot(xList,\
                         yList,\
                         'o-',\
