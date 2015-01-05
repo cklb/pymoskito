@@ -1,5 +1,5 @@
-# C
-- name: C-simulation-setup
+# C2
+- name: C2-simulation-setup
   clear previous: !!python/bool True 
   model:
    type: BallBeamModel
@@ -22,8 +22,18 @@
    end time: 20
    initial state: [0, 0, 0, 0]
 
+  #trajectory:
+   #type: SmoothTransitionTrajectory
+   #Positions: [0, 3]
+   #start time: 0
+   #delta t: 5
+  
+  #trajectory:
+   #type: HarmonicTrajectory
+   #Frequency: 0.1
+   #Amplitude: 3
+
   trajectory:
-   type: SmoothTransitionTrajectory
-   Positions: [0, 3]
-   start time: 0
-   delta t: 5
+   type: FixedPointTrajectory
+   Position: 3
+ 
