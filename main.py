@@ -21,30 +21,34 @@ def process(arg):
     pass
 
 try:
-    opts, args = getopt.getopt(sys.argv[1:], "h", ["help"])
+    opts, args = getopt.getopt(sys.argv[1:], "hp", ["help", "postprocessing"])
 except getopt.error, msg:
     print msg
     print "for help use --help"
     sys.exit(2)
 
 # process options
+guiType = 'BallBeamGui'
 for o, a in opts:
     if o in ("-h", "--help"):
         print __doc__
         sys.exit(0)
+    elif o in ('-p', '--postprocessing'):
+        guiType = 'PostProcessor'
 
 # process arguments
 for arg in args:
     process(arg) 
 
-
-#----------------------------------------------------------------
 # Create Gui
-#----------------------------------------------------------------
 app = QtGui.QApplication([])
-#gui = TestGui()
-gui = BallBeamGui()
-#gui = PostProcessor()
+
+gui = None
+if guiType is 'BallBeamGui':
+    gui = BallBeamGui()
+elif guiType is 'PostProcessor':
+    gui = PostProcessor()
+
 gui.show()
 
 ## Start Qt event loop unless running in interactive mode or using pyside.

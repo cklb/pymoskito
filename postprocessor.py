@@ -269,13 +269,7 @@ class PostProcessor(QtGui.QMainWindow):
         module = __import__('.'.join(['postprocessing',name]))
         processor = getattr(getattr(module, name), name)()
 
-        processFunc = processor.process
-        self.current_figures = processFunc(self.results)
-
-
-        #for res in self.results:
-            #self.current_figures.append({'name':'_'.join([res['regime name'], name]),\
-                    #'figure': processFunc(res)})
+        self.current_figures = processor.process(self.results)
 
         self.figureList.setFocus()
         self.figuresChanged.emit()
@@ -372,6 +366,32 @@ class PostProcessingModule:
 
     #def run(self, data):
         #return
+
+    def extractSetting(self, dataList, name, moduleName, settingName):
+        '''
+        extracts settings from dataList
+        '''
+        return self.extract(dataList, ['modules', moduleName, settingName], name)
+
+    def extractValues(self, dataList, name, valueName):
+        '''
+        extracts values for dataList
+        '''
+        return self.extract(dataList, ['results', valueName], name)
+
+    def extract(self, dataList, keys, name):
+        '''
+        general extraction from regime that mathed name in partial
+        '''
+        return next((self._getSubDict(res, keys)\
+                for res in dataList if name in res['regime name']),\
+                None)
+
+    def _getSubDict(self, topDict, keys):
+        subDict = topDict
+        for key in keys:
+            subDict = subDict[key]
+        return subDict
 
     def diff(self, a, b):
         return a-b
