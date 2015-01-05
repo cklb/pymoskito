@@ -10,15 +10,15 @@ from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 from matplotlib.lines import Line2D as line
 
-from postprocessor import PostPostProcessingModule
+from postprocessor import MetaProcessingModule
 
-class eval_integralError_linePlot(PostPostProcessingModule):
+class eval_integralError_linePlot(MetaProcessingModule):
     '''
     create diagrams for evaluation of integralError
     '''
 
     def __init__(self):
-        PostPostProcessingModule.__init__(self)
+        MetaProcessingModule.__init__(self)
         return
 
     def run(self, postResults):
@@ -91,7 +91,7 @@ class eval_integralError_linePlot(PostPostProcessingModule):
                 
         
         #write results
-        filePath = os.path.join(os.path.pardir, 'results', 'postpostprocessing', 'A1')
+        filePath = os.path.join(os.path.pardir, 'results', 'metaprocessing', 'A1')
         if not os.path.isdir(filePath):
             os.makedirs(filePath)
         

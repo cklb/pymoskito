@@ -11,9 +11,9 @@ from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 from matplotlib.lines import Line2D as line
 
-from postprocessor import PostPostProcessingModule
+from postprocessor import MetaProcessingModule
 
-class eval_itae(PostPostProcessingModule):
+class eval_itae(MetaProcessingModule):
     '''
     create diagrams for evaluation of itea metric
     '''
@@ -26,7 +26,7 @@ class eval_itae(PostPostProcessingModule):
     counter = 0
     
     def __init__(self):
-        PostPostProcessingModule.__init__(self)
+        MetaProcessingModule.__init__(self)
         return
 
     def run(self, postResults):
@@ -44,7 +44,7 @@ class eval_itae(PostPostProcessingModule):
         #axes.set_ylabel(r'\textit{Ballposition r(t) [m]}')
         
         #write results
-        filePath = os.path.join(os.path.pardir, 'results', 'postpostprocessing', 'A1')
+        filePath = os.path.join(os.path.pardir, 'results', 'metaprocessing', 'A1')
         if not os.path.isdir(filePath):
             os.makedirs(filePath)
         

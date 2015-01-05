@@ -14,7 +14,7 @@ class PostProcessor(QtGui.QMainWindow):
     figuresChanged = pyqtSignal()
 
     postResultsChanged = pyqtSignal()
-    postFiguresChanged = pyqtSignal()
+    metaFiguresChanged = pyqtSignal()
 
     def __init__(self, parent=None):
         QtGui.QMainWindow.__init__(self, parent)
@@ -58,11 +58,11 @@ class PostProcessor(QtGui.QMainWindow):
         self.actReloadMethods.setDisabled(False)
         self.actReloadMethods.triggered.connect(self.updateMethodList)
 
-        self.actReloadPostMethods= QtGui.QAction(self)
-        self.actReloadPostMethods.setText('reload post methods')
-        self.actReloadPostMethods.setIcon(QtGui.QIcon('data/reload.png'))
-        self.actReloadPostMethods.setDisabled(False)
-        self.actReloadPostMethods.triggered.connect(self.updatePostMethodList)
+        self.actReloadMetaMethods= QtGui.QAction(self)
+        self.actReloadMetaMethods.setText('reload meta methods')
+        self.actReloadMetaMethods.setIcon(QtGui.QIcon('data/reload.png'))
+        self.actReloadMetaMethods.setDisabled(False)
+        self.actReloadMetaMethods.triggered.connect(self.updateMetaMethodList)
         
         self.toolBar.addAction(self.actLoad)
         self.toolBar.addAction(self.actReloadMethods)
@@ -71,7 +71,7 @@ class PostProcessor(QtGui.QMainWindow):
         self.toolBar.addAction(self.actSwitch)
         self.toolBar.addWidget(self.spacer2)
 
-        self.toolBar.addAction(self.actReloadPostMethods)
+        self.toolBar.addAction(self.actReloadMetaMethods)
         self.toolBar.addAction(self.actPostLoad)
 
         #main window
@@ -98,9 +98,9 @@ class PostProcessor(QtGui.QMainWindow):
         self.plotView = QtGui.QWidget()
         self.lastFigure = None
 
-        self.postMethodList = QtGui.QListWidget(self)
-        self.postMethodList.itemDoubleClicked.connect(self.runPostPostprocessor)
-        self.updatePostMethodList()
+        self.metaMethodList = QtGui.QListWidget(self)
+        self.metaMethodList.itemDoubleClicked.connect(self.runMetaprocessor)
+        self.updateMetaMethodList()
         
         self.postResultList = QtGui.QListWidget(self)
         self.postResultsChanged.connect(self.updatePostResultList)
@@ -108,10 +108,10 @@ class PostProcessor(QtGui.QMainWindow):
         self.delShortPost = QtGui.QShortcut(QtGui.QKeySequence(QtCore.Qt.Key_Backspace), self.postResultList)
         self.delShortPost.activated.connect(self.removePostResultItem)
 
-        self.postFigureList = QtGui.QListWidget(self)
-        self.postFigureList.currentItemChanged.connect(self.currentFigureChanged)
-        self.postFiguresChanged.connect(self.updatePostFigureList)
-        self.current_postFigures = []
+        self.metaFigureList = QtGui.QListWidget(self)
+        self.metaFigureList.currentItemChanged.connect(self.currentFigureChanged)
+        self.metaFiguresChanged.connect(self.updateMetaFigureList)
+        self.current_metaFigures = []
         
         self.grid.addWidget(QtGui.QLabel('result files:'), 0, 0)
         self.grid.addWidget(self.resultList, 1, 0)
@@ -122,10 +122,10 @@ class PostProcessor(QtGui.QMainWindow):
         self.grid.addWidget(QtGui.QLabel('selected figure:'), 0, 1)
         self.grid.addWidget(QtGui.QLabel('postprocessor files:'), 0, 2)
         self.grid.addWidget(self.postResultList, 1, 2)
-        self.grid.addWidget(QtGui.QLabel('postpostprocessors:'), 2, 2)
-        self.grid.addWidget(self.postMethodList, 3, 2)
+        self.grid.addWidget(QtGui.QLabel('metaprocessors:'), 2, 2)
+        self.grid.addWidget(self.metaMethodList, 3, 2)
         self.grid.addWidget(QtGui.QLabel('figures:'), 4, 2)
-        self.grid.addWidget(self.postFigureList, 5, 2)
+        self.grid.addWidget(self.metaFigureList, 5, 2)
 
         self.mainFrame.setLayout(self.grid)
         self.setCentralWidget(self.mainFrame)
@@ -234,12 +234,12 @@ class PostProcessor(QtGui.QMainWindow):
         for module in moduleNames:
             self.methodList.addItem(module)
 
-    def updatePostMethodList(self):
-        self.postMethodList.clear()
+    def updateMetaMethodList(self):
+        self.metaMethodList.clear()
 
         # import all modules in current directory and display their names
         moduleNames = []
-        path = os.path.join(os.curdir, 'postpostprocessing')
+        path = os.path.join(os.curdir, 'metaprocessing')
         for f in os.listdir(path):
             if not os.path.isfile(os.path.join(path, f)):
                 continue
@@ -251,7 +251,7 @@ class PostProcessor(QtGui.QMainWindow):
                 moduleNames.append(f[:-3])
 
         for module in moduleNames:
-            self.postMethodList.addItem(module)
+            self.metaMethodList.addItem(module)
 
     def runPostprocessor(self, item):
         if not self.results:
@@ -274,27 +274,28 @@ class PostProcessor(QtGui.QMainWindow):
         self.figureList.setFocus()
         self.figuresChanged.emit()
         
-    def runPostPostprocessor(self, item):
+    def runMetaprocessor(self, item):
         if not self.postResults:
-            print 'runPostPostprocessor(): Error no post-result files loaded!'
+            print 'runMetaprocessor(): Error no post-result files loaded!'
             return
 
-        if self.postFigureList.currentRow()>=0:
-            self.grid.removeWidget(self.current_postFigures[self.postFigureList.currentRow()]['figure'])
+        if self.metaFigureList.currentRow()>=0:
+            self.grid.removeWidget(self.current_metaFigures[self.metaFigureList.currentRow()]['figure'])
 
-        del self.current_postFigures[:]
+        del self.current_metaFigures[:]
 
         name = str(item.text())
-        print 'PostPostProcessor() running: ', name
+        print 'MetaProcessor() running: ', name
 
-        module = __import__('.'.join(['postpostprocessing',name]))
+        module = __import__('.'.join(['metaprocessing',name]))
+
         processor = getattr(getattr(module, name), name)()
 
         processFunc = processor.run
-        self.current_postFigures = processFunc(self.postResults)
+        self.current_metaFigures = processFunc(self.postResults)
 
-        self.postFigureList.setFocus()
-        self.postFiguresChanged.emit()
+        self.metaFigureList.setFocus()
+        self.metaFiguresChanged.emit()
     
     def updateFigureList(self):
         self.figureList.clear()
@@ -304,26 +305,23 @@ class PostProcessor(QtGui.QMainWindow):
 
         self.figureList.setCurrentItem(self.figureList.item(0))
 
-    def updatePostFigureList(self):
-        self.postFigureList.clear()
-        for fig in self.current_postFigures:
+    def updateMetaFigureList(self):
+        self.metaFigureList.clear()
+        for fig in self.current_metaFigures:
             name = fig['name']
-            self.postFigureList.addItem(name)
+            self.metaFigureList.addItem(name)
 
-        self.postFigureList.setCurrentItem(self.postFigureList.item(0))
+        self.metaFigureList.setCurrentItem(self.metaFigureList.item(0))
 
     def currentFigureChanged(self, currItem, lastItem=None):
         if self.figureList.hasFocus():
-        #if self.displayLeft == True:
             figures = self.current_figures
             figureList = self.figureList
         else:
-            figures = self.current_postFigures
-            figureList = self.postFigureList
+            figures = self.current_metaFigures
+            figureList = self.metaFigureList
 
         if self.lastFigure:
-        #if lastItem:
-            #oldWidget = figures[figureList.currentRow()]['figure']
             self.grid.removeWidget(self.lastFigure)
             self.lastFigure.setVisible(False)
 
@@ -341,31 +339,17 @@ class PostProcessor(QtGui.QMainWindow):
             self.currentFigureChanged(self.figureList.currentItem())
         else:
             self.actSwitch.setIcon(QtGui.QIcon('data/right_mode.png'))
-            self.postFigureList.setFocus()
-            self.currentFigureChanged(self.postFigureList.currentItem())
+            self.metaFigureList.setFocus()
+            self.currentFigureChanged(self.metaFigureList.currentItem())
 
-class PostProcessingModule:
+class ProcessingModule:
     '''
-    Base Class for Postprocessing Modules
+    Base Class for processing Modules
     defines some basic functions that can later be vectorized
+    and extracting functionalities for datasets
     '''
     def __init__(self):
         return
-
-    def process(self, files):
-        '''
-        function that processes an array of result files
-        This is an convinience wrapper for simple processor
-        implementaion. Overload to add more functionality
-        '''
-        output = []
-        for res in files:
-            output.append(self.run(res))
-
-        return output
-
-    #def run(self, data):
-        #return
 
     def extractSetting(self, dataList, name, moduleName, settingName):
         '''
@@ -414,11 +398,32 @@ class PostProcessingModule:
             return        
         return a/b
 
-class PostPostProcessingModule:
+class PostProcessingModule(ProcessingModule):
     '''
-    Base Class for Post-Post-Processing Modules
+    Base Class for Postprocessing Modules
+    defines some basic functions that can later be vectorized
     '''
     def __init__(self):
+        ProcessingModule.__init__(self)
         return
 
+    def process(self, files):
+        '''
+        function that processes an array of result files
+        This is an convinience wrapper for simple processor
+        implementaion. Overload to add more functionality
+        '''
+        output = []
+        for res in files:
+            output.append(self.run(res))
+
+        return output
+
+class MetaProcessingModule(ProcessingModule):
+    '''
+    Base Class for Meta-Processing Modules
+    '''
+    def __init__(self):
+        ProcessingModule.__init__(self)
+        return
 
