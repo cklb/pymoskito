@@ -80,14 +80,14 @@ class eval_A2Hauser(PostProcessingModule):
         #axes1.set_title(r'\textbf{output error = yd - x0}')
         axes1.plot(t, eps, c='k')
         axes1.set_xlim(left=0, right=t[-1])
-        axes1.set_xlabel(r'$t /s$')
-        axes1.set_ylabel(r'$e /m$')
+        axes1.set_xlabel(r'$t [s]$')
+        axes1.set_ylabel(r'$e [m]$')
         
         axes2 = fig.add_subplot(2, 2, 2)
         #axes2.set_title(r'\textbf{Beam Angle}')
         axes2.plot(t, y[2], c='k')
         axes2.set_xlim(left=0, right=t[-1])
-        axes2.set_xlabel(r'$t /s$')
+        axes2.set_xlabel(r'$t [s]$')
         axes2.set_ylabel(r'$\theta$')
             
         
@@ -95,20 +95,20 @@ class eval_A2Hauser(PostProcessingModule):
         #axes3.set_title(r'\textbf{neglected nonlinearity}')
         axes3.plot(t, psi, c='k')
         axes3.set_xlim(left=0, right=t[-1])
-        axes3.set_xlabel(r'$t /s$')
+        axes3.set_xlabel(r'$t [s]$')
         axes3.set_ylabel(r'$\psi$')
         if data['modules']['controller']['type'] == 'FController' or \
            data['modules']['controller']['type'] == 'JController':
-               axes3.set_ylabel(r'$\theta /\frac{m}{s^2}$')
+               axes3.set_ylabel(r'$\theta [\frac{m}{s^2}]$')
         if data['modules']['controller']['type'] == 'GController':
-            axes3.set_ylabel(r'$\theta /\frac{m}{s^3}$')
+            axes3.set_ylabel(r'$\theta [\frac{m}{s^3}]$')
         
         axes4 = fig.add_subplot(2, 2, 4)
         #axes4.set_title(r'\textbf{Beam Torque}')
         axes4.plot(t, tau, c='k')
         axes4.set_xlim(left=0, right=t[-1])
-        axes4.set_xlabel(r'$t /s$')
-        axes4.set_ylabel(r'$\tau /Nm$')
+        axes4.set_xlabel(r'$t [s]$')
+        axes4.set_ylabel(r'$\tau [Nm]$')
         
         # calculate epsilon_max
         start = 40

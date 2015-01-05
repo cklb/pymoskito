@@ -9,11 +9,16 @@ controllerList = ['FController', 'GController', 'JController',\
                
 #TODO: überlege, in welchem Punkt Regler linearisiert werden und dazu Pole
 number = 4
+#pol = -3.6
+#pol = -3
+#pol = -2
+#pol = -3.3
 pol = -1.5
+
 #poles = [pol, pol, pol, pol]
-fRange = [0.1, 0.6]
-fStepSize = 0.05
-ampl = 0.5
+aRange = [0.1, 3]
+aStepSize = 0.1
+freq = 0.1
 
 lines = ''
 controller = controllerList[number]
@@ -28,11 +33,11 @@ filePath = os.path.join('A2_head.sray')
 with open(filePath, 'r') as f:
     head = f.read()
 
-fs = np.arange(fRange[0],fRange[1] + fStepSize, fStepSize)
+As = np.arange(aRange[0],aRange[1] + aStepSize, aStepSize)
 lines += '\n'
 
-for f in fs:
-        lines += '- name: A2_' + controller + '_f' + str(f) + '\n'
+for a in As:
+        lines += '- name: A2_' + controller + '_f' + str(freq) + '_A'+str(a)+ '\n'
         lines += '  clear previous: !!python/bool False' + '\n'
         lines += '\n'
         lines += '  controller: ' + '\n'
@@ -41,8 +46,8 @@ for f in fs:
         lines += '\n'
         lines += '  trajectory:' +'\n'
         lines += '   type: HarmonicTrajectory' + '\n'
-        lines += '   Amplitude: ' + str(ampl) + '\n'
-        lines += '   Frequency: ' + str(f) + '\n'
+        lines += '   Amplitude: ' + str(a) + '\n'
+        lines += '   Frequency: ' + str(freq) + '\n'
         lines += '\n'
                
 #write results
@@ -51,8 +56,8 @@ dirPath = os.path.join(os.path.pardir, os.path.pardir, 'regimes', 'generated')
 if not os.path.isdir(dirPath):
     os.makedirs(dirPath)
 
-fileName = 'A2_' + controller + '_fRange(' + str(fRange[0])\
-            + ',' + str(fRange[1]) + ')'+'A'+str(ampl)+'.sreg'
+fileName = 'A2_' + controller +'_f'+str(freq)+ '_aRange(' + str(aRange[0])\
+            + ',' + str(aRange[1]) + ')'+'.sreg'
             
 filePath = os.path.join(dirPath, fileName)   
 

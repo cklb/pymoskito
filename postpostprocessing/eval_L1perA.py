@@ -1,0 +1,87 @@
+# -*- coding: utf-8 -*-
+import numpy as np
+import scipy as sp
+import os
+
+import matplotlib as mpl
+mpl.use("Qt4Agg")
+#mpl.rcParams['text.usetex']=True
+#mpl.rcParams['text.latex.unicode']=True
+from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.figure import Figure
+from matplotlib.lines import Line2D as line
+
+from postprocessor import PostPostProcessingModule
+
+class eval_L1perA(PostPostProcessingModule):
+    '''
+    create diagrams for evaluation of itea metric
+    '''
+
+    line_color = '#aaaaaa'
+    line_style = '-'
+    font_size = 20
+    epsPercent = 2.5
+    spacing = 0.01
+    counter = 0
+    
+    def __init__(self):
+        PostPostProcessingModule.__init__(self)
+        return
+        
+    def sortLists(self, val):
+        val[1] = [x for (y, x) in sorted(zip(val[0], val[1]))]
+        val[0] = sorted(val[0])
+        return val
+        
+
+    def run(self, postResults):
+        controllerDict = {'FController': [[],[]],\
+                          'GController': [[],[]],\
+                          'JController': [[],[]],\
+                          'LSSController': [[],[]],\
+                          'PIFeedbackController': [[],[]]}
+                          
+        # TODO: levels per input füllen
+        level1 = 'modules'
+        level2 = 'trajectory'
+        level3 = 'Amplitude'
+        xLabel = 'Amplitude [m]'
+        yLabel = 'E [m^2]'
+                          
+        for elem in postResults:
+            controllerDict[elem['modules']['controller']['type']][0].append(elem[level1][level2][level3])
+            controllerDict[elem['modules']['controller']['type']][1].append(elem['error_L1Norm'])
+            
+        fig = Figure()
+        axes = fig.add_subplot(1, 1, 1)
+        
+        fMax = 0
+        leg = []
+        for elem in controllerDict:
+            controllerDict[elem] = self.sortLists(controllerDict[elem])
+            axes.plot(controllerDict[elem][0], controllerDict[elem][1],\
+                       ls='-')
+            leg.append(elem)
+            if controllerDict[elem][0]:
+                if fMax < controllerDict[elem][0][-1]:
+                    fMax = controllerDict[elem][0][-1]       
+        axes.legend(leg, loc=1)
+        axes.set_xlim(left=0.1, right=fMax)
+#        axes.set_ylim(top=6.0, bottom=3)
+        axes.set_xlabel(r'$'+xLabel+'$')
+        axes.set_ylabel(r'$'+yLabel+'$') 
+        
+        #write results
+        filePath = os.path.join(os.path.pardir, 'results', 'postpostprocessing', 'A2')
+        if not os.path.isdir(filePath):
+            os.makedirs(filePath)
+        
+        fileName = os.path.join(filePath, 'L1-plot')
+        canvas = FigureCanvas(fig)
+        fig.savefig(fileName+'.svg')
+
+        results = [{'figure': canvas, 'name': 'L1-plot'},\
+                ]
+
+        return results
