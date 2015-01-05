@@ -118,7 +118,6 @@ class eval_A3(PostProcessingModule):
         #copy module settings to output
         output.update({'modules':data['modules']})
         
-        print output
         #write results
         filePath = os.path.join(os.path.pardir, 'results', 'postprocessing', self.name)
         if not os.path.isdir(filePath):

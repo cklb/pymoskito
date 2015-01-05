@@ -8,6 +8,8 @@ from PyQt4.QtCore import pyqtSignal
 import os
 
 #own
+import settings as st
+
 class PostProcessor(QtGui.QMainWindow):
 
     resultsChanged = pyqtSignal()
@@ -426,4 +428,129 @@ class MetaProcessingModule(ProcessingModule):
     def __init__(self):
         ProcessingModule.__init__(self)
         return
+    
+    def plotSettings(self, axes, titel, grid, xlabel, ylabel):
+        axes.set_title(titel, size=st.title_size)
+        if grid == True:
+            axes.grid(color='#ababab', linestyle='--')
+        axes.set_xlabel(xlabel, size=st.label_size)
+        axes.set_ylabel(ylabel, size=st.label_size)
+        axes.legend(fontsize='small')
 
+        
+        return axes
+    
+    def plotVariousController(self, dic, axes, x, y, typ):
+        
+        width = 0.1
+        counter = 0
+        x_all = []
+        
+        for i in dic:
+            controller = i
+            xList = dic[i][x]
+            yList = dic[i][y]
+            
+            #add times to t_all
+            for j in xList:
+                if x_all.count(j) == 0:
+                    x_all.append(j)
+            
+#            # replace None with 0
+#            for index, value in enumerate(yList):
+#                if value == None:
+#                    yList[index] = 0
+            if typ == 'line':
+                print 'xList: ',xList
+                axes.plot(xList,\
+                        yList,\
+                        'o-',\
+                        label=controller,\
+                        color=st.color_cycle[controller])
+            if typ == 'bar':
+                #remove all None from xList and yList
+                xList[:] = [i for i in xList if i]                
+                yList[:] = [i for i in yList if i]
+                # correction for the position of the bar
+                xList[:] = [k + width*counter for k in xList]
+                
+                axes.bar(xList,\
+                        yList,\
+                        width,\
+                        label=controller,\
+                        color=st.color_cycle[controller])
+            
+            counter += 1            
+        
+        
+        x_all.sort()
+        #remove all None from x_all
+        x_all[:] = [i for i in x_all if i]
+        # does not work for all constellations
+        spacing = (x_all[-1] - x_all[0])/(len(x_all) - 1)
+        x_all.append(spacing + x_all[-1])
+        x_all.append(x_all[0] - spacing)
+        x_all.sort()
+
+        x_all_label = [r'$' + str(i) + '$' for i in x_all]
+        
+        counter -= 1
+        if typ=='bar':
+            x_all[:] = [i + width*counter for i in x_all]
+
+        axes.set_xticks(x_all)
+        axes.set_xticklabels(x_all_label)
+        
+        return axes
+            
+    
+    def createDictonary(self, data):
+                
+        dic = {}
+        for i in data:
+            controllerName = self.extractControllerName(i)
+            integralError = self.extractIntegralError(i)
+            delta_t = self.extractDelta_t(i)
+            t_diff = self.extractT_diff(i)
+#            trajectoryName = self.extractTrajectoryName(i)
+            frequency = self.extractFrequency(i)
+            
+            if dic.has_key(controllerName):
+                dic[controllerName]['delta_t'].append(delta_t)
+                dic[controllerName]['integralError'].append(integralError)
+                dic[controllerName]['t_diff'].append(t_diff)
+                dic[controllerName]['frequency'].append(frequency)
+            else:
+                dic.update({controllerName: {'delta_t': [delta_t],\
+                                        'integralError': [integralError],\
+                                        't_diff': [t_diff],\
+                                        'frequency': [frequency],\
+                                        }})
+        return dic
+        
+    def extractTrajectoryName(self, dic):
+        return self._getSubElement(dic, ['modules', 'trajectory', 'type'])
+        
+    def extractFrequency(self, dic):
+        return self._getSubElement(dic, ['modules', 'trajectory', 'Frequency'])
+    
+    def extractControllerName(self, dic):
+        return self._getSubElement(dic, ['modules', 'controller', 'type'])
+    
+    def extractIntegralError(self, dic):
+        return self._getSubElement(dic, ['integralError'])
+
+    def extractDelta_t(self, dic):
+        return self._getSubElement(dic, ['delta_t'])
+        
+    def extractT_diff(self, dic):
+        return self._getSubElement(dic, ['t_diff'])
+    
+    def _getSubElement(self, topDict, keys):
+        subDict = topDict
+        for key in keys:
+            if subDict.has_key(key):
+                subDict = subDict[key]
+            else:
+                return None
+        return subDict
