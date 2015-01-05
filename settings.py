@@ -38,6 +38,12 @@ beam_length = 9     # m
 scale = 1
 ballScale = 20
 
+
+#export settings latex-style
+latex_font_size = 14
+label_size = 1*latex_font_size
+title_size = 1.5*latex_font_size
+
 #best konwon poles - gained in A1
 poles = {'FController': -3.6,\
         'GController': -3,\

@@ -45,8 +45,6 @@ class eval_A3(PostProcessingModule):
         y = data['results']['model_output.0']
         traj = data['results']['trajectory_output.0']
         yd = data['results']['trajectory_output.0'][-1]
-#        t_desired = data['modules']['trajectory']['delta t']
-        
 
         self.posLabel = np.arange(np.min(y) + 0.1*yd, yd, (yd-np.min(y))/4)
             
@@ -61,7 +59,14 @@ class eval_A3(PostProcessingModule):
         self.createTimeLine(axes, t, traj, t_desired, r'$T_{des}$')
         #plot y(t)
         axes.plot(t, y, c = 'k', ls='-', label='y(t)')
+        # axes scaling
         axes.set_xlim(left=0, right=t[-1])
+        y_min = np.min(y)
+        y_max = np.max(y)
+        if (np.max(y) == 0):
+            axes.set_ylim(np.min(traj), np.max(traj) + np.max(traj)*0.1)
+        else:
+            axes.set_ylim(y_min, y_max + y_max*0.1)
         axes.set_xlabel(r'\textit{Zeit [s]}')
         axes.set_ylabel(r'\textit{Ballposition r(t) [m]}')
         axes.legend(loc=4)
@@ -99,12 +104,10 @@ class eval_A3(PostProcessingModule):
         #calc stationary deviation
         ys = y[-1] - yd
         output.update({'ys': ys})
-        
-        #calc time error
-        t_error = (td - t_desired)*t_desired
-        print 't_error: ', t_error
 
         self.calcMetrics(data, output)
+        #copy module settings to output
+        output.update({'modules':data['modules']})
 
         #write results
         filePath = os.path.join(os.path.pardir, 'results', 'postprocessing', self.name)
@@ -124,7 +127,7 @@ class eval_A3(PostProcessingModule):
         if time_value != t[-1]:
             #create timeLine
             timeLine = line([time_value, time_value],\
-                            [np.min(y), y[t.index(time_value)]],\
+                            [axes.get_ylim()[0], y[t.index(time_value)]],\
                             ls = self.line_style,\
                             c = self.line_color) 
             axes.add_line(timeLine)
@@ -141,20 +144,25 @@ class eval_A3(PostProcessingModule):
         t = data['results']['simTime']
         y = data['results']['model_output.0']
         yd = data['results']['trajectory_output.0'][-1]
+        traj = data['results']['trajectory_output.0']
+        delta_t = data['modules']['trajectory']['delta t']
 
-        #calc ITAE criterium
+        #calc ITAE criterium and Error
         dt = 1.0/data['modules']['solver']['measure rate']
+        integralError = 0
+        integralITAE = 0
         
-        errorIntegral = 0
-#        if 'finished' in data['results']:
-#            if not data['results']['finished']:
-#                errorIntegral = None
-#            else:
-#                for k, val in enumerate(y):
-#                    errorIntegral += abs(val-yd)*dt**2*k
-
-        for k, val in enumerate(y):
-            errorIntegral += abs(val-yd)*dt**2*k
-
-        print 'ITAE score: ', errorIntegral
-        output.update({'ITAE': errorIntegral})
+        if not data['results']['finished']:
+            integralError = None
+            integralITAE = None
+        else:
+            for index, val in enumerate(y):
+                integralITAE += abs(val-yd)*dt**2*index
+                integralError += abs(val - traj[index])
+               
+        print 'ITAE score: ', integralITAE
+        print 'integralError', integralError
+        output.update({ 'delta_t': delta_t,\
+                        'ITAE': integralITAE,\
+                        'integralError': integralError})
+        
