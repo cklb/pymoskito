@@ -81,6 +81,7 @@ class eval_L1perFA05(MetaProcessingModule):
         fileName = os.path.join(filePath, metaName)
         canvas = FigureCanvas(fig)
         fig.savefig(fileName+'.svg')
+        fig.savefig(fileName+'.png')
 
         results = [{'figure': canvas, 'name': metaName},\
                 ]
