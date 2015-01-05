@@ -163,7 +163,10 @@ class eval_A1(PostProcessingModule):
                             c = self.line_color) 
             axes.add_line(timeLine)
             #create label
-            axes.text(time_value + self.spacing, self.posLabel[self.counter], label, size = self.font_size)
+            axes.text(time_value + self.spacing,\
+                        self.posLabel[self.counter],\
+                        label,\
+                        size = self.font_size)
             self.counter = self.counter + 1
 
     def calcMetrics(self, data, output):
@@ -180,14 +183,11 @@ class eval_A1(PostProcessingModule):
         dt = 1.0/data['modules']['solver']['measure rate']
         
         errorIntegral = 0
-#        if 'finished' in data['results']:
-#            if not data['results']['finished']:
-#                errorIntegral = None
-#            else:
-#                for k, val in enumerate(y):
-#                    errorIntegral += abs(val-yd)*dt**2*k
-
-        for k, val in enumerate(y):
-            errorIntegral += abs(val-yd)*dt**2*k
+        if not data['results']['finished']:
+            errorIntegral = None
+        else:
+            for k, val in enumerate(y):
+                errorIntegral += abs(val-yd)*dt**2*k
+                    
         print 'ITAE score: ', errorIntegral
         output.update({'ITAE': errorIntegral})
