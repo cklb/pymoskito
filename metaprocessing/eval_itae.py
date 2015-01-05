@@ -50,7 +50,8 @@ class eval_itae(MetaProcessingModule):
         
         fileName = os.path.join(filePath, 'ITEA-plot')
         canvas = FigureCanvas(fig)
-        fig.savefig(fileName+'.svg')
+#        fig.savefig(fileName+'.svg')
+        fig.savefig(fileName+'.png')
 
         results = [{'figure': canvas, 'name': 'ITEA-plot'},\
                 ]
