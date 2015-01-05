@@ -43,7 +43,15 @@ class Simulator(QObject):
     timeChanged = pyqtSignal(float)
         
     #abilities (should match the module names)
-    moduleList = ['model', 'solver', 'disturbance', 'sensor', 'observer', 'controller', 'feedforward', 'trajectory']
+    moduleList = ['model',\
+            'solver',\
+            'disturbance',\
+            'sensor',\
+            'observer',\
+            'controller',\
+            'feedforward',\
+            'limiter',\
+            'trajectory']
 
 
     def __init__(self, parent=None):
@@ -60,7 +68,6 @@ class Simulator(QObject):
         if hasattr(self, 'observer'):
             self.observer_counter = self.observer.settings['tick divider']
             self.observer.setStepWidth(1/self.solver.settings['measure rate'])
-#            self.observer_output = [0] * self.observer.getOutputDimension()
         
         #init feedforward
         if hasattr(self, 'feedforward'):
@@ -141,10 +148,16 @@ class Simulator(QObject):
             self.feedforward_output = self.feedforward.feed(self.trajectory_output)
         else:
             self.feedforward_output = 0
+
+        #perform limitation
+        if hasattr(self, 'limiter'):
+            self.limiter_output = self.limiter.limit(self.feedforward_output\
+                                                    +self.controller_output)
+        else:
+            self.limiter_output = self.feedforward_output + self.controller_output
         
         # integrate model
-        self.solver.setInput(self.feedforward_output \
-                                +self.controller_output)
+        self.solver.setInput(self.limiter_output)
         self.solver_output = self.solver.integrate(self.current_time) 
 
         #check credibility
