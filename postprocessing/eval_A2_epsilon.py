@@ -73,6 +73,7 @@ class eval_A2_epsilon(PostProcessingModule):
 
         canvas = FigureCanvas(fig)
         fig.savefig(fileName+'.svg')
+        fig.savefig(fileName+'.png')
         return canvas             
         
     def calcErrorIntegral(self, data):
