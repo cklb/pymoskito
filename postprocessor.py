@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import cPickle
 
 #pyqt
 from PyQt4 import QtCore, QtGui
@@ -164,8 +165,9 @@ class PostProcessor(QtGui.QMainWindow):
         '''
         loads a result file
         '''
-        with open(fileName, 'r') as f:
-            self.results.append(eval(f.read()))
+        with open(fileName, 'rb') as f:
+            self.results.append(cPickle.load(f))
+            #self.results.append(eval(f.read()))
 
         self.resultsChanged.emit()
 
