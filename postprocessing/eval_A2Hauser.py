@@ -42,7 +42,7 @@ class eval_A2Hauser(PostProcessingModule):
         for i in range(4):
             y.append(data['results']['model_output.'+str(i)]  )
             
-        eps = vSubt(y[0], yd)
+        eps = vSubt(yd, y[0])
         
         # controlleroutput is a torque
         tau = data['results']['controller_output.0']

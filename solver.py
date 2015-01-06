@@ -58,6 +58,15 @@ class VODESolver(Solver):
         self.solver = ode(stateFunction)
         
     def calcOutput(self, t):
-        q = self.solver.integrate(t + 1/self.settings['measure rate'])
+        '''
+        integrates until target step reached
+        '''
+        
+        dt = 0
+        q = None
+        
+        while dt < 1.0/self.settings['measure rate']:
+            q = self.solver.integrate(t + dt + self.settings['step size'])
+            dt = self.solver.t - t
         return q
 
