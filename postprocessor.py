@@ -421,6 +421,65 @@ class PostProcessingModule(ProcessingModule):
             output.append(self.run(res))
 
         return output
+        
+    def calcL1NormITAE(self, data):
+        '''
+        this function calculate the L1 Norm  with a
+        additional time weighting
+        '''
+        y = data['results']['model_output.0']
+        yd = data['results']['trajectory_output.0']
+        dt = 1.0/data['modules']['solver']['measure rate']
+
+        if not data['results']['finished']:
+            L1NormITAE = None
+        else:
+            L1NormITAE = 0
+            for idx, val in enumerate(y):
+                # Variante 1
+                L1NormITAE += abs(yd[idx] - val)*dt*(idx*dt)
+                # Variante 2
+                # L1NormITAE += abs(yd[idx] - val - (y[-1] - yd[-1]))*dt*(idx*dt)
+        return L1NormITAE
+        
+    def calcL1NormAbs(self, data):
+        '''
+        this function calculate the L1 Norm 
+        (absolute criterium)
+        '''
+        y = data['results']['model_output.0']
+        yd = data['results']['trajectory_output.0']
+        dt = 1.0/data['modules']['solver']['measure rate']
+        
+        if not data['results']['finished']:
+            L1NormAbs = None
+        else:
+            L1NormAbs = 0
+            for idx, val in enumerate(y):
+                # Variante 1 (bisher implementiert)
+                L1NormAbs += abs(yd[idx] - val)*dt
+                # Variante 2 (implementierung nach Wikipedia)
+                # L1NormAbs += abs(yd[idx] - val - (y[-1] - yd[-1]))*dt
+        return L1NormAbs
+
+    def writeOutputFiles(self, processorName, regimeName, figure, output):
+        '''
+        this function save calculated values
+        in a POF (postprocessing output file) File
+        and create pdf, png, svg datafiles from the plots        
+        '''
+        
+        filePath = os.path.join(os.path.pardir, 'results', 'postprocessing', processorName)
+        if not os.path.isdir(filePath):
+            os.makedirs(filePath)
+        
+        fileName = os.path.join(filePath, regimeName)
+        with open(fileName+'.pof', 'w') as f: #POF - Postprocessing Output File
+            f.write(repr(output))
+        
+        figure.savefig(fileName + '.png')
+        #figure.savefig(fileName + '.pdf')
+        #figure.savefig(fileName + '.svg')
 
 class MetaProcessingModule(ProcessingModule):
     '''
@@ -510,52 +569,97 @@ class MetaProcessingModule(ProcessingModule):
             
     
     def createDictionary(self, data):
-                
+        '''
+        return a dictionary which contain all 
+        relevant data, sorted by Controller
+        content:
+            - tr                rise-time (Anstiegszeit)
+            - tanr              correction time (Anregelzeit)
+            - to                overshoot time (Überschwingzeit)
+            - do                overshoot
+            - doPercent         overshoot in %
+            - teps              damping time (Ausregelzeit)
+            - L1NormAbs         L1-Norm absolute
+            - L1NormITAE        L1-Norm absolute with time weighting
+            - t_diff            td - delta_t
+            - delta_t           delta_t from trajectory
+            - control_deviation control_deviation (Regelabweichung)
+            - poles             poles from controller
+            - sigma             standard deciation of GaussianNoiseDesturbance
+            - frequency         frequency from harmonic trajectory
+            - M                 mass of the ball
+            - Jb                moment of inertia of the ball
+            - delay             time delay of DeadTimeSensor
+        '''
         dic = {}
-        for i in data:
-            controllerName = self.extractControllerName(i)
-            integralError = self.extractIntegralError(i)
-            delta_t = self.extractDelta_t(i)
-            t_diff = self.extractT_diff(i)
-#            trajectoryName = self.extractTrajectoryName(i)
-            frequency = self.extractFrequency(i)
-            M = self._getSubElement(i, ['modules', 'model', 'M'])
-            Jb = self._getSubElement(i, ['modules', 'model', 'Jb'])
+        
+        for elem in data:
+            # data from postprocessing
+            tr = self._getSubElement(elem, ['tr'])
+            tanr = self._getSubElement(elem, ['tanr'])
+            to = self._getSubElement(elem, ['to'])
+            do = self._getSubElement(elem, ['do'])
+            doPercent = self._getSubElement(elem, ['doPercent'])
+            teps = self._getSubElement(elem, ['teps'])
+            L1NormAbs = self._getSubElement(elem, ['L1NormAbs'])
+            L1NormITAE = self._getSubElement(elem, ['L1NormITAE'])
+            t_diff = self._getSubElement(elem, ['t_diff'])
+            delta_t = self._getSubElement(elem, ['delta_t'])
+            control_deviation = self._getSubElement(elem, ['control_deviation'])
+            
+            #data from modules
+            #controller            
+            controllerName = self._getSubElement(elem, ['modules', 'controller', 'type'])
+            poles = self._getSubElement(elem, ['modules', 'controller', 'poles'])
+            #disturbance
+            sigma = self._getSubElement(elem, ['modules', 'disturbance', 'sigma'])
+            #trajectory
+            frequency = self._getSubElement(elem, ['modules', 'trajectory', 'Frequency'])
+            #model
+            M = self._getSubElement(elem, ['modules', 'model', 'M'])
+            Jb = self._getSubElement(elem, ['modules', 'model', 'Jb'])
+            #sensor
+            delay = self._getSubElement(elem, ['modules', 'sensor', 'delay'])
             
             if dic.has_key(controllerName):
-                dic[controllerName]['delta_t'].append(delta_t)
-                dic[controllerName]['integralError'].append(integralError)
+                dic[controllerName]['tr'].append(tr)
+                dic[controllerName]['tanr'].append(tanr)
+                dic[controllerName]['to'].append(to)
+                dic[controllerName]['do'].append(do)
+                dic[controllerName]['doPercent'].append(doPercent)
+                dic[controllerName]['teps'].append(teps)
+                dic[controllerName]['L1NormAbs'].append(L1NormAbs)
+                dic[controllerName]['L1NormITAE'].append(L1NormITAE)
                 dic[controllerName]['t_diff'].append(t_diff)
+                dic[controllerName]['delta_t'].append(delta_t)
+                dic[controllerName]['control_deviation'].append(control_deviation)
+                dic[controllerName]['poles'].append(poles)
+                dic[controllerName]['sigma'].append(sigma)
                 dic[controllerName]['frequency'].append(frequency)
                 dic[controllerName]['M'].append(M)
                 dic[controllerName]['Jb'].append(Jb)
+                dic[controllerName]['delay'].append(delay)
             else:
-                dic.update({controllerName: {'delta_t': [delta_t],\
-                                        'integralError': [integralError],\
+                dic.update({controllerName:{\
+                                        'tr': [tr],\
+                                        'tanr': [tanr],\
+                                        'to': [to],\
+                                        'do': [do],\
+                                        'doPercent': [doPercent],\
+                                        'teps': [teps],\
+                                        'L1NormAbs': [L1NormAbs],\
+                                        'L1NormITAE': [L1NormITAE],\
                                         't_diff': [t_diff],\
+                                        'delta_t': [delta_t],\
+                                        'control_deviation': [control_deviation],\
+                                        'poles': [poles],\
+                                        'sigma': [sigma],\
                                         'frequency': [frequency],\
                                         'M': [M],\
                                         'Jb': [Jb],\
+                                        'delay': [delay],\
                                         }})
         return dic
-        
-    def extractTrajectoryName(self, dic):
-        return self._getSubElement(dic, ['modules', 'trajectory', 'type'])
-        
-    def extractFrequency(self, dic):
-        return self._getSubElement(dic, ['modules', 'trajectory', 'Frequency'])
-    
-    def extractControllerName(self, dic):
-        return self._getSubElement(dic, ['modules', 'controller', 'type'])
-    
-    def extractIntegralError(self, dic):
-        return self._getSubElement(dic, ['integralError'])
-
-    def extractDelta_t(self, dic):
-        return self._getSubElement(dic, ['delta_t'])
-        
-    def extractT_diff(self, dic):
-        return self._getSubElement(dic, ['t_diff'])
     
     def _getSubElement(self, topDict, keys):
         subDict = topDict

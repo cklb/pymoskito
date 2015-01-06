@@ -10,11 +10,11 @@ from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 from postprocessor import MetaProcessingModule
 
-class eval_integralError_barPlot(MetaProcessingModule):
+class eval_L1NormAbs_delta_t_barPlot(MetaProcessingModule):
     '''
-    create diagrams for evaluation of integralError
+    create diagrams for evaluation of L1NormAbs
     '''
-    name = 'eval_integralError_barPlot'
+    name = 'eval_L1NormAbs_barPlot'
     
     def __init__(self):
         MetaProcessingModule.__init__(self)
@@ -22,15 +22,15 @@ class eval_integralError_barPlot(MetaProcessingModule):
 
     def run(self, postResults):
         #create dic with relevant datas
-        dic = self.createDictonary(postResults)
+        dic = self.createDictionary(postResults)
         
         #create plot
         fig = Figure()
         
-        #plot for integralError
+        #plot for L1NormAbs
         axes = fig.add_subplot(111)
         
-        axes = self.plotVariousController(dic, axes, x='delta_t',y='integralError', typ='bar')
+        axes = self.plotVariousController(dic, axes, x='delta_t',y='L1NormAbs', typ='bar')
         axes = self.plotSettings(axes,\
                 titel=r'Fehlerintegral w(t) und y(t)',\
                 grid=True,\

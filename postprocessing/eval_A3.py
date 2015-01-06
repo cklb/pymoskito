@@ -104,9 +104,9 @@ class eval_A3(PostProcessingModule):
         lowerBoundLine = line([0, t[-1]], [yd-eps, yd-eps], ls='--', c=self.line_color)
         axes.add_line(lowerBoundLine)
 
-        #calc stationary deviation
-        ys = y[-1] - yd
-        output.update({'ys': ys})
+        #calc control deviation
+        control_deviation = y[-1] - yd
+        output.update({'control_deviation': control_deviation})
 
         self.calcMetrics(data, output)
 
@@ -118,17 +118,10 @@ class eval_A3(PostProcessingModule):
         #copy module settings to output
         output.update({'modules':data['modules']})
         
-        #write results
-        filePath = os.path.join(os.path.pardir, 'results', 'postprocessing', self.name)
-        if not os.path.isdir(filePath):
-            os.makedirs(filePath)
-        
-        fileName = os.path.join(filePath, data['regime name'])
-        with open(fileName+'.pof', 'w') as f: #POF - Postprocessing Output File
-            f.write(repr(output))
-
         canvas = FigureCanvas(fig)
-        fig.savefig(fileName+'.svg')
+        
+        self.writeOutputFiles(self.name, data['regime name'], fig, output)
+        
         return {'name':'_'.join([data['regime name'], self.name]),\
                     'figure': canvas}
         
@@ -148,38 +141,24 @@ class eval_A3(PostProcessingModule):
         '''
         calculate metrics for comaprism
         '''
-
-        #calculate datasets
-        t = data['results']['simTime']
-        y = data['results']['model_output.0']
-        yd = data['results']['trajectory_output.0'][-1]
-        traj = data['results']['trajectory_output.0']
-        delta_t = data['modules']['trajectory']['delta t']
-
-        #calc ITAE criterium and Error
-        dt = 1.0/data['modules']['solver']['measure rate']
-        integralError = 0
-        integralITAE = 0
-        
-        if not data['results']['finished']:
-            integralError = None
-            integralITAE = None
-        else:
-            for index, val in enumerate(y):
-                integralITAE += abs(val-yd)*dt**2*index
-                integralError += abs(val - traj[index])
                
-        print 'ITAE score: ', integralITAE
-        print 'integralError', integralError
-        
         # calculate time difference
         if output['td'] == None:
             t_diff = None
         else:
             t_diff = output['td'] - data['modules']['trajectory']['delta t']
         
+        # extract delta_t
+        delta_t = data['modules']['trajectory']['delta t']
+
+        L1NormITAE = self.calcL1NormITAE(data)            
+        L1NormAbs = self.calcL1NormAbs(data)
+
+        print 'L1NormITAE: ', L1NormITAE
+        print 'L1NormAbs: ', L1NormAbs
         
-        output.update({ 'delta_t': delta_t,\
-                        'ITAE': integralITAE,\
-                        'integralError': integralError,\
-                        't_diff': t_diff })
+        output.update({'L1NormITAE': L1NormITAE,\
+                        'L1NormAbs': L1NormAbs,\
+                        'delta_t': delta_t,\
+                        't_diff': t_diff,\
+                        })

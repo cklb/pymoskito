@@ -12,11 +12,11 @@ from matplotlib.lines import Line2D as line
 
 from postprocessor import MetaProcessingModule
 
-class eval_integralError_linePlot(MetaProcessingModule):
+class eval_L1NormAbs_delta_t_linePlot(MetaProcessingModule):
     '''
-    create diagrams for evaluation of integralError
+    create diagrams for evaluation of L1NormAbs
     '''
-    name = 'eval_integralError_linePlot'
+    name = 'eval_L1NormAbs_linePlot'
     
     def __init__(self):
         MetaProcessingModule.__init__(self)
@@ -25,19 +25,19 @@ class eval_integralError_linePlot(MetaProcessingModule):
     def run(self, postResults):
         
         #create dic with relevant datas
-        dic = self.createDictonary(postResults)
+        dic = self.createDictionary(postResults)
         
         #create plot
         fig = Figure()
         fig.subplots_adjust(wspace=0.5, hspace=0.25)
         
-        #plot for integralError
+        #plot for L1NormAbs
         axes = fig.add_subplot(211)
                         
         #plot for time-difference
         axes1 = fig.add_subplot(212)
         
-        axes = self.plotVariousController(dic, axes, x='delta_t',y='integralError', typ='line')
+        axes = self.plotVariousController(dic, axes, x='delta_t',y='L1NormAbs', typ='line')
         axes = self.plotSettings(axes,\
                 titel=r'Fehlerintegral w(t) und y(t)',\
                 grid=True,\
