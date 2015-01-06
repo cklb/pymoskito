@@ -31,29 +31,29 @@ class eval_itae(MetaProcessingModule):
 
     def run(self, postResults):
         #aquire data
-        errors = [elem['ITAE'] for elem in postResults]
-        poles = [elem['modules']['controller']['poles'] for elem in postResults]
+        errors = [elem['error_L1Norm'] for elem in postResults]
+        poles = [elem['modules']['observer']['poles'][0] for elem in postResults]
 
         #create plot
         fig = Figure()
         axes = fig.add_subplot(111)
-        axes.set_title(r'\textbf{ITAE Kriterium}')
+        axes.set_title(r'\textbf{L1 Kriterium}')
         axes.plot(poles, errors, c='k')
         #axes.set_xlim(left=0, right=t[-1])
         #axes.set_xlabel(r'\textit{Zeit [s]}')
         #axes.set_ylabel(r'\textit{Ballposition r(t) [m]}')
         
         #write results
-        filePath = os.path.join(os.path.pardir, 'results', 'metaprocessing', 'A1')
+        filePath = os.path.join(os.path.pardir, 'results', 'metaprocessing', 'C')
         if not os.path.isdir(filePath):
             os.makedirs(filePath)
         
-        fileName = os.path.join(filePath, 'ITEA-plot')
+        fileName = os.path.join(filePath, 'L1_observer-plot')
         canvas = FigureCanvas(fig)
-#        fig.savefig(fileName+'.svg')
+        fig.savefig(fileName+'.svg')
         fig.savefig(fileName+'.png')
 
-        results = [{'figure': canvas, 'name': 'ITEA-plot'},\
+        results = [{'figure': canvas, 'name': 'L1_observer-plot'},\
                 ]
 
         return results

@@ -19,21 +19,21 @@ controllerList = ['FController', 'GController', 'JController',\
 #-------------------------------------------------------------
 # init
 #-------------------------------------------------------------
-print '\n ### Regimefile Generator Eval C ### \n'
+print '\n ### Regimefile Generator Eval C2 ### \n'
 
 print 'Choose parameter to test: '
-for idx, param in enumerate(st.paramVariationListC):
+for idx, param in enumerate(st.paramVariationListC2):
     print '\t',idx,' - ', param
 
 paramIdx = -1
-while paramIdx not in range(0, len(st.paramVariationListC)):
+while paramIdx not in range(0, len(st.paramVariationListC2)):
     paramIdx = input()
 
 # extract parameter values
-parameter = st.paramVariationListC[paramIdx]
-lower_bound = st.paramVariationDictC[parameter]['lower_bound']
-upper_bound = st.paramVariationDictC[parameter]['upper_bound']
-step_size = st.paramVariationDictC[parameter]['step_size']
+parameter = st.paramVariationListC2[paramIdx]
+lower_bound = st.paramVariationDictC2[parameter]['lower_bound']
+upper_bound = st.paramVariationDictC2[parameter]['upper_bound']
+step_size = st.paramVariationDictC2[parameter]['step_size']
 
 print 'Choose controller: '
 for idx, controller in enumerate(controllerList):
@@ -55,7 +55,7 @@ else:
 pole = st.poles[controller]
 
 # load head file
-filePath = os.path.join(os.curdir, 'C_head.sray')
+filePath = os.path.join(os.curdir, 'C2_head.sray')
 with open(filePath, 'r') as f:
     head = f.read()
 
@@ -67,7 +67,7 @@ lines = '\n'
 
 #prefined strings
 def writeRegime(cName, pole, param, paramVal, appendix):
-    return '- name: C_' + cName + '_poles(' + str(pole) + ')'\
+    return '- name: C2_' + cName + '_poles(' + str(pole) + ')'\
                     + '_' + parameter +'(' + str(paramVal) + ')'\
                     + appendix + '\n'\
                     + '  clear previous: !!python/bool False \n\n'
@@ -98,20 +98,23 @@ def writeDisturbance(disName, paramVal):
             + '   type: ' + disName + '\n'\
             + '   mean value: ' + '0' + '\n'\
             + '   sigma: ' + str(paramVal) + '\n\n'
+            
+def writeLimiter(limName, paramVal):
+    return '  limiter:' + '\n'\
+            + '   type: ' + limName + '\n'\
+            + '   limits: ' + str(paramVal) + '\n\n'
 
 #-------------------------------------------------------------
 # main
 #-------------------------------------------------------------
 simLimits = np.arange(lower_bound, upper_bound + step_size, step_size)
-
-#search limits
+limits = [0,0]
 for val in simLimits:
-    lines += writeRegime(controller, pole, parameter, val, '')
+    limits[0] = -val
+    limits[1] = val
+    lines += writeRegime(controller, pole, parameter, limits, '')
     lines += writeController(controller, pole, multiplicator)
-    if parameter == 'sigma':
-        lines += writeDisturbance('GaussianNoiseDisturbance', val)
-    if parameter == 'delay':
-        lines += writeSensor('DeadTimeSensor', val)   
+    lines += writeLimiter('AmplitudeLimiter', limits)
 
 
 dirPath = os.path.join(os.path.pardir, os.path.pardir, 'regimes', 'generated')
@@ -119,9 +122,9 @@ dirPath = os.path.join(os.path.pardir, os.path.pardir, 'regimes', 'generated')
 if not os.path.isdir(dirPath):
     os.makedirs(dirPath)
 
-fileName = 'C_' + controller + '_poles' + str(pole) \
+fileName = 'C2_' + controller + '_poles' + str(pole) \
                     + '_' + str(parameter)\
-                    + '(' + str(simLimits[0]) + ',' + str(simLimits[-1])\
+                    + '(' + str(lower_bound) + ',' + str(upper_bound)\
                     + ').sreg'
 
 filePath = os.path.join(dirPath, fileName)

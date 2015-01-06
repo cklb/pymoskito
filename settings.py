@@ -100,17 +100,29 @@ paramStabilityLimits = {\
         }
 
 #-----------------------------------------------
-# TestCase C - Paramter Variation
+# TestCase C1 - Paramter Variation
 #-----------------------------------------------
-paramVariationListC = ['sigma', 'delay']
+paramVariationListC1 = ['sigma', 'delay']
                                  #lower_bound = 0 is not possible
-paramVariationDictC = {'sigma': {'lower_bound': 0.01,\
+paramVariationDictC1 = {'sigma': {'lower_bound': 0.01,\
                                  'upper_bound': 0.4,\
                                  'step_size': 0.05},\
                        'delay': {'lower_bound': 0,\
                                  'upper_bound': 3,\
                                  'step_size': 0.5,\
                                  }}
+
+#-----------------------------------------------
+# TestCase C2 - Limiter Variation
+#-----------------------------------------------
+paramVariationListC2 = ['limiter']
+# lower_bound is equal to M*G*3
+paramVariationDictC2 = {'limiter': {'lower_bound': 1.5,\
+                                 'upper_bound': 3,\
+                                 'step_size': 0.1,\
+                                 }}
+
+
 
 
 
