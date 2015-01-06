@@ -23,7 +23,6 @@ class eval_L1NormAbs_delta_t_linePlot(MetaProcessingModule):
         return
 
     def run(self, postResults):
-        
         #create dic with relevant datas
         dic = self.createDictionary(postResults)
         
