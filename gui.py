@@ -4,6 +4,7 @@
 import numpy as np
 import sys, time, os
 import yaml
+import cPickle
 
 #Qt
 from PyQt4 import QtCore, QtGui
@@ -280,8 +281,9 @@ class BallBeamGui(QtGui.QMainWindow):
             os.makedirs(path)
 
         fileName = os.path.join(path, time.strftime('%Y%m%d-%H%M%S') +'_'+name+'.bbr')
-        with open(fileName, 'w+') as f:
-            f.write(repr(self.currentDataset))
+        with open(fileName, 'wb') as f:
+            cPickle.dump(self.currentDataset, f, protocol=2)
+            #f.write(repr(self.currentDataset))
 
     def loadRegimeClicked(self):
         repPath = os.path.join('../regimes/')
