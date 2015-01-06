@@ -27,7 +27,8 @@ class Controller(SimulationModule):
 
     def control(self, x, w):
         u = self.calcOutput(x, w)
-        tau = u * (st.M*x[0]**2 + st.J + st.Jb) + st.M* (2*x[0]*x[1]*x[3] + st.G*x[0]*np.cos(x[2]))
+        tau = u * (st.M*x[0]**2 + st.J + st.Jb)\
+                + st.M* (2*x[0]*x[1]*x[3] + st.G*x[0]*np.cos(x[2]))
         return tau
 
     def setStepWidth(self, width):
