@@ -14,6 +14,7 @@ from sim_core import SimulationModule
 class Controller(SimulationModule):
 
     order = 0
+    no_conversion = ['JController']
 
     def __init__(self):
         SimulationModule.__init__(self)
@@ -27,8 +28,12 @@ class Controller(SimulationModule):
 
     def control(self, x, w):
         u = self.calcOutput(x, w)
-        tau = u * (st.M*x[0]**2 + st.J + st.Jb)\
-                + st.M*(2*x[0]*x[1]*x[3] + st.G*x[0]*np.cos(x[2]))
+        tau =  0
+        if self.__class__.__name__ in self.no_conversion:
+            tau = u
+        else:
+            tau = u * (st.M*x[0]**2 + st.J + st.Jb)\
+                    + st.M*(2*x[0]*x[1]*x[3] + st.G*x[0]*np.cos(x[2]))
         return tau
 
     def setStepWidth(self, width):
@@ -136,7 +141,8 @@ class GController(Controller):
         a = -st.B*st.G*np.cos(x[2]) + 2*st.B*x[1]*x[3]
         # calculate b(x)
         b = st.B**2+x[0]*x[3]**4 + st.B*st.G*(1 - st.B)*x[3]**2*np.sin(x[2])
-        
+#        b = st.B**2+x[0]*x[3]**4 + st.B*(1 - st.B)*x[3]**2*np.sin(x[2])
+
         # calculate u
         u = (v-b)/a
         

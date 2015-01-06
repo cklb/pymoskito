@@ -419,6 +419,7 @@ class PostProcessingModule(ProcessingModule):
         implementaion. Overload to add more functionality
         '''
         output = []
+
         for res in files:
             output.append(self.run(res))
 

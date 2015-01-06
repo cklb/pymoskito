@@ -111,17 +111,17 @@ class eval_A2Hauser(PostProcessingModule):
         axes4.set_ylabel(r'$\tau [Nm]$')
         
         # calculate epsilon_max
-        start = 40
-        end = 60
-        indStart = t[0]
-        indEnd = t[-1]
-        for i in t:
-            if i >= start:
-                indStart = t.index(i)
-            if i >= end:
-                indEnd = t.index(i)
-                break
-        epsilon_max = max(eps[indStart:indEnd +1])
+        start = 30
+        end = 40
+        tStartIdx = next((idx for idx, x in enumerate(t) if x >= start), 0)
+        tEndIdx = next((idx for idx, x in enumerate(t[start:]) if x >= end), len(t) - 1)
+        
+        epsilon_max = None
+        print tStartIdx, tEndIdx
+        if tStartIdx < tEndIdx:
+            epsilon_max = max(eps[tStartIdx:tEndIdx])        
+        
+        print epsilon_max
         
         #collect results
         output = {'epsilon_max': epsilon_max}
