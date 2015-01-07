@@ -14,7 +14,7 @@ from sim_core import SimulationModule
 class Controller(SimulationModule):
 
     order = 0
-    no_conversion = ['JController']
+    no_conversion = ['JController', 'LSSController', 'PIFeedbackController']
 
     def __init__(self):
         SimulationModule.__init__(self)
