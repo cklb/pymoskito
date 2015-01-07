@@ -97,10 +97,12 @@ class BallBeamGui(QtGui.QMainWindow):
 
         #regime window
         self.regimeList = QtGui.QListWidget(self)
+        self.regimeList.setSelectionMode(QtGui.QAbstractItemView.ExtendedSelection)
         self.regimeDock.addWidget(self.regimeList)
         self.regimeList.itemDoubleClicked.connect(self.regimeDoubleClicked)
         self.delShort = QtGui.QShortcut(QtGui.QKeySequence(QtCore.Qt.Key_Delete), self.regimeList)
-        self.delShort.activated.connect(self.removeRegimeItem)
+        self.delShort.activated.connect(self.removeRegimeItems)
+        self.regimes = []
 
         #data window
         self.dataList = QtGui.QListWidget(self)
@@ -193,7 +195,7 @@ class BallBeamGui(QtGui.QMainWindow):
         #load default config
         self.runningBatch = False
         self.currentRegimeIndex = 0
-        self.regimes = None
+        self.regimes = []
         configFile = os.path.join('..', 'regimes', 'default.sreg')
         self._loadRegimes(configFile)
         self._applyRegime(self.currentRegimeIndex)
@@ -303,7 +305,7 @@ class BallBeamGui(QtGui.QMainWindow):
         self.regimeFileName = os.path.split(fileName)[-1][:-5]
         print 'loading regime file: ', self.regimeFileName
         with open(fileName, 'r') as f:
-            self.regimes = yaml.load(f)
+            self.regimes += yaml.load(f)
 
         self._updateRegimeList()
         
@@ -318,10 +320,16 @@ class BallBeamGui(QtGui.QMainWindow):
         for reg in self.regimes:
             self.regimeList.addItem(reg['name'])
 
-    def removeRegimeItem(self):
+    def removeRegimeItems(self):
         if self.regimeList.currentRow()>=0:
-            del self.regimes[self.regimeList.currentRow()]
-            self.regimeList.takeItem(self.regimeList.currentRow())
+            #flag all selected files as invalid
+            items = self.regimeList.selectedItems()
+            for item in items:
+                self.regimes[self.regimeList.row(item)] = None
+                self.regimeList.takeItem(self.regimeList.row(item))
+
+            #clean up intrnal list
+            self.regimes[:] = [x for x in self.regimes if x]
 
     def regimeDoubleClicked(self, item):
         '''
