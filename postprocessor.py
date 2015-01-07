@@ -382,27 +382,6 @@ class ProcessingModule:
             subDict = subDict[key]
         return subDict
 
-    def diff(self, a, b):
-        return a-b
-
-    def sum(self, a, b):
-        return a+b
- 
-    def add(self, a, b):
-        return a+b
-        
-    def subt(self, a, b):
-        return a-b
-    
-    def mul(self, a, b):
-        return a*b
-
-    def div(self, a, b):
-        if b == 0:
-            raise Exception('Division through 0 is impossible')
-            return        
-        return a/b
-
 class PostProcessingModule(ProcessingModule):
     '''
     Base Class for Postprocessing Modules
