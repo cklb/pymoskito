@@ -385,7 +385,6 @@ class ProcessingModule:
 class PostProcessingModule(ProcessingModule):
     '''
     Base Class for Postprocessing Modules
-    defines some basic functions that can later be vectorized
     '''
     def __init__(self):
         ProcessingModule.__init__(self)
@@ -458,10 +457,12 @@ class PostProcessingModule(ProcessingModule):
         fileName = os.path.join(filePath, regimeName)
         with open(fileName+'.pof', 'w') as f: #POF - Postprocessing Output File
             f.write(repr(output))
-        
-        figure.savefig(fileName + '.png')
-        #figure.savefig(fileName + '.pdf')
-        #figure.savefig(fileName + '.svg')
+            
+        if figure:
+            figure.savefig(fileName + '.png')
+            #figure.savefig(fileName + '.pdf')
+            #figure.savefig(fileName + '.svg')
+
 
 class MetaProcessingModule(ProcessingModule):
     '''
@@ -482,7 +483,7 @@ class MetaProcessingModule(ProcessingModule):
             axes.grid(color='#ababab', linestyle='--')
         axes.set_xlabel(xlabel, size=st.label_size)
         axes.set_ylabel(ylabel, size=st.label_size)
-        axes.legend(loc=0, fontsize='small')
+        axes.legend(fontsize='small')
         return axes
     
     def plotVariousController(self, dic, axes, x, y, typ):
@@ -494,18 +495,14 @@ class MetaProcessingModule(ProcessingModule):
         for controller in dic:
             xList = dic[controller][x]
             yList = dic[controller][y]
-
+            print xList
             xList, yList = self.sortLists(xList, yList)
-            
-            #add values to x_all
-            for j in xList:
-                if x_all.count(j) == 0:
-                    x_all.append(j)
-            
-#            # replace None with 0
-#            for index, value in enumerate(yList):
-#                if value == None:
-#                    yList[index] = 0
+            print xList
+            #add x values to x_all if there are not in x_all
+            for val in xList:
+                if val not in x_all:
+                    x_all.append(val)            
+            print x_all
             if typ == 'line':
                 axes.plot(xList,\
                         yList,\
@@ -528,7 +525,7 @@ class MetaProcessingModule(ProcessingModule):
         
         
         x_all.sort()
-        
+        print x_all
         #remove all None from x_all
         x_all[:] = [i for i in x_all if i]
 

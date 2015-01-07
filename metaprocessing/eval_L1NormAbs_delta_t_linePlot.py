@@ -36,7 +36,7 @@ class eval_L1NormAbs_delta_t_linePlot(MetaProcessingModule):
         #plot for time-difference
         axes1 = fig.add_subplot(212)
         
-        axes = self.plotVariousController(dic, axes, x='delta_t',y='L1NormAbs', typ='line')
+        axes = self.plotVariousController(dic, axes, x='delta_t', y='L1NormAbs', typ='line')
         axes = self.plotSettings(axes,\
                 titel=r'Fehlerintegral w(t) und y(t)',\
                 grid=True,\

@@ -78,13 +78,15 @@ class eval_A2(PostProcessingModule):
         if not data['results']['finished']:
             for key in output.keys():
                 output[key] = None
-
-        #copy module settings to output
-        output.update({'modules':data['modules']})
+        
+        #add settings and metrics to dictionary results
+        results = {}
+        results.update({'metrics': output})
+        results.update({'modules': data['modules']})
         
         canvas = FigureCanvas(fig)
         
-        self.writeOutputFiles(self.name, data['regime name'], fig, output)        
+        self.writeOutputFiles(self.name, data['regime name'], fig, results)
         
         return {'name':'_'.join([data['regime name'], self.name]),\
                     'figure': canvas}
