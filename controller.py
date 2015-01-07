@@ -140,12 +140,10 @@ class GController(Controller):
         # calculate a(x)
         a = -st.B*st.G*np.cos(x[2]) + 2*st.B*x[1]*x[3]
         # calculate b(x)
-        b = st.B**2+x[0]*x[3]**4 + st.B*st.G*(1 - st.B)*x[3]**2*np.sin(x[2])
-#        b = st.B**2+x[0]*x[3]**4 + st.B*(1 - st.B)*x[3]**2*np.sin(x[2])
+        b = st.B**2*x[0]*x[3]**4 + st.B*st.G*(1 - st.B)*x[3]**2*np.sin(x[2])
 
         # calculate u
         u = (v-b)/a
-        
         return u
 
 #---------------------------------------------------------------------
