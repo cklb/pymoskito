@@ -10,6 +10,7 @@ import os
 
 #own
 import settings as st
+from tools import getSubValue
 
 class PostProcessor(QtGui.QMainWindow):
 
@@ -486,23 +487,25 @@ class MetaProcessingModule(ProcessingModule):
         axes.legend(fontsize='small')
         return axes
     
-    def plotVariousController(self, dic, axes, x, y, typ):
-        
+    def plotVariousController(self, source, axes, xPath, yPath, typ):
+        '''
+        plots y over x for all controllers
+        '''
+
         width = 0.1
         counter = 0
         x_all = []
         
-        for controller in dic:
-            xList = dic[controller][x]
-            yList = dic[controller][y]
-            print xList
+        for controller in source:
+            xList = getSubValue(source[controller], xPath)
+            yList = getSubValue(source[controller], yPath)
             xList, yList = self.sortLists(xList, yList)
-            print xList
+
             #add x values to x_all if there are not in x_all
             for val in xList:
                 if val not in x_all:
                     x_all.append(val)            
-            print x_all
+
             if typ == 'line':
                 axes.plot(xList,\
                         yList,\
@@ -545,106 +548,4 @@ class MetaProcessingModule(ProcessingModule):
         #axes.set_xticklabels(x_all_label)
         
         return axes
-            
-    
-    def createDictionary(self, data):
-        '''
-        return a dictionary which contain all 
-        relevant data, sorted by Controller
-        content:
-            - tr                rise-time (Anstiegszeit)
-            - tanr              correction time (Anregelzeit)
-            - to                overshoot time (Überschwingzeit)
-            - do                overshoot
-            - doPercent         overshoot in %
-            - teps              damping time (Ausregelzeit)
-            - L1NormAbs         L1-Norm absolute
-            - L1NormITAE        L1-Norm absolute with time weighting
-            - t_diff            td - delta_t
-            - delta_t           delta_t from trajectory
-            - control_deviation control_deviation (Regelabweichung)
-            - poles             poles from controller
-            - sigma             standard deciation of GaussianNoiseDesturbance
-            - frequency         frequency from harmonic trajectory
-            - M                 mass of the ball
-            - Jb                moment of inertia of the ball
-            - delay             time delay of DeadTimeSensor
-        '''
-        dic = {}
-        
-        for elem in data:
-            # data from postprocessing
-            tr = self._getSubElement(elem, ['tr'])
-            tanr = self._getSubElement(elem, ['tanr'])
-            to = self._getSubElement(elem, ['to'])
-            do = self._getSubElement(elem, ['do'])
-            doPercent = self._getSubElement(elem, ['doPercent'])
-            teps = self._getSubElement(elem, ['teps'])
-            L1NormAbs = self._getSubElement(elem, ['L1NormAbs'])
-            L1NormITAE = self._getSubElement(elem, ['L1NormITAE'])
-            t_diff = self._getSubElement(elem, ['t_diff'])
-            delta_t = self._getSubElement(elem, ['delta_t'])
-            control_deviation = self._getSubElement(elem, ['control_deviation'])
-            
-            #data from modules
-            #controller            
-            controllerName = self._getSubElement(elem, ['modules', 'controller', 'type'])
-            poles = self._getSubElement(elem, ['modules', 'controller', 'poles'])
-            #disturbance
-            sigma = self._getSubElement(elem, ['modules', 'disturbance', 'sigma'])
-            #trajectory
-            frequency = self._getSubElement(elem, ['modules', 'trajectory', 'Frequency'])
-            #model
-            M = self._getSubElement(elem, ['modules', 'model', 'M'])
-            Jb = self._getSubElement(elem, ['modules', 'model', 'Jb'])
-            #sensor
-            delay = self._getSubElement(elem, ['modules', 'sensor', 'delay'])
-            
-            if dic.has_key(controllerName):
-                dic[controllerName]['tr'].append(tr)
-                dic[controllerName]['tanr'].append(tanr)
-                dic[controllerName]['to'].append(to)
-                dic[controllerName]['do'].append(do)
-                dic[controllerName]['doPercent'].append(doPercent)
-                dic[controllerName]['teps'].append(teps)
-                dic[controllerName]['L1NormAbs'].append(L1NormAbs)
-                dic[controllerName]['L1NormITAE'].append(L1NormITAE)
-                dic[controllerName]['t_diff'].append(t_diff)
-                dic[controllerName]['delta_t'].append(delta_t)
-                dic[controllerName]['control_deviation'].append(control_deviation)
-                dic[controllerName]['poles'].append(poles)
-                dic[controllerName]['sigma'].append(sigma)
-                dic[controllerName]['frequency'].append(frequency)
-                dic[controllerName]['M'].append(M)
-                dic[controllerName]['Jb'].append(Jb)
-                dic[controllerName]['delay'].append(delay)
-            else:
-                dic.update({controllerName:{\
-                                        'tr': [tr],\
-                                        'tanr': [tanr],\
-                                        'to': [to],\
-                                        'do': [do],\
-                                        'doPercent': [doPercent],\
-                                        'teps': [teps],\
-                                        'L1NormAbs': [L1NormAbs],\
-                                        'L1NormITAE': [L1NormITAE],\
-                                        't_diff': [t_diff],\
-                                        'delta_t': [delta_t],\
-                                        'control_deviation': [control_deviation],\
-                                        'poles': [poles],\
-                                        'sigma': [sigma],\
-                                        'frequency': [frequency],\
-                                        'M': [M],\
-                                        'Jb': [Jb],\
-                                        'delay': [delay],\
-                                        }})
-        return dic
-    
-    def _getSubElement(self, topDict, keys):
-        subDict = topDict
-        for key in keys:
-            if subDict.has_key(key):
-                subDict = subDict[key]
-            else:
-                return None
-        return subDict
+

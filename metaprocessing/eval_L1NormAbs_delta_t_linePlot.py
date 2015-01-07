@@ -11,6 +11,7 @@ from matplotlib.figure import Figure
 from matplotlib.lines import Line2D as line
 
 from postprocessor import MetaProcessingModule
+from tools import sortTree
 
 class eval_L1NormAbs_delta_t_linePlot(MetaProcessingModule):
     '''
@@ -23,8 +24,8 @@ class eval_L1NormAbs_delta_t_linePlot(MetaProcessingModule):
         return
 
     def run(self, postResults):
-        #create dic with relevant datas
-        dic = self.createDictionary(postResults)
+        #create tree with relevant datas
+        source = sortTree(postResults, ['modules', 'controller', 'type'])
         
         #create plot
         fig = Figure()
@@ -36,22 +37,27 @@ class eval_L1NormAbs_delta_t_linePlot(MetaProcessingModule):
         #plot for time-difference
         axes1 = fig.add_subplot(212)
         
-        axes = self.plotVariousController(dic, axes, x='delta_t', y='L1NormAbs', typ='line')
-        axes = self.plotSettings(axes,\
+        self.plotVariousController(source, axes,\
+                xPath=['modules','trajectory', 'delta t'],\
+                yPath=['metrics','L1NormAbs'],\
+                typ='line')
+        self.plotSettings(axes,\
                 titel=r'Fehlerintegral w(t) und y(t)',\
                 grid=True,\
                 xlabel=r'$\Delta t \, \lbrack s\rbrack$',\
                 ylabel=r'$E \, \lbrack m^{2}\rbrack$',\
                 )
         
-        axes1 = self.plotVariousController(dic, axes1, x='delta_t',y='t_diff', typ='line')
-        axes1 = self.plotSettings(axes1,\
+        self.plotVariousController(source, axes,\
+                xPath=['modules','trajectory', 'delta t'],\
+                yPath=['metrics','t_diff'],\
+                typ='line')
+        self.plotSettings(axes1,\
                 titel=r'Uebergangszeitfehler ueber $\Delta t$',\
                 grid=True,\
                 xlabel=r'$\Delta t \, \lbrack s\rbrack$',\
                 ylabel=r'$e_{t} \, \lbrack m^{2}\rbrack$',\
                 )
-        
         
         #write results
         filePath = os.path.join(os.path.pardir, 'results', 'metaprocessing', self.name)

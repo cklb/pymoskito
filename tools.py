@@ -5,6 +5,72 @@ Tools, functions and other funny things
 import sympy as sp
 import numpy as np
 
+def sortTree(dataList, sortKeyPath):
+    '''
+    helper method for data sorting
+    '''
+    result = {}
+    for elem in dataList:
+        sortName = _getSubValue(elem, sortKeyPath)
+        if not result.has_key(sortName):
+            result.update({sortName: {}})
+        
+        while elem:
+            val, keys = _removeDeepest(elem)
+            if keys:
+                _addSubVal(result[sortName], keys, val)
+
+    return result
+
+def getSubValue(source, keyPath):
+    subDict = source
+    for key in keyPath:
+        subDict = subDict[key]
+
+    return subDict
+      
+def _removeDeepest(topDict, keys=None):
+    '''
+    iterates recursivly over dict and removes deepst entry.
+    returnes entry and path to entry
+    '''
+    if not keys:
+        keys = []
+
+    for key in topDict.keys():
+        val = topDict[key]
+        print 'looking into:', key, val
+        if isinstance(val, dict):
+            if val:
+                keys.append(key)
+                return _removeDeepest(val, keys)
+            else:
+                del topDict[key]
+                continue
+        else:
+            del topDict[key]
+            keys.append(key)
+            print 'leaving with:',keys
+            return val, keys
+
+    return None, None
+
+def _addSubVal(topDict, keys, val):
+    if len(keys) == 1:
+        #we are here
+        if keys[0] in topDict:
+            topDict[keys[0]].append(val)
+        else:
+            topDict.update({keys[0]: [val]})
+        return
+
+    #keep iterating
+    if keys[0] not in topDict:
+        topDict.update({keys[0]: {}})
+    
+    _addSubVal(topDict[keys[0]], keys[1:], val)
+    return
+
 def lieDerivative(h, f, x, n):
     '''
     calculates the Lie-Derivative from a skalarfield h(x) along a vectorfield f(x)
@@ -39,27 +105,4 @@ def getCoefficients(poles):
         poly = poly.expand()
         
     return np.array([p]).astype(float)
-    
-def symMatrixToNumArray(symMatrix = None):
-    '''
-    convert a sympy Matrix in a numpy array
-    '''
-    numArray = np.array(symMatrix).astype(float)
-    return numArray
 
-    
-#print getCoefficients([-2,-2,-2,-2])
-#p = getCoefficients([-2,-2,-2,-2])
-#print p
-#print type(p)
-#p = np.array(p).astype(float)
-#print p[0]
-#print type(p[0])
-#matrix = sp.Matrix([[1,2,3,4],[4,5,6,7],[1,2,3,9],[1,8,3,5]])
-#print matrix[0,3]
-#print type(matrix[0,3])
-#
-#m = symMatrixToNumArray(matrix)
-#print m
-#print type(m)
-#print type(m[0,3])
