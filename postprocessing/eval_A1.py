@@ -134,7 +134,7 @@ class eval_A1(PostProcessingModule):
         #calc control deviation
         control_deviation = y[-1] - yd
         output.update({'control_deviation': control_deviation})
-        
+
         self.calcMetrics(data, output)
 
         #check for sim succes
@@ -142,12 +142,14 @@ class eval_A1(PostProcessingModule):
             for key in output.keys():
                 output[key] = None
 
-        #add settings
-        output.update({'modules': data['modules']})
-
+        #add settings and metrics to dictionary results
+        results = {}
+        results.update({'metrics': output})
+        results.update({'modules': data['modules']})
+        
         canvas = FigureCanvas(fig)
         
-        self.writeOutputFiles(self.name, data['regime name'], fig, output)
+        self.writeOutputFiles(self.name, data['regime name'], fig, results)
         
         return {'name':'_'.join([data['regime name'], self.name]),\
                     'figure': canvas}

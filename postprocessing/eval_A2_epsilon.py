@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 import numpy as np
-import scipy as sp
-import os
 
 import matplotlib as mpl
 mpl.use("Qt4Agg")
@@ -11,14 +9,14 @@ from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 
 from postprocessor import PostProcessingModule
-import settings as st
 
 #define your own functions here
 class eval_A2_epsilon(PostProcessingModule):
     '''
     create diagrams like hauser did
     '''
-
+    name = 'A2_epsilon'    
+    
     def __init__(self):
         PostProcessingModule.__init__(self)
         return
@@ -28,9 +26,6 @@ class eval_A2_epsilon(PostProcessingModule):
         
         output = {}
         
-        # vectorise skalar functions
-        vSubt = np.vectorize(self.subt)
-        
         #calculate datasets
         t = data['results']['simTime']
         yd = data['results']['trajectory_output.0']
@@ -38,64 +33,37 @@ class eval_A2_epsilon(PostProcessingModule):
         for i in range(4):
             y.append(data['results']['model_output.'+str(i)]  )
                
-        eps = vSubt(y[0], yd)
+        error = np.subtract(y[0], yd)
+        output.update({'error': error})
         
         # plots
         fig = Figure()
-#        fig.subplots_adjust(wspace=0.3, hspace=0.25)
+        #fig.subplots_adjust(wspace=0.3, hspace=0.25)
 
         axes = fig.add_subplot(1, 1, 1)
-#        axes.set_title(r'output error = yd - x0')
-        axes.plot(t, eps, c='k')
+        #axes.set_title(r'output error = yd - x0')
+        axes.plot(t, error, c='k')
         axes.set_xlim(left=0, right=t[-1])
         axes.set_xlabel(r'$t [s]$')
         axes.set_ylabel(r'$output error = x_{0} - y_{d} [m]$')
            
+        # calculate L1NormAbs
+        L1NormAbs = self.calcL1NormAbs(data)
+        output.update({'L1NormAbs': L1NormAbs})
         
-        # calculate results
-        errorIntegral = self.calcErrorIntegral(data)
-
         #check for sim succes
         if not data['results']['finished']:
             for key in output.keys():
                 output[key] = None
-
-        output.update({'error_L1Norm': errorIntegral})
         
-        #write results
-        filePath = os.path.join(os.path.pardir, 'results', 'postprocessing', 'A2_epsilon')
-        if not os.path.isdir(filePath):
-            os.makedirs(filePath)
+        #add settings and metrics to dictionary results
+        results = {}
+        results.update({'metrics': output})
+        results.update({'modules': data['modules']})
         
-        fileName = os.path.join(filePath, data['regime name'])
-        with open(fileName+'.pof', 'w') as f: #POF - Postprocessing Output File
-            f.write(repr(output))
-
         canvas = FigureCanvas(fig)
-        fig.savefig(fileName+'.svg')
-        fig.savefig(fileName+'.png')
-        return canvas             
         
-    def calcErrorIntegral(self, data):
-        '''
-        calculate metrics for comaprism
-        '''
+        self.writeOutputFiles(self.name, data['regime name'], fig, results)        
 
-        #calculate datasets
-#        t = data['results']['simTime']
-        y = data['results']['model_output.0']
-        yd = data['results']['trajectory_output.0']
-
-        #calc ITAE criterium
-        dt = 1.0/data['modules']['solver']['measure rate']
-        
-        errorIntegral = 0
-
-        for k, val in enumerate(y):
-            #vgl. Betragskriterium L^1
-            errorIntegral += abs(val-yd[k])*dt
-
-        print 'errorIntegral: ', errorIntegral
-        return errorIntegral
-        
-
+        return {'name':'_'.join([data['regime name'], self.name]),\
+                    'figure': canvas}

@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 import numpy as np
-import scipy as sp
-import os
 
 import matplotlib as mpl
 mpl.use("Qt4Agg")
@@ -9,10 +7,8 @@ mpl.use("Qt4Agg")
 #mpl.rcParams['text.latex.unicode']=True
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
-from matplotlib.lines import Line2D as line
 
 from postprocessor import PostProcessingModule
-import settings as st
 
 #define your own functions here
 class eval_C_observer(PostProcessingModule):
@@ -85,24 +81,14 @@ class eval_C_observer(PostProcessingModule):
             output.update({'error_L1Norm_x['+str(i)+']': errorIntegrals[i]})
 
 
-
+        #add settings and metrics to dictionary results
+        results = {}
+        results.update({'metrics': output})
+        results.update({'modules': data['modules']})
         
-        
-        #copy module settings to output
-        output.update({'modules':data['modules']})
-        
-        #write results
-        filePath = os.path.join(os.path.pardir, 'results', 'postprocessing', 'C_observer')
-        if not os.path.isdir(filePath):
-            os.makedirs(filePath)
-        
-        fileName = os.path.join(filePath, data['regime name'])
-        with open(fileName+'.pof', 'w') as f: #POF - Postprocessing Output File
-            f.write(repr(output))
-
         canvas = FigureCanvas(fig)
-        fig.savefig(fileName+'.svg')
-        fig.savefig(fileName+'.png')
+        
+        self.writeOutputFiles(self.name, data['regime name'], fig, results)
 
         return {'name':'_'.join([data['regime name'], self.name]),\
                     'figure': canvas}

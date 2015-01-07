@@ -54,7 +54,7 @@ class eval_B(PostProcessingModule):
         y_pTolMax = self.extractValues(dataList, 'paramTolMax', 'model_output.0')
 
         par = next((param for param in st.paramVariationListB if param in regName), None)
-        print 'assuiming that', par, 'has been varied.'
+        print 'assuming that', par, 'has been varied.'
 
         #sort files by variied parameter
         modDataList = sorted(dataList, key=lambda k: k['modules']['model'][par], reverse=False)
@@ -102,63 +102,34 @@ class eval_B(PostProcessingModule):
 
         #customize
         axes.set_xlim(left=0, right=t[-1])
-        axes.set_ylim(bottom=(self.offset+yd*(1-self.padding/2)),\
-                top=(self.offset+yd*(1+self.padding)))
+#        axes.set_ylim(bottom=(self.offset+yd*(1-self.padding/2)),\
+#                top=(self.offset+yd*(1+self.padding)))
 
         axes.legend(loc=0, fontsize='small')
-         
-        #write results
-        filePath = os.path.join(os.path.pardir, 'results', 'postprocessing', self.name)
-        if not os.path.isdir(filePath):
-            os.makedirs(filePath)
-        
-        fileName = os.path.join(filePath, regName)
-        with open(fileName+'.pof', 'w') as f: #POF - Postprocessing Output File
-            f.write(repr(output))
 
         canvas = FigureCanvas(fig)
-        #fig.savefig(fileName+'.svg')
-        fig.savefig(fileName+'.png')
         
-        result = [\
-                {'name': '_'.join([regName, self.name]), 'figure': canvas},\
-                ]
-        return result
+        # create output files because run is not called
+        for data in dataList:
+            results = {}
+            results.update({'metrics': {} })
+            self.calcMetrics(data, results['metrics'])
+            
+            #add settings and metrics to dictionary results
+            results.update({'modules': data['modules']})
+            self.writeOutputFiles(self.name, data['regime name'], fig, results)
         
-    def createTimeLine(self, axes, t, y, time_value, label):
-        if time_value != t[-1]:
-            #create timeLine
-            timeLine = line([time_value, time_value],\
-                            [np.min(y), y[t.index(time_value)]],\
-                            ls = self.line_style,\
-                            c = self.line_color) 
-            axes.add_line(timeLine)
-            #create label
-            axes.text(time_value + self.spacing, self.posLabel[self.counter], label, size = self.font_size)
-            self.counter = self.counter + 1
-
+        results = {'metrics': output}
+        self.writeOutputFiles(self.name, regName[:-len('ideal')] + 'paramLimits', None, results)
+        
+        return [{'name':'_'.join([regName[:-len('ideal')], 'paramLimits', self.name]),\
+                    'figure': canvas}]
+        
     def calcMetrics(self, data, output):
         '''
         calculate metrics for comaprism
         '''
 
-        #calculate datasets
-        t = data['results']['simTime']
-        y = data['results']['model_output.0']
-        yd = data['results']['trajectory_output.0'][-1]
-
-        #calc ITAE criterium
-        dt = 1.0/data['modules']['solver']['measure rate']
-        
-        errorIntegral = 0
-#        if 'finished' in data['results']:
-#            if not data['results']['finished']:
-#                errorIntegral = None
-#            else:
-#                for k, val in enumerate(y):
-#                    errorIntegral += abs(val-yd)*dt**2*k
-
-        for k, val in enumerate(y):
-            errorIntegral += abs(val-yd)*dt**2*k
-        print 'ITAE score: ', errorIntegral
-        output.update({'ITAE': errorIntegral})
+        #calc L1NormITAE
+        L1NormITAE = self.calcL1NormITAE(data)
+        output.update({'L1NormITAE': L1NormITAE})
