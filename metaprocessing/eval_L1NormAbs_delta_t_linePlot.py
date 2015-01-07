@@ -25,7 +25,7 @@ class eval_L1NormAbs_delta_t_linePlot(MetaProcessingModule):
     def run(self, postResults):
         #create dic with relevant datas
         dic = self.createDictionary(postResults)
-
+        
         #create plot
         fig = Figure()
         fig.subplots_adjust(wspace=0.5, hspace=0.25)
