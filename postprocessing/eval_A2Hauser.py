@@ -97,11 +97,13 @@ class eval_A2Hauser(PostProcessingModule):
         axes3.set_xlim(left=0, right=t[-1])
         axes3.set_xlabel(r'$t [s]$')
         axes3.set_ylabel(r'$\psi$')
-        if data['modules']['controller']['type'] == 'FController' or \
-           data['modules']['controller']['type'] == 'JController':
-               axes3.set_ylabel(r'$\theta [\frac{m}{s^2}]$')
+
+        if data['modules']['controller']['type'] == 'FController':
+            axes3.set_ylabel(r'$\psi_2 \. [\frac{m}{s^2}]$')
+        if data['modules']['controller']['type'] == 'JController':
+            axes3.set_ylabel(r'$\psi_2 \. [\frac{m}{s^2}]$')
         if data['modules']['controller']['type'] == 'GController':
-            axes3.set_ylabel(r'$\theta [\frac{m}{s^3}]$')
+            axes3.set_ylabel(r'$\psi_3 \. [\frac{m}{s^3}]$')
         
         axes4 = fig.add_subplot(2, 2, 4)
         #axes4.set_title(r'\textbf{Beam Torque}')
