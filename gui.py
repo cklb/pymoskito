@@ -206,7 +206,13 @@ class BallBeamGui(QtGui.QMainWindow):
         self.status= QtGui.QStatusBar(self)
         self.setStatusBar(self.status)
         self.statusLabel = QtGui.QLabel('Ready.')
-        self.statusBar().addWidget(self.statusLabel)
+        self.statusBar().addPermanentWidget(self.statusLabel)
+        self.sep = QtGui.QFrame()
+        self.sep.setFrameStyle(QtGui.QFrame.VLine)
+        self.sep.setSizePolicy(QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
+        self.statusBar().addPermanentWidget(self.sep)
+        self.timeLabel = QtGui.QLabel('current time: 0.0')
+        self.statusBar().addPermanentWidget(self.timeLabel)
 
     def playAnimation(self):
         '''
@@ -328,7 +334,7 @@ class BallBeamGui(QtGui.QMainWindow):
                 self.regimes[self.regimeList.row(item)] = None
                 self.regimeList.takeItem(self.regimeList.row(item))
 
-            #clean up intrnal list
+            #clean up internal list
             self.regimes[:] = [x for x in self.regimes if x]
 
     def regimeDoubleClicked(self, item):
@@ -415,9 +421,9 @@ class BallBeamGui(QtGui.QMainWindow):
         self.simulationFinished(data)
 
     def _readResults(self):
-        self.currentStepSize = 1/self.currentDataset['modules']['solver']['measure rate']
-        if self.currentStepSize < 1/100:
-            self.currentStepSize = 1/100
+        self.currentStepSize = 1.0/self.currentDataset['modules']['solver']['measure rate']
+        #if self.currentStepSize < 1/100:
+            #self.currentStepSize = 1/100
 
         self.currentEndTime = self.currentDataset['modules']['solver']['end time']
         self.validData = True
@@ -461,29 +467,27 @@ class BallBeamGui(QtGui.QMainWindow):
         if not self.validData:
             return
 
+        self.timeLabel.setText('current time: %4f'%self.playbackTime)
+
         #update time cursor in plots
         self._updateTimeCursor()
 
         #update state of rendering
         state = [self.interpolate(self.currentDataset['results']['model_output.'+str(i)]) \
                 for i in range(self.model.getOutputDimension())]
+
         r_beam, T_beam, r_ball, T_ball = self.model.calcPositions(state)
         self.visualizer.updateScene(r_beam, T_beam, r_ball, T_ball)
 
     def interpolate(self, data):
-        #find corresponding index in dataset that fitts the current playback time
-        #TODO implement real interpolation
-        index = 0
-        for elem in self.currentDataset['results']['simTime']:
-            if elem > self.playbackTime:
-                break
-            else:
-                index += 1
-            
-        if index >= len(data):
+        #find corresponding index in dataset that fits the current playback time
+        idx = next((index for index, val in enumerate(self.currentDataset['results']['simTime'])\
+                if val >= self.playbackTime), None)
+                   
+        if not idx:
             return 0
         else:
-            return data[index]
+            return data[idx]
 
     def _updateDataList(self):
         self.dataList.clear()
