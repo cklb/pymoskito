@@ -27,14 +27,10 @@ class eval_A2Hauser(PostProcessingModule):
         return
 
     def run(self, data):
+        results = {}
+        output = {}
         print 'processing ', data['regime name']
         
-        # vectorise skalar functions
-        vSubt = np.vectorize(self.subt)
-        vMul = np.vectorize(self.mul)
-        vAdd = np.vectorize(self.add)
-        vDiv = np.vectorize(self.div)
-          
         #calculate datasets
         t = data['results']['simTime']
         yd = data['results']['trajectory_output.0']
@@ -42,91 +38,109 @@ class eval_A2Hauser(PostProcessingModule):
         for i in range(4):
             y.append(data['results']['model_output.'+str(i)]  )
             
-        eps = vSubt(yd, y[0])
+        error = np.subtract(yd, y[0])
         
         # controlleroutput is a torque
         tau = data['results']['controller_output.0']
         # u in the neglected nonlinearity is theta_dd
-        u = vDiv(vSubt(vSubt(tau,\
-                             np.dot(np.dot(np.dot(2*st.M, y[0]), y[1]), y[3])),\
-                             np.dot(st.M*st.G, np.cos(y[2]))),\
-                 vAdd(vAdd(np.dot(st.M, np.power(y[0], 2)), st.J), st.Jb))
-        
-        # Parameter from Controller -> make modelling (estimate/meausre paramters)
-        # and then neglect psi therm
-        # you are interested in the error through the negligence 
-        B = st.B
-        G = st.G
+        u = np.true_divide(\
+                np.subtract(\
+                    np.subtract(\
+                        tau,\
+                        np.multiply(\
+                            np.multiply(\
+                                np.multiply(\
+                                    2*st.M,\
+                                    y[0]\
+                                ),\
+                                y[1]\
+                            ),\
+                            y[3]\
+                        )\
+                    ),\
+                    np.multiply(\
+                        st.M*st.G,\
+                        np.multiply(\
+                            y[0],\
+                            np.cos(y[2])\
+                        )\
+                    )\
+                ),\
+                np.add(
+                    np.multiply(\
+                        st.M,\
+                        np.power(y[0], 2)\
+                    ),\
+                    st.J + st.Jb\
+                )\
+            )
 
-        
+        # Parameter from Controller -> modelling (estimate/meausre paramters)
+        # and then neglect psi therm
+        # if you are interested in the error through the negligence 
         if data['modules']['controller']['type'] == 'FController':
-            psi = vMul(np.dot(B, y[0]), np.power(y[3],2))
+            psi = np.multiply(np.multiply(st.B, y[0]), np.power(y[3],2))
         elif data['modules']['controller']['type'] == 'GController':
-            psi = vMul(vMul(np.dot(2*B, y[0]), y[3]), u)
+            psi = np.multiply(np.multiply(np.dot(2*st.B, y[0]), y[3]), u)
         elif data['modules']['controller']['type'] == 'JController':
-            psi = vAdd(vMul(np.dot(B,y[0]), np.power(y[3], 2)),\
-                       np.dot(B*G, vSubt(y[2], np.sin(y[2]))))
+            psi = np.multiply(np.multiply(np.multiply(B,y[0]), np.power(y[3], 2)),\
+                       np.multiply(st.B*st.G, np.subtract(y[2], np.sin(y[2]))))
         else:
-            print 'psi is useless'
+            # psi is not defined in this case
             psi = np.dot(0, t)
 
         # plots
         fig = Figure()
-        #fig.tight_layout()
-        #fig.subplots_adjust(left=0.1, right=1.3, top=1.3, bottom=0.1)
         fig.subplots_adjust(wspace=0.3, hspace=0.25)
 
         axes1 = fig.add_subplot(2, 2, 1)
         #axes1.set_title(r'\textbf{output error = yd - x0}')
-        axes1.plot(t, eps, c='k')
+        axes1.plot(t, error, c='k')
         axes1.set_xlim(left=0, right=t[-1])
-        axes1.set_xlabel(r'$t [s]$')
-        axes1.set_ylabel(r'$e [m]$')
+        axes1.set_xlabel(r'$t \,[s]$', size=st.label_size)
+        axes1.set_ylabel(r'$e \,[m]$', size=st.label_size)
         
         axes2 = fig.add_subplot(2, 2, 2)
         #axes2.set_title(r'\textbf{Beam Angle}')
         axes2.plot(t, y[2], c='k')
         axes2.set_xlim(left=0, right=t[-1])
-        axes2.set_xlabel(r'$t [s]$')
-        axes2.set_ylabel(r'$\theta$')
+        axes2.set_xlabel(r'$t \, [s]$', size=st.label_size)
+        axes2.set_ylabel(r'$\theta \, [rad]$', size=st.label_size)
             
-        
         axes3 = fig.add_subplot(2, 2, 3)
         #axes3.set_title(r'\textbf{neglected nonlinearity}')
         axes3.plot(t, psi, c='k')
         axes3.set_xlim(left=0, right=t[-1])
-        axes3.set_xlabel(r'$t [s]$')
-        axes3.set_ylabel(r'$\psi$')
-
+        axes3.set_xlabel(r'$t [s]$', size=st.label_size)
         if data['modules']['controller']['type'] == 'FController':
-            axes3.set_ylabel(r'$\psi_2 \. [\frac{m}{s^2}]$')
+            axes3.set_ylabel(r'$\psi_2 \, [\frac{m}{s^2}]$', size=st.label_size)
         if data['modules']['controller']['type'] == 'JController':
-            axes3.set_ylabel(r'$\psi_2 \. [\frac{m}{s^2}]$')
+            axes3.set_ylabel(r'$\psi_2 \, [\frac{m}{s^2}]$', size=st.label_size)
         if data['modules']['controller']['type'] == 'GController':
-            axes3.set_ylabel(r'$\psi_3 \. [\frac{m}{s^3}]$')
+            axes3.set_ylabel(r'$\psi_3 \, [\frac{m}{s^3}]$', size=st.label_size)
         
         axes4 = fig.add_subplot(2, 2, 4)
         #axes4.set_title(r'\textbf{Beam Torque}')
         axes4.plot(t, tau, c='k')
         axes4.set_xlim(left=0, right=t[-1])
-        axes4.set_xlabel(r'$t [s]$')
-        axes4.set_ylabel(r'$\tau [Nm]$')
+        axes4.set_xlabel(r'$t \,[s]$', size=st.label_size)
+        axes4.set_ylabel(r'$\tau \,[Nm]$', size=st.label_size)
         
-        # calculate epsilon_max
+        # calculate maximumError
         start = 30
         end = 40
         tStartIdx = next((idx for idx, x in enumerate(t) if x >= start), 0)
         tEndIdx = next((idx for idx, x in enumerate(t[start:]) if x >= end), len(t) - 1)
         
-        epsilon_max = None
-        print tStartIdx, tEndIdx
+        maximumError = None
         if tStartIdx < tEndIdx:
-            epsilon_max = max(eps[tStartIdx:tEndIdx])        
+            maximumError = max(error[tStartIdx:tEndIdx])        
         
-        print epsilon_max
+        print 'maximum error between %d and %d seconds: %f' %\
+                (start, end, maximumError)
         
         #collect results
-        output = {'epsilon_max': epsilon_max}
+        output.update({'maximumError': maximumError})
 
         #check for sim succes
         if not data['results']['finished']:
@@ -134,7 +148,8 @@ class eval_A2Hauser(PostProcessingModule):
                 output[key] = None
 
 
-        output.update({'modules':data['modules']})
+        results.update({'metrics': output})
+        results.update({'modules':data['modules']})
 
         #write results
         filePath = os.path.join(os.path.pardir, 'results', 'postprocessing', 'HauserDiagrams')
@@ -143,7 +158,7 @@ class eval_A2Hauser(PostProcessingModule):
         
         fileName = os.path.join(filePath, data['regime name'])
         with open(fileName+'.pof', 'w') as f: #POF - Postprocessing Output File
-            f.write(repr(output))
+            f.write(repr(results))
 
         canvas = FigureCanvas(fig)
         fig.savefig(fileName+'.svg')
