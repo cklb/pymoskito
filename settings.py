@@ -5,13 +5,15 @@
 #--------------------------------------------------------------------- 
 
 # standard values for integration
-step_size = 0.001          # stepwidth
+step_size = 0.0005          # to produce same error dimension as hauser
+measure_rate = 1000          # to produce same error dimension as hauser
+
 initial_state = [0.5, 0, 0, 0] # initial minimal state vector (r, dr, theta, dtheta) default values (used if none is given)
 int_mode = 'vode'
 int_method='adams'
 int_rtol=1e-6
 int_atol=1e-9
-sim_time = 20
+end_time = 20
 
 # standard system values
 M = 0.05    # kg

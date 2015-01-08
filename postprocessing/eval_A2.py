@@ -31,9 +31,6 @@ class eval_A2(PostProcessingModule):
         
         output = {}
         
-        # vectorise skalar functions
-        vSubt = np.vectorize(self.subt)
-        
         #calculate datasets
         t = data['results']['simTime']
         yd = data['results']['trajectory_output.0']
@@ -41,7 +38,7 @@ class eval_A2(PostProcessingModule):
         for i in range(4):
             y.append(data['results']['model_output.'+str(i)]  )
                
-        eps = vSubt(y[0], yd)
+        eps = np.subtract(y[0], yd)
         traj = data['results']['trajectory_output.0']
         
         # plots

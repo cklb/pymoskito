@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 import cPickle
+import sys
+import traceback
 
 #pyqt
 from PyQt4 import QtCore, QtGui
@@ -275,7 +277,14 @@ class PostProcessor(QtGui.QMainWindow):
         module = __import__('.'.join(['postprocessing',name]))
         processor = getattr(getattr(module, name), name)()
 
-        self.current_figures = processor.process(self.results)
+        figs = []
+        try:
+          figs = processor.process(self.results)
+          self.current_figures = figs
+
+        except Exception, err:
+            print 'Error in Postprocessor!'
+            print traceback.format_exc()
 
         self.figureList.setFocus()
         self.figuresChanged.emit()

@@ -3,6 +3,8 @@
 from scipy.integrate import ode
 from sim_core import SimulationModule
 
+import settings as st
+
 #---------------------------------------------------------------------
 # solver base class 
 #---------------------------------------------------------------------
@@ -43,13 +45,13 @@ class VODESolver(Solver):
     '''
 
     #solver specific
-    settings = {'Method': 'adams',\
-            'measure rate': 1000,\
-            'step size': 0.001,\
-            'rTol': 1e-6,\
-            'aTol': 1e-9,\
-            'end time': 10,\
-            'initial state': [0, 0, 0, 0],\
+    settings = {'Method': st.int_method,\
+            'measure rate': st.measure_rate,\
+            'step size': st.step_size,\
+            'rTol': st.int_rtol,\
+            'aTol': st.int_atol,\
+            'end time': st.end_time,\
+            'initial state': st.initial_state,\
             }
     
     def __init__(self, output_dim, stateFunction):

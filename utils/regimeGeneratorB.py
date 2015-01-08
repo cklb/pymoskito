@@ -89,19 +89,6 @@ def writeController(cName, pole, multiplicator):
     tmp += '\n'
     return tmp
 
-def writeSolver(simTime):
-    tmp = '\
-  solver:\n\
-   type: VODESolver\n\
-   Method: adams\n\
-   measure rate: 1000\n\
-   step size: 0.001\n\
-   rTol: 1e-6\n\
-   aTol: 1e-9\n\
-   initial state: [0, 0, 0, 0]\n'
-    tmp += '   end time: 20 '+2*'\n'
-    return tmp
-
 #-------------------------------------------------------------
 # main
 #-------------------------------------------------------------

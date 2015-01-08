@@ -3,35 +3,9 @@
   clear previous: !!python/bool True 
   model:
    type: BallBeamModel
-   M: 0.05
-   R: 0.01
-   J: 0.02
-   Jb: 2e-6
-   G: 9.81
-   beam width: 0.01
-   beam depth: 0.03
-   beam length: 9
 
   solver:
    type: VODESolver
-   Method: adams
-   measure rate: 1000
-   step size: 0.001
-   rTol: 1e-6
-   aTol: 1e-9
-   end time: 20
-   initial state: [0, 0, 0, 0]
-
-  #trajectory:
-   #type: SmoothTransitionTrajectory
-   #Positions: [0, 3]
-   #start time: 0
-   #delta t: 5
-  
-  #trajectory:
-   #type: HarmonicTrajectory
-   #Frequency: 0.1
-   #Amplitude: 3
 
   trajectory:
    type: FixedPointTrajectory
