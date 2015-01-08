@@ -11,7 +11,6 @@ import settings as st
 #-------------------------------------------------------------
 # settings
 #-------------------------------------------------------------
-scale = 2
 end_time = 20
 
 controllerList = ['FController', 'GController', 'JController',\
@@ -23,15 +22,15 @@ controllerList = ['FController', 'GController', 'JController',\
 print '\n ### Regimefile Generator Eval C1 ### \n'
 
 print 'Choose parameter to test: '
-for idx, param in enumerate(st.paramVariationListC1):
+for idx, param in enumerate(st.paramVariationDictC1.keys()):
     print '\t',idx,' - ', param
 
 paramIdx = -1
-while paramIdx not in range(0, len(st.paramVariationListC1)):
+while paramIdx not in range(0, len(st.paramVariationDictC1.keys())):
     paramIdx = input()
 
 # extract parameter values
-parameter = st.paramVariationListC1[paramIdx]
+parameter = st.paramVariationDictC1.keys()[paramIdx]
 lower_bound = st.paramVariationDictC1[parameter]['lower_bound']
 upper_bound = st.paramVariationDictC1[parameter]['upper_bound']
 step_size = st.paramVariationDictC1[parameter]['step_size']

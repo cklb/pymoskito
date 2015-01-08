@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+from __future__ import division
+
 #---------------------------------------------------------------------
 # global default settings for physical simulation
 #--------------------------------------------------------------------- 
@@ -105,7 +107,6 @@ paramStabilityLimits = {\
 #-----------------------------------------------
 # TestCase C1 - Paramter Variation
 #-----------------------------------------------
-paramVariationListC1 = ['sigma', 'delay']
 paramVariationDictC1 = {'sigma': {'lower_bound': 0.,\
                                  'upper_bound': 1,\
                                  'step_size': 0.01},\
@@ -117,9 +118,7 @@ paramVariationDictC1 = {'sigma': {'lower_bound': 0.,\
 #-----------------------------------------------
 # TestCase C2 - Limiter Variation
 #-----------------------------------------------
-paramVariationListC2 = ['limiter']
-# lower_bound is equal to M*G*3
-paramVariationDictC2 = {'limiter': {'lower_bound': 1.5,\
+paramVariationDictC2 = {'limiter': {'lower_bound': round(M*G*3, 1),\
                                  'upper_bound': 3,\
                                  'step_size': 0.1,\
                                  }}
