@@ -62,10 +62,12 @@ color_cycle = { 'FController': 'royalblue',\
 # TestCase A - Step and other Responses
 #-----------------------------------------------
 #best konwon poles - gained in A1
-#JController is for all tested poles unstable!!!!!
+# JController is for a step for all tested poles unstable!!!!!
+# To give the JController a chance it is tested for poles [-0.5, ca. 0.1, -15]
+# on the SmoothTransitionTrajectory (Position:[0,3], delta t:5)
 poles = {'FController': -3.2,\
         'GController': -3.0,\
-        'JController': -2,\
+        'JController': -5.8,\
         'LSSController': -3.4,\
         'PIFeedbackController': -1.5,\
         }
