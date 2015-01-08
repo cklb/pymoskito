@@ -355,6 +355,7 @@ class ProcessingModule:
     and extracting functionalities for datasets
     '''
     def __init__(self):
+        self.name = self.__class__.__name__
         return
 
     def extractSetting(self, dataList, name, moduleName, settingName):
@@ -408,6 +409,7 @@ class PostProcessingModule(ProcessingModule):
         '''
         this function calculate the L1 Norm  with a
         additional time weighting
+        unit: m*s**2
         '''
         y = data['results']['model_output.0']
         yd = data['results']['trajectory_output.0']
@@ -418,9 +420,9 @@ class PostProcessingModule(ProcessingModule):
         else:
             L1NormITAE = 0
             for idx, val in enumerate(y):
-                # Variante 1
+                # version 1
                 L1NormITAE += abs(yd[idx] - val)*dt*(idx*dt)
-                # Variante 2
+                # version 2 see also wikipedia
                 # L1NormITAE += abs(yd[idx] - val - (y[-1] - yd[-1]))*dt*(idx*dt)
         return L1NormITAE
         
@@ -428,6 +430,7 @@ class PostProcessingModule(ProcessingModule):
         '''
         this function calculate the L1 Norm 
         (absolute criterium)
+        unit: m*s
         '''
         y = data['results']['model_output.0']
         yd = data['results']['trajectory_output.0']
@@ -438,9 +441,9 @@ class PostProcessingModule(ProcessingModule):
         else:
             L1NormAbs = 0
             for idx, val in enumerate(y):
-                # Variante 1 (bisher implementiert)
+                # version 1
                 L1NormAbs += abs(yd[idx] - val)*dt
-                # Variante 2 (implementierung nach Wikipedia)
+                # version 2 see also wikipedia
                 # L1NormAbs += abs(yd[idx] - val - (y[-1] - yd[-1]))*dt
         return L1NormAbs
 
@@ -454,10 +457,11 @@ class PostProcessingModule(ProcessingModule):
         filePath = os.path.join(os.path.pardir, 'results', 'postprocessing', processorName)
         if not os.path.isdir(filePath):
             os.makedirs(filePath)
-        
-        fileName = os.path.join(filePath, regimeName)
-        with open(fileName+'.pof', 'w') as f: #POF - Postprocessing Output File
-            f.write(repr(output))
+            
+        if regimeName:
+            fileName = os.path.join(filePath, regimeName)
+            with open(fileName+'.pof', 'w') as f: #POF - Postprocessing Output File
+                f.write(repr(output))
             
         if figure:
             figure.savefig(fileName + '.png')
@@ -487,12 +491,12 @@ class MetaProcessingModule(ProcessingModule):
         axes.legend(fontsize='small')
         return axes
     
-    def plotVariousController(self, source, axes, xPath, yPath, typ):
+    def plotVariousController(self, source, axes, xPath, yPath, typ, xIndex=-1, yIndex=-1):
         '''
         plots y over x for all controllers
         '''
 
-        width = 0.1
+        width = 0.2
         counter = 0
         x_all = []
         
@@ -500,7 +504,12 @@ class MetaProcessingModule(ProcessingModule):
             xList = getSubValue(source[controller], xPath)
             yList = getSubValue(source[controller], yPath)
             xList, yList = self.sortLists(xList, yList)
-
+            
+            if xIndex >= 0:
+                xList[:] = [x[xIndex] for x in xList]
+            if yIndex >= 0:
+                yList[:] = [y[yIndex] for y in yList]
+            
             #add x values to x_all if there are not in x_all
             for val in xList:
                 if val not in x_all:
@@ -513,9 +522,10 @@ class MetaProcessingModule(ProcessingModule):
                         label=controller,\
                         color=st.color_cycle[controller])
             if typ == 'bar':
-                #remove all None from xList and yList
-                xList[:] = [i for i in xList if i]                
+                #remove all None from yList
+                xList[:] = [x for x,y in zip(xList, yList) if y]
                 yList[:] = [i for i in yList if i]
+                
                 # correction for the position of the bar
                 xList[:] = [k + width*counter for k in xList]
                 
@@ -537,7 +547,7 @@ class MetaProcessingModule(ProcessingModule):
         x_all.append(x_all[0] - spacing)
         x_all.sort()
 
-        x_all_label = [r'$' + str(i) + '$' for i in x_all]
+#        x_all_label = [r'$' + str(i) + '$' for i in x_all]
         
         counter -= 1
         if typ=='bar':
@@ -547,4 +557,20 @@ class MetaProcessingModule(ProcessingModule):
         #axes.set_xticklabels(x_all_label)
         
         return axes
+    
+    def writeOutputFiles(self, name, figure):
+        '''
+        this function create pdf, png, svg datafiles from the plots        
+        '''
+        filePath = os.path.join(os.path.pardir,\
+                    'results', 'metaprocessing', self.name)
+        if not os.path.isdir(filePath):
+            os.makedirs(filePath)
+            
+        fileName = os.path.join(filePath, name)
+            
+        if figure:
+            figure.savefig(fileName + '.png')
+            #figure.savefig(fileName + '.pdf')
+            #figure.savefig(fileName + '.svg')
 

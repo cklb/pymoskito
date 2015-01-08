@@ -4,6 +4,7 @@ Tools, functions and other funny things
 """
 import sympy as sp
 import numpy as np
+import copy
 
 def sortTree(dataList, sortKeyPath):
     '''
@@ -11,12 +12,13 @@ def sortTree(dataList, sortKeyPath):
     '''
     result = {}
     for elem in dataList:
-        sortName = getSubValue(elem, sortKeyPath)
+        tempElem = copy.deepcopy(elem)
+        sortName = getSubValue(tempElem, sortKeyPath)
         if not result.has_key(sortName):
             result.update({sortName: {}})
         
-        while elem:
-            val, keys = _removeDeepest(elem)
+        while tempElem:
+            val, keys = _removeDeepest(tempElem)
             if keys:
                 _addSubVal(result[sortName], keys, val)
 
