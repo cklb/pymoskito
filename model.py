@@ -1,5 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
+from __future__ import division
 
 from numpy import sin, cos, pi
 from numpy import array as narray

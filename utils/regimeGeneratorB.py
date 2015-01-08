@@ -11,7 +11,7 @@ import settings as st
 #-------------------------------------------------------------
 # settings
 #-------------------------------------------------------------
-scale = 10 #in % of param ideal value
+scale = 100 #in % of param ideal value
 
 controllerList = ['FController', 'GController', 'JController',\
                 'LSSController', 'PIFeedbackController']
@@ -108,11 +108,11 @@ lines += writeController(controller, pole, multiplicator)
 paramBounds = st.paramStabilityLimits[controller][parameter]
 simLimits = np.arange(paramBounds[0], paramBounds[1], paramRealValue/scale)
 
-#search upper limit
-for val in simLimits:
-    lines += writeRegime(controller, pole, parameter, val, 'paramAbs')
-    lines += writeModel(parameter, val)
-    lines += writeController(controller, pole, multiplicator)
+#iterate between limits
+#for val in simLimits:
+    #lines += writeRegime(controller, pole, parameter, val, 'paramAbs')
+    #lines += writeModel(parameter, val)
+    #lines += writeController(controller, pole, multiplicator)
 
 dirPath = os.path.join(os.path.pardir, os.path.pardir, 'regimes', 'generated')
 if not os.path.isdir(dirPath):
