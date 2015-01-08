@@ -117,10 +117,14 @@ class eval_B(PostProcessingModule):
             
             #add settings and metrics to dictionary results
             results.update({'modules': data['modules']})
-            self.writeOutputFiles(self.name, data['regime name'], fig, results)
+            extendedName = os.path.join(self.name, par)
+            self.writeOutputFiles(extendedName, data['regime name'], fig, results)
         
         results = {'metrics': output}
-        self.writeOutputFiles(self.name, regName[:-len('ideal')] + 'paramLimits', None, results)
+
+        #create new dir for parameter
+        self.writeOutputFiles(self.name, 'paramLimits_' + regName[:-len('ideal')],\
+                None, results)
         
         return [{'name':'_'.join([regName[:-len('ideal')], 'paramLimits', self.name]),\
                     'figure': canvas}]
@@ -129,7 +133,12 @@ class eval_B(PostProcessingModule):
         '''
         calculate metrics for comaprism
         '''
+        #calc L1NormAbs
+        L1NormAbs = self.calcL1NormAbs(data)
 
         #calc L1NormITAE
         L1NormITAE = self.calcL1NormITAE(data)
-        output.update({'L1NormITAE': L1NormITAE})
+        output.update({\
+            'L1NormITAE': L1NormITAE,\
+            'L1NormAbs': L1NormAbs,\
+            })

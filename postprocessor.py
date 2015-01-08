@@ -272,7 +272,7 @@ class PostProcessor(QtGui.QMainWindow):
         del self.current_figures[:]
 
         name = str(item.text())
-        print 'PostProcessor() running: ', name
+        print '>>> PostProcessor() running: ', name
 
         module = __import__('.'.join(['postprocessing',name]))
         processor = getattr(getattr(module, name), name)()
@@ -285,6 +285,8 @@ class PostProcessor(QtGui.QMainWindow):
         except Exception, err:
             print 'Error in Postprocessor!'
             print traceback.format_exc()
+
+        print '>>> finished.'
 
         self.figureList.setFocus()
         self.figuresChanged.emit()
@@ -535,7 +537,7 @@ class MetaProcessingModule(ProcessingModule):
                         'o-',\
                         label=controller,\
                         color=st.color_cycle[controller])
-            if typ == 'bar':
+            elif typ == 'bar':
                 #remove all None from yList
                 xList[:] = [x for x,y in zip(xList, yList) if y]
                 yList[:] = [i for i in yList if i]
@@ -549,26 +551,25 @@ class MetaProcessingModule(ProcessingModule):
                         label=controller,\
                         color=st.color_cycle[controller])
                 counter += 1            
-        
-        
-        x_all.sort()
-        #remove all None from x_all
-        x_all[:] = [i for i in x_all if i]
+                
+                if len(x_all) > 1:
+                    #remove all None from x_all
+                    x_all.sort()
+                    x_all[:] = [i for i in x_all if i]
 
-        # does not work for all constellations
-        spacing = (x_all[-1] - x_all[0])/(len(x_all) - 1)
-        x_all.append(spacing + x_all[-1])
-        x_all.append(x_all[0] - spacing)
-        x_all.sort()
+                    # does not work for all constellations
+                    spacing = (x_all[-1] - x_all[0])/(len(x_all) - 1)
+                    x_all.append(spacing + x_all[-1])
+                    x_all.append(x_all[0] - spacing)
+                    x_all.sort()
 
-#        x_all_label = [r'$' + str(i) + '$' for i in x_all]
-        
-        counter -= 1
-        if typ=='bar':
-            x_all[:] = [i + width*counter for i in x_all]
+                    #x_all_label = [r'$' + str(i) + '$' for i in x_all]
+                    counter -= 1
+                    if typ=='bar':
+                        x_all[:] = [i + width*counter for i in x_all]
 
-        #axes.set_xticks(x_all)
-        #axes.set_xticklabels(x_all_label)
+                    #axes.set_xticks(x_all)
+                    #axes.set_xticklabels(x_all_label)
         
         return axes
     

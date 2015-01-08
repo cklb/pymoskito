@@ -10,7 +10,7 @@ from __future__ import division
 step_size = 0.0005          # to produce same error dimension as hauser
 measure_rate = 1000          # to produce same error dimension as hauser
 
-initial_state = [0.5, 0, 0, 0] # initial minimal state vector (r, dr, theta, dtheta) default values (used if none is given)
+initial_state = [0, 0, 0, 0] # initial minimal state vector (r, dr, theta, dtheta) default values (used if none is given)
 int_mode = 'vode'
 int_method='adams'
 int_rtol=1e-6
@@ -91,7 +91,7 @@ paramStabilityLimits = {\
             },\
             #J FAILS
         'JController': {\
-            'M': [0.01, 1],\
+            'M': [0.05, 0.05],\
             'Jb': [0, 3e-6],\
             },\
         'LSSController': {\
