@@ -303,11 +303,16 @@ class PostProcessor(QtGui.QMainWindow):
         print 'MetaProcessor() running: ', name
 
         module = __import__('.'.join(['metaprocessing',name]))
-
         processor = getattr(getattr(module, name), name)()
 
-        processFunc = processor.run
-        self.current_metaFigures = processFunc(self.postResults)
+        figs = []
+        try:
+          figs = processor.run(self.postResults)
+          self.current_metaFigures = figs
+
+        except Exception, err:
+            print 'Error in Metaprocessor!'
+            print traceback.format_exc()
 
         self.metaFigureList.setFocus()
         self.metaFiguresChanged.emit()
