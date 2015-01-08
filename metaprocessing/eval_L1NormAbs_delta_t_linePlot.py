@@ -48,7 +48,7 @@ class eval_L1NormAbs_delta_t_linePlot(MetaProcessingModule):
                 ylabel=r'$E \, \lbrack m^{2}\rbrack$',\
                 )
         
-        self.plotVariousController(source, axes,\
+        self.plotVariousController(source, axes1,\
                 xPath=['modules','trajectory', 'delta t'],\
                 yPath=['metrics','t_diff'],\
                 typ='line')

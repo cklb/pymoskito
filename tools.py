@@ -11,7 +11,7 @@ def sortTree(dataList, sortKeyPath):
     '''
     result = {}
     for elem in dataList:
-        sortName = _getSubValue(elem, sortKeyPath)
+        sortName = getSubValue(elem, sortKeyPath)
         if not result.has_key(sortName):
             result.update({sortName: {}})
         
@@ -39,7 +39,6 @@ def _removeDeepest(topDict, keys=None):
 
     for key in topDict.keys():
         val = topDict[key]
-        print 'looking into:', key, val
         if isinstance(val, dict):
             if val:
                 keys.append(key)
@@ -50,7 +49,6 @@ def _removeDeepest(topDict, keys=None):
         else:
             del topDict[key]
             keys.append(key)
-            print 'leaving with:',keys
             return val, keys
 
     return None, None

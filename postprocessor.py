@@ -528,7 +528,6 @@ class MetaProcessingModule(ProcessingModule):
         
         
         x_all.sort()
-        print x_all
         #remove all None from x_all
         x_all[:] = [i for i in x_all if i]
 
