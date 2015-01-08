@@ -60,10 +60,11 @@ color_cycle = { 'FController': 'royalblue',\
 # TestCase A - Step and other Responses
 #-----------------------------------------------
 #best konwon poles - gained in A1
-poles = {'FController': -3.6,\
-        'GController': -2.9,\
+#JController is for all tested poles unstable!!!!!
+poles = {'FController': -3.2,\
+        'GController': -3.0,\
         'JController': -2,\
-        'LSSController': -3.3,\
+        'LSSController': -3.4,\
         'PIFeedbackController': -1.5,\
         }
 
