@@ -3,20 +3,28 @@
 
 import numpy as np
 import os
+import settings as st
 
 controllerList = ['FController', 'GController', 'JController',\
                 'LSSController', 'PIFeedbackController']
                
 #TODO: überlege, in welchem Punkt Regler linearisiert werden und dazu Pole
+#####################################################
+# Einstellungen               
 number = 4
-pol = -1.5
-#poles = [pol, pol, pol, pol]
-fRange = [0.1, 0.6]
-fStepSize = 0.05
-ampl = 0.5
 
+fRange = [0.1, 0.3]
+fStepSize = 0.001
+ampl = 3
+
+#####################################################
 lines = ''
 controller = controllerList[number]
+
+# Pole festlegen nach A1
+pol = st.poles[controllerList[number]]
+print controller
+print 'pol:', pol
 
 if controller == 'PIFeedbackController':
     poles = [pol, pol, pol, pol, pol]
@@ -32,7 +40,7 @@ fs = np.arange(fRange[0],fRange[1] + fStepSize, fStepSize)
 lines += '\n'
 
 for f in fs:
-        lines += '- name: A2_' + controller + '_f' + str(f) + '\n'
+        lines += '- name: A2_' + controller + '_A' + str(ampl) + '_f' + str(f) + '\n'
         lines += '  clear previous: !!python/bool False' + '\n'
         lines += '\n'
         lines += '  controller: ' + '\n'
@@ -51,8 +59,8 @@ dirPath = os.path.join(os.path.pardir, os.path.pardir, 'regimes', 'generated')
 if not os.path.isdir(dirPath):
     os.makedirs(dirPath)
 
-fileName = 'A2_' + controller + '_fRange(' + str(fRange[0])\
-            + ',' + str(fRange[1]) + ')'+'A'+str(ampl)+'.sreg'
+fileName = 'A2_' + controller + '_A'+str(ampl)+'_fRange(' + str(fRange[0])\
+            + ',' + str(fRange[1]) + ')'+'.sreg'
             
 filePath = os.path.join(dirPath, fileName)   
 
