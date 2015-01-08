@@ -79,30 +79,30 @@ poles = {'FController': -3.2,\
 #-----------------------------------------------
 #parameter variation list
 paramVariationListB = ['M', 'Jb']
-paramToleranceList = [0.2, 0.1]
+paramToleranceList = [0.2, 0.3]
 
 #parameter stability limits for best known poles
 paramStabilityLimits = {\
         'FController': {\
-            'M': [0.01, 0.32],\
-            'Jb': [0, 3e-6],\
+            'M': [0.01, 1.0],\
+            'Jb': [0, 10e-6],\
             },\
         'GController': {\
-            'M': [0.01, 0.26],\
-            'Jb': [0, 3e-6],\
+            'M': [0.01, 1],\
+            'Jb': [0, 10e-6],\
             },\
             #J FAILS
         'JController': {\
-            'M': [0.05, 0.05],\
-            'Jb': [0, 3e-6],\
+            'M': [0.05, 10],\
+            'Jb': [0, 10e-6],\
             },\
         'LSSController': {\
-            'M': [0.01, .155],\
-            'Jb': [0, 3e-6],\
+            'M': [0.01, 1],\
+            'Jb': [0, 10e-6],\
             },\
         'PIFeedbackController': {\
-            'M': [0.01, 0.09],\
-            'Jb': [0, 3e-6],\
+            'M': [0.01, 1],\
+            'Jb': [0, 10e-6],\
             },\
         }
 

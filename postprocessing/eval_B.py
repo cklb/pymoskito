@@ -84,7 +84,9 @@ class eval_B(PostProcessingModule):
         axes.set_title(r'\textbf{Vergleich Signalverlaeufe}')
 
         #create epsilon tub
-        eps = self.epsPercent*yd/100
+        #eps = self.epsPercent*yd/100
+        eps = st.R
+
         upperBoundLine = line([0, t[-1]], [yd+eps, yd+eps], ls='--', c=self.line_color)
         axes.add_line(upperBoundLine)
         lowerBoundLine = line([0, t[-1]], [yd-eps, yd-eps], ls='--', c=self.line_color)
@@ -92,13 +94,12 @@ class eval_B(PostProcessingModule):
         
         #create signals
         axes.add_line(lowerBoundLine)
-        axes.plot(t, y_ideal,   c='k', ls='-', label='parameter ideal')
         axes.plot(t, y_desired, c='b', ls='-', label='w(t)')
-        axes.plot(t, y_pTolMin, c='c', ls='-', label='unteres Toleranzlimit')
-        axes.plot(t, y_pTolMax, c='lime', ls='-', label='oberes Toleranzlimit')
-        axes.plot(t, y_pAbsMin, c='orange', ls='-', label='untere Stabilitaetsgrenze')
-        axes.plot(t, y_pAbsMax, c='r', ls='-', label='obere Stabilitaetsgrenze')
-
+        axes.plot(t, y_ideal,   c='limegreen', ls='-', label='exakter Wert')
+        axes.plot(t, y_pTolMin, c='indianred', ls='-', label='untere Toleranzgrenze')
+        axes.plot(t, y_pTolMax, c='darkorange', ls='-', label='obere Toleranzgrenze')
+        #axes.plot(t, y_pAbsMin, c='orange', ls='-', label='untere Stabilitaetsgrenze')
+        #axes.plot(t, y_pAbsMax, c='r', ls='-', label='obere Stabilitaetsgrenze')
 
         #customize
         axes.set_xlim(left=0, right=t[-1])
@@ -106,6 +107,8 @@ class eval_B(PostProcessingModule):
 #                top=(self.offset+yd*(1+self.padding)))
 
         axes.legend(loc=0, fontsize='small')
+        axes.set_xlabel(r'$t \, \lbrack s \rbrack$')
+        axes.set_ylabel(r'$r \, \lbrack m \rbrack$') 
 
         canvas = FigureCanvas(fig)
         
