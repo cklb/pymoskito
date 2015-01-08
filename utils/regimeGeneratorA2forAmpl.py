@@ -3,26 +3,29 @@
 
 import numpy as np
 import os
+import settings as st
 
 controllerList = ['FController', 'GController', 'JController',\
                 'LSSController', 'PIFeedbackController']
                
 #TODO: überlege, in welchem Punkt Regler linearisiert werden und dazu Pole
+#####################################################
+# Einstellungen
 number = 4
-#pol = -3.6
-#pol = -3
-#pol = -2
-#pol = -3.3
-pol = -1.5
 
-#poles = [pol, pol, pol, pol]
 aRange = [0.1, 3]
 aStepSize = 0.1
 freq = 0.1
 
+#####################################################
+
 lines = ''
 controller = controllerList[number]
 
+
+pol = st.poles[controllerList[number]]
+print controller
+print 'pol:', pol
 if controller == 'PIFeedbackController':
     poles = [pol, pol, pol, pol, pol]
 else:
