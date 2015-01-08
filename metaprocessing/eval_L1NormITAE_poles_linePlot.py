@@ -11,9 +11,9 @@ from matplotlib.figure import Figure
 from postprocessor import MetaProcessingModule
 from tools import sortTree
 
-class eval_L1NormITAE_delta_t_linePlot(MetaProcessingModule):
+class eval_L1NormITAE_poles_linePlot(MetaProcessingModule):
     '''
-    create diagrams for evaluation of L1NormITAE
+    create diagrams, which plot L1NormITAE over poles
     '''
     def __init__(self):
         MetaProcessingModule.__init__(self)
@@ -27,32 +27,20 @@ class eval_L1NormITAE_delta_t_linePlot(MetaProcessingModule):
         fig = Figure()
         fig.subplots_adjust(wspace=0.5, hspace=0.25)
         
-        #plot for L1NormITAE
-        axes = fig.add_subplot(211)
+        #plot for L1NormITAE over poles
+        axes = fig.add_subplot(111)
         self.plotVariousController(source, axes,\
-                xPath=['modules','trajectory', 'delta t'],\
+                xPath=['modules','controller', 'poles'],\
                 yPath=['metrics','L1NormITAE'],\
-                typ='line')
+                typ='line',\
+                xIndex = 0)
         self.plotSettings(axes,\
-                titel=r'Fehlerintegral ITAE w(t) und y(t)',\
+                titel=r'Fehlerintegral ITAE ueber Polplatzierung',\
                 grid=True,\
-                xlabel=r'$\Delta t \, \lbrack s\rbrack$',\
+                xlabel=r'$Poles \, \lbrack s\rbrack$',\
                 ylabel=r'$E \, \lbrack ms^{2} \rbrack$',\
                 )       
         
-        #plot for time-difference
-        axes1 = fig.add_subplot(212)
-        axes1 = self.plotVariousController(source, axes1,\
-                xPath=['modules','trajectory', 'delta t'],\
-                yPath=['metrics','t_diff'],\
-                typ='line')
-        axes1 = self.plotSettings(axes1,\
-                titel=r'Uebergangszeitfehler ueber $\Delta t$',\
-                grid=True,\
-                xlabel=r'$\Delta t \, \lbrack s\rbrack$',\
-                ylabel=r'$e_{t} \, \lbrack s \rbrack$',\
-                )
-
         #extract controllerNames
         controllerNames = [x[:-len('Controller')] for x in source.keys()]
         
