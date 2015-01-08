@@ -12,9 +12,10 @@ import settings as st
 # settings
 #-------------------------------------------------------------
 scale = 2
+end_time = 20
 
 controllerList = ['FController', 'GController', 'JController',\
-                'LSSController', 'PIFeedbackController']
+                'LSSController', 'PIFeedbackController', 'all']
 
 #-------------------------------------------------------------
 # init
@@ -34,6 +35,7 @@ parameter = st.paramVariationListC1[paramIdx]
 lower_bound = st.paramVariationDictC1[parameter]['lower_bound']
 upper_bound = st.paramVariationDictC1[parameter]['upper_bound']
 step_size = st.paramVariationDictC1[parameter]['step_size']
+simLimits = np.arange(lower_bound, upper_bound + step_size, step_size)
 
 print 'Choose controller: '
 for idx, controller in enumerate(controllerList):
@@ -43,23 +45,10 @@ controlIdx = -1
 while controlIdx not in range(0, len(controllerList)):
     controlIdx = input()
 
-controller = controllerList[controlIdx]
-
-# how many poles?
-if controller == 'PIFeedbackController':
-    multiplicator = 5
+if controlIdx == len(controllerList)-1:
+    simCases = controllerList[:-1]
 else:
-    multiplicator = 4
-
-#set correct poles
-pole = st.poles[controller]
-
-# load head file
-filePath = os.path.join(os.curdir, 'C1_head.sray')
-with open(filePath, 'r') as f:
-    head = f.read()
-
-lines = '\n'
+    simCases = [controllerList[controlIdx]]
 
 #-------------------------------------------------------------
 # functions
@@ -83,7 +72,7 @@ def writeController(cName, pole, multiplicator):
             + '   poles: ' + str([pole]*multiplicator) + '\n'
 
     if (controller == 'PIFeedbackController' or controller == 'LSSController'):
-        tmp += '   r0: 3'
+        tmp += '   r0: 3\n'
     tmp += '\n'
     return tmp
 
@@ -94,39 +83,84 @@ def writeSensor(senName, paramVal):
             + '   output: ' + '[0,1,2,3]' + '\n\n'
 
 def writeDisturbance(disName, paramVal):
+    if paramVal == 0:
+        return '  disturbance:' + '\n'\
+            + '   type: None\n'
+
     return '  disturbance:' + '\n'\
             + '   type: ' + disName + '\n'\
             + '   mean value: ' + '0' + '\n'\
             + '   sigma: ' + str(paramVal) + '\n\n'
 
+def saveOutput(output, cName, poles, parameter, limits):
+    '''
+        wrapper to save regime file
+    '''
+    dirPath = os.path.join(os.path.pardir, os.path.pardir, 'regimes', 'generated')
+
+    if not os.path.isdir(dirPath):
+        os.makedirs(dirPath)
+
+    fileName = 'C1_' + cName + '_poles' + str(poles) \
+                        + '_' + str(parameter)\
+                        + '(' + str(simLimits[0]) + ',' + str(simLimits[-1])\
+                        + ').sreg'
+
+    filePath = os.path.join(dirPath, fileName)
+    with open(filePath, 'w') as f:
+        f.write(output)
+
+#-------------------------------------------------------------
+# preamble
+#-------------------------------------------------------------
+preamble = '- name: C1-simulation-setup\n'\
++'  clear previous: !!python/bool True\n'\
++'\n'\
++'  model:\n'\
++'   type: BallBeamModel\n'\
++'\n'\
++'  solver:\n'\
++'   type: VODESolver\n'\
++'   end time: '+str(end_time)+'\n'\
++'\n'\
++'  trajectory:\n'\
++'   type: SmoothTransitionTrajectory\n'\
++'   Positions: [0, 3]\n'\
++'   start time: 0\n'\
++'   delta t: 5\n'\
++'\n'
+
 #-------------------------------------------------------------
 # main
 #-------------------------------------------------------------
-simLimits = np.arange(lower_bound, upper_bound + step_size, step_size)
+collection = ''
+for controller in simCases:
+    lines = preamble
 
-#search limits
-for val in simLimits:
-    lines += writeRegime(controller, pole, parameter, val, '')
-    lines += writeController(controller, pole, multiplicator)
-    if parameter == 'sigma':
-        lines += writeDisturbance('GaussianNoiseDisturbance', val)
-    if parameter == 'delay':
-        lines += writeSensor('DeadTimeSensor', val)   
+    # how many poles?
+    if controller == 'PIFeedbackController':
+        multiplicator = 5
+    else:
+        multiplicator = 4
 
+    #set correct poles
+    poles = st.poles[controller]
 
-dirPath = os.path.join(os.path.pardir, os.path.pardir, 'regimes', 'generated')
+    #search limits
+    for val in simLimits:
+        lines += writeRegime(controller, poles, parameter, val, '')
+        lines += writeController(controller, poles, multiplicator)
+        if parameter == 'sigma':
+            lines += writeDisturbance('GaussianNoiseDisturbance', val)
+        if parameter == 'delay':
+            lines += writeSensor('DeadTimeSensor', val)   
+        lines += '\n\n'
 
-if not os.path.isdir(dirPath):
-    os.makedirs(dirPath)
+        saveOutput(lines, controller, poles, parameter, simLimits)
 
-fileName = 'C1_' + controller + '_poles' + str(pole) \
-                    + '_' + str(parameter)\
-                    + '(' + str(simLimits[0]) + ',' + str(simLimits[-1])\
-                    + ').sreg'
+    collection += lines
 
-filePath = os.path.join(dirPath, fileName)
-with open(filePath, 'w') as f:
-    f.write(head)    
-    f.write(lines)
-    
+if len(simCases) > 1:
+    saveOutput(collection, 'all', '_', parameter, simLimits)
+
 print 'done.'

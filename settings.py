@@ -61,7 +61,7 @@ color_cycle = { 'FController': 'royalblue',\
 #-----------------------------------------------
 #best konwon poles - gained in A1
 poles = {'FController': -3.6,\
-        'GController': -3,\
+        'GController': -2.9,\
         'JController': -2,\
         'LSSController': -3.3,\
         'PIFeedbackController': -1.5,\
@@ -103,13 +103,12 @@ paramStabilityLimits = {\
 # TestCase C1 - Paramter Variation
 #-----------------------------------------------
 paramVariationListC1 = ['sigma', 'delay']
-                                 #lower_bound = 0 is not possible
-paramVariationDictC1 = {'sigma': {'lower_bound': 0.01,\
-                                 'upper_bound': 0.4,\
-                                 'step_size': 0.05},\
+paramVariationDictC1 = {'sigma': {'lower_bound': 0.,\
+                                 'upper_bound': 1,\
+                                 'step_size': 0.01},\
                        'delay': {'lower_bound': 0,\
-                                 'upper_bound': 3,\
-                                 'step_size': 0.5,\
+                                 'upper_bound': 10,\
+                                 'step_size': 1,\
                                  }}
 
 #-----------------------------------------------

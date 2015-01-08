@@ -68,7 +68,7 @@ class eval_B(PostProcessingModule):
         resAbsMax = next((res \
                 for res in reversed(modDataList) if res['results']['finished']), None)
         y_pAbsMax = resAbsMax['results']['model_output.0']
-        print len(y_pAbsMin), len(y_pAbsMax), len(y_ideal)
+        #print len(y_pAbsMin), len(y_pAbsMax), len(y_ideal)
 
         print 'stablity limits are:',\
                 resAbsMin['modules']['model'][par], '/', resAbsMax['modules']['model'][par]

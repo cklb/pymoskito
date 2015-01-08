@@ -331,11 +331,8 @@ class BallBeamGui(QtGui.QMainWindow):
             #flag all selected files as invalid
             items = self.regimeList.selectedItems()
             for item in items:
-                self.regimes[self.regimeList.row(item)] = None
+                del self.regimes[self.regimeList.row(item)]
                 self.regimeList.takeItem(self.regimeList.row(item))
-
-            #clean up internal list
-            self.regimes[:] = [x for x in self.regimes if x]
 
     def regimeDoubleClicked(self, item):
         '''
