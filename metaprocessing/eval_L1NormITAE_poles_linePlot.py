@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
+from tools import getSubValue
 
 import matplotlib as mpl
 mpl.use("Qt4Agg")
@@ -41,6 +42,17 @@ class eval_L1NormITAE_poles_linePlot(MetaProcessingModule):
                 ylabel=r'$E \, \lbrack ms^{2} \rbrack$',\
                 )       
         
+        # error minimum
+        for controllerName in source.keys():
+            errorList = getSubValue(source[controllerName],\
+                            ['metrics','L1NormITAE'])
+            error_min =  min(x for x in errorList if x is not None)                           
+            error_min_index = errorList.index(error_min)
+            poles = getSubValue(source[controllerName],\
+                            ['modules','controller', 'poles'])[error_min_index][0]
+                            
+            print controllerName + ': Minimum Error: ' + str(error_min) + ', Poles: ' + str(poles)
+            
         #extract controllerNames
         controllerNames = [x[:-len('Controller')] for x in source.keys()]
         

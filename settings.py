@@ -66,24 +66,24 @@ color_cycle = { 'FController': 'royalblue',\
 #-----------------------------------------------
 paramPoleVariation = {\
         'FController': {\
-            'pole_limits': [0, 3.5],\
+            'pole_limits': [0, -3.5],\
             'pole_step': 0.1,\
             },\
         'GController': {\
-            'pole_limits': [0, 3.3],\
+            'pole_limits': [0, -3.3],\
             'pole_step': 0.1,\
             },\
             #J FAILS
         'JController': {\
-            'pole_limits': [0, 4],\
+            'pole_limits': [0, -4],\
             'pole_step': 0.1,\
             },\
         'LSSController': {\
-            'pole_limits': [0, 3.7],\
+            'pole_limits': [0, -3.9],\
             'pole_step': 0.1,\
             },\
         'PIFeedbackController': {\
-            'pole_limits': [0, 1.8],\
+            'pole_limits': [0, -1.8],\
             'pole_step': 0.1,\
             },\
         }

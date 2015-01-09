@@ -138,8 +138,8 @@ for controller in simCases:
     
     #create simulationArray
     simLimits = np.arange(pole_limits[0],\
-                            pole_limits[1] + pole_step,\
-                            pole_step)
+                            pole_limits[1] - pole_step,\
+                            -pole_step)
 
     #search limits
     for val in simLimits:
