@@ -97,7 +97,7 @@ paramPoleVariation = {\
 # on the SmoothTransitionTrajectory (Position:[0,3], delta t:5)
 poles = {'FController': -3.2,\
         'GController': -3.0,\
-        'JController': -5.8,\
+        'JController': -2,\
         'LSSController': -3.4,\
         'PIFeedbackController': -1.5,\
         }
