@@ -156,7 +156,3 @@ if len(simCases) > 1:
     saveOutput(collection, 'all', parameter, simLimits)
 
 print 'done.'
- ########################################
-
-
-
