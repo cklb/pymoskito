@@ -20,21 +20,17 @@ controllerList = ['FController', 'GController', 'JController',\
 # init
 #-------------------------------------------------------------
 print '\n ### Regimefile Generator Eval C1 ### \n'
-
 print 'Choose parameter to test: '
-for idx, param in enumerate(st.paramVariationDictC1.keys()):
+parameterList = ['sigma', 'delay']
+for idx, param in enumerate(parameterList):
     print '\t',idx,' - ', param
 
 paramIdx = -1
-while paramIdx not in range(0, len(st.paramVariationDictC1.keys())):
+while paramIdx not in range(0, len(parameterList)):
     paramIdx = input()
 
 # extract parameter values
-parameter = st.paramVariationDictC1.keys()[paramIdx]
-lower_bound = st.paramVariationDictC1[parameter]['lower_bound']
-upper_bound = st.paramVariationDictC1[parameter]['upper_bound']
-step_size = st.paramVariationDictC1[parameter]['step_size']
-simLimits = np.arange(lower_bound, upper_bound + step_size, step_size)
+parameter = parameterList[paramIdx]
 
 print 'Choose controller: '
 for idx, controller in enumerate(controllerList):
@@ -136,6 +132,7 @@ collection = ''
 for controller in simCases:
     lines = preamble
 
+
     # how many poles?
     if controller == 'PIFeedbackController':
         multiplicator = 5
@@ -144,7 +141,15 @@ for controller in simCases:
 
     #set correct poles
     poles = st.poles[controller]
-
+    
+    #get simulation limits
+    limits = st.paramStabilityLimitsSigmaDelay[controller][parameter]
+    #get simulation step size
+    step_size = st.paramStabilityLimitsSigmaDelay[controller][parameter + '_step']
+    
+    #create simulationArray
+    simLimits = np.arange(limits[0], limits[1] + step_size, step_size)
+    
     #search limits
     for val in simLimits:
         lines += writeRegime(controller, poles, parameter, val, '')

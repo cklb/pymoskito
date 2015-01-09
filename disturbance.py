@@ -28,7 +28,7 @@ class GaussianNoiseDisturbance(Disturbance):
         
     '''
     settings = {'mean value': 0,\
-                'sigma': 0, \
+                'sigma': 0.1, \
                 }
 
     def __init__(self, outputDimension):

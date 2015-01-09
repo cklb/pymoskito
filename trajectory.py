@@ -118,9 +118,9 @@ class SmoothTransitionTrajectory(Trajectory):
     provides a smooth trajectory from one state to the other
     '''
 
-    settings = {'Positions': [0, 0.5],\
+    settings = {'Positions': [0, 3],\
             'start time': 0,\
-            'delta t': 3,\
+            'delta t': 5,\
             }
     
     def __init__(self, derivateOrder):

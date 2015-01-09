@@ -60,6 +60,34 @@ color_cycle = { 'FController': 'royalblue',\
                 'PIFeedbackController': 'darkorange',\
         }
 
+
+#-----------------------------------------------
+# TestCase A1 - Pole Variation
+#-----------------------------------------------
+paramPoleVariation = {\
+        'FController': {\
+            'pole_limits': [0, 3.5],\
+            'pole_step': 0.1,\
+            },\
+        'GController': {\
+            'pole_limits': [0, 3.3],\
+            'pole_step': 0.1,\
+            },\
+            #J FAILS
+        'JController': {\
+            'pole_limits': [0, 4],\
+            'pole_step': 0.1,\
+            },\
+        'LSSController': {\
+            'pole_limits': [0, 3.7],\
+            'pole_step': 0.1,\
+            },\
+        'PIFeedbackController': {\
+            'pole_limits': [0, 1.8],\
+            'pole_step': 0.1,\
+            },\
+        }
+
 #-----------------------------------------------
 # TestCase A - Step and other Responses
 #-----------------------------------------------
@@ -109,13 +137,41 @@ paramStabilityLimits = {\
 #-----------------------------------------------
 # TestCase C1 - Paramter Variation
 #-----------------------------------------------
-paramVariationDictC1 = {'sigma': {'lower_bound': 0.,\
-                                 'upper_bound': 1,\
-                                 'step_size': 0.01},\
-                       'delay': {'lower_bound': 0,\
-                                 'upper_bound': 10,\
-                                 'step_size': 1,\
-                                 }}
+#parameter stability limits (plus a little bit)
+#for sigma and delay for best known poles
+paramStabilityLimitsSigmaDelay = {\
+        'FController': {\
+            'sigma': [0, 0.4+0.05],\
+            'sigma_step': 0.01,\
+            'delay': [0, 85+5],\
+            'delay_step': 5,\
+            },\
+        'GController': {\
+            'sigma': [0, 0.3+0.05],\
+            'sigma_step': 0.01,\
+            'delay': [0, 85+5],\
+            'delay_step': 5,\
+            },\
+            #J FAILS
+        'JController': {\
+            'sigma': [0, 0],\
+            'sigma_step': 0.1,\
+            'delay': [0, 0],\
+            'delay_step': 1,\
+            },\
+        'LSSController': {\
+            'sigma': [0, 1.1+0.1],\
+            'sigma_step': 0.1,\
+            'delay': [0, 4+1],\
+            'delay_step': 1,\
+            },\
+        'PIFeedbackController': {\
+            'sigma': [0, 1.6+0.1],\
+            'sigma_step': 0.1,\
+            'delay': [0, 8+1],\
+            'delay_step': 1,\
+            },\
+        }
 
 #-----------------------------------------------
 # TestCase C2 - Limiter Variation
