@@ -161,6 +161,10 @@ class SmoothTransitionTrajectory(Trajectory):
             y[0] = yd[1]
         else:
             for order, dphi in enumerate(self.dphi_num):
-                y[order] = yd[0] + (yd[1]-yd[0])*dphi((t-t0)/dt) * 1/dt**order
+                if not order:
+                    yA = yd[0]
+                else:
+                    yA = 0
+                y[order] = yA + (yd[1]-yd[0])*dphi((t-t0)/dt) * 1/dt**order
 
         return y

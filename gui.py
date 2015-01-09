@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
 
+from __future__ import division
+
 #system
+import collections
 import numpy as np
 import sys, time, os
 import yaml
@@ -69,8 +72,7 @@ class BallBeamGui(QtGui.QMainWindow):
         self.dataDock = pg.dockarea.Dock('Data')
         self.plotDocks = []
         self.plotDocks.append(pg.dockarea.Dock('Placeholder'))
-        self.plots = []
-        self.plotItems = []
+        self.plotWidgets = []
         self.timeLines = []
 
         # arrange docks
@@ -100,8 +102,6 @@ class BallBeamGui(QtGui.QMainWindow):
         self.regimeList.setSelectionMode(QtGui.QAbstractItemView.ExtendedSelection)
         self.regimeDock.addWidget(self.regimeList)
         self.regimeList.itemDoubleClicked.connect(self.regimeDoubleClicked)
-        self.delShort = QtGui.QShortcut(QtGui.QKeySequence(QtCore.Qt.Key_Delete), self.regimeList)
-        self.delShort.activated.connect(self.removeRegimeItems)
         self.regimes = []
 
         #data window
@@ -148,9 +148,12 @@ class BallBeamGui(QtGui.QMainWindow):
 
         self.playbackTime = 0
         self.playbackGain = 1
+        self.currentStepSize = 0
+        self.currentEndTime = 0
         self.playbackTimer = QTimer()
         self.playbackTimer.timeout.connect(self.incrementPlaybackTime)
         self.playbackTimeChanged.connect(self.updateGui)
+        self.playbackTimeout = 33 #[ms] -> 30 fps
         
         self.actSave = QtGui.QAction(self)
         self.actSave.setText('Save')
@@ -214,6 +217,39 @@ class BallBeamGui(QtGui.QMainWindow):
         self.timeLabel = QtGui.QLabel('current time: 0.0')
         self.statusBar().addPermanentWidget(self.timeLabel)
 
+        # shortcuts
+        self.delShort = QtGui.QShortcut(QtGui.QKeySequence(QtCore.Qt.Key_Delete), self.regimeList)
+        self.delShort.activated.connect(self.removeRegimeItems)
+
+        self.shortOpenRegime = QtGui.QShortcut(QtGui.QKeySequence.Open, self)
+        self.shortOpenRegime.activated.connect(self.loadRegimeClicked)
+
+        self.shortSaveResult = QtGui.QShortcut(QtGui.QKeySequence.Save, self)
+        self.shortSaveResult.activated.connect(self.saveData)
+        self.shortSaveResult.setEnabled(False)
+        
+        self.shortSpeedUp = QtGui.QShortcut(QtGui.QKeySequence.ZoomIn, self)
+        self.shortSpeedUp.activated.connect(self.incPlaybackSpeed)
+        
+        self.shortSpeedDown = QtGui.QShortcut(QtGui.QKeySequence.ZoomOut, self)
+        self.shortSpeedDown.activated.connect(self.decPlaybackSpeed)
+
+        self.shortSpeedReset = QtGui.QShortcut(QtGui.QKeySequence(QtCore.Qt.CTRL+QtCore.Qt.Key_0), self)
+        self.shortSpeedReset.activated.connect(self.resetPlaybackSpeed)
+        
+        self.shortRunSimulation = QtGui.QShortcut(QtGui.QKeySequence('F5'), self)
+        self.shortRunSimulation.activated.connect(self.startSimulation)
+        
+        self.shortRunRegimeBatch = QtGui.QShortcut(QtGui.QKeySequence('F6'), self)
+        self.shortRunRegimeBatch.activated.connect(self.executeRegimesClicked)
+
+        self.shortRunPostprocessing = QtGui.QShortcut(QtGui.QKeySequence('F7'), self)
+        self.shortRunPostprocessing.activated.connect(self.postprocessingClicked)
+
+        self.shortPlayPause = QtGui.QShortcut(QtGui.QKeySequence(QtCore.Qt.Key_Space), self)
+        self.shortPlayPause.activated.connect(self.playAnimation)
+        self.shortPlayPause.setEnabled(False)
+        
     def playAnimation(self):
         '''
         play the animation
@@ -223,7 +259,9 @@ class BallBeamGui(QtGui.QMainWindow):
         self.actPlayPause.setIcon(QtGui.QIcon('data/pause.png'))
         self.actPlayPause.triggered.disconnect(self.playAnimation)
         self.actPlayPause.triggered.connect(self.pauseAnimation)
-        self.playbackTimer.start(0.2)
+        self.shortPlayPause.activated.disconnect(self.playAnimation)
+        self.shortPlayPause.activated.connect(self.pauseAnimation)
+        self.playbackTimer.start(self.playbackTimeout)
                 
     def pauseAnimation(self):
         '''
@@ -235,6 +273,8 @@ class BallBeamGui(QtGui.QMainWindow):
         self.actPlayPause.setIcon(QtGui.QIcon('data/play.png'))
         self.actPlayPause.triggered.disconnect(self.pauseAnimation)
         self.actPlayPause.triggered.connect(self.playAnimation)
+        self.shortPlayPause.activated.disconnect(self.pauseAnimation)
+        self.shortPlayPause.activated.connect(self.playAnimation)
         
     def stopAnimation(self):
         '''
@@ -383,6 +423,8 @@ class BallBeamGui(QtGui.QMainWindow):
         '''
         self.actSimulate.setDisabled(False)
         self.actPlayPause.setDisabled(False)
+        self.shortPlayPause.setEnabled(True)
+        self.shortSaveResult.setEnabled(True)
         self.actStop.setDisabled(False)
         self.actSave.setDisabled(False)
         self.speedDial.setDisabled(False)
@@ -419,22 +461,28 @@ class BallBeamGui(QtGui.QMainWindow):
 
     def _readResults(self):
         self.currentStepSize = 1.0/self.currentDataset['modules']['solver']['measure rate']
-        #if self.currentStepSize < 1/100:
-            #self.currentStepSize = 1/100
-
         self.currentEndTime = self.currentDataset['modules']['solver']['end time']
         self.validData = True
 
     def addPlotToDock(self, plotWidget):
         self.d3.addWidget(plotWidget)
+
+    def incPlaybackSpeed(self):
+        self.speedDial.setValue(self.speedDial.value() + self.speedDial.singleStep())
+
+    def decPlaybackSpeed(self):
+        self.speedDial.setValue(self.speedDial.value() - self.speedDial.singleStep())
+
+    def resetPlaybackSpeed(self):
+        self.speedDial.setValue(self.speedDial.range()/2)
     
     def incrementPlaybackTime(self):
         '''
         go one step forward in playback
         '''
-        if self.playbackTime + self.currentStepSize*self.playbackGain \
-                <= self.currentEndTime:
-            self.playbackTime += self.currentStepSize*self.playbackGain
+        increment = self.playbackGain * self.playbackTimeout/1000
+        if self.playbackTime + increment <= self.currentEndTime:
+            self.playbackTime += increment
             pos = self.playbackTime / self.currentEndTime * self.timeSliderRange
             self.timeSlider.blockSignals(True)
             self.timeSlider.setValue(pos)
@@ -489,28 +537,30 @@ class BallBeamGui(QtGui.QMainWindow):
     def _updateDataList(self):
         self.dataList.clear()
         for key, val in self.currentDataset['results'].iteritems():
-            self.dataList.insertItem(0, key)
+            if type(val) is not str and isinstance(val, collections.Sequence):
+                self.dataList.insertItem(0, key)
 
     def createPlot(self, item):
         ''' creates a plot widget corresponding to the ListItem
         '''
         title = str(item.text())
         data = self.currentDataset['results'][title]
-        #TODO check all data types
-#        if title == 'observer_output.0':
-#            print type(data)
-#            print type(data[0])
-#            print len(data)
+        t = self.currentDataset['results']['simTime']
             
         dock = pg.dockarea.Dock(title)
         self.area.addDock(dock, 'above', self.plotDocks[-1])
-        self.plots.append(pg.PlotWidget(title=title))
-        self.plotItems.append(self.plots[-1].plot(x=self.currentDataset['results']['simTime'], y=data))
-        timeLine = pg.InfiniteLine(0, angle=90, movable=False, pen=pg.mkPen('#FF0000', width=2.0))
-        self.plots[-1].addItem(timeLine)
-        self.timeLines.append(timeLine)
-        dock.addWidget(self.plots[-1])
+
+        widget = pg.PlotWidget(title=title)
+        widget.plot(x=t, y=data)
+
+        timeLine = pg.InfiniteLine(self.playbackTime , angle=90, movable=False, pen=pg.mkPen('#FF0000', width=2.0))
+        widget.getPlotItem().addItem(timeLine)
+
+        dock.addWidget(widget)
+
         self.plotDocks.append(dock)
+        self.plotWidgets.append(widget)
+        self.timeLines.append(timeLine)
 
     def _updateTimeCursor(self):
         '''

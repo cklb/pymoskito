@@ -83,7 +83,7 @@ class eval_A2Hauser(PostProcessingModule):
         elif data['modules']['controller']['type'] == 'GController':
             psi = np.multiply(np.multiply(np.dot(2*st.B, y[0]), y[3]), u)
         elif data['modules']['controller']['type'] == 'JController':
-            psi = np.multiply(np.multiply(np.multiply(B,y[0]), np.power(y[3], 2)),\
+            psi = np.multiply(np.multiply(np.multiply(st.B,y[0]), np.power(y[3], 2)),\
                        np.multiply(st.B*st.G, np.subtract(y[2], np.sin(y[2]))))
         else:
             # psi is not defined in this case
@@ -131,7 +131,7 @@ class eval_A2Hauser(PostProcessingModule):
         end = 40
         tStartIdx = next((idx for idx, x in enumerate(t) if x >= start), 0)
         tEndIdx = next((idx for idx, x in enumerate(t[start:]) if x >= end), len(t) - 1)
-        
+
         maximumError = None
         if tStartIdx < tEndIdx:
             maximumError = max(error[tStartIdx:tEndIdx])        
