@@ -10,8 +10,9 @@ from matplotlib.figure import Figure
 
 from postprocessor import MetaProcessingModule
 from tools import sortTree
+from tools import getSubValue
 
-class eval_L1NormITAE_poles_linePlot(MetaProcessingModule):
+class eval_L1NormITAE_poles_linePlotClemens(MetaProcessingModule):
     '''
     create diagrams, which plot L1NormITAE over poles
     '''
@@ -22,6 +23,21 @@ class eval_L1NormITAE_poles_linePlot(MetaProcessingModule):
     def run(self, postResults):
         #create tree with relevant datas
         source = sortTree(postResults, ['modules', 'controller', 'type'])
+        
+        # Get the Poles for the Minimum 
+        for controller in source:
+            xPath=['modules','controller', 'poles']
+            yPath=['metrics','L1NormITAE']
+            xList = getSubValue(source[controller], xPath)
+            yList = getSubValue(source[controller], yPath)
+            
+            xList[:] = [x for x,y in zip(xList, yList) if y]
+            yList[:] = [i for i in yList if i]
+            
+            print controller
+            print '  min ITAE:', min(yList)
+            print '  opt poles:', xList[yList.index(min(yList))][0]
+            
         
         #create plot
         fig = Figure()
