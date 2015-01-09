@@ -12,7 +12,7 @@ from postprocessor import MetaProcessingModule
 from tools import sortTree
 from tools import getSubValue
 
-class eval_L1NormITAE_poles_linePlotClemens(MetaProcessingModule):
+class eval_L1NormITAE_poles_linePlot(MetaProcessingModule):
     '''
     create diagrams, which plot L1NormITAE over poles
     '''

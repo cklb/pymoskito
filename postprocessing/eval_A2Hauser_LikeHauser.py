@@ -15,7 +15,7 @@ from postprocessor import PostProcessingModule
 import settings as st
 
 #define your own functions here
-class eval_A2Hauser_LikeHauser2(PostProcessingModule):
+class eval_A2Hauser_LikeHauser(PostProcessingModule):
     '''
     create diagrams like hauser did
     '''
@@ -125,7 +125,8 @@ class eval_A2Hauser_LikeHauser2(PostProcessingModule):
             print 'controller:', c
             
             fig = Figure()
-            fig.subplots_adjust(wspace=0.3, hspace=0.25) 
+#            fig.subplots_adjust(wspace=0.3, hspace=0.25) 
+            fig.subplots_adjust(wspace=0.6, hspace=0.6) 
             
             for i in range(1, 4, 1):
                 axes1 = fig.add_subplot(2, 2, 1)       
