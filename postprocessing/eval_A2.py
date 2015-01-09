@@ -51,7 +51,9 @@ class eval_A2(PostProcessingModule):
         axes1.plot(t, y[0], c = 'k', ls='-', label='y(t)')
         axes1.set_xlim(left=0, right=t[-1])
         axes1.set_xlabel(r'$t [s]$')
-        axes1.set_ylabel(r'$r [m]$') 
+        axes1.set_ylabel(r'$r [m]$')
+        leg = ['w(t)', 'y(t)']
+        axes1.legend(leg, loc=0)
         
         axes2 = fig.add_subplot(2, 1, 2)
 #        axes.set_title(r'output error = yd - x0')        
