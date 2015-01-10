@@ -163,6 +163,7 @@ class eval_A2Hauser(PostProcessingModule):
         canvas = FigureCanvas(fig)
         fig.savefig(fileName+'.svg')
         fig.savefig(fileName+'.png')
+        fig.savefig(fileName+'.pdf')
 
         return {'name':'_'.join([data['regime name'], self.name]),\
                     'figure': canvas}

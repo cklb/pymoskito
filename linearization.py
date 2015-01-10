@@ -76,7 +76,11 @@ class Linearization:
         '''
         # Vorfilter V = -[C(A-BK)^-1*B]^-1
         if K is not None:
-            V = -np.linalg.inv(np.dot(np.dot(self.C,(np.linalg.inv(self.A-self.B*K))),self.B))[0][0]
+            try:
+                V = -np.linalg.inv(np.dot(np.dot(self.C,(np.linalg.inv(self.A-self.B*K))),self.B))[0][0]
+            except np.linalg.linalg.LinAlgError:
+                print 'Can not calculate V, because of a Singular Matrix'
+                V = 1
         else:
             return 0
             

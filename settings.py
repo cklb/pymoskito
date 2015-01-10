@@ -66,24 +66,24 @@ color_cycle = { 'FController': 'royalblue',\
 #-----------------------------------------------
 paramPoleVariation = {\
         'FController': {\
-            'pole_limits': [0, 3.5],\
+            'pole_limits': [0, -3.5],\
             'pole_step': 0.1,\
             },\
         'GController': {\
-            'pole_limits': [0, 3.3],\
+            'pole_limits': [0, -3.3],\
             'pole_step': 0.1,\
             },\
             #J FAILS
         'JController': {\
-            'pole_limits': [0, 4],\
+            'pole_limits': [0, -4],\
             'pole_step': 0.1,\
             },\
         'LSSController': {\
-            'pole_limits': [0, 3.7],\
+            'pole_limits': [0, -3.9],\
             'pole_step': 0.1,\
             },\
         'PIFeedbackController': {\
-            'pole_limits': [0, 1.8],\
+            'pole_limits': [0, -1.8],\
             'pole_step': 0.1,\
             },\
         }
@@ -96,10 +96,14 @@ paramPoleVariation = {\
 # To give the JController a chance it is tested for poles [-0.5, ca. 0.1, -15]
 # on the SmoothTransitionTrajectory (Position:[0,3], delta t:5)
 poles = {'FController': -3.2,\
-        'GController': -3.0,\
-        'JController': -5.8,\
+        #3.1
+        'GController': -3,\
+        #-2.8
+        'JController': -2.0,\
+        #-2.0 hauser standard
         'LSSController': -3.4,\
         'PIFeedbackController': -1.5,\
+        #-1.7
         }
 
 #-----------------------------------------------

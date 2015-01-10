@@ -486,8 +486,8 @@ class PostProcessingModule(ProcessingModule):
             
         if figure:
             figure.savefig(fileName + '.png')
-            #figure.savefig(fileName + '.pdf')
-            #figure.savefig(fileName + '.svg')
+            figure.savefig(fileName + '.pdf')
+            figure.savefig(fileName + '.svg')
 
 
 class MetaProcessingModule(ProcessingModule):
