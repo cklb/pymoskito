@@ -2,6 +2,7 @@
 import numpy as np
 import scipy as sp
 import os
+import settings as st
 
 import matplotlib as mpl
 mpl.use("Qt4Agg")
@@ -51,26 +52,26 @@ class eval_L1perA(MetaProcessingModule):
                           
         for elem in postResults:
             controllerDict[elem['modules']['controller']['type']][0].append(elem[level1][level2][level3])
-            controllerDict[elem['modules']['controller']['type']][1].append(elem['error_L1Norm'])
+            controllerDict[elem['modules']['controller']['type']][1].append(elem['metrics']['L1NormAbs'])
             
         fig = Figure()
         axes = fig.add_subplot(1, 1, 1)
         
-        fMax = 0
+        xMax = 0
         leg = []
         for elem in controllerDict:
             controllerDict[elem] = self.sortLists(controllerDict[elem])
             axes.plot(controllerDict[elem][0], controllerDict[elem][1],\
-                       ls='-')
+                       ls='-', c=st.color_cycle[elem])
             leg.append(elem)
             if controllerDict[elem][0]:
-                if fMax < controllerDict[elem][0][-1]:
-                    fMax = controllerDict[elem][0][-1]       
-        axes.legend(leg, loc=1)
-        axes.set_xlim(left=0.1, right=fMax)
+                if xMax < controllerDict[elem][0][-1]:
+                    xMax = controllerDict[elem][0][-1]       
+        axes.legend(leg, loc=0)
+        axes.set_xlim(left=0.1, right=xMax)
 #        axes.set_ylim(top=6.0, bottom=3)
-        axes.set_xlabel(r'$'+xLabel+'$')
-        axes.set_ylabel(r'$'+yLabel+'$') 
+        axes.set_xlabel(r'$'+xLabel+'$', size=st.label_size)
+        axes.set_ylabel(r'$'+yLabel+'$', size=st.label_size) 
         
         #write results
         filePath = os.path.join(os.path.pardir, 'results', 'metaprocessing', 'A2')
@@ -82,6 +83,7 @@ class eval_L1perA(MetaProcessingModule):
         canvas = FigureCanvas(fig)
         fig.savefig(fileName+'.svg')
         fig.savefig(fileName+'.png')
+        fig.savefig(fileName+'.pdf')
 
         results = [{'figure': canvas, 'name': metaName},\
                 ]

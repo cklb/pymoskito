@@ -11,11 +11,11 @@ controllerList = ['FController', 'GController', 'JController',\
 #TODO: überlege, in welchem Punkt Regler linearisiert werden und dazu Pole
 #####################################################
 # Einstellungen               
-number = 4
+number = 2
 
-fRange = [0.1, 0.3]
-fStepSize = 0.001
-ampl = 3
+fRange = [0.1, 0.6]
+fStepSize = 0.05
+ampl = 0.5
 
 #####################################################
 lines = ''
