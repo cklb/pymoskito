@@ -269,6 +269,7 @@ class IOLController(Controller):
 
         return u
 
+
 #---------------------------------------------------------------------
 # PIFeedbackController
 #---------------------------------------------------------------------
@@ -327,8 +328,6 @@ class PIFeedbackController(Controller):
             # last element in row matrix of K_trans
             self.K_I = K_trans[0,-1]
             
-            # calculate V
-            self.V = self.lin.calcPrefilter(self.K)
             self.firstRun = False
         
         # calculate e
@@ -336,6 +335,6 @@ class PIFeedbackController(Controller):
         self.e_old = e                        
 
         # calculate u
-        u = np.dot(-self.K,np.transpose(x))[0,0] + self.K_I*e + self.V*yd[0]
+        u = np.dot(-self.K,np.transpose(x))[0,0] + self.K_I*e
 
         return u

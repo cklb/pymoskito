@@ -83,7 +83,7 @@ paramPoleVariation = {\
             'pole_step': 0.1,\
             },\
         'PIFeedbackController': {\
-            'pole_limits': [0, -1.8],\
+            'pole_limits': [0, -4],\
             'pole_step': 0.1,\
             },\
         }
@@ -95,14 +95,12 @@ paramPoleVariation = {\
 # JController is for a step for all tested poles unstable!!!!!
 # To give the JController a chance it is tested for poles [-0.5, ca. 0.1, -15]
 # on the SmoothTransitionTrajectory (Position:[0,3], delta t:5)
-poles = {'FController': -3.2,\
-        #3.1
-        'GController': -3,\
-        #-2.8
+poles = {'FController': -3.1,\
+        'GController': -2.8,\
         'JController': -2.0,\
         #-2.0 hauser standard
         'LSSController': -3.4,\
-        'PIFeedbackController': -1.5,\
+        'PIFeedbackController': -3.6,\
         #-1.7
         }
 

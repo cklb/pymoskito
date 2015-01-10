@@ -5,7 +5,7 @@ Created on Mon Dec 01 21:52:06 2014
 Linearization in x_0
 
 """
-
+import settings as st
 import sympy as sp
 from sympy import sin,cos, Matrix
 
@@ -29,7 +29,9 @@ jac_A2 = f2.jacobian(x)
 jac_B1 = f1.jacobian(u)
 jac_B2 = f2.jacobian(u)
 
-subs_list = [(x1,x01),(x2,x02),(x3,x03),(x4,x04),(tau,tau0)]
+subs_list = [(x1,3),(x2,0),(x3,0),(x4,0),(tau,st.M*st.G*3)]\
+#,(B,st.B),(J,st.J),(J_ball, st.Jb),(M,st.M),(G,st.G),(R,st.R)]
+#subs_list = [(x1,x01),(x2,x02),(x3,x03),(x4,x04),(tau,tau0)]
 jac_A1 = jac_A1.subs(subs_list)
 jac_A2 = jac_A2.subs(subs_list)
 jac_B1 = jac_B1.subs(subs_list)
@@ -52,6 +54,12 @@ C = Matrix([[1, 0, 0, 0]])
 # Beobachtbarkeitsmatrix
 Qb = Matrix([C, C*A, C*A**2, C*A**3])
 print 'Qb: ',Qb
+QsT = Matrix([B.transpose(),\
+             (A*B).transpose(),\
+             (A**2*B).transpose(),\
+             (A**3*B).transpose()])
+Qs = QsT.transpose()
+print 'Qs: ',Qs
 
 
 def calcFeedbackGain(A, B, poles):
@@ -96,6 +104,6 @@ def calcFeedbackGain(A, B, poles):
     K = t1T*(A**4 + p[3]*A**(3) + p[2]*A**2 + p[1]*A + p[0]*sp.eye(4))
     return K
 
-poles = [-2, -2, -2, -2]
-K = calcFeedbackGain(A, B, poles)
+#poles = [-2, -2, -2, -2]
+#K = calcFeedbackGain(A, B, poles)
 #print 'K: ',K
