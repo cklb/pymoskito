@@ -392,11 +392,11 @@ class ProcessingModule:
         where the regime name contains all strings
         listed in names
         '''
-        if not isinstance(list, names):
+        if not isinstance(names, list):
             names = [names]
 
-        return next((self._getSubDict(res, keys)\
-                for res in dataList if all(name in result['regime name'] for names in names)),\
+        return next((self._getSubDict(result, keys)\
+                for result in dataList if all(name in result['regime name'] for name in names)),\
                 None)
 
     def _getSubDict(self, topDict, keys):
