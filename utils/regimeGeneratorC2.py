@@ -11,8 +11,9 @@ import settings as st
 #-------------------------------------------------------------
 # settings
 #-------------------------------------------------------------
-end_time = 20
-yd = 3 #[m]
+end_time = 15
+yd = [-4, 4] #[m]
+dt = 7 #[s]
 
 controllerList = ['FController', 'GController', 'JController',\
                 'LSSController', 'PIFeedbackController', 'all']
@@ -37,7 +38,11 @@ parameter = st.paramVariationDictC2.keys()[paramIdx]
 lower_bound = st.paramVariationDictC2[parameter]['lower_bound']
 upper_bound = st.paramVariationDictC2[parameter]['upper_bound']
 step_size = st.paramVariationDictC2[parameter]['step_size']
-simLimits = np.arange(lower_bound, upper_bound + step_size, step_size)
+
+#simLimits = np.arange(lower_bound, upper_bound + step_size, step_size)
+#simLimits = [[-1*round(x,1), round(x,1)] for x in simLimits]
+simLimits = [[-1*round(lower_bound, 1), round(lower_bound, 1)]]
+
 
 print 'Choose controller: '
 for idx, controller in enumerate(controllerList):
@@ -74,7 +79,7 @@ def writeController(cName, pole, multiplicator):
             + '   poles: ' + str([pole]*multiplicator) + '\n'
 
     if (controller == 'PIFeedbackController' or controller == 'LSSController'):
-        tmp += '   r0: ' + str(yd) + '\n'
+        tmp += '   r0: ' + str(yd[1]) + '\n'
     tmp += '\n'
     return tmp
 
@@ -87,12 +92,16 @@ def writeSensor(senName, paramVal):
 def writeDisturbance(disName, paramVal):
     if paramVal == 0:
         return '  disturbance:' + '\n'\
-            + '   type: None\n'
+            + '   type: None\n\n'
 
     return '  disturbance:' + '\n'\
             + '   type: ' + disName + '\n'\
-            + '   mean value: ' + '0' + '\n'\
-            + '   sigma: ' + str(paramVal) + '\n\n'
+            + '   mean value: ' + '0' + '\n\n'\
+
+def writeLimiter(limName, limits):
+    return '  limiter:' + '\n'\
+            + '   type: ' + limName + '\n'\
+            + '   limits: ' + '[' + str(limits[0])+', '+str(limits[1])+']\n\n'\
 
 def saveOutput(output, cName, poles, parameter, limits):
     '''
@@ -123,13 +132,14 @@ preamble = '- name: C2-simulation-setup\n'\
 +'\n'\
 +'  solver:\n'\
 +'   type: VODESolver\n'\
++'   initial state: ['+str(yd[0])+', 0, 0, 0]\n'\
 +'   end time: '+str(end_time)+'\n'\
 +'\n'\
 +'  trajectory:\n'\
 +'   type: SmoothTransitionTrajectory\n'\
-+'   Positions: [0, ' + str(yd) + ']\n'\
++'   Positions: [' + str(yd[0]) + ', ' + str(yd[1]) + ']\n'\
 +'   start time: 0\n'\
-+'   delta t: 5\n'\
++'   delta t: ' + str(dt) + '\n'\
 +'\n'
 
 #-------------------------------------------------------------
@@ -146,16 +156,18 @@ for controller in simCases:
         multiplicator = 4
 
     #set correct poles
-    poles = st.poles[controller]
+    poles = st.smoothPoles[controller]
 
     #search limits
     for val in simLimits:
-        lines += writeRegime(controller, poles, parameter, val, '')
+        #one without limitation
+        lines += writeRegime(controller, poles, parameter, val, '_unlimited')
         lines += writeController(controller, poles, multiplicator)
-        if parameter == 'sigma':
-            lines += writeDisturbance('GaussianNoiseDisturbance', val)
-        if parameter == 'delay':
-            lines += writeSensor('DeadTimeSensor', val)   
+        lines += '\n\n'
+        #one with limitation
+        lines += writeRegime(controller, poles, parameter, val, '_limited')
+        lines += writeController(controller, poles, multiplicator)
+        lines += writeLimiter('AmplitudeLimiter', val)
         lines += '\n\n'
 
         saveOutput(lines, controller, poles, parameter, simLimits)

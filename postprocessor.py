@@ -374,24 +374,29 @@ class ProcessingModule:
         self.name = self.__class__.__name__
         return
 
-    def extractSetting(self, dataList, name, moduleName, settingName):
+    def extractSetting(self, dataList, names, moduleName, settingName):
         '''
         extracts settings from dataList
         '''
-        return self.extract(dataList, ['modules', moduleName, settingName], name)
+        return self.extract(dataList, ['modules', moduleName, settingName], names)
 
-    def extractValues(self, dataList, name, valueName):
+    def extractValues(self, dataList, names, valueName):
         '''
         extracts values for dataList
         '''
-        return self.extract(dataList, ['results', valueName], name)
+        return self.extract(dataList, ['results', valueName], names)
 
-    def extract(self, dataList, keys, name):
+    def extract(self, dataList, keys, names):
         '''
-        general extraction from regime that mathed name in partial
+        general extraction from dataList 
+        where the regime name contains all strings
+        listed in names
         '''
+        if not isinstance(list, names):
+            names = [names]
+
         return next((self._getSubDict(res, keys)\
-                for res in dataList if name in res['regime name']),\
+                for res in dataList if all(name in result['regime name'] for names in names)),\
                 None)
 
     def _getSubDict(self, topDict, keys):

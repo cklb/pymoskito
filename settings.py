@@ -176,7 +176,13 @@ paramStabilityLimitsSigmaDelay = {\
 #-----------------------------------------------
 # TestCase C2 - Limiter Variation
 #-----------------------------------------------
-paramVariationDictC2 = {'limiter': {'lower_bound': round(M*G*3, 1),\
+smoothPoles = {'FController': -2.0,\
+        'GController': -2.0,\
+        'JController': -2.0,\
+        'LSSController': -3.4,\
+        'PIFeedbackController': -1.5,\
+        }
+paramVariationDictC2 = {'limiter': {'lower_bound': round(M*G*4.5, 1),\
                                  'upper_bound': 3,\
                                  'step_size': 0.1,\
                                  }}
