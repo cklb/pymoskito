@@ -9,7 +9,6 @@ mpl.use("Qt4Agg")
 #mpl.rcParams['text.latex.unicode']=True
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
-from matplotlib.figure import Figure
 
 from postprocessor import PostProcessingModule
 import settings as st
@@ -127,24 +126,25 @@ class eval_A2Hauser_LikeHauser(PostProcessingModule):
             fig = Figure()
 #            fig.subplots_adjust(wspace=0.3, hspace=0.25) 
             fig.subplots_adjust(wspace=0.6, hspace=0.6) 
+            fig.suptitle(r'\textbf{' + c + '}', size=st.title_size)
             
             for i in range(1, 4, 1):
                 axes1 = fig.add_subplot(2, 2, 1)       
-                axes1.set_title(r'\textbf{output error = yd - x0}')
+                axes1.set_title(r'\textbf{output error = yd - x0}', size=st.label_size)
                 axes1.plot(controllerDict[c]['e'][i][0], controllerDict[c]['e'][i][1])
                 axes1.set_xlim(left=0, right=controllerDict[c]['e'][1][0][-1])
                 axes1.set_xlabel(r'$t \,[s]$', size=st.label_size)
                 axes1.set_ylabel(r'$e \,[m]$', size=st.label_size)
                 
                 axes2 = fig.add_subplot(2, 2, 2)
-                axes2.set_title(r'\textbf{Beam Angle}')
+                axes2.set_title(r'\textbf{Beam Angle}', size=st.label_size)
                 axes2.plot(controllerDict[c]['theta'][i][0], controllerDict[c]['theta'][i][1])
                 axes2.set_xlim(left=0, right=controllerDict[c]['theta'][1][0][-1])
                 axes2.set_xlabel(r'$t \, [s]$', size=st.label_size)
                 axes2.set_ylabel(r'$\theta \, [rad]$', size=st.label_size)
                     
                 axes3 = fig.add_subplot(2, 2, 3)
-                axes3.set_title(r'\textbf{neglected nonlinearity}')
+                axes3.set_title(r'\textbf{neglected nonlinearity}', size=st.label_size)
                 axes3.plot(controllerDict[c]['psi'][i][0], controllerDict[c]['psi'][i][1])
                 axes3.set_xlim(left=0, right=controllerDict[c]['psi'][1][0][-1])
                 axes3.set_xlabel(r'$t [s]$', size=st.label_size)
@@ -157,7 +157,7 @@ class eval_A2Hauser_LikeHauser(PostProcessingModule):
                     axes3.set_ylabel(r'$\psi_3 \, [\frac{m}{s^3}]$', size=st.label_size)
                 
                 axes4 = fig.add_subplot(2, 2, 4)
-                axes4.set_title(r'\textbf{Beam Torque}')
+                axes4.set_title(r'\textbf{Beam Torque}', size=st.label_size)
                 axes4.plot(controllerDict[c]['tau'][i][0], controllerDict[c]['tau'][i][1])
                 axes4.set_xlim(left=0, right=controllerDict[c]['tau'][1][0][-1])
                 axes4.set_xlabel(r'$t \,[s]$', size=st.label_size)
@@ -198,6 +198,7 @@ class eval_A2Hauser_LikeHauser(PostProcessingModule):
             canvas = FigureCanvas(fig)
             fig.savefig(fileName+'.svg')
             fig.savefig(fileName+'.png')
+            fig.savefig(fileName+'.pdf')
     
 #            l.append({'name':'_'.join([res['regime name'], self.name]),\
 #                        'figure': canvas})

@@ -210,10 +210,6 @@ class BallBeamGui(QtGui.QMainWindow):
         self.setStatusBar(self.status)
         self.statusLabel = QtGui.QLabel('Ready.')
         self.statusBar().addPermanentWidget(self.statusLabel)
-        self.sep = QtGui.QFrame()
-        self.sep.setFrameStyle(QtGui.QFrame.VLine)
-        self.sep.setSizePolicy(QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
-        self.statusBar().addPermanentWidget(self.sep)
         self.timeLabel = QtGui.QLabel('current time: 0.0')
         self.statusBar().addPermanentWidget(self.timeLabel)
 

@@ -10,22 +10,22 @@ controllerList = ['FController', 'GController', 'JController',\
                
 #TODO: überlege, in welchem Punkt Regler linearisiert werden und dazu Pole
 #####################################################
-# Einstellungen               
-number = 4
+# Einstellungen
+number = 2
 
-fRange = [0.1, 0.3]
-fStepSize = 0.001
-ampl = 3
+aRange = [0.1, 3]
+aStepSize = 0.1
+freq = 0.1
 
 #####################################################
+
 lines = ''
 controller = controllerList[number]
 
-# Pole festlegen nach A1
+
 pol = st.poles[controllerList[number]]
 print controller
 print 'pol:', pol
-
 if controller == 'PIFeedbackController':
     poles = [pol, pol, pol, pol, pol]
 else:
@@ -36,11 +36,11 @@ filePath = os.path.join('A2_head.sray')
 with open(filePath, 'r') as f:
     head = f.read()
 
-fs = np.arange(fRange[0],fRange[1] + fStepSize, fStepSize)
+As = np.arange(aRange[0],aRange[1] + aStepSize, aStepSize)
 lines += '\n'
 
-for f in fs:
-        lines += '- name: A2_' + controller + '_A' + str(ampl) + '_f' + str(f) + '\n'
+for a in As:
+        lines += '- name: A2_' + controller + '_f' + str(freq) + '_A'+str(a)+ '\n'
         lines += '  clear previous: !!python/bool False' + '\n'
         lines += '\n'
         lines += '  controller: ' + '\n'
@@ -49,8 +49,8 @@ for f in fs:
         lines += '\n'
         lines += '  trajectory:' +'\n'
         lines += '   type: HarmonicTrajectory' + '\n'
-        lines += '   Amplitude: ' + str(ampl) + '\n'
-        lines += '   Frequency: ' + str(f) + '\n'
+        lines += '   Amplitude: ' + str(a) + '\n'
+        lines += '   Frequency: ' + str(freq) + '\n'
         lines += '\n'
                
 #write results
@@ -59,8 +59,8 @@ dirPath = os.path.join(os.path.pardir, os.path.pardir, 'regimes', 'generated')
 if not os.path.isdir(dirPath):
     os.makedirs(dirPath)
 
-fileName = 'A2_' + controller + '_A'+str(ampl)+'_fRange(' + str(fRange[0])\
-            + ',' + str(fRange[1]) + ')'+'.sreg'
+fileName = 'A2_' + controller +'_f'+str(freq)+ '_aRange(' + str(aRange[0])\
+            + ',' + str(aRange[1]) + ')'+'.sreg'
             
 filePath = os.path.join(dirPath, fileName)   
 
