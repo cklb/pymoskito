@@ -11,7 +11,6 @@ controllerList = ['FController', 'GController', 'JController',\
 #TODO: überlege, in welchem Punkt Regler linearisiert werden und dazu Pole
 #####################################################
 # Einstellungen
-number = 2
 
 aRange = [0.1, 3]
 aStepSize = 0.1
@@ -20,42 +19,43 @@ freq = 0.1
 #####################################################
 
 lines = ''
-controller = controllerList[number]
-
-
-pol = st.poles[controllerList[number]]
-print controller
-print 'pol:', pol
-if controller == 'PIFeedbackController':
-    poles = [pol, pol, pol, pol, pol]
-else:
-    poles = [pol, pol, pol, pol]
 
 # load head file
 filePath = os.path.join('A2_head.sray')
 with open(filePath, 'r') as f:
     head = f.read()
 
-As = np.arange(aRange[0],aRange[1] + aStepSize, aStepSize)
-lines += '\n'
+for contr in controllerList:
+    pol = st.poles[contr]
+    print contr
+    print 'pol:', pol
+    if contr == 'PIFeedbackController':
+        poles = [pol, pol, pol, pol, pol]
+    else:
+        poles = [pol, pol, pol, pol]
+    
 
-for a in As:
-        lines += '- name: A2_' + controller + '_f' + str(freq) + '_A'+str(a)+ '\n'
-        lines += '  clear previous: !!python/bool False' + '\n'
-        lines += '\n'
-        lines += '  solver: ' + '\n'
-        lines += '   type: VODESolver' + '\n'
-        lines += '   initial state: ' + str([a, 0, 0, 0]) + '\n'
-        lines += '\n'
-        lines += '  controller: ' + '\n'
-        lines += '   type: '  + controller + '\n'
-        lines += '   poles: ' + str(poles) + '\n'
-        lines += '\n'
-        lines += '  trajectory:' +'\n'
-        lines += '   type: HarmonicTrajectory' + '\n'
-        lines += '   Amplitude: ' + str(a) + '\n'
-        lines += '   Frequency: ' + str(freq) + '\n'
-        lines += '\n'
+    
+    As = np.arange(aRange[0],aRange[1] + aStepSize, aStepSize)
+    lines += '\n'
+    
+    for a in As:
+            lines += '- name: A2_' + contr + '_f' + str(freq) + '_A'+str(a)+ '\n'
+            lines += '  clear previous: !!python/bool False' + '\n'
+            lines += '\n'
+            lines += '  solver: ' + '\n'
+            lines += '   type: VODESolver' + '\n'
+            lines += '   initial state: ' + str([a, 0, 0, 0]) + '\n'
+            lines += '\n'
+            lines += '  controller: ' + '\n'
+            lines += '   type: '  + contr + '\n'
+            lines += '   poles: ' + str(poles) + '\n'
+            lines += '\n'
+            lines += '  trajectory:' +'\n'
+            lines += '   type: HarmonicTrajectory' + '\n'
+            lines += '   Amplitude: ' + str(a) + '\n'
+            lines += '   Frequency: ' + str(freq) + '\n'
+            lines += '\n'
                
 #write results
 #print os.path.pardir
@@ -63,7 +63,7 @@ dirPath = os.path.join(os.path.pardir, os.path.pardir, 'regimes', 'generated')
 if not os.path.isdir(dirPath):
     os.makedirs(dirPath)
 
-fileName = 'A2_' + controller +'_f'+str(freq)+ '_r0sweep' + '_aRange(' + str(aRange[0])\
+fileName = 'A2_' +'_f'+str(freq)+ '_r0sweep' + '_aRange(' + str(aRange[0])\
             + ',' + str(aRange[1]) + ')'+'.sreg'
             
 filePath = os.path.join(dirPath, fileName)   
