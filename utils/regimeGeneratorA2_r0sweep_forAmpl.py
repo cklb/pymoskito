@@ -12,7 +12,7 @@ controllerList = ['FController', 'GController', 'JController',\
 #####################################################
 # Einstellungen
 
-aRange = [0.1, 3]
+aRange = [0.1, 4.5]
 aStepSize = 0.1
 freq = 0.1
 
@@ -63,7 +63,7 @@ dirPath = os.path.join(os.path.pardir, os.path.pardir, 'regimes', 'generated')
 if not os.path.isdir(dirPath):
     os.makedirs(dirPath)
 
-fileName = 'A2_' +'_f'+str(freq)+ '_r0sweep' + '_aRange(' + str(aRange[0])\
+fileName = 'A2_' +'_f'+str(freq)+ '_r0sweep' + '_all_aRange(' + str(aRange[0])\
             + ',' + str(aRange[1]) + ')'+'.sreg'
             
 filePath = os.path.join(dirPath, fileName)   

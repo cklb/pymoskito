@@ -100,8 +100,7 @@ poles = {'FController': -3.1,\
         'JController': -2.0,\
         #-2.0 hauser standard
         'LSSController': -3.4,\
-        'PIFeedbackController': -3.6,\
-        #-1.7
+        'PIFeedbackController': -3.7,\
         }
 
 #-----------------------------------------------
@@ -188,11 +187,3 @@ paramVariationDictC2 = {'limiter': {'lower_bound': round(M*G*4.5, 1),\
                                  'upper_bound': 3,\
                                  'step_size': 0.1,\
                                  }}
-
-
-
-
-
-
-
-

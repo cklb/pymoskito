@@ -33,7 +33,8 @@ class eval_A2Hauser_LikeHauser(PostProcessingModule):
         
         controllerDict = {'FController':[],\
                           'GController':[],\
-                          'JController':[]}
+                          'JController':[],\
+                          'LSSController':[]}
         for elem in controllerDict:
             controllerDict.update({elem:{'e':{},'theta':{}, 'psi':{}, 'tau':{}}})    
             for var in controllerDict[elem]:
@@ -94,7 +95,8 @@ class eval_A2Hauser_LikeHauser(PostProcessingModule):
                 psi = np.multiply(np.multiply(st.B, y[0]), np.power(y[3],2))
             elif res['modules']['controller']['type'] == 'GController':
                 psi = np.multiply(np.multiply(np.dot(2*st.B, y[0]), y[3]), u)
-            elif res['modules']['controller']['type'] == 'JController':
+            elif res['modules']['controller']['type'] == 'JController' or\
+                 res['modules']['controller']['type'] == 'LSSController':
                 psi = np.multiply(np.multiply(np.multiply(st.B,y[0]), np.power(y[3], 2)),\
                            np.multiply(st.B*st.G, np.subtract(y[2], np.sin(y[2]))))
             else:
@@ -119,7 +121,8 @@ class eval_A2Hauser_LikeHauser(PostProcessingModule):
             
             
         #Plots erzeugen
-        contr = ['FController', 'GController', 'JController']
+#        contr = ['FController', 'GController', 'JController', 'LSSController']
+        contr = ['LSSController', 'JController']    
         for c in contr:
             print 'controller:', c
             
