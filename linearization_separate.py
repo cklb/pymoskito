@@ -29,7 +29,7 @@ jac_A2 = f2.jacobian(x)
 jac_B1 = f1.jacobian(u)
 jac_B2 = f2.jacobian(u)
 
-subs_list = [(x1,x01),(x2,0),(x3,0),(x4,0),(tau,st.M*st.G*3)]\
+subs_list = [(x1,x01),(x2,0),(x3,0),(x4,0),(tau,M*G*x01)]\
 #,(B,st.B),(J,st.J),(J_ball, st.Jb),(M,st.M),(G,st.G),(R,st.R)]
 #subs_list = [(x1,x01),(x2,x02),(x3,x03),(x4,x04),(tau,tau0)]
 jac_A1 = jac_A1.subs(subs_list)
