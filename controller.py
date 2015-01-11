@@ -65,7 +65,7 @@ class Controller(SimulationModule):
 class FController(Controller):
 
     settings = {\
-                'poles': [-2, -2, -2, -2],\
+                'poles': [-3.1, -3.1, -3.1, -3.1],\
                 'tick divider': 1,\
                 }
     # controller gains
@@ -110,7 +110,7 @@ class FController(Controller):
 class GController(Controller):
     
     settings = {\
-                'poles': [-2, -2, -2, -2],\
+                'poles': [-2.8, -2.8, -2.8, -2.8],\
                 'tick divider': 1,\
                 }
     
@@ -199,7 +199,7 @@ class LSSController(Controller):
     '''
 
     settings = {\
-            'poles': [-2, -2, -2, -2],\
+            'poles': [-3.4, -3.4, -3.4, -3.4],\
             'r0': 0,\
             'tick divider': 1,\
             }
@@ -280,7 +280,7 @@ class PIFeedbackController(Controller):
     with I-controller
     '''
     settings = {\
-            'poles': [-2, -2, -2, -2, -2],\
+            'poles': [-3.7, -3.7, -3.7, -3.7, -3.7],\
             'r0': 0,\
             'tick divider': 1,\
             }
