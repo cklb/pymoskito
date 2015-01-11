@@ -65,7 +65,7 @@ class eval_C2(PostProcessingModule):
 
             #fig1 controller output
             axes.append(fig.add_subplot(211))
-            axes[0].set_title(r'\textbf{Reglerausgaenge im Vergleich}')
+            axes[0].set_title(u'\\textbf{Reglerausgänge im Vergleich}')
 
             #create limitation tube
             upperBoundLine = line([0, t[-1]], [limits[0]]*2, ls='--', c=self.line_color)
@@ -87,7 +87,7 @@ class eval_C2(PostProcessingModule):
 
             #fig2 model output
             axes.append(fig.add_subplot(212))
-            axes[1].set_title(r'\textbf{Ausgangsverlaeufe im Vergleich}')
+            axes[1].set_title(u'\\textbf{Ausgangsverlaeufe im Vergleich}')
 
             #create epsilon tube
             upperBoundLine = line([0, t[-1]], [ydEnd+eps, ydEnd+eps], ls='--', c=self.line_color)
