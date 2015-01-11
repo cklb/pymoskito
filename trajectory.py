@@ -59,7 +59,7 @@ class FixedPointTrajectory(Trajectory):
     ''' provides a fixed signal
     '''
     
-    settings = {'Position': 0.5}
+    settings = {'Position': 3}
     
     def __init__(self, derivateOrder):
         Trajectory.__init__(self, derivateOrder+1)
