@@ -504,13 +504,15 @@ class MetaProcessingModule(ProcessingModule):
         a = sorted(a)
         return a, b
 
-    def plotSettings(self, axes, titel, grid, xlabel, ylabel):
+    def plotSettings(self, axes, titel, grid, xlabel, ylabel, typ='line'):
         axes.set_title(titel, size=st.title_size)
         if grid == True:
             axes.grid(color='#ababab', linestyle='--')
         axes.set_xlabel(xlabel, size=st.label_size)
         axes.set_ylabel(ylabel, size=st.label_size)
-        axes.legend(loc=0, fontsize='small')
+        if typ != 'bar':
+            axes.legend(loc=0, fontsize='small',prop={'size':8})
+
         return axes
     
     def plotVariousController(self, source, axes, xPath, yPath, typ, xIndex=-1, yIndex=-1):
@@ -558,24 +560,24 @@ class MetaProcessingModule(ProcessingModule):
                         color=st.color_cycle[controller])
                 counter += 1            
                 
-                if len(x_all) > 1:
-                    #remove all None from x_all
-                    x_all.sort()
-                    x_all[:] = [i for i in x_all if i]
+        if (typ == 'bar') and (len(x_all) > 1):
+            #remove all None from x_all
+            x_all.sort()
+            x_all[:] = [i for i in x_all if i]
 
-                    # does not work for all constellations
-                    spacing = (x_all[-1] - x_all[0])/(len(x_all) - 1)
-                    x_all.append(spacing + x_all[-1])
-                    x_all.append(x_all[0] - spacing)
-                    x_all.sort()
+            # does not work for all constellations
+            spacing = (x_all[-1] - x_all[0])/(len(x_all) - 1)
+            x_all.append(spacing + x_all[-1])
+            x_all.append(x_all[0] - spacing)
+            x_all.sort()
 
-                    #x_all_label = [r'$' + str(i) + '$' for i in x_all]
-                    counter -= 1
-                    if typ=='bar':
-                        x_all[:] = [i + width*counter for i in x_all]
+            x_all_label = [r'$' + str(i) + '$' for i in x_all]
+            counter -= 1
+            if typ=='bar':
+                x_all[:] = [i + width*counter for i in x_all]
 
-                    #axes.set_xticks(x_all)
-                    #axes.set_xticklabels(x_all_label)
+            axes.set_xticks(x_all)
+            axes.set_xticklabels(x_all_label)
         
         return axes
     

@@ -42,7 +42,8 @@ class eval_L1NormITAE_poles_linePlot(MetaProcessingModule):
         
         #create plot
         fig = Figure()
-        fig.subplots_adjust(wspace=0.5, hspace=0.25)
+#        fig.subplots_adjust(wspace=20, hspace=10, h_pad=50)
+        fig.subplots_adjust(wspace=0.6, hspace=0.6) 
         
         #plot for L1NormITAE over poles
         axes = fig.add_subplot(111)

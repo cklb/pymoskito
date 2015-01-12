@@ -25,7 +25,6 @@ class eval_L1NormITAE_delta_t_linePlot(MetaProcessingModule):
         
         #create plot
         fig = Figure()
-        fig.subplots_adjust(wspace=0.5, hspace=0.25)
         
         #plot for L1NormITAE
         axes = fig.add_subplot(211)
@@ -34,7 +33,7 @@ class eval_L1NormITAE_delta_t_linePlot(MetaProcessingModule):
                 yPath=['metrics','L1NormITAE'],\
                 typ='line')
         self.plotSettings(axes,\
-                titel=r'Fehlerintegral ITAE w(t) und y(t)',\
+                titel=r'Fehlerintegral ITAE w(t) und y(t) \"uber $\Delta t$',\
                 grid=True,\
                 xlabel=r'$\Delta t \, \lbrack s\rbrack$',\
                 ylabel=r'$E \, \lbrack ms^{2} \rbrack$',\
@@ -47,11 +46,14 @@ class eval_L1NormITAE_delta_t_linePlot(MetaProcessingModule):
                 yPath=['metrics','t_diff'],\
                 typ='line')
         axes1 = self.plotSettings(axes1,\
-                titel=r'Uebergangszeitfehler ueber $\Delta t$',\
+                titel=r'\"Ubergangszeitfehler \"uber $\Delta t$',\
                 grid=True,\
                 xlabel=r'$\Delta t \, \lbrack s\rbrack$',\
                 ylabel=r'$e_{t} \, \lbrack s \rbrack$',\
                 )
+        
+        # spacing
+        fig.subplots_adjust(wspace=0.5, hspace=0.5)
 
         #extract controllerNames
         controllerNames = [x[:-len('Controller')] for x in source.keys()]

@@ -26,17 +26,15 @@ class eval_L1NormAbs_delta_t_linePlot(MetaProcessingModule):
         
         #create plot
         fig = Figure()
-        fig.subplots_adjust(wspace=0.5, hspace=0.25)
         
         #plot for L1NormAbs
         axes = fig.add_subplot(211)
-        
         self.plotVariousController(source, axes,\
                 xPath=['modules','trajectory', 'delta t'],\
                 yPath=['metrics','L1NormAbs'],\
                 typ='line')
         self.plotSettings(axes,\
-                titel=r'Fehlerintegral w(t) und y(t)',\
+                titel=r'Fehlerintegral w(t) und y(t) \"uber $\Delta t$',\
                 grid=True,\
                 xlabel=r'$\Delta t \, \lbrack s\rbrack$',\
                 ylabel=r'$E \, \lbrack ms\rbrack$',\
@@ -49,11 +47,14 @@ class eval_L1NormAbs_delta_t_linePlot(MetaProcessingModule):
                 yPath=['metrics','t_diff'],\
                 typ='line')
         self.plotSettings(axes1,\
-                titel=r'Uebergangszeitfehler ueber $\Delta t$',\
+                titel=r'\"Ubergangszeitfehler \"uber $\Delta t$',\
                 grid=True,\
                 xlabel=r'$\Delta t \, \lbrack s\rbrack$',\
                 ylabel=r'$e_{t} \, \lbrack s\rbrack$',\
                 )
+        
+        # spacing
+        fig.subplots_adjust(wspace=0.5, hspace=0.5)
         
         #extract controllerNames
         controllerNames = [x[:-len('Controller')] for x in source.keys()]

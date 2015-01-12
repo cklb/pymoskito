@@ -32,10 +32,11 @@ class eval_L1NormAbs_delta_t_barPlot(MetaProcessingModule):
                 yPath=['metrics', 'L1NormAbs'],\
                 typ='bar')
         self.plotSettings(axes,\
-                titel=r'Fehlerintegral w(t) und y(t)',\
+                titel=r'Fehlerintegral w(t) und y(t) \"uber $\Delta t$',\
                 grid=True,\
                 xlabel=r'$\Delta t \, \lbrack s\rbrack$',\
                 ylabel=r'$E \, \lbrack m \cdot s\rbrack$',\
+                typ='bar'
                 )
 
         #extract controllerNames
