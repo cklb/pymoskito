@@ -284,6 +284,8 @@ class BallBeamGui(QtGui.QMainWindow):
             self.actPlayPause.setIcon(QtGui.QIcon('data/play.png'))
             self.actPlayPause.triggered.disconnect(self.pauseAnimation)
             self.actPlayPause.triggered.connect(self.playAnimation)
+            self.shortPlayPause.activated.disconnect(self.pauseAnimation)
+            self.shortPlayPause.activated.connect(self.playAnimation)
 
         self.timeSlider.setValue(0)
 

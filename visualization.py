@@ -1,6 +1,8 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+from __future__ import division
+
 #---------------------------------------------------------------------
 # visualization of the simulation
 #--------------------------------------------------------------------- 
@@ -32,17 +34,15 @@ class VtkVisualizer:
     def __init__(self, parent):
         # create renderer and window
         self.ren = vtk.vtkRenderer()
-        self.ren.SetBackground(1, 1, 1)
-
         self.parent = parent
         parent.GetRenderWindow().AddRenderer(self.ren)
 
         #-------- add the beam ----
         # geometry
         self.beam = vtk.vtkCubeSource()
-        self.beam.SetXLength(st.beam_length)
-        self.beam.SetYLength(st.beam_width)
-        self.beam.SetZLength(st.beam_depth)
+        self.beam.SetXLength(st.visBeamLength)
+        self.beam.SetYLength(st.visBeamWidth)
+        self.beam.SetZLength(st.visBeamDepth)
 
         #mapper
         self.beamMapper = vtk.vtkPolyDataMapper()
@@ -51,22 +51,21 @@ class VtkVisualizer:
         # actor
         self.beamActor = vtk.vtkLODActor()
         self.beamActor.SetMapper(self.beamMapper)
-        self.beamActor.SetScale(st.scale)
 
         #make it look nice
         self.beamProp = self.beamActor.GetProperty()
-        self.beamProp.SetColor(0.3, 0.3, 0.3)
-        self.beamProp.SetAmbient(0.2)
-        self.beamProp.SetDiffuse(0.8)
-        self.beamProp.SetSpecular(0.5)
-        self.beamProp.SetSpecularPower(0.5)
+        self.beamProp.SetColor(101/255, 123/255, 131/255)
+        #self.beamProp.SetAmbient(0.2)
+        #self.beamProp.SetDiffuse(0.8)
+        #self.beamProp.SetSpecular(0.5)
+        #self.beamProp.SetSpecularPower(0.5)
 
         self.ren.AddActor(self.beamActor)
 
         #-------- add the ball ----
         # geometry
         self.ball = vtk.vtkSphereSource()
-        self.ball.SetRadius(st.R)
+        self.ball.SetRadius(st.visR)
         self.ball.SetThetaResolution(20)
         self.ball.SetPhiResolution(20)
 
@@ -77,11 +76,10 @@ class VtkVisualizer:
         # actor
         self.ballActor = vtk.vtkLODActor()
         self.ballActor.SetMapper(self.ballMapper)
-        self.ballActor.SetScale(st.ballScale)
 
         # make it look nice
         self.ballProp = self.ballActor.GetProperty()
-        self.ballProp.SetColor(1, 1, 0)
+        self.ballProp.SetColor(255/255, 255/255, 0)
         self.ballProp.SetAmbient(0.2)
         self.ballProp.SetDiffuse(0.8)
         self.ballProp.SetSpecular(0.5)
@@ -89,36 +87,44 @@ class VtkVisualizer:
 
         self.ren.AddActor(self.ballActor)
 
-        # -------- add the back ----
-        # geometry
-        self.vPlane = vtk.vtkPlaneSource()
-        self.vPlane.SetCenter(0, 0, -0.1)
-        self.vPlane.SetNormal(0, 0, 1)
+        ## -------- add the back ----
+        ## geometry
+        #self.vPlane = vtk.vtkPlaneSource()
+        #hugeVal = 100
+        #dist = 5
+        #self.vPlane.SetOrigin([-hugeVal/2, -hugeVal/2, -dist])
+        #self.vPlane.SetPoint1([hugeVal/2, -hugeVal/2, -dist])
+        #self.vPlane.SetPoint2([-hugeVal/2, hugeVal/2, -dist])
+        ##self.vPlane.SetCenter(0, 0, -st.visBeamDepth)
+        ##self.vPlane.SetNormal(0, 0, 1)
 
-        # mapper
-        self.vPlaneMapper = vtk.vtkPolyDataMapper()
-        self.vPlaneMapper.SetInputConnection(self.vPlane.GetOutputPort())
+        ## mapper
+        #self.vPlaneMapper = vtk.vtkPolyDataMapper()
+        #self.vPlaneMapper.SetInputConnection(self.vPlane.GetOutputPort())
 
-        # actor
-        self.vPlaneActor = vtk.vtkLODActor()
-        self.vPlaneActor.SetMapper(self.vPlaneMapper)
-        self.vPlaneActor.SetScale(5,2,1)
+        ## actor
+        #self.vPlaneActor = vtk.vtkLODActor()
+        #self.vPlaneActor.SetMapper(self.vPlaneMapper)
 
-        # make it look nice
-        self.vPlaneProp = self.vPlaneActor.GetProperty()
-        col = [0.78125, 0.4570, 0.119]
-        self.vPlaneProp.SetColor([x*0.7 for x in col])
-        self.vPlaneProp.SetAmbient(0.2)
-        self.vPlaneProp.SetDiffuse(0.8)
-        self.vPlaneProp.SetSpecular(0.5)
-        self.vPlaneProp.SetSpecularPower(0.5)
+        ## make it look nice
+        #self.vPlaneProp = self.vPlaneActor.GetProperty()
+        #col = [0.78125, 0.4570, 0.119]
+        #self.vPlaneProp.SetColor([x*0.7 for x in col])
+        #self.vPlaneProp.SetAmbient(0.2)
+        #self.vPlaneProp.SetDiffuse(0.8)
+        #self.vPlaneProp.SetSpecular(0.5)
+        #self.vPlaneProp.SetSpecularPower(0.5)
 
-        self.ren.AddActor(self.vPlaneActor)
+        #self.ren.AddActor(self.vPlaneActor)
 
+        #add background
+        self.ren.GradientBackgroundOn()
+        self.ren.SetBackground(228/255, 232/255, 213/255)
+        self.ren.SetBackground2(38/255, 139/255, 210/255)
 
         # get everybody into the frame
         self.ren.ResetCamera()
-        self.ren.GetActiveCamera().Zoom(2)
+        self.ren.GetActiveCamera().Zoom(1.7)
 
         # setup the interactor
         self.iren = parent.GetRenderWindow().GetInteractor()
@@ -133,10 +139,6 @@ class VtkVisualizer:
             poke.SetElement(i, 3, r[i])
 
         actor.PokeMatrix(poke)
-
-        #HACK rescale ball
-        if actor == self.ballActor:
-            actor.SetScale(st.ballScale)
 
     def updateScene(self, r_beam, T_beam, r_ball, T_ball):
         ''' 
