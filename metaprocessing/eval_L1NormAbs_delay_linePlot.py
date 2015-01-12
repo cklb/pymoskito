@@ -35,7 +35,7 @@ class eval_L1NormAbs_delay_linePlot(MetaProcessingModule):
                 yPath=['metrics', 'L1NormAbs'],\
                 typ='line')
         self.plotSettings(axes,\
-                titel=r'Fehlerintegral w(t) und y(t) ueber Delay',\
+                titel=r'Fehlerintegral w(t) und y(t) \"uber Delay',\
                 grid=True,\
                 xlabel=r'$Delay \, \lbrack ms \rbrack$',\
                 ylabel=r'$E \, \lbrack ms \rbrack$',\
