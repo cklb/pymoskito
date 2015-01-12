@@ -62,7 +62,7 @@ class eval_L1perFA3(MetaProcessingModule):
         for elem in controllerDict:
             controllerDict[elem] = self.sortLists(controllerDict[elem])
             axes.plot(controllerDict[elem][0], controllerDict[elem][1],\
-                       ls='-')
+                       ls='-', c=st.color_cycle[elem])
             leg.append(elem)
             if controllerDict[elem][0]:
                 if xMax < controllerDict[elem][0][-1]:
