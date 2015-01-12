@@ -55,10 +55,6 @@ class VtkVisualizer:
         #make it look nice
         self.beamProp = self.beamActor.GetProperty()
         self.beamProp.SetColor(101/255, 123/255, 131/255)
-        #self.beamProp.SetAmbient(0.2)
-        #self.beamProp.SetDiffuse(0.8)
-        #self.beamProp.SetSpecular(0.5)
-        #self.beamProp.SetSpecularPower(0.5)
 
         self.ren.AddActor(self.beamActor)
 
@@ -86,36 +82,6 @@ class VtkVisualizer:
         self.ballProp.SetSpecularPower(0.5)
 
         self.ren.AddActor(self.ballActor)
-
-        ## -------- add the back ----
-        ## geometry
-        #self.vPlane = vtk.vtkPlaneSource()
-        #hugeVal = 100
-        #dist = 5
-        #self.vPlane.SetOrigin([-hugeVal/2, -hugeVal/2, -dist])
-        #self.vPlane.SetPoint1([hugeVal/2, -hugeVal/2, -dist])
-        #self.vPlane.SetPoint2([-hugeVal/2, hugeVal/2, -dist])
-        ##self.vPlane.SetCenter(0, 0, -st.visBeamDepth)
-        ##self.vPlane.SetNormal(0, 0, 1)
-
-        ## mapper
-        #self.vPlaneMapper = vtk.vtkPolyDataMapper()
-        #self.vPlaneMapper.SetInputConnection(self.vPlane.GetOutputPort())
-
-        ## actor
-        #self.vPlaneActor = vtk.vtkLODActor()
-        #self.vPlaneActor.SetMapper(self.vPlaneMapper)
-
-        ## make it look nice
-        #self.vPlaneProp = self.vPlaneActor.GetProperty()
-        #col = [0.78125, 0.4570, 0.119]
-        #self.vPlaneProp.SetColor([x*0.7 for x in col])
-        #self.vPlaneProp.SetAmbient(0.2)
-        #self.vPlaneProp.SetDiffuse(0.8)
-        #self.vPlaneProp.SetSpecular(0.5)
-        #self.vPlaneProp.SetSpecularPower(0.5)
-
-        #self.ren.AddActor(self.vPlaneActor)
 
         #add background
         self.ren.GradientBackgroundOn()
