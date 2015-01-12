@@ -52,7 +52,7 @@ class eval_L1NormITAE_poles_linePlot(MetaProcessingModule):
                 typ='line',\
                 xIndex = 0)
         self.plotSettings(axes,\
-                titel=r'Fehlerintegral ITAE ueber Polplatzierung',\
+                titel=r'Fehlerintegral ITAE \"uber Polplatzierung',\
                 grid=True,\
                 xlabel=r'$Poles \, \lbrack s\rbrack$',\
                 ylabel=r'$E \, \lbrack ms^{2} \rbrack$',\
