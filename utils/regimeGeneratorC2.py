@@ -12,8 +12,8 @@ import settings as st
 # settings
 #-------------------------------------------------------------
 end_time = 15
-yd = [-4, 4] #[m]
-dt = 7 #[s]
+yd = [-4, 0] #[m]
+dt = 5 #[s]
 
 controllerList = ['FController', 'GController', 'JController',\
                 'LSSController', 'PIFeedbackController', 'all']

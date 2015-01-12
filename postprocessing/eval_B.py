@@ -6,8 +6,8 @@ from operator import itemgetter
 
 import matplotlib as mpl
 mpl.use("Qt4Agg")
-#mpl.rcParams['text.usetex']=True
-#mpl.rcParams['text.latex.unicode']=True
+mpl.rcParams['text.usetex']=True
+mpl.rcParams['text.latex.unicode']=True
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 from matplotlib.lines import Line2D as line
@@ -81,7 +81,7 @@ class eval_B(PostProcessingModule):
         #create plot
         fig = Figure()
         axes = fig.add_subplot(111)
-        axes.set_title(r'\textbf{Vergleich Signalverlaeufe}')
+        axes.set_title(u'Vergleich Signalverläufe')
 
         #create epsilon tub
         #eps = self.epsPercent*yd/100
@@ -111,7 +111,8 @@ class eval_B(PostProcessingModule):
         axes.set_ylabel(r'$r \, \lbrack m \rbrack$') 
 
         canvas = FigureCanvas(fig)
-        
+        extendedName = os.path.join(self.name, par)
+
         # create output files because run is not called
         for data in dataList:
             results = {}
@@ -120,14 +121,14 @@ class eval_B(PostProcessingModule):
             
             #add settings and metrics to dictionary results
             results.update({'modules': data['modules']})
-            extendedName = os.path.join(self.name, par)
-            self.writeOutputFiles(extendedName, data['regime name'], fig, results)
+            
+            self.writeOutputFiles(extendedName, data['regime name'], None, results)
         
         results = {'metrics': output}
 
         #create new dir for parameter
-        self.writeOutputFiles(self.name, 'paramLimits_' + regName[:-len('ideal')],\
-                None, results)
+        self.writeOutputFiles(extendedName, 'paramLimits_' + regName[:-len('ideal')],\
+                fig, results)
         
         return [{'name':'_'.join([regName[:-len('ideal')], 'paramLimits', self.name]),\
                     'figure': canvas}]

@@ -38,20 +38,29 @@ class eval_C2(PostProcessingModule):
         output = []
         for cName in st.smoothPoles.keys():
             #check whether controller was in result files
-            t = self.extractValues(dataList, [cName, '_unlimited'], 'simTime')
-            if not t:
+            t = [None, None]
+            t[0] = self.extractValues(dataList, [cName, '_unlimited'], 'simTime')
+            t[1] = self.extractValues(dataList, [cName, '_limited'], 'simTime')
+            if not (t[0] and t[1]):
                 continue
+
+            timeIdx = 0
+            if len(t[1]) > len(t[0]):
+                #limited controller lastet longer
+                timeIdx = 1
 
             print 'found entry of ', cName
 
             #get curves
             r = [None, None]
             y = [None, None]
+            ydes = [None, None]
             r[0] = self.extractValues(dataList, [cName, '_unlimited'], 'controller_output.0')
             r[1] = self.extractValues(dataList, [cName, '_limited'], 'controller_output.0')
             l = self.extractValues(dataList, [cName, '_limited'], 'limiter_output.0')
-            ydes = self.extractValues(dataList, [cName, '_unlimited'], 'trajectory_output.0')
-            ydEnd = ydes[-1]
+            ydes[0] = self.extractValues(dataList, [cName, '_unlimited'], 'trajectory_output.0')
+            ydes[1] = self.extractValues(dataList, [cName, '_limited'], 'trajectory_output.0')
+            ydEnd = ydes[timeIdx][-1]
             y[0] = self.extractValues(dataList, [cName, '_unlimited'], 'model_output.0')
             y[1] = self.extractValues(dataList, [cName, '_limited'], 'model_output.0')
             
@@ -61,23 +70,24 @@ class eval_C2(PostProcessingModule):
 
             #create plot
             fig = Figure()
+            fig.subplots_adjust(hspace=0.4) 
             axes = []
 
             #fig1 controller output
             axes.append(fig.add_subplot(211))
-            axes[0].set_title(u'\\textbf{Reglerausgänge im Vergleich}')
+            axes[0].set_title(u'Reglerausgänge im Vergleich')
 
             #create limitation tube
-            upperBoundLine = line([0, t[-1]], [limits[0]]*2, ls='--', c=self.line_color)
+            upperBoundLine = line([0, t[timeIdx][-1]], [limits[0]]*2, ls='--', c=self.line_color)
             axes[0].add_line(upperBoundLine)
-            lowerBoundLine = line([0, t[-1]], [limits[1]]*2, ls='--', c=self.line_color)
+            lowerBoundLine = line([0, t[timeIdx][-1]], [limits[1]]*2, ls='--', c=self.line_color)
             axes[0].add_line(lowerBoundLine)
             
-            axes[0].plot(t, r[0], c='limegreen', ls='-', label='r(t) unlimitriert')
-            axes[0].plot(t, r[1], c='indianred', ls='-', label='r(t) limitiert')
+            axes[0].plot(t[0], r[0], c='limegreen', ls='-', label='r(t) unlimitriert')
+            axes[0].plot(t[1], r[1], c='indianred', ls='-', label='r(t) limitiert')
 
             #customize
-            axes[0].set_xlim(left=0, right=t[-1])
+            axes[0].set_xlim(left=0, right=t[timeIdx][-1])
     #        axes.set_ylim(bottom=(self.offset+yd*(1-self.padding/2)),\
     #                top=(self.offset+yd*(1+self.padding)))
 
@@ -87,20 +97,20 @@ class eval_C2(PostProcessingModule):
 
             #fig2 model output
             axes.append(fig.add_subplot(212))
-            axes[1].set_title(u'\\textbf{Ausgangsverlaeufe im Vergleich}')
+            axes[1].set_title(u'Ausgangsverläufe im Vergleich')
 
             #create epsilon tube
-            upperBoundLine = line([0, t[-1]], [ydEnd+eps, ydEnd+eps], ls='--', c=self.line_color)
+            upperBoundLine = line([0, t[timeIdx][-1]], [ydEnd+eps, ydEnd+eps], ls='--', c=self.line_color)
             axes[1].add_line(upperBoundLine)
-            lowerBoundLine = line([0, t[-1]], [ydEnd-eps, ydEnd-eps], ls='--', c=self.line_color)
+            lowerBoundLine = line([0, t[timeIdx][-1]], [ydEnd-eps, ydEnd-eps], ls='--', c=self.line_color)
             axes[1].add_line(lowerBoundLine)
             
-            axes[1].plot(t, ydes, c='b', ls='-', label='w(t)')
-            axes[1].plot(t, y[0],   c='limegreen', ls='-', label='y(t) unlimitriert')
-            axes[1].plot(t, y[1], c='indianred', ls='-', label='y(t) limitiert')
+            axes[1].plot(t[timeIdx], ydes[timeIdx], c='b', ls='-', label='w(t)')
+            axes[1].plot(t[0], y[0],   c='limegreen', ls='-', label='y(t) unlimitriert')
+            axes[1].plot(t[1], y[1], c='indianred', ls='-', label='y(t) limitiert')
 
             #customize
-            axes[1].set_xlim(left=0, right=t[-1])
+            axes[1].set_xlim(left=0, right=t[timeIdx][-1])
     #        axes.set_ylim(bottom=(self.offset+yd*(1-self.padding/2)),\
     #                top=(self.offset+yd*(1+self.padding)))
 

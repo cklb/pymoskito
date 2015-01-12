@@ -510,7 +510,7 @@ class MetaProcessingModule(ProcessingModule):
             axes.grid(color='#ababab', linestyle='--')
         axes.set_xlabel(xlabel, size=st.label_size)
         axes.set_ylabel(ylabel, size=st.label_size)
-        axes.legend(fontsize='small')
+        axes.legend(loc=0, fontsize='small')
         return axes
     
     def plotVariousController(self, source, axes, xPath, yPath, typ, xIndex=-1, yIndex=-1):

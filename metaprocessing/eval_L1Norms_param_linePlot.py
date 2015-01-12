@@ -3,8 +3,8 @@ import os
 
 import matplotlib as mpl
 mpl.use("Qt4Agg")
-#mpl.rcParams['text.usetex']=True
-#mpl.rcParams['text.latex.unicode']=True
+mpl.rcParams['text.usetex']=True
+mpl.rcParams['text.latex.unicode']=True
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 from matplotlib.lines import Line2D as line
@@ -59,7 +59,7 @@ class eval_L1Norms_param_linePlot(MetaProcessingModule):
             xlbl = ''
 
         self.plotSettings(axes[0],\
-                titel=r'Fehlerintegral',\
+                titel=u'Fehlerintegral',\
                 grid=True,\
                 xlabel=xlbl,\
                 ylabel=r'$E \, \lbrack ms\rbrack$',\
@@ -70,7 +70,7 @@ class eval_L1Norms_param_linePlot(MetaProcessingModule):
                 typ='line')
 
         self.plotSettings(axes[1],\
-                titel=r'ITAE Fehler',\
+                titel=u'ITAE Fehler',\
                 grid=True,\
                 xlabel=xlbl,\
                 ylabel=r'$E \, \lbrack ms^2\rbrack$',\
