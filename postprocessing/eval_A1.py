@@ -186,5 +186,6 @@ class eval_A1(PostProcessingModule):
 #        print 'ITAE score: ', errorIntegral
         print 'L1NormITAE: ', L1NormITAE
         print 'L1NormAbs: ', L1NormAbs
+        print '\n'
         output.update({'L1NormITAE': L1NormITAE, 'L1NormAbs': L1NormAbs})
 #        output.update({'ITAE': errorIntegral})
