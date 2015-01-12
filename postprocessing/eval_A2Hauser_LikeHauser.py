@@ -5,8 +5,8 @@ import os
 
 import matplotlib as mpl
 mpl.use("Qt4Agg")
-#mpl.rcParams['text.usetex']=True
-#mpl.rcParams['text.latex.unicode']=True
+mpl.rcParams['text.usetex']=True
+mpl.rcParams['text.latex.unicode']=True
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 
@@ -33,8 +33,7 @@ class eval_A2Hauser_LikeHauser(PostProcessingModule):
         
         controllerDict = {'FController':[],\
                           'GController':[],\
-                          'JController':[],\
-                          'LSSController':[]}
+                          'JController':[]}
         for elem in controllerDict:
             controllerDict.update({elem:{'e':{},'theta':{}, 'psi':{}, 'tau':{}}})    
             for var in controllerDict[elem]:
@@ -122,7 +121,7 @@ class eval_A2Hauser_LikeHauser(PostProcessingModule):
             
         #Plots erzeugen
 #        contr = ['FController', 'GController', 'JController', 'LSSController']
-        contr = ['LSSController', 'JController']    
+        contr = ['FController', 'GController', 'JController']    
         for c in contr:
             print 'controller:', c
             
@@ -140,7 +139,7 @@ class eval_A2Hauser_LikeHauser(PostProcessingModule):
                 axes1.set_ylabel(r'$e \,[m]$', size=st.label_size)
                 
                 axes2 = fig.add_subplot(2, 2, 2)
-                axes2.set_title(r'\textbf{Beam Angle}', size=st.label_size)
+                axes2.set_title(r'\textbf{beam angle}', size=st.label_size)
                 axes2.plot(controllerDict[c]['theta'][i][0], controllerDict[c]['theta'][i][1])
                 axes2.set_xlim(left=0, right=controllerDict[c]['theta'][1][0][-1])
                 axes2.set_xlabel(r'$t \, [s]$', size=st.label_size)
@@ -160,7 +159,7 @@ class eval_A2Hauser_LikeHauser(PostProcessingModule):
                     axes3.set_ylabel(r'$\psi_3 \, [\frac{m}{s^3}]$', size=st.label_size)
                 
                 axes4 = fig.add_subplot(2, 2, 4)
-                axes4.set_title(r'\textbf{Beam Torque}', size=st.label_size)
+                axes4.set_title(r'\textbf{beam torque}', size=st.label_size)
                 axes4.plot(controllerDict[c]['tau'][i][0], controllerDict[c]['tau'][i][1])
                 axes4.set_xlim(left=0, right=controllerDict[c]['tau'][1][0][-1])
                 axes4.set_xlabel(r'$t \,[s]$', size=st.label_size)

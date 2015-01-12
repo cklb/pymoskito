@@ -61,8 +61,8 @@ class eval_L1perA(MetaProcessingModule):
         leg = []
         for elem in controllerDict:
             controllerDict[elem] = self.sortLists(controllerDict[elem])
-            axes.plot(controllerDict[elem][0], controllerDict[elem][1],\
-                       ls='-', c=st.color_cycle[elem])
+            axes.plot(controllerDict[elem][0], controllerDict[elem][1], 'o-',\
+                      c=st.color_cycle[elem])
             leg.append(elem)
             if controllerDict[elem][0]:
                 if xMax < controllerDict[elem][0][-1]:
