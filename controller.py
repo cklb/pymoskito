@@ -14,7 +14,7 @@ from sim_core import SimulationModule
 class Controller(SimulationModule):
 
     order = 0
-    no_conversion = ['JController', 'LSSController', 'PIFeedbackController']
+    no_conversion = ['JController', 'LSSController', 'PIFeedbackController', 'PIXController']
 
     def __init__(self):
         SimulationModule.__init__(self)
@@ -218,7 +218,7 @@ class LSSController(Controller):
             self.K = self.lin.ackerSISO(self.lin.A, self.lin.B, self.settings['poles'])
             self.V = self.lin.calcPrefilter(self.K)
             self.firstRun = False
-            
+
         # calculate u
         u = np.dot(-self.K,np.transpose(x))[0,0] + yd[0]*self.V
 
@@ -331,10 +331,61 @@ class PIFeedbackController(Controller):
             self.firstRun = False
         
         # calculate e
-        e = (yd-x[0,0])*self.step_width + self.e_old
-        self.e_old = e                        
+        e = (yd[0]-x[0,0])*self.step_width + self.e_old
+        self.e_old = e                 
 
         # calculate u
         u = np.dot(-self.K,np.transpose(x))[0,0] + self.K_I*e
 
         return u
+        
+        
+#---------------------------------------------------------------------
+# PIFeedbackController
+#---------------------------------------------------------------------
+class PIXController(Controller):
+    '''
+    linear statespace controller
+    System is linearised by tau0 and x = [x01,x02,x03,x04]
+    with I-controller
+    '''
+    settings = {\
+            'poles': [-3.4, -3.4, -3.4, -3.4],\
+            'r0': 3,\
+            'tick divider': 1,\
+            'K_I': -4,\
+            'ILimit': 0.1,\
+            }
+
+    def __init__(self):
+        Controller.__init__(self)
+        self.firstRun = True
+        self.order = 0
+        self.e_old = 0
+
+    def setStepWidth(self, width):
+        self.step_width = width
+
+    def calcOutput(self, x, yd):
+        # x as row-matrix
+        x = np.array([[x[0],x[1],x[2],x[3]]])
+        if self.firstRun:
+            self.lin = Linearization([self.settings['r0'], 0, 0, 0],\
+                    self.settings['r0'] * st.M*st.G)         
+            self.K = self.lin.ackerSISO(self.lin.A, self.lin.B, self.settings['poles'])
+            self.V = self.lin.calcPrefilter(self.K)
+            self.firstRun = False
+            
+        # calculate u
+        e = (yd[0]-x[0,0])*self.step_width + self.e_old
+        if not abs(e) > self.settings['ILimit']:
+            self.e_old = e   
+        print e
+        u = np.dot(-self.K,np.transpose(x))[0,0]\
+            + yd[0]*self.V\
+            + self.settings['K_I']*e
+
+#        u = np.dot(-self.K,np.transpose(x))[0,0]\
+#            + self.settings['K_I']*(yd[0]-x[0,0]) + yd[0]*self.V
+        return u
+

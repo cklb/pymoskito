@@ -12,6 +12,7 @@ from matplotlib.figure import Figure
 from matplotlib.lines import Line2D as line
 
 from postprocessor import PostProcessingModule
+import settings as st
 
 #define your own functions here
 class eval_A1(PostProcessingModule):
@@ -24,7 +25,7 @@ class eval_A1(PostProcessingModule):
     line_color = '#aaaaaa'
     line_style = '-'
     font_size = 20
-    epsPercent = 2./5
+#    epsPercent = 2./5
     spacing = 0.01
     counter = 0
     
@@ -54,6 +55,7 @@ class eval_A1(PostProcessingModule):
         axes.set_title(r'\textbf{Sprungantwort}')
         axes.plot(t, y, c='k')
         axes.set_xlim(left=0, right=t[-1])
+        axes.set_ylim(0,3.5)
         axes.set_xlabel(r'\textit{Zeit [s]}')
         axes.set_ylabel(r'\textit{Ballposition r(t) [m]}')
         
@@ -100,7 +102,7 @@ class eval_A1(PostProcessingModule):
             do = y_max - yd
             doPercent = do/yd * 100
             #create and add line
-            self.createTimeLine(axes, t, y, to, r'$T_m$')
+            self.createTimeLine(axes, t, y, to, r'$T_o$')
             output.update({'to': to, 'do': do, 'doPercent': doPercent})
         else:
             #print 'OvershootLine is not defined'
@@ -108,7 +110,8 @@ class eval_A1(PostProcessingModule):
 
         #calc damping-time (Beruhigungszeit)
         try:                
-            eps = self.epsPercent*yd/100
+#            eps = self.epsPercent*yd/100
+            eps = st.R
             enterIdx = -1
             for idx, val in enumerate(y):
                 if enterIdx == -1:
@@ -134,7 +137,10 @@ class eval_A1(PostProcessingModule):
         #calc control deviation
         control_deviation = y[-1] - yd
         output.update({'control_deviation': control_deviation})
-
+        
+        # print time data
+        #print str(output) + '\n'    
+        
         self.calcMetrics(data, output)
 
         #check for sim succes
