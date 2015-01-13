@@ -2,8 +2,9 @@
 # -*- coding: utf-8 -*-
 from __future__ import division
 
-from numpy import sin, cos, pi
-from numpy import array as narray
+#from numpy import sin, cos, pi
+#from numpy import array as narray
+import numpy as np
 
 from sim_core import SimulationModule
 import settings as st
@@ -61,11 +62,11 @@ class BallBeamModel(SimulationModel):
         y = x1
 
         dx1 = x2
-        dx2 = self.B*(x1*x4**2 - self.G*sin(x3))
+        dx2 = self.B*(x1*x4**2 - self.G*np.sin(x3))
         dx3 = x4
 
         #inverse nonliniear system transformation
-        u = (tau - self.M* (2*x1*x2*x4 + self.G*x1*cos(x3))) / (self.M*x1**2 + self.J + self.Jb)
+        u = (tau - self.M* (2*x1*x2*x4 + self.G*x1*np.cos(x3))) / (self.M*x1**2 + self.J + self.Jb)
         dx4 = u
        
         return [dx1, dx2, dx3, dx4]
@@ -75,7 +76,7 @@ class BallBeamModel(SimulationModel):
         '''
         if abs(state[0]) > float(self.settings['beam length'])/2:
             raise ModelException('Ball fell down.')
-        if abs(state[2]) > pi/2:
+        if abs(state[2]) > np.pi/2:
             raise ModelException('Beam reached critical angle.')
 
     def calcPositions(self, q):
@@ -83,11 +84,18 @@ class BallBeamModel(SimulationModel):
         Calculate stationary vectors and rot. matrices for bodies
         '''
         #beam
-        r_beam = [0, -self.settings['R']/2 - self.settings['beam width'], 0]
-        T_beam = narray([[cos(q[2]), -sin(q[2]), 0], [sin(q[2]), cos(q[2]), 0], [0, 0, 1]])
+        T_beam = np.array([[np.cos(q[2]), -np.sin(q[2]), 0],\
+                            [np.sin(q[2]), np.cos(q[2]), 0],\
+                            [0, 0, 1]])
+        r_beam0 = np.array([0, -st.visR - st.visBeamWidth/2, 0])
+        r_beam = np.dot(T_beam, r_beam0)
 
         #ball
-        r_ball = [cos(q[2])*q[0], sin(q[2])*q[0], 0]
-        T_ball = narray([[1, 0, 0], [0, 1, 0], [0, 0, 1]])
+        r_ball0 = np.array([q[0], 0, 0])
+        r_ball = np.dot(T_beam, r_ball0)
+        phi = q[0]/st.visR
+        T_ball = np.array([[np.cos(phi), -np.sin(phi), 0],\
+                            [np.sin(phi), np.cos(phi), 0],\
+                            [0, 0, 1]])
 
         return r_beam, T_beam, r_ball, T_ball

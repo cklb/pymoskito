@@ -4,8 +4,8 @@ import os
 
 import matplotlib as mpl
 mpl.use("Qt4Agg")
-#mpl.rcParams['text.usetex']=True
-#mpl.rcParams['text.latex.unicode']=True
+mpl.rcParams['text.usetex']=True
+mpl.rcParams['text.latex.unicode']=True
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 from matplotlib.lines import Line2D as line
@@ -45,9 +45,9 @@ class eval_A2(PostProcessingModule):
         # plots
         fig = Figure()
         fig.subplots_adjust(wspace=0.3, hspace=0.25)
-        fig.suptitle(r'\textbf{' + data['modules']['controller']['type'] + ' '+\
-                     'A_d=' + str(data['modules']['trajectory']['Amplitude'])+ ' '+\
-                     'f_d=' + str(data['modules']['trajectory']['Frequency']) + '}',\
+        fig.suptitle(r'' + data['modules']['controller']['type'] + ' '+\
+                     '$A_d$ =' + str(data['modules']['trajectory']['Amplitude'])+ ' '+\
+                     '$f_d$ =' + str(data['modules']['trajectory']['Frequency']),\
                      size=st.title_size)
     
         axes1 = fig.add_subplot(2, 1, 1)

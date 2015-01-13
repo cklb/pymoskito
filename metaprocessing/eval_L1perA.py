@@ -6,8 +6,8 @@ import settings as st
 
 import matplotlib as mpl
 mpl.use("Qt4Agg")
-#mpl.rcParams['text.usetex']=True
-#mpl.rcParams['text.latex.unicode']=True
+mpl.rcParams['text.usetex']=True
+mpl.rcParams['text.latex.unicode']=True
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 from matplotlib.lines import Line2D as line
@@ -72,6 +72,8 @@ class eval_L1perA(MetaProcessingModule):
 #        axes.set_ylim(top=6.0, bottom=3)
         axes.set_xlabel(r'$'+xLabel+'$', size=st.label_size)
         axes.set_ylabel(r'$'+yLabel+'$', size=st.label_size) 
+        axes.set_title(r'Fehlerintegral $x_{0}$ und $y_{d}$ ueber Amplitude', size=st.label_size)
+        axes.grid(color='#ababab', linestyle='--')
         
         #write results
         filePath = os.path.join(os.path.pardir, 'results', 'metaprocessing', 'A2')

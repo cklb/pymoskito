@@ -24,6 +24,9 @@ J = 0.02    # kgm^2
 Jb = 2e-6   # kgm^2
 G = 9.81    # m/s^2
 B = M/(Jb/R**2+M)
+beam_width = 0.2    # m
+beam_depth = 0.4    # m
+beam_length = 9     # m
 
 # operating point
 q_op = [0, 0, 0, 0]
@@ -36,11 +39,11 @@ poles_LSSController = [-2, -2, -2, -2]
 poles_LuenbergerObserver = [-3, -3, -3, -3]
 
 # Visualization
-beam_width = 0.07   # m
-beam_depth = 0.2   # m
-beam_length = 9     # m
-scale = 1
-ballScale = 20
+ballScale = 30
+visR = R * ballScale
+visBeamWidth = beam_width
+visBeamLength = beam_length
+visBeamDepth = beam_depth
 
 #-----------------------------------------------
 #export settings latex-style
