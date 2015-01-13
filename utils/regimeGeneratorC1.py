@@ -95,8 +95,13 @@ def saveOutput(output, cName, poles, parameter, limits):
 
     if not os.path.isdir(dirPath):
         os.makedirs(dirPath)
-
-    fileName = 'C1_' + cName + '_poles' + str(poles) \
+    
+    if cName == 'all':
+        fileName = 'C1_' + cName\
+                            + '_' + str(parameter)\
+                            + '.sreg'
+    else:
+        fileName = 'C1_' + cName + '_poles' + str(poles) \
                         + '_' + str(parameter)\
                         + '(' + str(simLimits[0]) + ',' + str(simLimits[-1])\
                         + ').sreg'
@@ -165,6 +170,6 @@ for controller in simCases:
     collection += lines
 
 if len(simCases) > 1:
-    saveOutput(collection, 'all', '_', parameter, simLimits)
+    saveOutput(collection, 'all', '', parameter, simLimits)
 
 print 'done.'

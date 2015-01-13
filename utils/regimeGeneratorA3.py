@@ -97,7 +97,7 @@ def saveOutput(output, cName, poles, parameter, limits):
                             + '_' + str(parameter)\
                             + '.sreg'
     else:
-        fileName = 'C1_' + cName + '_poles' + str(poles) \
+        fileName = 'A3_' + cName + '_poles' + str(poles) \
                         + '_' + str(parameter)\
                         + '(' + str(simLimits[0]) + ',' + str(simLimits[-1])\
                         + ').sreg'
