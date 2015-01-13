@@ -6,8 +6,8 @@ import settings as st
 
 import matplotlib as mpl
 mpl.use("Qt4Agg")
-#mpl.rcParams['text.usetex']=True
-#mpl.rcParams['text.latex.unicode']=True
+mpl.rcParams['text.usetex']=True
+mpl.rcParams['text.latex.unicode']=True
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 from matplotlib.lines import Line2D as line
@@ -61,17 +61,19 @@ class eval_L1perFA05(MetaProcessingModule):
         leg = []
         for elem in controllerDict:
             controllerDict[elem] = self.sortLists(controllerDict[elem])
-            axes.plot(controllerDict[elem][0], controllerDict[elem][1],\
-                       ls='-', c=st.color_cycle[elem])
+            axes.plot(controllerDict[elem][0], controllerDict[elem][1], 'o-',\
+                      c=st.color_cycle[elem])
             leg.append(elem)
             if controllerDict[elem][0]:
                 if xMax < controllerDict[elem][0][-1]:
                     xMax = controllerDict[elem][0][-1]       
-        axes.legend(leg, loc=1)
+        axes.legend(leg, loc=0)
         axes.set_xlim(left=0.1, right=xMax)
 #        axes.set_ylim(top=6.0, bottom=3)
         axes.set_xlabel(r'$'+xLabel+'$', size=st.label_size)
         axes.set_ylabel(r'$'+yLabel+'$', size=st.label_size) 
+        axes.set_title(r'Fehlerintegral $\epsilon$ ueber Frequenz', size=st.label_size)
+        axes.grid(color='#ababab', linestyle='--')
         
         #write results
         filePath = os.path.join(os.path.pardir, 'results', 'metaprocessing', 'A2')
