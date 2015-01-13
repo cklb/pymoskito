@@ -173,3 +173,39 @@ class ExactFeedforward(Feedforward):
 #        print '--------------------------------------------'
         
         return tau
+        
+class LinearFeedforward(Feedforward):
+    
+    settings = {\
+        'r0': 3,  \
+        'M': st.M,  \
+        'R': st.R,      \
+        'J': st.J,      \
+        'Jb': st.Jb,     \
+        'G': st.G,      \
+        'B': st.B,      \
+        'beam length': st.beam_length,      \
+        'beam width': st.beam_width,      \
+        'beam depth': st.beam_depth,      \
+        }
+
+
+    derOrder = 4
+    
+    def __init__(self):
+        Feedforward.__init__(self, self.derOrder)
+        self.theta_t = lambda rdd: -rdd/(self.settings['B']*self.settings['G'])
+    
+    def calcOutput(self, yd):
+        tau = 0
+        
+        theta = []
+        # need the second derivation of theta
+        for i in range(2+1):
+            theta.append(self.theta_t(yd[i+2]))
+        
+        tau = (self.settings['M']*self.settings['r0']**2\
+                + self.settings['J'] + self.settings['Jb'])*theta[2]\
+                + self.settings['M']*self.settings['G']*yd[0]
+
+        return tau
