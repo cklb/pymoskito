@@ -3,8 +3,8 @@ import os
 
 import matplotlib as mpl
 mpl.use("Qt4Agg")
-#mpl.rcParams['text.usetex']=True
-#mpl.rcParams['text.latex.unicode']=True
+mpl.rcParams['text.usetex']=True
+mpl.rcParams['text.latex.unicode']=True
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 
@@ -35,7 +35,7 @@ class eval_L1NormAbs_sigma_linePlot(MetaProcessingModule):
                 yPath=['metrics', 'L1NormAbs'],\
                 typ='line')
         self.plotSettings(axes,\
-                titel=r'Fehlerintegral w(t) und y(t) ueber Sigma',\
+                titel=r'Fehlerintegral w(t) und y(t) \"uber Sigma',\
                 grid=True,\
                 xlabel=r'$\sigma \, \lbrack m\rbrack$',\
                 ylabel=r'$E \, \lbrack ms \rbrack$',\
