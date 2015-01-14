@@ -47,7 +47,7 @@ class eval_L1perA(MetaProcessingModule):
         level1 = 'modules'
         level2 = 'trajectory'
         level3 = 'Amplitude'
-        xLabel = 'Amplitude [m]'
+        xLabel = 'A [m]'
         yLabel = 'E [m^2]'
                           
         for elem in postResults:
@@ -72,7 +72,7 @@ class eval_L1perA(MetaProcessingModule):
 #        axes.set_ylim(top=6.0, bottom=3)
         axes.set_xlabel(r'$'+xLabel+'$', size=st.label_size)
         axes.set_ylabel(r'$'+yLabel+'$', size=st.label_size) 
-        axes.set_title(r'Fehlerintegral $x_{0}$ und $y_{d}$ ueber Amplitude', size=st.label_size)
+        axes.set_title(r'Fehlerintegral \"uber Amplitude', size=st.label_size)
         axes.grid(color='#ababab', linestyle='--')
         
         #write results
