@@ -64,6 +64,29 @@ print 'A: ',A
 print 'B: ',B
 print 'C: ',C
 
+
+'''
+Nachweis der Steuerbarkeit des erweiterten Zustandsraummodells
+'''
+Aquer = A.col_join(C).row_join(sp.zeros(5,1))
+Bquer = B.col_join(sp.zeros(1,1))
+Cquer = C.row_join(sp.zeros(1,1))
+
+# Steuerbarkeitsmatrix berechnen
+n = 5
+Qsquer = sp.Matrix()
+for i in range(5):
+    q = (Aquer**i)*Bquer
+    if len(Qsquer) == 0:
+        Qsquer = Bquer
+    else:
+        Qsquer = Qsquer.row_join(q)
+
+
+print '\n Steuerbarkeitsmatrix Qsquer'
+print Qsquer
+
+
 def calcFeedbackGain(A, B, poles):
     n = len(poles)
     param = sp.symbols('s, t1T1, t1T2, t1T3, t1T4')
