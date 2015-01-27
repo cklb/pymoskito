@@ -9,8 +9,8 @@ import settings as st
 import sympy as sp
 from sympy import sin,cos, Matrix
 
-params = sp.symbols('x, x1, x2, x3, x4, x01, x02, x03, x04, u1, tau, tau0, M , G , J , J_ball , R, B')
-x, x1, x2, x3, x4, x01, x02, x03, x04, u1, tau, tau0, M , G , J , J_ball , R, B = params
+params = sp.symbols('s, x, x1, x2, x3, x4, x01, x02, x03, x04, u1, tau, tau0, M , G , J , J_ball , R, B')
+s, x, x1, x2, x3, x4, x01, x02, x03, x04, u1, tau, tau0, M , G , J , J_ball , R, B = params
 
 #f1 = ddr
 f1 = B*(x1*x4**2 - G*sin(x3))
@@ -72,6 +72,12 @@ Aquer = A.col_join(C).row_join(sp.zeros(5,1))
 Bquer = B.col_join(sp.zeros(1,1))
 Cquer = C.row_join(sp.zeros(1,1))
 
+
+'''
+Übertragungsfunktion des Linearisierten Systems
+'''
+G = C*(sp.eye(4)*s - A)**-1*B
+
 # Steuerbarkeitsmatrix berechnen
 n = 5
 Qsquer = sp.Matrix()
@@ -91,7 +97,7 @@ def calcFeedbackGain(A, B, poles):
     n = len(poles)
     param = sp.symbols('s, t1T1, t1T2, t1T3, t1T4')
     s, t1T1, t1T2, t1T3, t1T4 = param
-    
+    A
     poly = 1    
     for s_i in poles:
         poly = (s-s_i)*poly
