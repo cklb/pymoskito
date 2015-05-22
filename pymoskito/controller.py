@@ -3,10 +3,11 @@
 
 import numpy as np
 
-import settings as st
+from examples.ballbeam import settings as st
 from tools import getCoefficients
 from linearization import Linearization
-from sim_core import SimulationModule
+from simulation_modules import SimulationModule
+
 
 #---------------------------------------------------------------------
 # controller base class 

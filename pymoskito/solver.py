@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 
 from scipy.integrate import ode
-from sim_core import SimulationModule
 
-import settings as st
+from simulation_modules import SimulationModule
+from examples.ballbeam import settings as st
+
 
 #---------------------------------------------------------------------
 # solver base class 

@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import cPickle
-import sys
 import traceback
 
 #pyqt
@@ -11,7 +10,7 @@ from PyQt4.QtCore import pyqtSignal
 import os
 
 #own
-import settings as st
+from examples.ballbeam import settings as st
 from tools import getSubValue
 
 class PostProcessor(QtGui.QMainWindow):

@@ -10,7 +10,8 @@ Linearization in x_0
 import sympy as sp
 import numpy as np
 
-import settings as st
+from examples.ballbeam import settings as st
+
 
 class Linearization:
 

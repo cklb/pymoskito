@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import numpy as np
-from sim_core import SimulationModule
+from simulation_modules import SimulationModule
 
 #---------------------------------------------------------------------
 # Disturbance base class 

@@ -2,8 +2,10 @@
 
 import sympy as sp
 import numpy as np
-from sim_core import SimulationModule
-import settings as st
+
+from simulation_modules import SimulationModule
+from examples.ballbeam import settings as st
+
 
 '''
 feedforward

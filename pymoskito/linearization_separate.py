@@ -5,7 +5,6 @@ Created on Mon Dec 01 21:52:06 2014
 Linearization in x_0
 
 """
-import settings as st
 import sympy as sp
 from sympy import sin,cos, Matrix
 

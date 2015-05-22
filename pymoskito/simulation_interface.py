@@ -1,18 +1,16 @@
 # -*- coding: utf-8 -*-
-''' simulator interface
+""" simulator interface
     provides functions to manipulate settings of the simulator and
     to inspect its current state.
-'''
-import sys
+"""
 import inspect
 import copy
 
-#Qt
 from PyQt4 import QtCore, QtGui
 from PyQt4.QtGui import QStandardItemModel, QStandardItem, QItemDelegate, QComboBox
 
-#own
-from sim_core import Simulator
+from simulation_core import Simulator
+
 
 class SimulatorModel(QStandardItemModel):
 
@@ -24,6 +22,7 @@ class SimulatorModel(QStandardItemModel):
             return QtCore.Qt.ItemIsEditable | QtCore.Qt.ItemIsEnabled
         else:
             return QtCore.Qt.ItemIsEnabled
+
 
 class PropertyDelegate(QItemDelegate):
     """

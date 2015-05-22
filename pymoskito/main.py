@@ -10,7 +10,7 @@ import traceback
 from PyQt4 import QtGui, QtCore
 
 #own
-from gui import BallBeamGui, TestGui
+from simulation_gui import SimulationGui, TestGui
 from postprocessor import PostProcessor
 
 #--------------------------------------------------------------------- 
@@ -45,7 +45,7 @@ app = QtGui.QApplication([])
 
 gui = None
 if guiType is 'BallBeamGui':
-    gui = BallBeamGui()
+    gui = SimulationGui()
 elif guiType is 'PostProcessor':
     gui = PostProcessor()
 

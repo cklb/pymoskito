@@ -6,8 +6,8 @@ from __future__ import division
 #from numpy import array as narray
 import numpy as np
 
-from sim_core import SimulationModule
-import settings as st
+from simulation_core import SimulationModule
+from examples.ballbeam import settings as st
 
 #---------------------------------------------------------------------
 # implementation of the system in state space form

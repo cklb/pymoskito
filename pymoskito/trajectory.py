@@ -4,7 +4,7 @@ from __future__ import division
 import sympy as sp
 
 from numpy import sin, cos, pi
-from sim_core import SimulationModule
+from simulation_modules import SimulationModule
 
 #---------------------------------------------------------------------
 # trajectory generation
