@@ -1,0 +1,15 @@
+ # A2
+
+- name: A2-simulation-setup
+  clear previous: !!python/bool True # decide whether previous settings should remain or not
+  model:
+   type: BallBeamModel
+
+  solver:
+   type: VODESolver
+   end time: 30
+
+  trajectory:
+   type: HarmonicTrajectory
+   Frequency: 0.01
+   Amplitude: 3

@@ -1,0 +1,15 @@
+# A3
+
+- name: A3-simulation-setup
+  clear previous: !!python/bool True # decide whether previous settings should remain or not
+  model:
+   type: BallBeamModel
+
+  solver:
+   type: VODESolver
+
+  trajectory:
+   type: SmoothTransitionTrajectory
+   Positions: [0, 3]
+   start time: 0
+   delta t: 10

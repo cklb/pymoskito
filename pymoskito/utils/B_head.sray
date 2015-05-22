@@ -1,0 +1,14 @@
+# B
+- name: B-simulation-setup
+  clear previous: !!python/bool True 
+  model:
+   type: BallBeamModel
+
+  solver:
+   type: VODESolver
+
+  trajectory:
+   type: SmoothTransitionTrajectory
+   Positions: [0, 3]
+   start time: 0
+   delta t: 5
