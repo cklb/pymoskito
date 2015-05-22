@@ -19,15 +19,15 @@ class Simulator(QObject):
     timeChanged = pyqtSignal(float)
 
     # abilities (should match the module names)
-    moduleList = ['model',
-                  'solver',
-                  'disturbance',
-                  'sensor',
-                  'observer',
-                  'controller',
-                  'feedforward',
-                  'limiter',
-                  'trajectory']
+    module_list = ['model']
+                  # 'solver',
+                  # 'disturbance',
+                  # 'sensor',
+                  # 'observer',
+                  # 'controller',
+                  # 'feedforward',
+                  # 'limiter',
+                  # 'trajectory']
 
     def __init__(self, parent=None):
         QObject.__init__(self, parent)
@@ -145,7 +145,7 @@ class Simulator(QObject):
         store all values of finished integration step
         """
         self.storage['simTime'].append(self.current_time)
-        for module in self.moduleList:
+        for module in self.module_list:
             module_values = getattr(self, module + '_output')
             if np.isscalar(module_values):
                 module_values = [module_values]
@@ -190,4 +190,4 @@ class Simulator(QObject):
         return
 
     def list_modules(self):
-        return self.moduleList
+        return self.module_list

@@ -72,9 +72,7 @@ class BallBeamVisualizer(Visualizer):
         self.ren.ResetCamera()
         self.ren.GetActiveCamera().Zoom(1.7)
 
-        # setup the interactor
-        self.iren = parent.GetRenderWindow().GetInteractor()
-        self.iren.Initialize()
+
 
     def calc_positions(self, x):
         """

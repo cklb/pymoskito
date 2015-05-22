@@ -8,29 +8,31 @@ import settings as st
 
 
 class BallBeamModel(Model):
-    public_settings = {'M': st.M,
-                       'R': st.R,
-                       'J': st.J,
-                       'Jb': st.Jb,
-                       'G': st.G,
-                       'beam length': st.beam_length,
-                       'beam width': st.beam_width,
-                       'beam depth': st.beam_depth,
-                       }
+    """
+    Implementation of the Ball and Beam System
+    """
+    public_settings = OrderedDict(M=st.M,
+                                  R=st.R,
+                                  J=st.J,
+                                  Jb=st.Jb,
+                                  G=st.G,
+                                  beamlength=st.beam_length,
+                                  beamwidth=st.beam_width,
+                                  beamdepth=st.beam_depth
+                                  )
 
-    def __init__(self, public_settings):
-        # private settings
-        model_settings = OrderedDict(state_count=4)
-        Model.__init__(self, model_settings)
-        
-        # public settings
+    def __init__(self, settings):
+        # add specific "private" settings
+        settings.update(state_count=4)
+        Model.__init__(self, settings)
+
+        # shortcuts for readability
         self.M = self.settings['M']
         self.R = self.settings['R']
         self.J = self.settings['J']
         self.Jb = self.settings['Jb']
         self.G = self.settings['G']
         self.B = self.M / (self.Jb / self.R ** 2 + self.M)
-        self.firstRun = False
 
     def state_function(self, x, t, *args):
         """
@@ -39,7 +41,7 @@ class BallBeamModel(Model):
         """
         # assert isinstance(x, object)
         assert isinstance(args, float)
-        
+
         # definitoric
         x1 = x[0]
         x2 = x[1]
@@ -64,7 +66,7 @@ class BallBeamModel(Model):
         """
         Check if the ball remains on the beam
         """
-        if abs(x[0]) > float(self.settings['beam length']) / 2:
+        if abs(x[0]) > float(self.settings['beamlength']) / 2:
             raise ModelException('Ball fell down.')
         if abs(x[2]) > np.pi / 2:
             raise ModelException('Beam reached critical angle.')

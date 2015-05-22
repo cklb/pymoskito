@@ -86,9 +86,6 @@ class SimulationGui(QtGui.QMainWindow):
         # add widgets to the docks
         self.propertyDock.addWidget(self.targetView)
 
-        # create model for display
-        self.model = BallBeamModel()
-
         # vtk window
         self.vtkLayout = QtGui.QVBoxLayout()
         self.frame = QtGui.QFrame()
@@ -97,7 +94,7 @@ class SimulationGui(QtGui.QMainWindow):
         self.frame.setLayout(self.vtkLayout)
         self.vtkDock.addWidget(self.frame)
         self.vtk_renderer = vtk.vtkRenderer()
-        self.vtkWidget.AddRenderer(self.ren)
+        self.vtkWidget.GetRenderWindow().AddRenderer(self.vtk_renderer)
         self.visualizer = None
 
         # regime window
@@ -112,7 +109,7 @@ class SimulationGui(QtGui.QMainWindow):
         self.dataDock.addWidget(self.dataList)
         self.dataList.itemDoubleClicked.connect(self.create_plot)
 
-        # action for simulation control
+        # actions for simulation control
         self.actSimulate = QtGui.QAction(self)
         self.actSimulate.setText('Simulate')
         self.actSimulate.setIcon(QtGui.QIcon('data/simulate.png'))
@@ -199,13 +196,15 @@ class SimulationGui(QtGui.QMainWindow):
         self.toolbarSim.addAction(self.actPostprocessing)
         self.postprocessor = None
 
-        # load default config
         self.runningBatch = False
         self.currentRegimeIndex = 0
         self.regimes = []
-        configFile = os.path.join('..', 'regimes', 'default.sreg')
-        self._load_regimes(configFile)
-        self._apply_regime(self.currentRegimeIndex)
+
+        # load default config
+        # configFile = os.path.join('..', 'regimes', 'default.sreg')
+        # self._load_regimes(configFile)
+        # self._apply_regime(self.currentRegimeIndex)
+
         self.regimeFinished.connect(self.run_next_regime)
         self.finishedRegimeBatch.connect(self.regime_batch_finished)
 
@@ -253,6 +252,7 @@ class SimulationGui(QtGui.QMainWindow):
     def set_visualizer(self, vis):
         assert isinstance(vis, Visualizer)
         self.visualizer = vis
+        self.vtkWidget.Initialize()
 
     def play_animation(self):
         """

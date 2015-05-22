@@ -10,11 +10,12 @@ from visualization import BallBeamVisualizer
 # create gui
 app = QtGui.QApplication([])
 gui = SimulationGui()
-gui.show()
 
 # add self defined visualizer
-vis = BallBeamVisualizer(gui.renderer)
+vis = BallBeamVisualizer(gui.vtk_renderer)
 gui.set_visualizer(vis)
+
+gui.show()
 
 if __name__ == '__main__':
     import sys

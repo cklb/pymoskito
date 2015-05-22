@@ -17,13 +17,18 @@ class SimulationModule(QObject):
     """
     __metaclass__ = SimulationModuleMeta
 
-    def __init__(self, parent=None, private_settings=None):
+    def __init__(self, parent=None, settings=None):
         QObject.__init__(self, parent)
-        assert isinstance(private_settings, OrderedDict)
-        self.private_settings = private_settings
+        assert isinstance(settings, OrderedDict)
+        self.settings = settings
 
-        # some shortcuts
-        self.output_dim = self.private_settings["output_dimension"]
+    @abstractproperty
+    def mandatory_settings(self):
+        pass
+
+    @abstractproperty
+    def public_settings(self):
+        pass
 
     @abstractproperty
     def output_dim(self):
@@ -44,12 +49,16 @@ class Model(SimulationModule):
     To be used in the simulation loop the user has the specify certain
     parameters of his implementation. See assertions in _init__
     """
-    def __init__(self, private_settings):
+
+    def __init__(self, settings):
         """
         """
         SimulationModule.__init__(self)
-        assert("state_count" in private_settings)
-        self._private_settings = private_settings
+        assert("state_count" in settings)
+        self._settings = settings
+
+    def mandatory_settings(self):
+        return list("state_count")
 
     def output_dim(self):
         return self._private_settings["state_count"]

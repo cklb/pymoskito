@@ -6,9 +6,6 @@ from simulation_modules import SimulationModule
 from examples.ballbeam import settings as st
 
 
-#---------------------------------------------------------------------
-# solver base class 
-#---------------------------------------------------------------------
 class Solver(SimulationModule):
 
     def __init__(self, mode):
