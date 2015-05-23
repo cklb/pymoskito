@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 from scipy.integrate import ode
 
 from simulation_modules import SimulationModule

@@ -11,7 +11,7 @@ import os
 
 #own
 from examples.ballbeam import settings as st
-from tools import getSubValue
+from tools import get_sub_value
 
 class PostProcessor(QtGui.QMainWindow):
 
@@ -524,8 +524,8 @@ class MetaProcessingModule(ProcessingModule):
         x_all = []
         
         for controller in source:
-            xList = getSubValue(source[controller], xPath)
-            yList = getSubValue(source[controller], yPath)
+            xList = get_sub_value(source[controller], xPath)
+            yList = get_sub_value(source[controller], yPath)
             xList, yList = self.sortLists(xList, yList)
             
             if xIndex >= 0:

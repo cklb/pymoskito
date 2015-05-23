@@ -43,7 +43,7 @@ class SimulationGui(QtGui.QMainWindow):
         # Create Simulation Backend
         self.simProgress = None
         self.sim = SimulatorInteractor(self)
-        self.runSimulation.connect(self.sim.runSimulation)
+        self.runSimulation.connect(self.sim.run_simulation)
         self.sim.simulationFinished.connect(self.simulation_finished)
         self.sim.simulationFailed.connect(self.simulation_failed)
         self.currentDataset = None

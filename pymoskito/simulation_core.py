@@ -1,5 +1,4 @@
 ﻿# -*- coding: utf-8 -*-
-
 from __future__ import division
 from operator import add
 import numpy as np
@@ -19,21 +18,21 @@ class Simulator(QObject):
     timeChanged = pyqtSignal(float)
 
     # abilities (should match the module names)
-    module_list = ['model']
-                  # 'solver',
-                  # 'disturbance',
-                  # 'sensor',
-                  # 'observer',
-                  # 'controller',
-                  # 'feedforward',
-                  # 'limiter',
-                  # 'trajectory']
+    module_list = ['model',
+                   'solver',
+                   # 'disturbance',
+                   # 'sensor',
+                   # 'observer',
+                   'controller',
+                   # 'feedforward',
+                   # 'limiter',
+                   # 'trajectory'
+                   ]
 
     def __init__(self, parent=None):
         QObject.__init__(self, parent)
 
     def _init_states(self):
-        # init fields with known dimension
         self.current_time = 0
 
         # init model output with current state

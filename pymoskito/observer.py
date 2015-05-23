@@ -242,7 +242,7 @@ class HighGainObserver(Observer):
              
             q = sp.zeros(len(x), 1)
             for i in range(len(x)):
-                q[i, 0] = tools.lieDerivative(h, f, x, i)
+                q[i, 0] = tools.lie_derivative(h, f, x, i)
                 
             dq = q.jacobian(x)
             
@@ -250,7 +250,7 @@ class HighGainObserver(Observer):
                 raise Exception('System might not be observable')
              
             # gets p = [p0, p1, ... pn-1]
-            p = tools.getCoefficients(self.settings['poles'])
+            p = tools.get_coefficients(self.settings['poles'])
                 
             k = np.zeros((p.shape[1], 1))           
             for i in range(1, p.shape[1] + 1):

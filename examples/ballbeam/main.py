@@ -5,6 +5,7 @@ from pymoskito.simulation_gui import SimulationGui
 
 # import self defined simulation modules
 from model import BallBeamModel
+from control import *
 from visualization import BallBeamVisualizer
 
 # create gui

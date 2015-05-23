@@ -9,6 +9,10 @@ class SimulationModuleMeta(ABCMeta, pyqtWrapperType):
     pass
 
 
+class SimulationException(Exception):
+    pass
+
+
 class SimulationModule(QObject):
     """ Smallest Unit in Simulation Process.
         Provides necessary functions like output calculation and holds
@@ -20,7 +24,8 @@ class SimulationModule(QObject):
     def __init__(self, parent=None, settings=None):
         QObject.__init__(self, parent)
         assert isinstance(settings, OrderedDict)
-        self.settings = settings
+        assert("tick divider" in settings)
+        self._settings = settings
 
     @abstractproperty
     def mandatory_settings(self):
@@ -30,16 +35,16 @@ class SimulationModule(QObject):
     def public_settings(self):
         pass
 
-    @abstractproperty
-    def output_dim(self):
-        return 0
+    # @abstractproperty
+    # def output_dim(self):
+    #     return 0
 
     @abstractmethod
-    def calc_output(self):
+    def calc_output(self, input_vector):
         pass
 
 
-class ModelException(Exception):
+class ModelException(SimulationException):
     pass
 
 
@@ -49,24 +54,19 @@ class Model(SimulationModule):
     To be used in the simulation loop the user has the specify certain
     parameters of his implementation. See assertions in _init__
     """
-
     def __init__(self, settings):
-        """
-        """
         SimulationModule.__init__(self)
         assert("state_count" in settings)
-        self._settings = settings
 
     def mandatory_settings(self):
         return list("state_count")
 
     def output_dim(self):
-        return self._private_settings["state_count"]
+        return self._settings["state_count"]
 
     def calc_output(self):
         """
-        Not needed for models, since they get wrapped by solver zo compute
-        output values.
+        Not needed for models, since they get wrapped by solver for computation
         :return: None
         """
         return None
@@ -97,5 +97,54 @@ class Model(SimulationModule):
         checks whether the assumptions, made in the modelling process are violated.
         :param x: system state
         :raises: ModelException if violation is detected
+        """
+        pass
+
+
+class ControllerException(SimulationException):
+    pass
+
+
+class Controller(SimulationModule):
+    """
+    Base class for all user defined controllers
+    Use input_order to define order of needed derivatives from trajectory generator
+    """
+    # selectable input sources for controller
+    input_sources = ["system_state", "system_output", "estimated_state"]
+
+    def __init__(self, settings):
+        SimulationModule.__init__(settings)
+        assert("input_order" in settings)
+        assert("input_type" in settings)
+        assert(settings["input_type"] in self.input_sources)
+
+    def input_order(self):
+        return self._settings["input_order"]
+
+    def output_dim(self):
+        return self._settings["output_dim"]
+
+    def mandatory_settings(self):
+        return ["input_order", "input_type"]
+
+    def calc_output(self, input_dict):
+        input_values = next((input_dict["is"][src]
+                             for src in self.input_sources if src == self._settings["input_type"]),
+                            None)
+        if input_values is None:
+            raise ControllerException("Selected Input not available")
+
+        desired_values = input_dict["desired"]
+        return self._control(input_values, desired_values)
+
+    @abstractmethod
+    def control(self, is_values, desired_values):
+        """
+        placeholder for control law, for more sophisticated implementations
+        overload calc_output.
+        :param is_values: input vector of values
+        :param desired_values: desired values
+        :return: control output
         """
         pass
