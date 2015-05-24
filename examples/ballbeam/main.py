@@ -11,12 +11,16 @@ from visualization import BallBeamVisualizer
 # create gui
 app = QtGui.QApplication([])
 gui = SimulationGui()
+gui.show()
 
 # add self defined visualizer
 vis = BallBeamVisualizer(gui.vtk_renderer)
 gui.set_visualizer(vis)
 
-gui.show()
+# load default config
+gui.load_regimes_from_file("default.sreg")
+gui.apply_regime_by_name("test-nonlinear")
+gui.start_simulation()
 
 if __name__ == '__main__':
     import sys

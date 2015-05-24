@@ -26,6 +26,8 @@ from simulation_interface import SimulatorInteractor, SimulatorView
 from visualization import Visualizer
 from postprocessor import PostProcessor
 
+from tools import get_resource
+
 
 class SimulationGui(QtGui.QMainWindow):
     """
@@ -64,7 +66,7 @@ class SimulationGui(QtGui.QMainWindow):
         self.setCentralWidget(self.area)
         self.resize(1000, 700)
         self.setWindowTitle('Ball and Beam')
-        self.setWindowIcon(QtGui.QIcon('data/ball_and_beam.png'))
+        self.setWindowIcon(QtGui.QIcon(get_resource("mosquito.png")))
 
         # create docks
         self.propertyDock = pg.dockarea.Dock('Properties')
@@ -98,11 +100,12 @@ class SimulationGui(QtGui.QMainWindow):
         self.visualizer = None
 
         # regime window
-        self.regimeList = QtGui.QListWidget(self)
-        self.regimeList.setSelectionMode(QtGui.QAbstractItemView.ExtendedSelection)
-        self.regimeDock.addWidget(self.regimeList)
-        self.regimeList.itemDoubleClicked.connect(self.regime_dclicked)
-        self.regimes = []
+        self.regime_list = QtGui.QListWidget(self)
+        self.regime_list.setSelectionMode(QtGui.QAbstractItemView.ExtendedSelection)
+        self.regimeDock.addWidget(self.regime_list)
+        self.regime_list.itemDoubleClicked.connect(self.regime_dclicked)
+        self._regimes = []
+        self.regime_file_name = ""
 
         # data window
         self.dataList = QtGui.QListWidget(self)
@@ -112,19 +115,19 @@ class SimulationGui(QtGui.QMainWindow):
         # actions for simulation control
         self.actSimulate = QtGui.QAction(self)
         self.actSimulate.setText('Simulate')
-        self.actSimulate.setIcon(QtGui.QIcon('data/simulate.png'))
+        self.actSimulate.setIcon(QtGui.QIcon(get_resource("simulate.png")))
         self.actSimulate.triggered.connect(self.start_simulation)
 
         # actions for animation control
         self.actPlayPause = QtGui.QAction(self)
         self.actPlayPause.setText('Play')
-        self.actPlayPause.setIcon(QtGui.QIcon('data/play.png'))
+        self.actPlayPause.setIcon(QtGui.QIcon(get_resource("play.png")))
         self.actPlayPause.setDisabled(True)
         self.actPlayPause.triggered.connect(self.play_animation)
 
         self.actStop = QtGui.QAction(self)
         self.actStop.setText('Stop')
-        self.actStop.setIcon(QtGui.QIcon('data/stop.png'))
+        self.actStop.setIcon(QtGui.QIcon(get_resource("stop.png")))
         self.actStop.setDisabled(True)
         self.actStop.triggered.connect(self.stop_animation)
 
@@ -157,25 +160,25 @@ class SimulationGui(QtGui.QMainWindow):
 
         self.actSave = QtGui.QAction(self)
         self.actSave.setText('Save')
-        self.actSave.setIcon(QtGui.QIcon('data/save.png'))
+        self.actSave.setIcon(QtGui.QIcon(get_resource("save.png")))
         self.actSave.setDisabled(True)
         self.actSave.triggered.connect(self.save_data)
 
         self.actLoadRegimes = QtGui.QAction(self)
         self.actLoadRegimes.setText('load regimes')
-        self.actLoadRegimes.setIcon(QtGui.QIcon('data/load.png'))
+        self.actLoadRegimes.setIcon(QtGui.QIcon(get_resource("load.png")))
         self.actLoadRegimes.setDisabled(False)
-        self.actLoadRegimes.triggered.connect(self.load_regimes_clicked)
+        self.actLoadRegimes.triggered.connect(self.load_regime_dialog)
 
         self.actExecuteRegimes = QtGui.QAction(self)
         self.actExecuteRegimes.setText('execute all regimes')
-        self.actExecuteRegimes.setIcon(QtGui.QIcon('data/execute_regimes.png'))
+        self.actExecuteRegimes.setIcon(QtGui.QIcon(get_resource("execute_regimes.png")))
         self.actExecuteRegimes.setDisabled(True)
         self.actExecuteRegimes.triggered.connect(self.execute_regimes_clicked)
 
         self.actPostprocessing = QtGui.QAction(self)
         self.actPostprocessing.setText('launch postprocessor')
-        self.actPostprocessing.setIcon(QtGui.QIcon('data/postprocessing.png'))
+        self.actPostprocessing.setIcon(QtGui.QIcon(get_resource("postprocessing.png")))
         self.actPostprocessing.setDisabled(False)
         self.actPostprocessing.triggered.connect(self.postprocessing_clicked)
 
@@ -196,14 +199,10 @@ class SimulationGui(QtGui.QMainWindow):
         self.toolbarSim.addAction(self.actPostprocessing)
         self.postprocessor = None
 
+        # regime management
         self.runningBatch = False
         self.currentRegimeIndex = 0
-        self.regimes = []
-
-        # load default config
-        # configFile = os.path.join('..', 'regimes', 'default.sreg')
-        # self._load_regimes(configFile)
-        # self._apply_regime(self.currentRegimeIndex)
+        self._regimes = []
 
         self.regimeFinished.connect(self.run_next_regime)
         self.finishedRegimeBatch.connect(self.regime_batch_finished)
@@ -217,11 +216,11 @@ class SimulationGui(QtGui.QMainWindow):
         self.statusBar().addPermanentWidget(self.timeLabel)
 
         # shortcuts
-        self.delShort = QtGui.QShortcut(QtGui.QKeySequence(QtCore.Qt.Key_Delete), self.regimeList)
+        self.delShort = QtGui.QShortcut(QtGui.QKeySequence(QtCore.Qt.Key_Delete), self.regime_list)
         self.delShort.activated.connect(self.remove_regime_items)
 
         self.shortOpenRegime = QtGui.QShortcut(QtGui.QKeySequence.Open, self)
-        self.shortOpenRegime.activated.connect(self.load_regimes_clicked)
+        self.shortOpenRegime.activated.connect(self.load_regime_dialog)
 
         self.shortSaveResult = QtGui.QShortcut(QtGui.QKeySequence.Save, self)
         self.shortSaveResult.activated.connect(self.save_data)
@@ -260,7 +259,7 @@ class SimulationGui(QtGui.QMainWindow):
         """
         # self.statusLabel.setText('playing animation')
         self.actPlayPause.setText('Pause')
-        self.actPlayPause.setIcon(QtGui.QIcon('data/pause.png'))
+        self.actPlayPause.setIcon(QtGui.QIcon(get_resource("data/pause.png")))
         self.actPlayPause.triggered.disconnect(self.play_animation)
         self.actPlayPause.triggered.connect(self.pause_animation)
         self.shortPlayPause.activated.disconnect(self.play_animation)
@@ -301,7 +300,7 @@ class SimulationGui(QtGui.QMainWindow):
         """
         start the simulation and disable start button
         """
-        regime_name = str(self.regimeList.item(self.currentRegimeIndex).text())
+        regime_name = str(self.regime_list.item(self.currentRegimeIndex).text())
         self.statusLabel.setText('simulating ' + regime_name + ':')
         print 'Simulating: ', regime_name
 
@@ -328,7 +327,7 @@ class SimulationGui(QtGui.QMainWindow):
 
         self.statusLabel.setText('dumping data')
         self.currentDataset.update({'regime name': name})
-        path = os.path.join(os.path.pardir, 'results', 'simulation', self.regimeFileName)
+        path = os.path.join(os.path.pardir, 'results', 'simulation', self.regime_file_name)
 
         # check for path existence
         if not os.path.isdir(path):
@@ -338,7 +337,7 @@ class SimulationGui(QtGui.QMainWindow):
         with open(file_name, 'wb') as f:
             cPickle.dump(self.currentDataset, f, protocol=2)
 
-    def load_regimes_clicked(self):
+    def load_regime_dialog(self):
         regime_path = os.path.join('../regimes/')
         file_name = QtGui.QFileDialog.getOpenFileName(self,
                                                       "Open Regime File",
@@ -347,52 +346,65 @@ class SimulationGui(QtGui.QMainWindow):
         if not file_name:
             return
 
-        self._load_regimes(str(file_name))
+        self.load_regimes_from_file(str(file_name))
 
-    def _load_regimes(self, file_name):
+    def load_regimes_from_file(self, file_name):
         """
         load simulation regime from file
         """
-        self.regimeFileName = os.path.split(file_name)[-1][:-5]
-        print 'loading regime file: ', self.regimeFileName
+        self.regime_file_name = os.path.split(file_name)[-1][:-5]
+        print("loading regime file: {0}".format(self.regime_file_name))
         with open(file_name, 'r') as f:
-            self.regimes += yaml.load(f)
+            self._regimes += yaml.load(f)
 
         self._update_regime_list()
 
-        if self.regimes:
+        if self._regimes:
             self.actExecuteRegimes.setDisabled(False)
 
-        self.statusBar().showMessage('loaded ' + str(len(self.regimes)) + ' regimes.', 1000)
+        self.statusBar().showMessage('loaded ' + str(len(self._regimes)) + ' regimes.', 1000)
         return
 
     def _update_regime_list(self):
-        self.regimeList.clear()
-        for reg in self.regimes:
-            self.regimeList.addItem(reg['name'])
+        self.regime_list.clear()
+        for reg in self._regimes:
+            self.regime_list.addItem(reg['Name'])
 
     def remove_regime_items(self):
-        if self.regimeList.currentRow() >= 0:
+        if self.regime_list.currentRow() >= 0:
             # flag all selected files as invalid
-            items = self.regimeList.selectedItems()
+            items = self.regime_list.selectedItems()
             for item in items:
-                del self.regimes[self.regimeList.row(item)]
-                self.regimeList.takeItem(self.regimeList.row(item))
+                del self._regimes[self.regime_list.row(item)]
+                self.regime_list.takeItem(self.regime_list.row(item))
 
     def regime_dclicked(self, item):
         """
         applies the selected regime to the current target
         """
-        regime_name = str(item.text())
-        self.statusBar().showMessage('applying regime: ' + regime_name, 1000)
-        self.sim.setRegime(next((reg for reg in self.regimes if reg['name'] == regime_name), None))
+        self.apply_regime_by_name(str(item.text()))
 
-    def _apply_regime(self, index=0):
-        if index >= len(self.regimes):
+    def apply_regime_by_name(self, regime_name):
+        """
+        param regime_name:
+        :return:
+        """
+        # get regime obj
+        regime = next((reg for reg in self._regimes if reg['Name'] == regime_name), None)
+        if regime is None:
+            print("apply_regime_by_name(): Error no regime called {0}".format(regime_name))
+            return
+
+        # apply
+        self.statusBar().showMessage('applying regime: ' + regime_name, 1000)
+        self.sim.set_regime(regime)
+
+    def _apply_regime_by_idx(self, index=0):
+        if index >= len(self._regimes):
             print 'applyRegime(): index error!'
             return
 
-        self.sim.setRegime(self.regimes[index])
+        self.sim.set_regime(self._regimes[index])
 
     def execute_regimes_clicked(self):
         """
@@ -408,11 +420,11 @@ class SimulationGui(QtGui.QMainWindow):
         """
         self.currentRegimeIndex += 1
         # are we finished?
-        if self.currentRegimeIndex >= len(self.regimes):
+        if self.currentRegimeIndex >= len(self._regimes):
             self.finishedRegimeBatch.emit()
             return
 
-        self._apply_regime(self.currentRegimeIndex)
+        self._apply_regime_by_idx(self.currentRegimeIndex)
         self.start_simulation()
 
     def regime_batch_finished(self):
@@ -451,7 +463,7 @@ class SimulationGui(QtGui.QMainWindow):
         # self.playAnimation()
 
         if self.runningBatch:
-            regime_name = self.regimes[self.currentRegimeIndex]['name']
+            regime_name = self._regimes[self.currentRegimeIndex]['name']
             self.save_data(regime_name)
             self.regimeFinished.emit()
         else:
@@ -466,8 +478,8 @@ class SimulationGui(QtGui.QMainWindow):
         self.simulation_finished(data)
 
     def _read_results(self):
-        self.currentStepSize = 1.0 / self.currentDataset['modules']['solver']['measure rate']
-        self.currentEndTime = self.currentDataset['modules']['solver']['end time']
+        self.currentStepSize = 1.0 / self.currentDataset['modules']['Solver']['measure rate']
+        self.currentEndTime = self.currentDataset['modules']['Solver']['end time']
         self.validData = True
 
     def add_plot_to_dock(self, plot_widget):
@@ -529,7 +541,8 @@ class SimulationGui(QtGui.QMainWindow):
 
         # update state of rendering
         if self.visualizer:
-            state = [self.interpolate(self.currentDataset['results']['model_output.' + str(i)])
+            # TODO think of good place to convert date repr
+            state = [self.interpolate(self.currentDataset['results']["Model"])
                      for i in range(self.model.getOutputDimension())]
             self.visualizer.update_scene(state)
 
@@ -540,7 +553,7 @@ class SimulationGui(QtGui.QMainWindow):
         :param data: dataset in which the correct datum has to be found
         :return: datum fitting the current playbacktime
         """
-        idx = next((index for index, val in enumerate(self.currentDataset['results']['simTime'])
+        idx = next((index for index, val in enumerate(self.currentDataset['results']['time'])
                     if val >= self.playbackTime), None)
 
         if not idx:

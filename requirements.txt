@@ -1,3 +1,4 @@
+sympy
+scipy
 pyqtgraph
-PyQt4
 wheel>=0.23.0

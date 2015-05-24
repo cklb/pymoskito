@@ -27,33 +27,31 @@ class BallBeamModel(Model):
         Model.__init__(self, settings)
 
         # shortcuts for readability
-        self.M = self.settings['M']
-        self.R = self.settings['R']
-        self.J = self.settings['J']
-        self.Jb = self.settings['Jb']
-        self.G = self.settings['G']
+        self.M = self._settings['M']
+        self.R = self._settings['R']
+        self.J = self._settings['J']
+        self.Jb = self._settings['Jb']
+        self.G = self._settings['G']
         self.B = self.M / (self.Jb / self.R ** 2 + self.M)
 
-    def state_function(self, x, t, *args):
+    def state_function(self, t, x, args):
         """
         Calculations of system state changes
         :type args: system input tau
         """
-        # assert isinstance(x, object)
-        assert isinstance(args, float)
 
         # definitoric
         x1 = x[0]
         x2 = x[1]
         x3 = x[2]
         x4 = x[3]
-        tau = args
+        tau = args[0]
 
         dx1 = x2
         dx2 = self.B * (x1 * x4 ** 2 - self.G * np.sin(x3))
         dx3 = x4
 
-        # inverse nonliniear system transformation
+        # inverse nonlinear system transformation
         u = (tau - self.M * (2 * x1 * x2 * x4 + self.G * x1 * np.cos(x3))) / (self.M * x1 ** 2 + self.J + self.Jb)
         dx4 = u
 
@@ -66,9 +64,17 @@ class BallBeamModel(Model):
         """
         Check if the ball remains on the beam
         """
-        if abs(x[0]) > float(self.settings['beamlength']) / 2:
+        if abs(x[0]) > float(self._settings['beamlength']) / 2:
             raise ModelException('Ball fell down.')
         if abs(x[2]) > np.pi / 2:
             raise ModelException('Beam reached critical angle.')
+
+    def calc_output(self, input_vector):
+        """
+        return ball position as output
+        :param input_vector: input values
+        :return: ball position
+        """
+        return input_vector[0]
 
 

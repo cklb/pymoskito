@@ -2,9 +2,21 @@
 """
 Tools, functions and other funny things
 """
+import os
 import sympy as sp
 import numpy as np
 import copy
+
+
+def get_resource(res_name):
+    """
+    find path to specified resource
+    :param res_name: resource
+    :return: path to resource
+    """
+    own_path = os.path.dirname(__file__)
+    resource_path = os.path.abspath(os.path.join(own_path, "data"))
+    return os.path.join(resource_path, res_name)
 
 
 def sort_tree(dataList, sortKeyPath):

@@ -21,15 +21,15 @@ class SimulationModule(QObject):
     """
     __metaclass__ = SimulationModuleMeta
 
-    def __init__(self, parent=None, settings=None):
-        QObject.__init__(self, parent)
+    def __init__(self, settings):
+        QObject.__init__(self, None)
         assert isinstance(settings, OrderedDict)
-        assert("tick divider" in settings)
+        assert ("tick divider" in settings)
         self._settings = settings
 
-    @abstractproperty
-    def mandatory_settings(self):
-        pass
+    # @abstractproperty
+    # def mandatory_settings(self):
+    # pass
 
     @abstractproperty
     def public_settings(self):
@@ -38,6 +38,10 @@ class SimulationModule(QObject):
     # @abstractproperty
     # def output_dim(self):
     #     return 0
+
+    @property
+    def tick_divider(self):
+        return self._settings["tick divider"]
 
     @abstractmethod
     def calc_output(self, input_vector):
@@ -54,25 +58,20 @@ class Model(SimulationModule):
     To be used in the simulation loop the user has the specify certain
     parameters of his implementation. See assertions in _init__
     """
-    def __init__(self, settings):
-        SimulationModule.__init__(self)
-        assert("state_count" in settings)
 
-    def mandatory_settings(self):
-        return list("state_count")
+    def __init__(self, settings):
+        settings.update({"tick divider": 1})
+        SimulationModule.__init__(self, settings)
+        assert ("state_count" in settings)
+
+    # def mandatory_settings(self):
+    # return list("state_count")
 
     def output_dim(self):
         return self._settings["state_count"]
 
-    def calc_output(self):
-        """
-        Not needed for models, since they get wrapped by solver for computation
-        :return: None
-        """
-        return None
-
     @abstractmethod
-    def state_function(self, x, t, *args):
+    def state_function(self, t, x, args):
         """
         function that calculates the state derivatives of a system with state x at time t.
         :param x: system state
@@ -101,6 +100,44 @@ class Model(SimulationModule):
         pass
 
 
+class SolverException(SimulationException):
+    pass
+
+
+class Solver(SimulationModule):
+    """
+    Base Class for solver implementations
+    """
+
+    def __init__(self, settings):
+        settings.update({"tick divider": 1})
+        SimulationModule.__init__(self, settings)
+        assert ("Model" in settings)
+        assert isinstance(settings["Model"], Model)
+        self._model = settings["Model"]
+
+    def calc_output(self, input_vector):
+        self.set_input(input_vector["Controller"])
+        output = self.integrate(input_vector["time"])
+        try:
+            self._model.check_consistency(output)
+        except ModelException as e:
+            SolverException("Timestep Integration failed! Model raised {0]".format(e.message))
+        return output
+
+    @abstractmethod
+    def set_input(self, *args):
+        pass
+
+    @abstractmethod
+    def integrate(self, t):
+        pass
+
+    @abstractproperty
+    def t(self):
+        pass
+
+
 class ControllerException(SimulationException):
     pass
 
@@ -111,35 +148,37 @@ class Controller(SimulationModule):
     Use input_order to define order of needed derivatives from trajectory generator
     """
     # selectable input sources for controller
-    input_sources = ["system_state", "system_output", "estimated_state"]
+    input_sources = ["system_state", "system_output", "observer"]
 
     def __init__(self, settings):
-        SimulationModule.__init__(settings)
-        assert("input_order" in settings)
-        assert("input_type" in settings)
-        assert(settings["input_type"] in self.input_sources)
+        SimulationModule.__init__(self, settings)
+        assert ("input_order" in settings)
+        assert ("input_type" in settings)
+        assert (settings["input_type"] in self.input_sources)
+        assert ("output_dim" in settings)
 
+    @property
     def input_order(self):
         return self._settings["input_order"]
 
     def output_dim(self):
         return self._settings["output_dim"]
 
-    def mandatory_settings(self):
-        return ["input_order", "input_type"]
+    # def mandatory_settings(self):
+    # return ["input_order", "input_type"]
 
     def calc_output(self, input_dict):
-        input_values = next((input_dict["is"][src]
+        input_values = next((input_dict[src]
                              for src in self.input_sources if src == self._settings["input_type"]),
                             None)
         if input_values is None:
             raise ControllerException("Selected Input not available")
 
-        desired_values = input_dict["desired"]
+        desired_values = input_dict["Trajectory"]
         return self._control(input_values, desired_values)
 
     @abstractmethod
-    def control(self, is_values, desired_values):
+    def _control(self, is_values, desired_values):
         """
         placeholder for control law, for more sophisticated implementations
         overload calc_output.
@@ -147,4 +186,27 @@ class Controller(SimulationModule):
         :param desired_values: desired values
         :return: control output
         """
+        pass
+
+
+class TrajectoryException(SimulationException):
+    pass
+
+
+class Trajectory(SimulationModule):
+    """
+    Base class for all trajectory generators
+    """
+
+    def __init__(self, settings):
+        settings.update({"tick divider": 1})
+        SimulationModule.__init__(self, settings)
+        assert ("differential_order" in settings)
+
+    def calc_output(self, input_vector):
+        desired = self._desired_values(input_vector["time"])
+        return desired
+
+    @abstractmethod
+    def _desired_values(self, t):
         pass

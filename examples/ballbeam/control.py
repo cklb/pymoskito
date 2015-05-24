@@ -41,19 +41,21 @@ class FController(Controller):
     """
     controller created by changing f(x)
     """
-
     public_settings = OrderedDict([("poles", [-3.1, -3.1, -3.1, -3.1]),
-                                  ("tick_divider", 1)])
+                                  ("tick divider", 1)])
 
     def __init__(self, settings):
         # add specific "private" settings
         settings.update(input_order=4)
+        settings.update(output_dim=4)
+        settings.update(input_type="system_state")
+
         Controller.__init__(self, settings)
 
         # run pole placement
         self.k = get_coefficients(self._settings["poles"])[0]
 
-    def control(self, is_values, desired_values):
+    def _control(self, is_values, desired_values):
         # input abbreviations
         x = is_values
         yd = desired_values
