@@ -65,7 +65,7 @@ class SimulationGui(QtGui.QMainWindow):
         # Window properties
         self.setCentralWidget(self.area)
         self.resize(1000, 700)
-        self.setWindowTitle('Ball and Beam')
+        self.setWindowTitle("PyMoskito")
         self.setWindowIcon(QtGui.QIcon(get_resource("mosquito.png")))
 
         # create docks
@@ -259,7 +259,7 @@ class SimulationGui(QtGui.QMainWindow):
         """
         # self.statusLabel.setText('playing animation')
         self.actPlayPause.setText('Pause')
-        self.actPlayPause.setIcon(QtGui.QIcon(get_resource("data/pause.png")))
+        self.actPlayPause.setIcon(QtGui.QIcon(get_resource("pause.png")))
         self.actPlayPause.triggered.disconnect(self.play_animation)
         self.actPlayPause.triggered.connect(self.pause_animation)
         self.shortPlayPause.activated.disconnect(self.play_animation)
@@ -273,7 +273,7 @@ class SimulationGui(QtGui.QMainWindow):
         # self.statusLabel.setText('pausing animation')
         self.playbackTimer.stop()
         self.actPlayPause.setText('Play')
-        self.actPlayPause.setIcon(QtGui.QIcon('data/play.png'))
+        self.actPlayPause.setIcon(QtGui.QIcon(get_resource("play.png")))
         self.actPlayPause.triggered.disconnect(self.pause_animation)
         self.actPlayPause.triggered.connect(self.play_animation)
         self.shortPlayPause.activated.disconnect(self.pause_animation)
@@ -288,7 +288,7 @@ class SimulationGui(QtGui.QMainWindow):
             # animation is playing -> stop it
             self.playbackTimer.stop()
             self.actPlayPause.setText('Play')
-            self.actPlayPause.setIcon(QtGui.QIcon('data/play.png'))
+            self.actPlayPause.setIcon(QtGui.QIcon(get_resource("play.png")))
             self.actPlayPause.triggered.disconnect(self.pause_animation)
             self.actPlayPause.triggered.connect(self.play_animation)
             self.shortPlayPause.activated.disconnect(self.pause_animation)
@@ -541,14 +541,13 @@ class SimulationGui(QtGui.QMainWindow):
 
         # update state of rendering
         if self.visualizer:
-            # TODO think of good place to convert date repr
-            state = [self.interpolate(self.currentDataset['results']["Model"])
-                     for i in range(self.model.getOutputDimension())]
+            state = self.interpolate(self.currentDataset['results']["Model"])
             self.visualizer.update_scene(state)
+            self.vtkWidget.GetRenderWindow().Render()
 
     def interpolate(self, data):
         """
-        find corresponding index in dataset that fits the current playback time
+        find corresponding item in dataset that fits the current playback time
 
         :param data: dataset in which the correct datum has to be found
         :return: datum fitting the current playbacktime
@@ -556,10 +555,17 @@ class SimulationGui(QtGui.QMainWindow):
         idx = next((index for index, val in enumerate(self.currentDataset['results']['time'])
                     if val >= self.playbackTime), None)
 
-        if not idx:
-            return 0
+        if idx is None:
+            print("interpolate(): Error no entry found for t={0}".format(self.playbackTime))
+            return None
         else:
-            return data[idx]
+            if len(data.shape) == 1:
+                return data
+            elif len(data.shape) == 2:
+                return data[idx][:]
+            else:
+                print("interpolate(): Error Dimension {0} not understood.".format(data.shape))
+                return None
 
     def _update_data_list(self):
         self.dataList.clear()
@@ -573,7 +579,7 @@ class SimulationGui(QtGui.QMainWindow):
         """
         title = str(item.text())
         data = self.currentDataset['results'][title]
-        t = self.currentDataset['results']['simTime']
+        t = self.currentDataset['results']['time']
 
         dock = pg.dockarea.Dock(title)
         self.area.addDock(dock, 'above', self.plotDocks[-1])
@@ -606,9 +612,10 @@ class SimulationGui(QtGui.QMainWindow):
                 if not self.dataList.findItems(dock.name(), QtCore.Qt.MatchExactly):
                     # no data for this plot -> reset it
                     widget.getPlotItem().clear()
+                    # TODO remove tab from dock and del instance
                 else:
                     widget.getPlotItem().clear()
-                    widget.getPlotItem().plot(x=self.currentDataset['results']['simTime'],
+                    widget.getPlotItem().plot(x=self.currentDataset['results']['time'],
                                               y=self.currentDataset['results'][dock.name()])
 
     def target_view_changed(self, index):

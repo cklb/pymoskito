@@ -83,7 +83,7 @@ class SmoothTransition(Trajectory):
         # setup symbolic expressions
         tau, k = sp.symbols('tau, k')
 
-        gamma = self._settings["derivative_order"] + 1
+        gamma = self._settings["differential_order"] + 1
         alpha = sp.factorial(2 * gamma + 1)
 
         f = sp.binomial(gamma, k) * (-1) ** k * tau ** (gamma + k + 1) / (gamma + k + 1)
@@ -118,7 +118,7 @@ class SmoothTransition(Trajectory):
                     ya = yd[0]
                 else:
                     ya = 0
-                y[order] = ya + (yd[1] - yd[0]) * dphi((t - t0) / dt) * 1 / dt ** order
+                y[order] = ya + (yd[1] - yd[0])*dphi((t - t0) / dt)*1/dt**order
 
         return y
 

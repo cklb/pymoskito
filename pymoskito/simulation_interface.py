@@ -12,7 +12,7 @@ from PyQt4.QtGui import QStandardItemModel, QStandardItem, QItemDelegate, QCombo
 
 from simulation_modules import SimulationModule
 from standard_modules import *
-from simulation_core import Simulator, SimulationSettings
+from simulation_core import Simulator, SimulationSettings, SimulationStateChange
 
 
 class SimulatorModel(QStandardItemModel):
@@ -127,7 +127,7 @@ class SimulatorInteractor(QtCore.QObject):
 
         self._sim = None
         self._sim_settings = None
-        self.simThread = None
+        self.simThread = QtCore.QThread()
         self._sim_modules = {}
         self.sim_data = {'modules': {}}
 
@@ -260,8 +260,7 @@ class SimulatorInteractor(QtCore.QObject):
                 settings.update(Model=self._sim_modules["Model"])
                 self._sim_settings = SimulationSettings(settings["start time"],
                                                         settings["end time"],
-                                                        settings["measure rate"],
-                                                        settings["initial state"])
+                                                        settings["measure rate"])
             elif module_name == "disturbance":
                 # TODO
                 pass
@@ -359,39 +358,55 @@ class SimulatorInteractor(QtCore.QObject):
 
         # setup simulator
         self._sim = Simulator(self._sim_settings, self._sim_modules)
+        self._sim.moveToThread(self.simThread)
 
-        # setup threads
+        # setup simulation modules
         for module in self._sim_modules.values():
             module.moveToThread(self.simThread)
 
-        self.simThread = QtCore.QThread()
-        self._sim.moveToThread(self.simThread)
+        # setup signal connections
         self.simThread.started.connect(self._sim.run)
-        self._sim.finished.connect(self.sim_finished)
-        self._sim.failed.connect(self.sim_failed)
-        self._sim.timeChanged.connect(self.simulation_state_changed)
+        self._sim.state_changed.connect(self.simulation_state_changed)
+        self._sim.finished.connect(self.simThread.quit)
+        self.simThread.finished.connect(self.sim_finished)
         self.end_time = self._sim_settings.end_time
 
         # run
         self.simThread.start()
 
-    def simulation_state_changed(self, t):
+    @QtCore.pyqtSlot(SimulationStateChange)
+    def simulation_state_changed(self, state_change):
         """
         calculate overall progress
         """
-        progress = int(t / self._sim_settings.end_time * 100)
-        if progress != self.last_progress:
-            self.simulationProgressChanged.emit(progress)
-            self.last_progress = progress
+        if state_change.type == "time":
+            print("Simulation time changed: {0}".format(state_change.t))
+            progress = int(state_change.t / self._sim_settings.end_time * 100)
+            if progress != self.last_progress:
+                self.simulationProgressChanged.emit(progress)
+                self.last_progress = progress
+        elif state_change.type == "start":
+            # TODO
+            pass
+        elif state_change.type == "finish":
+            print("Simulation finished")
+            self.sim_data.update({'results': copy.deepcopy(state_change.data)})
+            # TODO change this because its ugly
+            self.sim_data["modules"].update({"Simulator": copy.copy(self._sim.settings)})
+        else:
+            print("simulation_state_changed(): ERROR Unknown state {0}".format(state_change.type))
 
     def _sim_aftercare(self):
-        # stop thread
-        self.simThread.quit()
-
         # delete modules
         for module in self._sim_modules.keys():
             del module
+        self._sim_modules = {}
 
+        # delete sim
+        self.simThread.started.disconnect(self._sim.run)
+        self._sim.state_changed.disconnect(self.simulation_state_changed)
+        self._sim.finished.disconnect(self.simThread.quit)
+        self.simThread.finished.disconnect(self.sim_finished)
         del self._sim
 
     def _postprocessing(self):
@@ -409,20 +424,18 @@ class SimulatorInteractor(QtCore.QObject):
         data = self.sim_data['results']
         return [(data[a][i] - data[b][i]) for i in range(len(data['simTime']))]
 
-    @QtCore.pyqtSlot(dict)
-    def sim_finished(self, data):
-        # TODO rethink this to many duplicated lines of code
-        self.sim_data.update({'results': copy.deepcopy(data)})
-        self.sim_data["modules"].update({"Simulator": copy.copy(self._sim.settings)})
+    def sim_finished(self):  # , data):
+        # TODO rethink this! Too many duplicated lines of code
 
         self._sim_aftercare()
+        # TODO correct and activate
         # self._postprocessing()
 
         self.simulationFinished.emit(self.sim_data)
 
-    @QtCore.pyqtSlot(dict)
-    def sim_failed(self, data):
-        self.sim_data.update({'results': copy.deepcopy(data)})
-        self._sim_aftercare()
-        # self._postprocessing()
-        self.simulationFailed.emit(self.sim_data)
+    # @QtCore.pyqtSlot(dict)
+    # def sim_failed(self, data):
+    #     self.sim_data.update({'results': copy.deepcopy(data)})
+    #     self._sim_aftercare()
+    #     # self._postprocessing()
+    #     self.simulationFailed.emit(self.sim_data)

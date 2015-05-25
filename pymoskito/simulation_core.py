@@ -6,12 +6,27 @@ from PyQt4.QtCore import QObject, pyqtSignal, pyqtSlot
 from simulation_modules import SimulationException
 
 
+class SimulationStateChange(object):
+    """
+    Object that is emitted when Simulator changes its state.
+    This happens on:
+        - Initialisation
+        - Start of Simulation
+        - Accomplishment of new progress step
+        - Finish of Simulation
+        - Abortion of Simulation
+    """
+    def __init__(self, **kwargs):
+        assert "type" in kwargs.keys()
+        for key, val in kwargs.iteritems():
+            setattr(self, key, val)
+
+
 class SimulationSettings:
-    def __init__(self, start_time, end_time, measure_rate, initial_state):
+    def __init__(self, start_time, end_time, measure_rate):
         self.start_time = start_time
         self.end_time = end_time
         self.measure_rate = measure_rate
-        self.initial_values = initial_state
 
 
 class Simulator(QObject):
@@ -21,9 +36,8 @@ class Simulator(QObject):
         Calculated values will be stored every 1 / measure rate seconds.
     """
 
-    finished = pyqtSignal(dict)
-    failed = pyqtSignal(dict)
-    timeChanged = pyqtSignal(float)
+    finished = pyqtSignal()
+    state_changed = pyqtSignal(SimulationStateChange)
 
     # abilities (should match the module names)
     module_list = ['Model',
@@ -55,13 +69,14 @@ class Simulator(QObject):
         self._current_outputs.update(time=0)
         for mod_name, obj in self._simulation_modules.iteritems():
             self._counter.update({mod_name: obj.tick_divider})
-            self._current_outputs.update(mod_name=[])
+            self._current_outputs.update({mod_name: []})
             # TODO think whether it is needed more specific (output dimension)
             self._current_outputs[mod_name] = []
 
         # init model output with current state
         # TODO make use of start time setting
-        self._current_outputs["Solver"] = self._settings.initial_values
+        self._current_outputs["Solver"] = self._simulation_modules["Model"].initial_state
+
         return
 
         # TODO special init for other blocks
@@ -142,11 +157,7 @@ class Simulator(QObject):
 
         # integrate model
         self._calc_module("Solver")
-        # self.solver.setInput(self.limiter_output)
-        # self.solver_output = self.solver.integrate(self.current_time)
-        #
-        # # check credibility
-        # self.model.checkConsistancy(self.solver_output)
+
         return
 
     def _store_values(self):
@@ -181,11 +192,14 @@ class Simulator(QObject):
         """
         t = self._current_outputs["time"]
         if t - self.updated_time > 1:
-            self.timeChanged.emit(t)
+            self.state_changed.emit(SimulationStateChange(type="time", t=t))
+            # self.timeChanged.emit(t)
             self.updated_time = t
 
     @pyqtSlot()
     def run(self):
+
+        end_state = None
         try:
             while self._current_outputs["time"] <= self._settings.end_time:
                 t = self._simulation_modules["Solver"].t
@@ -197,16 +211,37 @@ class Simulator(QObject):
                 self._store_values()
                 self._check_time()
 
+            self._storage.update(finished=True)
+            end_state = "finish"
+
         except SimulationException as e:
             print 'Simulator.run(): Model ERROR: ', e.args[0]
+            # overwrite end time with reached time
             self._settings["end time"] = self._current_outputs["time"]
             self._storage.update(finished=False)
-            self.failed.emit(self._storage)
-            return
+            end_state = "abort"
 
-        self._storage.update(finished=True)
-        self.finished.emit(self._storage)
-        return
+        finally:
+            self.state_changed.emit(SimulationStateChange(type=end_state, data=self.output))
+            self.finished.emit()
+
+    @property
+    def output(self):
+        # convert storage entries
+        out = {}
+        for module, results in self._storage.iteritems():
+                if not isinstance(results, list):
+                    # flag or string -> nothing to convert
+                    entry = results
+                elif isinstance(results[0], np.ndarray):
+                    # convert list of 1d-arrays into 2d-array
+                    entry = np.array(results)
+                else:
+                    # convert list of scalars into 1d-array
+                    entry = np.array(results)
+                out.update({module: entry})
+
+        return out
 
     def list_modules(self):
         return self.module_list

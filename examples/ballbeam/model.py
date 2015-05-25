@@ -11,15 +11,16 @@ class BallBeamModel(Model):
     """
     Implementation of the Ball and Beam System
     """
-    public_settings = OrderedDict(M=st.M,
-                                  R=st.R,
-                                  J=st.J,
-                                  Jb=st.Jb,
-                                  G=st.G,
-                                  beamlength=st.beam_length,
-                                  beamwidth=st.beam_width,
-                                  beamdepth=st.beam_depth
-                                  )
+    public_settings = OrderedDict([("M", st.M),
+                                   ("R", st.R),
+                                   ("J", st.J),
+                                   ("Jb", st.Jb),
+                                   ("G", st.G),
+                                   ("beam length", st.beam_length),
+                                   ("beam width", st.beam_width),
+                                   ("beam depth", st.beam_depth),
+                                   ("initial state", st.initial_state)
+                                   ])
 
     def __init__(self, settings):
         # add specific "private" settings
@@ -64,7 +65,7 @@ class BallBeamModel(Model):
         """
         Check if the ball remains on the beam
         """
-        if abs(x[0]) > float(self._settings['beamlength']) / 2:
+        if abs(x[0]) > float(self._settings['beam length']) / 2:
             raise ModelException('Ball fell down.')
         if abs(x[2]) > np.pi / 2:
             raise ModelException('Beam reached critical angle.')

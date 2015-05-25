@@ -63,9 +63,14 @@ class Model(SimulationModule):
         settings.update({"tick divider": 1})
         SimulationModule.__init__(self, settings)
         assert ("state_count" in settings)
+        assert ("initial state" in settings)
 
     # def mandatory_settings(self):
     # return list("state_count")
+
+    @property
+    def initial_state(self):
+        return self._settings["initial state"]
 
     def output_dim(self):
         return self._settings["state_count"]

@@ -112,5 +112,4 @@ class BallBeamVisualizer(Visualizer):
         r_beam, t_beam, r_ball, t_ball = self.calc_positions(x)
         self.set_body_state(self.beamActor, r_beam, t_beam)
         self.set_body_state(self.ballActor, r_ball, t_ball)
-        self.parent.GetRenderWindow().Render()
 
