@@ -127,7 +127,7 @@ class Solver(SimulationModule):
         try:
             self._model.check_consistency(output)
         except ModelException as e:
-            SolverException("Timestep Integration failed! Model raised {0]".format(e.message))
+            SolverException("Timestep Integration failed! Model raised {0}".format(e.message))
         return output
 
     @abstractmethod

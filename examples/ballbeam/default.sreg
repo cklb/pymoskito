@@ -1,0 +1,36 @@
+ # default regime file that is loaded when the simulation environment starts up
+ # use this to create your own files
+
+- Name: test-nonlinear
+  clear previous: !!python/bool True # decide whether previous settings should remain or not
+  Model:
+   type: BallBeamModel
+
+  Solver:
+   type: ODEInt
+   end time: 1
+
+  Controller:
+   type: FController
+
+  Trajectory:
+   type: SmoothTransition
+#   type: HarmonicTrajectory
+#   Frequency: 0.1
+#   Amplitude: 3
+
+- Name: test-linear
+  clear previous: !!python/bool True
+  Model:
+   type: BallBeamModel
+
+  Solver:
+   type: ODEInt
+
+  Controller:
+   type: LSSController
+   r0: 3
+
+  Trajectory:
+   type: FixedPointTrajectory
+   Position: 3

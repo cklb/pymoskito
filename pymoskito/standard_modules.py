@@ -70,8 +70,8 @@ class ODEInt(Solver):
 class SmoothTransition(Trajectory):
     """
     provides (differential) smooth transition between two scalar states
-    # TODO enable generation of transitions for vectorial state.
     """
+    # TODO enable generation of transitions for state vector
     public_settings = {"states": [0, 1],
                        "start time": 0,
                        "delta t": 5,
@@ -89,9 +89,9 @@ class SmoothTransition(Trajectory):
         f = sp.binomial(gamma, k) * (-1) ** k * tau ** (gamma + k + 1) / (gamma + k + 1)
         phi = alpha / sp.factorial(gamma) ** 2 * sp.summation(f, (k, 0, gamma))
 
-        # diff
-        dphi_sym = [phi]
-        for order in range(gamma - 1):
+        # differentiate phi(tau) index in list corresponds to order
+        dphi_sym = [phi]  # init with phi(tau)
+        for order in range(self._settings["differential_order"]):
             dphi_sym.append(dphi_sym[-1].diff(tau))
 
         # lambdify
@@ -103,7 +103,7 @@ class SmoothTransition(Trajectory):
         """
         Calculates desired trajectory
         """
-        y = 0
+        y = [0]*len(self.dphi_num)
         yd = self._settings['states']
         t0 = self._settings['start time']
         dt = self._settings['delta t']
@@ -114,25 +114,27 @@ class SmoothTransition(Trajectory):
             y[0] = yd[1]
         else:
             for order, dphi in enumerate(self.dphi_num):
-                if not order:
+                if order == 0:
                     ya = yd[0]
                 else:
                     ya = 0
-                y[order] = ya + (yd[1] - yd[0])*dphi((t - t0) / dt)*1/dt**order
+
+                y[order] = ya + (yd[1] - yd[0])*dphi((t - t0)/dt)*1/dt**order
 
         return y
 
 
 class HarmonicTrajectory(Trajectory):
     """
-    This generator provides a scalar harmonic signal with derivatives
+    This generator provides a scalar harmonic cosine signal
+    with derivatives up to order 4
     """
     public_settings = OrderedDict([("Amplitude", 0.5),
                                    ("Frequency", 5)])
 
     def __init__(self, settings):
         Trajectory.__init__(self, settings)
-        assert(settings["differential_order"] < 4)
+        assert(settings["differential_order"] <= 4)
 
     def _desired_values(self, t):
         yd = []
@@ -146,5 +148,4 @@ class HarmonicTrajectory(Trajectory):
         yd.append(a * (2 * np.pi * f) ** 3 * np.sin(2 * np.pi * f * t))
         yd.append(a * (2 * np.pi * f) ** 4 * np.cos(2 * np.pi * f * t))
 
-        return yd
-        return [y for idx, y in enumerate(yd) if idx < self._settings["differential_order"]]
+        return [y for idx, y in enumerate(yd) if idx <= self._settings["differential_order"]]

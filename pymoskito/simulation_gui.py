@@ -8,6 +8,7 @@ import time
 import os
 import yaml
 import cPickle
+import numpy as np
 
 # Qt
 from PyQt4 import QtCore, QtGui
@@ -33,6 +34,10 @@ class SimulationGui(QtGui.QMainWindow):
     """
     class for the graphical user interface
     """
+    # TODO enable closing plot docks by right-clicking their name
+    # add ability to stop an simulation
+    # add ability to stop regime execution
+
     runSimulation = pyqtSignal()
     playbackTimeChanged = pyqtSignal()
     regimeFinished = pyqtSignal()
@@ -46,8 +51,8 @@ class SimulationGui(QtGui.QMainWindow):
         self.simProgress = None
         self.sim = SimulatorInteractor(self)
         self.runSimulation.connect(self.sim.run_simulation)
-        self.sim.simulationFinished.connect(self.simulation_finished)
-        self.sim.simulationFailed.connect(self.simulation_failed)
+        self.sim.simulation_finished.connect(self.simulation_finished)
+        self.sim.simulation_failed.connect(self.simulation_failed)
         self.currentDataset = None
 
         # sim setup viewer
@@ -541,7 +546,7 @@ class SimulationGui(QtGui.QMainWindow):
 
         # update state of rendering
         if self.visualizer:
-            state = self.interpolate(self.currentDataset['results']["Model"])
+            state = self.interpolate(self.currentDataset['results']["Solver"])
             self.visualizer.update_scene(state)
             self.vtkWidget.GetRenderWindow().Render()
 
@@ -550,7 +555,7 @@ class SimulationGui(QtGui.QMainWindow):
         find corresponding item in dataset that fits the current playback time
 
         :param data: dataset in which the correct datum has to be found
-        :return: datum fitting the current playbacktime
+        :return: datum fitting the current playback time
         """
         idx = next((index for index, val in enumerate(self.currentDataset['results']['time'])
                     if val >= self.playbackTime), None)
@@ -560,25 +565,31 @@ class SimulationGui(QtGui.QMainWindow):
             return None
         else:
             if len(data.shape) == 1:
-                return data
+                return data[idx]
             elif len(data.shape) == 2:
-                return data[idx][:]
+                return data[idx, :]
             else:
                 print("interpolate(): Error Dimension {0} not understood.".format(data.shape))
                 return None
 
     def _update_data_list(self):
         self.dataList.clear()
-        for key, val in self.currentDataset['results'].iteritems():
-            if type(val) is not str and isinstance(val, collections.Sequence):
-                self.dataList.insertItem(0, key)
+        for module, results in self.currentDataset['results'].iteritems():
+            if not isinstance(results, np.ndarray):
+                continue
+
+            if len(results.shape) == 1:
+                self.dataList.insertItem(0, "{0}".format(module))
+            elif len(results.shape) == 2:
+                for col in range(results.shape[1]):
+                    self.dataList.insertItem(0, "{0}.{1}".format(module, col))
 
     def create_plot(self, item):
         """
         creates a plot widget corresponding to the ListItem
         """
         title = str(item.text())
-        data = self.currentDataset['results'][title]
+        data = self._get_data_by_name(title)
         t = self.currentDataset['results']['time']
 
         dock = pg.dockarea.Dock(title)
@@ -595,6 +606,15 @@ class SimulationGui(QtGui.QMainWindow):
         self.plotDocks.append(dock)
         self.plotWidgets.append(widget)
         self.timeLines.append(time_line)
+
+    def _get_data_by_name(self, name):
+        tmp = name.split(".")
+        if len(tmp) == 1:
+            data = self.currentDataset['results'][tmp[0]]
+        elif len(tmp) == 2:
+            data = self.currentDataset['results'][tmp[0]][:, tmp[1]]
+
+        return data
 
     def _update_time_cursor(self):
         """
@@ -615,8 +635,9 @@ class SimulationGui(QtGui.QMainWindow):
                     # TODO remove tab from dock and del instance
                 else:
                     widget.getPlotItem().clear()
-                    widget.getPlotItem().plot(x=self.currentDataset['results']['time'],
-                                              y=self.currentDataset['results'][dock.name()])
+                    x_data = self.currentDataset['results']['time']
+                    y_data = self._get_data_by_name(dock.name())
+                    widget.getPlotItem().plot(x=x_data, y=y_data)
 
     def target_view_changed(self, index):
         self.targetView.resizeColumnToContents(0)

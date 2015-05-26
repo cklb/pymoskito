@@ -35,20 +35,23 @@ class Simulator(QObject):
         It forms the Core of the physical simulation
         Calculated values will be stored every 1 / measure rate seconds.
     """
+    # TODO handle modules that have not been selected by user either they always end up
+    # in the results or not.
+    # TODO handle modules that can be selected but are not mandatory
 
     finished = pyqtSignal()
     state_changed = pyqtSignal(SimulationStateChange)
 
-    # abilities (should match the module names)
-    module_list = ['Model',
-                   'Solver',
+    # abilities (should match the module names) order has to be preserved since it is crucial for init step
+    module_list = ["Model",
+                   "Solver",
                    # 'disturbance',
                    # 'sensor',
                    # 'observer',
-                   'Controller',
+                   "Controller",
                    # 'feedforward',
                    # 'limiter',
-                   'Trajectory'
+                   "Trajectory"
                    ]
 
     def __init__(self, settings, modules):
@@ -198,7 +201,12 @@ class Simulator(QObject):
 
     @pyqtSlot()
     def run(self):
+        """
+        worker function of simulator.
+        call to start simulation
+        """
 
+        self.state_changed.emit(SimulationStateChange(type="start"))
         end_state = None
         try:
             while self._current_outputs["time"] <= self._settings.end_time:

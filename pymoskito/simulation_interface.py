@@ -114,9 +114,14 @@ class SimulatorView(QtGui.QTreeView):
 
 
 class SimulatorInteractor(QtCore.QObject):
-    # qt general
-    simulationFinished = QtCore.pyqtSignal(dict)
-    simulationFailed = QtCore.pyqtSignal(dict)
+    """
+    Class that interacts between the gui which controls the programs execution
+    and the Simulator which handles the time step simulation
+    """
+
+    # signals
+    simulation_finished = QtCore.pyqtSignal(dict)
+    simulation_failed = QtCore.pyqtSignal(dict)
     simulationProgressChanged = QtCore.pyqtSignal(int)
 
     def __init__(self, parent=None):
@@ -129,7 +134,8 @@ class SimulatorInteractor(QtCore.QObject):
         self._sim_settings = None
         self.simThread = QtCore.QThread()
         self._sim_modules = {}
-        self.sim_data = {'modules': {}}
+        self._sim_data = {'modules': {}}
+        self._sim_state = None
 
     def _setup_model(self):
         # create model
@@ -270,9 +276,9 @@ class SimulatorInteractor(QtCore.QObject):
             elif module_name == "Trajectory":
                 control_order = 0
                 feedforward_order = 0
-                if "controller" in self._sim_modules.keys():
+                if "Controller" in self._sim_modules.keys():
                     control_order = self._sim_modules["Controller"].input_order
-                if "feedforward" in self._sim_modules.keys():
+                if "Feedforward" in self._sim_modules.keys():
                     feedforward_order = self._sim_modules["Feedforward"].input_order
                 settings.update(differential_order=max([control_order, feedforward_order]))
 
@@ -283,7 +289,7 @@ class SimulatorInteractor(QtCore.QObject):
             self._sim_modules.update({module_name: slot})
 
             # store settings
-            self.sim_data['modules'].update({module_name: settings})
+            self._sim_data['modules'].update({module_name: settings})
 
     def set_regime(self, reg):
         if reg is None:
@@ -337,8 +343,8 @@ class SimulatorInteractor(QtCore.QObject):
                 found = False
                 for row in range(module_item.rowCount()):
                     if str(module_item.child(row, 0).text()) == key:
-                        valueIndex = self.target_model.index(row, 1, module_index)
-                        self.target_model.setData(valueIndex, str(val))
+                        value_idx = self.target_model.index(row, 1, module_index)
+                        self.target_model.setData(value_idx, str(val))
                         found = True
                         break
 
@@ -377,22 +383,23 @@ class SimulatorInteractor(QtCore.QObject):
     @QtCore.pyqtSlot(SimulationStateChange)
     def simulation_state_changed(self, state_change):
         """
-        calculate overall progress
+        slot for simulation state changes
         """
-        if state_change.type == "time":
+        if state_change.type == "start":
+            self._sim_state = "running"
+        elif state_change.type == "time":
             print("Simulation time changed: {0}".format(state_change.t))
             progress = int(state_change.t / self._sim_settings.end_time * 100)
             if progress != self.last_progress:
                 self.simulationProgressChanged.emit(progress)
                 self.last_progress = progress
-        elif state_change.type == "start":
-            # TODO
-            pass
+        elif state_change.type == "abort":
+            self._sim_state = "aborted"
         elif state_change.type == "finish":
-            print("Simulation finished")
-            self.sim_data.update({'results': copy.deepcopy(state_change.data)})
-            # TODO change this because its ugly
-            self.sim_data["modules"].update({"Simulator": copy.copy(self._sim.settings)})
+            self._sim_state = "finished"
+            self._sim_data.update({'results': copy.deepcopy(state_change.data)})
+            # TODO change this because its ugly (one single place should hold all data)
+            self._sim_data["modules"].update({"Simulator": copy.copy(self._sim.settings)})
         else:
             print("simulation_state_changed(): ERROR Unknown state {0}".format(state_change.type))
 
@@ -402,40 +409,43 @@ class SimulatorInteractor(QtCore.QObject):
             del module
         self._sim_modules = {}
 
-        # delete sim
-        self.simThread.started.disconnect(self._sim.run)
-        self._sim.state_changed.disconnect(self.simulation_state_changed)
-        self._sim.finished.disconnect(self.simThread.quit)
-        self.simThread.finished.disconnect(self.sim_finished)
+        # they do not work when running in debug_mode
+        if 1:
+            # disconnect signals
+            self.simThread.started.disconnect(self._sim.run)
+            self._sim.state_changed.disconnect(self.simulation_state_changed)
+            self._sim.finished.disconnect(self.simThread.quit)
+            self.simThread.finished.disconnect(self.sim_finished)
+
+        # delete simulator
         del self._sim
 
     def _postprocessing(self):
-        # calc main error
-        a = 'model_output.0'
-        b = 'trajectory_output.0'
-        c = 'observer_output.0'
-        d = 'model_output.2'
-        e = 'observer_output.2'
-        self.sim_data['results'].update({'e ': self._getDiff(b, a)})
-        self.sim_data['results'].update({'epsilon_o': self._getDiff(a, c)})
-        self.sim_data['results'].update({'epsilon_o2': self._getDiff(d, e)})
+        """
+        calculation of some basic metrics for quick judging of simulation results
+        """
 
-    def _getDiff(self, a, b):
-        data = self.sim_data['results']
-        return [(data[a][i] - data[b][i]) for i in range(len(data['simTime']))]
+        # TODO make this able to calc error for vector model output
+        # control and observer error
+        c_error = self._get_result_by_name("Trajectory")[:, 0] - self._get_result_by_name("Model")
+        self._sim_data['results'].update(control_error=c_error)
+        o_error = self._get_result_by_name("Solver") - self._get_result_by_name("Observer")
+        self._sim_data['results'].update(observer_error=o_error)
 
-    def sim_finished(self):  # , data):
-        # TODO rethink this! Too many duplicated lines of code
+    def _get_result_by_name(self, name):
+        return self._sim_data["results"][name]
 
+    def sim_finished(self):
+        """
+        slot to be called when the simulator reached the target time or aborted
+        simulation due to an error
+        """
+        print("got called")
         self._sim_aftercare()
-        # TODO correct and activate
-        # self._postprocessing()
+        self._postprocessing()
 
-        self.simulationFinished.emit(self.sim_data)
-
-    # @QtCore.pyqtSlot(dict)
-    # def sim_failed(self, data):
-    #     self.sim_data.update({'results': copy.deepcopy(data)})
-    #     self._sim_aftercare()
-    #     # self._postprocessing()
-    #     self.simulationFailed.emit(self.sim_data)
+        assert self._sim_state == "finished" or self._sim_state == "aborted"
+        if self._sim_state == "finished":
+            self.simulation_finished.emit(self._sim_data)
+        else:
+            self.simulation_failed.emit(self._sim_data)
