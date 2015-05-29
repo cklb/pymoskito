@@ -1,3 +1,4 @@
+__author__ = 'stefan'
 # -*- coding: utf-8 -*-
 import numpy as np
 import scipy as sp
@@ -28,27 +29,27 @@ class eval_A1(PostProcessingModule):
 #    epsPercent = 2./5
     spacing = 0.01
     counter = 0
-    
+
     def __init__(self):
         PostProcessingModule.__init__(self)
         return
 
     def run(self, data):
         print 'processing ',data['regime name']
-        
+
         #dict for calculated values
         output = {}
 
         #reset counter
         self.counter = 0
-        
+
         #calculate datasets
         t = data['results']['simTime']
         y = data['results']['model_output.0']
         yd = data['results']['trajectory_output.0'][-1]
 
         self.posLabel = np.arange(np.min(y) + 0.1*yd, yd, (yd-np.min(y))/4)
-            
+
         #create plot
         fig = Figure()
         axes = fig.add_subplot(111)
@@ -58,13 +59,13 @@ class eval_A1(PostProcessingModule):
         axes.set_ylim(0,3.5)
         axes.set_xlabel(r'\textit{Zeit [s]}')
         axes.set_ylabel(r'\textit{Ballposition r(t) [m]}')
-        
+
         #create desired line
         desiredLine = line([0, t[-1]], [yd, yd], lw=1, ls=self.line_style, c='k')
         axes.add_line(desiredLine)
 
         #calc rise-time (Anstiegszeit)
-        try:            
+        try:
             tr = t[y.index([x for x in y if x > yd*0.9][0])]
             #create and add line
             self.createTimeLine(axes, t, y, tr, r'$T_r$')
@@ -72,7 +73,7 @@ class eval_A1(PostProcessingModule):
         except IndexError:
             output.update({'tr': None})
             #print 'AttackLine is not defined'
-        
+
         #calc correction-time (Anregelzeit)
         try:
             tanr = t[y.index([x for x in y if x > yd][0])]
@@ -82,7 +83,7 @@ class eval_A1(PostProcessingModule):
         except IndexError:
             #print 'RiseLine is not defined'
             output.update({'tanr': None})
-        
+
         #calc overshoot-time and overshoot in percent (Überschwingzeit und Überschwingen)
         if output['tanr']:
             if yd > 0:
@@ -92,7 +93,7 @@ class eval_A1(PostProcessingModule):
 #            lastval = 0
 #            for val in y[t.index(tanr):]:
 #                y_max = (val - yd)*yd
-                
+
 #                if val < lastval:
 #                    break
 #                else:
@@ -109,7 +110,7 @@ class eval_A1(PostProcessingModule):
             output.update({'to': None, 'do': None, 'doPercent': None})
 
         #calc damping-time (Beruhigungszeit)
-        try:                
+        try:
 #            eps = self.epsPercent*yd/100
             eps = st.R
             enterIdx = -1
@@ -127,20 +128,20 @@ class eval_A1(PostProcessingModule):
         except IndexError:
             #print 'DampingLine is not defined'
             output.update({'teps': None})
-        
+
         #create epsilon tube
         upperBoundLine = line([0, t[-1]], [yd+eps, yd+eps], ls='--', c=self.line_color)
         axes.add_line(upperBoundLine)
         lowerBoundLine = line([0, t[-1]], [yd-eps, yd-eps], ls='--', c=self.line_color)
         axes.add_line(lowerBoundLine)
-        
+
         #calc control deviation
         control_deviation = y[-1] - yd
         output.update({'control_deviation': control_deviation})
-        
+
         # print time data
-        #print str(output) + '\n'    
-        
+        #print str(output) + '\n'
+
         self.calcMetrics(data, output)
 
         #check for sim succes
@@ -152,21 +153,21 @@ class eval_A1(PostProcessingModule):
         results = {}
         results.update({'metrics': output})
         results.update({'modules': data['modules']})
-        
+
         canvas = FigureCanvas(fig)
-        
+
         self.writeOutputFiles(self.name, data['regime name'], fig, results)
-        
+
         return {'name':'_'.join([data['regime name'], self.name]),\
                     'figure': canvas}
-        
+
     def createTimeLine(self, axes, t, y, time_value, label):
         if time_value != t[-1]:
             #create timeLine
             timeLine = line([time_value, time_value],\
                             [np.min(y), y[t.index(time_value)]],\
                             ls = self.line_style,\
-                            c = self.line_color) 
+                            c = self.line_color)
             axes.add_line(timeLine)
             #create label
             axes.text(time_value + self.spacing,\
@@ -179,13 +180,14 @@ class eval_A1(PostProcessingModule):
         '''
         calculate metrics for comaprism
         '''
-        
-        L1NormITAE = self.calcL1NormITAE(data)            
+
+        L1NormITAE = self.calcL1NormITAE(data)
         L1NormAbs = self.calcL1NormAbs(data)
-#                    
+#
 #        print 'ITAE score: ', errorIntegral
         print 'L1NormITAE: ', L1NormITAE
         print 'L1NormAbs: ', L1NormAbs
         print '\n'
         output.update({'L1NormITAE': L1NormITAE, 'L1NormAbs': L1NormAbs})
 #        output.update({'ITAE': errorIntegral})
+

@@ -42,16 +42,16 @@ class Simulator(QObject):
     state_changed = pyqtSignal(SimulationStateChange)
 
     # abilities (should match the module names) order has to be preserved since it is crucial for init step
-    module_list = ["Model",
-                   "Solver",
-                   # 'disturbance',
-                   # 'sensor',
-                   # 'observer',
-                   "Controller",
-                   # 'feedforward',
-                   # 'limiter',
-                   "Trajectory"
-                   ]
+    _module_list = ["Model",
+                    "Solver",
+                    # 'Disturbance',
+                    # 'Sensor',
+                    # 'Observer',
+                    "Controller",
+                    # 'Feedforward',
+                    # 'Limiter',
+                    "Trajectory"
+                    ]
 
     def __init__(self, settings, modules):
         QObject.__init__(self, None)
@@ -72,7 +72,6 @@ class Simulator(QObject):
         for mod_name, obj in self._simulation_modules.iteritems():
             self._counter.update({mod_name: obj.tick_divider})
             self._current_outputs.update({mod_name: []})
-            # TODO think whether it is needed more specific (output dimension)
             self._current_outputs[mod_name] = []
 
         # init model output with current state
@@ -174,20 +173,6 @@ class Simulator(QObject):
 
         return
 
-        self._storage['simTime'].append(self.current_time)
-        for module in self.module_list:
-            module_values = getattr(self, module + '_output')
-            if np.isscalar(module_values):
-                module_values = [module_values]
-
-            for idx, val in enumerate(module_values):
-                signal_name = module + '_output.' + str(idx)
-                # print 'Signal: ', signal_name, type(val)
-                if signal_name in self._storage:
-                    self._storage[signal_name].append(float(val))
-                else:
-                    self._storage.update({signal_name: [float(val)]})
-
     def _check_time(self):
         """
         send update notification every second
@@ -222,7 +207,7 @@ class Simulator(QObject):
             end_state = "finish"
 
         except SimulationException as e:
-            print 'Simulator.run(): Model ERROR: ', e.args[0]
+            print("Simulator.run(): {0}".format(e.args[0]))
             # overwrite end time with reached time
             self._settings.end_time = self._current_outputs["time"]
             self._storage.update(finished=False)
@@ -250,8 +235,9 @@ class Simulator(QObject):
 
         return out
 
-    def list_modules(self):
-        return self.module_list
+    @property
+    def module_list(self):
+        return self._module_list
 
     @property
     def settings(self):

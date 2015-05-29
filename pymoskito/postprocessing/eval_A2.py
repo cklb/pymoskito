@@ -11,7 +11,7 @@ from matplotlib.figure import Figure
 from matplotlib.lines import Line2D as line
 import settings as st
 
-from postprocessor import PostProcessingModule
+from processing_gui import PostProcessingModule
 
 #define your own functions here
 class eval_A2(PostProcessingModule):

@@ -1,10 +1,6 @@
 ﻿# -*- coding: utf-8 -*-
 """
-Created on Mon Dec 01 21:52:06 2014
-
-Linearization in x_0
-
-@author: Topher
+@author: Chriszop Burggraf
 """
 
 import sympy as sp

@@ -11,7 +11,7 @@ from PyQt4 import QtGui, QtCore
 
 #own
 from simulation_gui import SimulationGui, TestGui
-from postprocessor import PostProcessor
+from processing_gui import PostProcessor
 
 #--------------------------------------------------------------------- 
 # Main Application

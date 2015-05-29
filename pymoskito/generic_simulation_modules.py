@@ -42,7 +42,8 @@ class ODEInt(Solver):
                                     atol=self._settings["aTol"],
                                     max_step=self._settings["step size"]
                                     )
-        self._solver.set_initial_value(self._settings["initial state"])
+        self._solver.set_initial_value(self._settings["initial state"],
+                                       t=self._settings["start time"])
 
     @property
     def t(self):
@@ -53,6 +54,9 @@ class ODEInt(Solver):
         propagate input changes to ode_int
         """
         self._solver.set_f_params(args)
+        if hasattr(self._model, "jacobian"):
+            # TODO Test
+            self._solver.set_jac_params(args)
 
     def integrate(self, t):
         """
@@ -89,7 +93,7 @@ class SmoothTransition(Trajectory):
         f = sp.binomial(gamma, k) * (-1) ** k * tau ** (gamma + k + 1) / (gamma + k + 1)
         phi = alpha / sp.factorial(gamma) ** 2 * sp.summation(f, (k, 0, gamma))
 
-        # differentiate phi(tau) index in list corresponds to order
+        # differentiate phi(tau), index in list corresponds to order
         dphi_sym = [phi]  # init with phi(tau)
         for order in range(self._settings["differential_order"]):
             dphi_sym.append(dphi_sym[-1].diff(tau))

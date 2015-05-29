@@ -8,7 +8,7 @@ mpl.use("Qt4Agg")
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 
-from postprocessor import PostProcessingModule
+from processing_gui import PostProcessingModule
 
 #define your own functions here
 class eval_A2_epsilon(PostProcessingModule):

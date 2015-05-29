@@ -27,17 +27,9 @@ class SimulationModule(QObject):
         assert ("tick divider" in settings)
         self._settings = settings
 
-    # @abstractproperty
-    # def mandatory_settings(self):
-    # pass
-
     @abstractproperty
     def public_settings(self):
         pass
-
-    # @abstractproperty
-    # def output_dim(self):
-    #     return 0
 
     @property
     def tick_divider(self):
@@ -65,15 +57,9 @@ class Model(SimulationModule):
         assert ("state_count" in settings)
         assert ("initial state" in settings)
 
-    # def mandatory_settings(self):
-    # return list("state_count")
-
     @property
     def initial_state(self):
         return self._settings["initial state"]
-
-    def output_dim(self):
-        return self._settings["state_count"]
 
     @abstractmethod
     def state_function(self, t, x, args):
@@ -160,21 +146,13 @@ class Controller(SimulationModule):
         assert ("input_order" in settings)
         assert ("input_type" in settings)
         assert (settings["input_type"] in self.input_sources)
-        # assert ("output_dim" in settings)
 
     @property
     def input_order(self):
         return self._settings["input_order"]
 
-    # def output_dim(self):
-    #     return self._settings["output_dim"]
-
-    # def mandatory_settings(self):
-    # return ["input_order", "input_type"]
-
     def calc_output(self, input_dict):
-        input_values = next((input_dict[src]
-                             for src in self.input_sources if src == self._settings["input_type"]),
+        input_values = next((input_dict[src] for src in self.input_sources if src == self._settings["input_type"]),
                             None)
         if input_values is None:
             raise ControllerException("Selected Input not available")

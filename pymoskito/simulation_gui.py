@@ -25,7 +25,7 @@ from vtk.qt4.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 # pymoskito
 from simulation_interface import SimulatorInteractor, SimulatorView
 from visualization import Visualizer
-from postprocessor import PostProcessor
+from processing_gui import PostProcessor
 
 from tools import get_resource
 
@@ -483,7 +483,7 @@ class SimulationGui(QtGui.QMainWindow):
         self.simulation_finished(data)
 
     def _read_results(self):
-        self.currentStepSize = 1.0 / self.currentDataset['modules']['Solver']['measure rate']
+        self.currentStepSize = 1.0/self.currentDataset['modules']['Solver']['measure rate']
         self.currentEndTime = self.currentDataset["modules"]["Simulator"].end_time
         self.validData = True
 
@@ -497,7 +497,7 @@ class SimulationGui(QtGui.QMainWindow):
         self.speedDial.setValue(self.speedDial.value() - self.speedDial.singleStep())
 
     def reset_playback_speed(self):
-        self.speedDial.setValue(self.speedDial.range() / 2)
+        self.speedDial.setValue(self.speedDial.range()/2)
 
     def increment_playback_time(self):
         """
@@ -519,13 +519,13 @@ class SimulationGui(QtGui.QMainWindow):
         """
         adjust playback time to slider value
         """
-        self.playbackGain = 10 ** (5.0 * (val - self.speedDial.maximum() / 2) / self.speedDial.maximum())
+        self.playbackGain = 10**(5.0*(val - self.speedDial.maximum()/2)/self.speedDial.maximum())
 
     def update_playback_time(self):
         """
         adjust playback time to slider value
         """
-        self.playbackTime = 1.0 * self.timeSlider.value() / self.timeSliderRange * self.currentEndTime
+        self.playbackTime = self.timeSlider.value()/self.timeSliderRange*self.currentEndTime
         self.playbackTimeChanged.emit()
         return
 
@@ -546,7 +546,7 @@ class SimulationGui(QtGui.QMainWindow):
 
         # update state of rendering
         if self.visualizer:
-            state = self.interpolate(self.currentDataset['results']["Solver"])
+            state = self.interpolate(self.currentDataset["results"]["Solver"])
             self.visualizer.update_scene(state)
             self.vtkWidget.GetRenderWindow().Render()
 
@@ -618,7 +618,7 @@ class SimulationGui(QtGui.QMainWindow):
 
     def _update_time_cursor(self):
         """
-        updates the timelines of all plot windows
+        updates the time lines of all plot windows
         """
         for line in self.timeLines:
             line.setValue(self.playbackTime)
@@ -644,7 +644,7 @@ class SimulationGui(QtGui.QMainWindow):
 
     def postprocessing_clicked(self):
         """
-        starts to post- and metaprocessing application
+        starts the post- and metaprocessing application
         """
         self.statusBar().showMessage('launching postprocessor', 1000)
         if not self.postprocessor:

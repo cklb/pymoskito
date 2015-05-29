@@ -8,7 +8,7 @@ mpl.rcParams['text.latex.unicode']=True
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 
-from postprocessor import MetaProcessingModule
+from processing_gui import MetaProcessingModule
 from tools import sortTree
 
 class eval_L1NormAbs_sigma_linePlot(MetaProcessingModule):

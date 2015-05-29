@@ -11,7 +11,7 @@ from PyQt4 import QtCore, QtGui
 from PyQt4.QtGui import QStandardItemModel, QStandardItem, QItemDelegate, QComboBox
 
 from simulation_modules import SimulationModule
-from standard_modules import *
+from generic_simulation_modules import *
 from simulation_core import Simulator, SimulationSettings, SimulationStateChange
 
 
@@ -231,7 +231,7 @@ class SimulatorInteractor(QtCore.QObject):
                     try:
                         prop_val = float(val_str)
                     except ValueError:
-                        # well then irs probably no float
+                        # well then it is probably no float
                         prop_val = val_str
 
             settings.update({property_name: prop_val})
@@ -267,7 +267,7 @@ class SimulatorInteractor(QtCore.QObject):
                 self._sim_settings = SimulationSettings(settings["start time"],
                                                         settings["end time"],
                                                         settings["measure rate"])
-            elif module_name == "disturbance":
+            elif module_name == "Disturbance":
                 # TODO
                 pass
             elif module_name == "Sensor":
@@ -304,7 +304,7 @@ class SimulatorInteractor(QtCore.QObject):
         """
         sets all module settings to those provided in the regime
         """
-        if reg['clear previous']:
+        if reg["clear previous"]:
             # delete all items
             self.target_model.removeRows(0, self.target_model.rowCount())
 
@@ -323,7 +323,7 @@ class SimulatorInteractor(QtCore.QObject):
 
             items = self.target_model.findItems(string.capwords(module_name))
             module_item = items.pop(0)
-            module_type = value['type']
+            module_type = value["type"]
 
             # sanity check
             sub_module_cls = self._get_derived_class_by_name(module_cls, module_type)
@@ -337,7 +337,7 @@ class SimulatorInteractor(QtCore.QObject):
 
             # overwrite specific settings
             for key, val in value.iteritems():
-                if key == 'type':
+                if key == "type":
                     continue
 
                 found = False
@@ -349,7 +349,7 @@ class SimulatorInteractor(QtCore.QObject):
                         break
 
                 if not found:
-                    print '_applyRegime(): setting ', key, 'not available for ', module_type
+                    print("_applyRegime(): setting {0} not available for {1}".format(key ,module_type))
                     continue
 
     def run_simulation(self):
@@ -434,7 +434,7 @@ class SimulatorInteractor(QtCore.QObject):
         # control and observer error
         c_error = self._get_result_by_name("Trajectory")[:, 0] - self._get_result_by_name("Model")
         self._sim_data['results'].update(control_error=c_error)
-        if "Obeserver" in self._sim_data["results"]:
+        if "Observer" in self._sim_data["results"]:
             o_error = self._get_result_by_name("Solver") - self._get_result_by_name("Observer")
             self._sim_data['results'].update(observer_error=o_error)
 

@@ -9,7 +9,7 @@ from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 from matplotlib.lines import Line2D as line
 
-from postprocessor import MetaProcessingModule
+from processing_gui import MetaProcessingModule
 import settings as st
 from tools import sortTree
 

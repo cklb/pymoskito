@@ -12,7 +12,7 @@ from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 from matplotlib.lines import Line2D as line
 
-from postprocessor import PostProcessingModule
+from processing_gui import PostProcessingModule
 import settings as st
 
 #define your own functions here
