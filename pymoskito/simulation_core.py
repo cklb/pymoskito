@@ -35,8 +35,7 @@ class Simulator(QObject):
         It forms the Core of the physical simulation
         Calculated values will be stored every 1 / measure rate seconds.
     """
-    # TODO handle modules that have not been selected by user either they always end up
-    # in the results or not.
+    # TODO handle modules that have not been selected by user. Either they always end up in the results or not.
     # TODO handle modules that can be selected but are not mandatory
 
     finished = pyqtSignal()
@@ -225,7 +224,7 @@ class Simulator(QObject):
         except SimulationException as e:
             print 'Simulator.run(): Model ERROR: ', e.args[0]
             # overwrite end time with reached time
-            self._settings["end time"] = self._current_outputs["time"]
+            self._settings.end_time = self._current_outputs["time"]
             self._storage.update(finished=False)
             end_state = "abort"
 

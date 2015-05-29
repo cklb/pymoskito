@@ -129,6 +129,7 @@ class HarmonicTrajectory(Trajectory):
     This generator provides a scalar harmonic cosine signal
     with derivatives up to order 4
     """
+    # TODO provide formula up to order n
     public_settings = OrderedDict([("Amplitude", 0.5),
                                    ("Frequency", 5)])
 

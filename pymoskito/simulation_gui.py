@@ -484,7 +484,7 @@ class SimulationGui(QtGui.QMainWindow):
 
     def _read_results(self):
         self.currentStepSize = 1.0 / self.currentDataset['modules']['Solver']['measure rate']
-        self.currentEndTime = self.currentDataset['modules']['Solver']['end time']
+        self.currentEndTime = self.currentDataset["modules"]["Simulator"].end_time
         self.validData = True
 
     def add_plot_to_dock(self, plot_widget):

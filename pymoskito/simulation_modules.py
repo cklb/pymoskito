@@ -127,7 +127,7 @@ class Solver(SimulationModule):
         try:
             self._model.check_consistency(output)
         except ModelException as e:
-            SolverException("Timestep Integration failed! Model raised {0}".format(e.message))
+            raise SolverException("Timestep Integration failed! Model raised: {0}".format(e.message))
         return output
 
     @abstractmethod
@@ -160,14 +160,14 @@ class Controller(SimulationModule):
         assert ("input_order" in settings)
         assert ("input_type" in settings)
         assert (settings["input_type"] in self.input_sources)
-        assert ("output_dim" in settings)
+        # assert ("output_dim" in settings)
 
     @property
     def input_order(self):
         return self._settings["input_order"]
 
-    def output_dim(self):
-        return self._settings["output_dim"]
+    # def output_dim(self):
+    #     return self._settings["output_dim"]
 
     # def mandatory_settings(self):
     # return ["input_order", "input_type"]

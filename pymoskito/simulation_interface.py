@@ -388,13 +388,17 @@ class SimulatorInteractor(QtCore.QObject):
         if state_change.type == "start":
             self._sim_state = "running"
         elif state_change.type == "time":
-            print("Simulation time changed: {0}".format(state_change.t))
+            # TODO print progress bar on terminal
+            # print("Simulation time changed: {0}".format(state_change.t))
             progress = int(state_change.t / self._sim_settings.end_time * 100)
             if progress != self.last_progress:
                 self.simulationProgressChanged.emit(progress)
                 self.last_progress = progress
         elif state_change.type == "abort":
             self._sim_state = "aborted"
+            self._sim_data.update({'results': copy.deepcopy(state_change.data)})
+            # TODO change this because its ugly (one single place should hold all data)
+            self._sim_data["modules"].update({"Simulator": copy.copy(self._sim.settings)})
         elif state_change.type == "finish":
             self._sim_state = "finished"
             self._sim_data.update({'results': copy.deepcopy(state_change.data)})
@@ -425,12 +429,14 @@ class SimulatorInteractor(QtCore.QObject):
         calculation of some basic metrics for quick judging of simulation results
         """
 
-        # TODO make this able to calc error for vector model output
+        # TODO make this able to calc error for vector-like model output
+
         # control and observer error
         c_error = self._get_result_by_name("Trajectory")[:, 0] - self._get_result_by_name("Model")
         self._sim_data['results'].update(control_error=c_error)
-        o_error = self._get_result_by_name("Solver") - self._get_result_by_name("Observer")
-        self._sim_data['results'].update(observer_error=o_error)
+        if "Obeserver" in self._sim_data["results"]:
+            o_error = self._get_result_by_name("Solver") - self._get_result_by_name("Observer")
+            self._sim_data['results'].update(observer_error=o_error)
 
     def _get_result_by_name(self, name):
         return self._sim_data["results"][name]
@@ -440,7 +446,6 @@ class SimulatorInteractor(QtCore.QObject):
         slot to be called when the simulator reached the target time or aborted
         simulation due to an error
         """
-        print("got called")
         self._sim_aftercare()
         self._postprocessing()
 
