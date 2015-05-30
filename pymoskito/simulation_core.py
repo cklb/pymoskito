@@ -35,8 +35,6 @@ class Simulator(QObject):
         It forms the Core of the physical simulation
         Calculated values will be stored every 1 / measure rate seconds.
     """
-    # TODO handle modules that have not been selected by user. Either they always end up in the results or not.
-    # TODO handle modules that can be selected but are not mandatory
 
     finished = pyqtSignal()
     state_changed = pyqtSignal(SimulationStateChange)
@@ -101,11 +99,9 @@ class Simulator(QObject):
                 self._counter[module_name] = 1
             else:
                 self._counter[module_name] += 1
-        else:
-            self._current_outputs[module_name] = 0
 
-        # update input vector
-        self._input_vector.update({module_name: self._current_outputs[module_name]})
+            # update input vector
+            self._input_vector.update({module_name: self._current_outputs[module_name]})
 
     def _calc_step(self):
         """
@@ -192,30 +188,33 @@ class Simulator(QObject):
 
         self.state_changed.emit(SimulationStateChange(type="start"))
         end_state = None
-        try:
-            while self._current_outputs["time"] <= self._settings.end_time:
-                t = self._simulation_modules["Solver"].t
-                dt = 0
-                while dt < 1/self._settings.measure_rate:
+
+        # TODO make sure that results contain end_time/measure_rate entries
+        while self._current_outputs["time"] < self._settings.end_time:
+            t = self._simulation_modules["Solver"].t
+            dt = 0
+            while dt < 1/self._settings.measure_rate:
+                try:
                     self._calc_step()
                     dt = self._simulation_modules["Solver"].t - t
 
-                self._store_values()
-                self._check_time()
+                except SimulationException as e:
+                    print("Simulator.run(): {0}".format(e.args[0]))
+                    # overwrite end time with reached time
+                    self._settings.end_time = self._current_outputs["time"]
+                    self._storage.update(finished=False)
+                    end_state = "abort"
+                    break
 
+            self._store_values()
+            self._check_time()
+
+        if end_state is None:
             self._storage.update(finished=True)
             end_state = "finish"
 
-        except SimulationException as e:
-            print("Simulator.run(): {0}".format(e.args[0]))
-            # overwrite end time with reached time
-            self._settings.end_time = self._current_outputs["time"]
-            self._storage.update(finished=False)
-            end_state = "abort"
-
-        finally:
-            self.state_changed.emit(SimulationStateChange(type=end_state, data=self.output))
-            self.finished.emit()
+        self.state_changed.emit(SimulationStateChange(type=end_state, data=self.output))
+        self.finished.emit()
 
     @property
     def output(self):

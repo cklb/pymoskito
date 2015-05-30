@@ -22,8 +22,7 @@ class ODEInt(Solver):
         ("rTol", 1e-6),
         ("aTol", 1e-9),
         ("start time", 0),
-        ("end time", 5),
-        ("initial state", [0, 0, 0, 0])
+        ("end time", 5)
     ])
 
     def __init__(self, settings):
@@ -42,7 +41,7 @@ class ODEInt(Solver):
                                     atol=self._settings["aTol"],
                                     max_step=self._settings["step size"]
                                     )
-        self._solver.set_initial_value(self._settings["initial state"],
+        self._solver.set_initial_value(self._model.initial_state,
                                        t=self._settings["start time"])
 
     @property

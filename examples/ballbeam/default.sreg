@@ -8,16 +8,17 @@
 
   Solver:
    type: ODEInt
-   end time: 1
+   measure rate: 1
+   end time: 10
 
   Controller:
    type: FController
 
   Trajectory:
-   type: SmoothTransition
-#   type: HarmonicTrajectory
-#   Frequency: 0.1
-#   Amplitude: 3
+#   type: SmoothTransition
+   type: HarmonicTrajectory
+   Frequency: .1
+   Amplitude: 3
 
 - Name: test-linear
   clear previous: !!python/bool True

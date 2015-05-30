@@ -72,8 +72,6 @@ class BallBeamVisualizer(Visualizer):
         self.ren.ResetCamera()
         self.ren.GetActiveCamera().Zoom(1.7)
 
-
-
     def calc_positions(self, x):
         """
         Calculate stationary vectors and rot. matrices for bodies
