@@ -1,0 +1,21 @@
+ # default regime file that is loaded when the simulation environment starts up
+ # use this to create your own files
+
+- Name: test
+  clear previous: !!python/bool True # decide whether previous settings should remain or not
+
+  Model:
+   type: BallInTubeModel
+
+  Solver:
+   type: ODEInt
+   measure rate: 10
+   end time: 10
+
+  Controller:
+   type: ExactInputOutputLinearisation
+
+  Trajectory:
+   type: SmoothTransition
+
+

@@ -64,9 +64,11 @@ class ODEInt(Solver):
         :return: system state at target time
         """
         state = self._solver.integrate(t + self._settings["step size"])
-        if self._model.root_function(state):
+        # check model constraints
+        new_state = self._model.root_function(state)
+        if new_state[0]:
             # reset solver since discontinuous change in equations happened
-            self._solver.set_initial_value(state, self.t)
+            self._solver.set_initial_value(new_state[1], self.t)
         return state
 
 
