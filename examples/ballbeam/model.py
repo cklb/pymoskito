@@ -59,7 +59,7 @@ class BallBeamModel(Model):
         return [dx1, dx2, dx3, dx4]
 
     def root_function(self, x):
-        return False
+        return [False]
 
     def check_consistency(self, x):
         """

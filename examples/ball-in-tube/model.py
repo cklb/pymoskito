@@ -84,10 +84,10 @@ class BallInTubeModel(Model):
         """
         if x[2] <= 0:
             x0 = [x[0], x[1], 0, 0]
-            flag = 1
+            flag = True
         else:
             x0 = x
-            flag = 0
+            flag = False
 
         return [flag, x0]
 
