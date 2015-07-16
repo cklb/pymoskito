@@ -55,7 +55,7 @@ class FController(Controller):
         # run pole placement
         self.k = get_coefficients(self._settings["poles"])[0]
 
-    def _control(self, is_values, desired_values):
+    def _control(self, is_values, desired_values, t=None):
         # input abbreviations
         x = is_values
         yd = desired_values

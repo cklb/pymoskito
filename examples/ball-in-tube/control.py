@@ -26,7 +26,7 @@ class ExactInputOutputLinearisation(Controller):
         # run pole placement
         self.k = get_coefficients(self._settings["poles"])[0]
 
-    def _control(self, is_values, desired_values):
+    def _control(self, is_values, desired_values, t=None):
         # input abbreviations
         x = is_values
         yd = desired_values
@@ -56,4 +56,24 @@ class ExactInputOutputLinearisation(Controller):
             self.k[0] * (yd[0] - y_d0)
         u = (v - Lf4h)/LgLf3h
         
+        return u
+
+
+class OpenLoop(Controller):
+    """
+    """
+    public_settings = OrderedDict([("pwm", 220),
+                                   ("tick divider", 1)])
+
+    def __init__(self, settings):
+        # add specific "private" settings
+        settings.update(input_order=0)
+        settings.update(output_dim=1)
+        settings.update(input_type="system_state")
+
+        Controller.__init__(self, settings)
+
+    def _control(self, is_values, desired_values, t=None):
+
+        u = self._settings["pwm"]
         return u

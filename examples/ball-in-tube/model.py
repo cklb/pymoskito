@@ -72,7 +72,7 @@ class BallInTubeModel(Model):
             self.d = self.d_p
 
         dx1 = x2
-        dx2 = -x1/self.T**2 - 2*self.d*x2/self.T + self.k_s*u/self.T**2
+        dx2 = -x1/self.T**2 - 2*self.d*x2/self.T + self.k_s*u*12/(255*self.T**2)
         dx3 = x4
         dx4 = (self.k_L*((self.k_V*x1 - self.A_B*x4)/self.A_Sp)**2 - self.m*self.g)/self.m
 

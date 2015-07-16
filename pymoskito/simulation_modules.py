@@ -156,12 +156,11 @@ class Controller(SimulationModule):
                             None)
         if input_values is None:
             raise ControllerException("Selected Input not available")
-
         desired_values = input_dict["Trajectory"]
-        return self._control(input_values, desired_values)
+        return self._control(input_values, desired_values, input_dict["time"])
 
     @abstractmethod
-    def _control(self, is_values, desired_values):
+    def _control(self, is_values, desired_values, t):
         """
         placeholder for control law, for more sophisticated implementations
         overload calc_output.

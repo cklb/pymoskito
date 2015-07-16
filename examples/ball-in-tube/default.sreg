@@ -1,5 +1,35 @@
  # default regime file that is loaded when the simulation environment starts up
  # use this to create your own files
+- Name: teststation_with_real_parameters
+  clear previous: !!python/bool True # decide whether previous settings should remain or not
+
+  Model:
+   type: BallInTubeModel
+   T_n: 0.2484
+   d_R: 64.4e-3
+   k_V: 4.3059e-5
+   k_L: 6.1077e-4
+   d_B: 57.7e-3
+   T_p: 0.2484
+   d_p: 1.1061
+   m: 2.4e-3
+   tube_length: 1.5
+   d_n: 1.1061
+   k_s: 9.42075
+   initial state: [0,0,0,0]
+
+  Solver:
+   type: ODEInt
+   measure rate: 10
+   step size: 0.02
+   end time: 30
+
+
+  Controller:
+   type: PIDController
+
+  Trajectory:
+   type: SmoothTransition
 
 - Name: test
   clear previous: !!python/bool True # decide whether previous settings should remain or not
@@ -13,7 +43,7 @@
    end time: 10
 
   Controller:
-   type: ExactInputOutputLinearisation
+   type: PIDController
 
   Trajectory:
    type: SmoothTransition
