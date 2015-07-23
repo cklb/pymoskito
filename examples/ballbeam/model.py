@@ -56,7 +56,7 @@ class BallBeamModel(Model):
         u = (tau - self.M * (2 * x1 * x2 * x4 + self.G * x1 * np.cos(x3))) / (self.M * x1 ** 2 + self.J + self.Jb)
         dx4 = u
 
-        return [dx1, dx2, dx3, dx4]
+        return np.array([dx1, dx2, dx3, dx4])
 
     def root_function(self, x):
         return False

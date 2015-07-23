@@ -16,6 +16,7 @@ class SimulationStateChange(object):
         - Finish of Simulation
         - Abortion of Simulation
     """
+
     def __init__(self, **kwargs):
         assert "type" in kwargs.keys()
         for key, val in kwargs.iteritems():
@@ -39,17 +40,16 @@ class Simulator(QObject):
     finished = pyqtSignal()
     state_changed = pyqtSignal(SimulationStateChange)
 
-    # abilities (should match the module names) order has to be preserved since it is crucial for init step
-    _module_list = ["Model",
-                    "Solver",
-                    # 'Disturbance',
-                    # 'Sensor',
-                    # 'Observer',
-                    "Controller",
-                    # 'Feedforward',
-                    # 'Limiter',
-                    "Trajectory"
-                    ]
+    # list of modules that might not always appear but have to be calculated in special order
+    _dynamic_module_list = [
+        # 'Disturbance',
+        # 'Sensor',
+        "Observer",
+        "Trajectory",
+        "Controller",
+        # 'Feedforward',
+        # 'Limiter',
+    ]
 
     def __init__(self, settings, modules):
         QObject.__init__(self, None)
@@ -117,40 +117,9 @@ class Simulator(QObject):
             self._simulation_modules["Model"].calc_output(self._input_vector["system_state"])
         self._input_vector.update(system_output=self._current_outputs["Model"])
 
-        # # perform disturbance
-        # if hasattr(self, 'disturbance'):
-        #     self.disturbance_output = self.disturbance.disturb(self.current_time)
-        # else:
-        #     self.disturbance_output = [0 for i in range(self.model.getOutputDimension())]
-        #
-        # # perform measurement
-        # if hasattr(self, 'sensor'):
-        #     self.sensor_output = self.sensor.measure(self.current_time,
-        #                                              map(add, self.model_output, self.disturbance_output))
-        # else:
-        #     self.sensor_output = map(add, self.model_output, self.disturbance_output)
-
-        # perform observation
-        self._calc_module("Observer")
-
-        # get desired values
-        self._calc_module("Trajectory")
-
-        # perform control
-        self._calc_module("Controller")
-
-        # # get feedforward values
-        # # TODO remember that this signal can be vector, too.
-        # if hasattr(self, 'feedforward'):
-        #     self.feedforward_output = self.feedforward.feed(self.trajectory_output)
-        # else:
-        #     self.feedforward_output = 0
-
-        # # perform limitation
-        # if hasattr(self, 'limiter'):
-        #     self.limiter_output = self.limiter.limit(self.feedforward_output + self.controller_output)
-        # else:
-        #     self.limiter_output = self.feedforward_output + self.controller_output
+        # compute all dynamic modules
+        for mod in self._dynamic_module_list[1:]:
+            self._calc_module(mod)
 
         # integrate model
         self._calc_module("Solver")
@@ -193,7 +162,7 @@ class Simulator(QObject):
         while self._current_outputs["time"] < self._settings.end_time:
             t = self._simulation_modules["Solver"].t
             dt = 0
-            while dt < 1/self._settings.measure_rate:
+            while dt < 1 / self._settings.measure_rate:
                 try:
                     self._calc_step()
                     dt = self._simulation_modules["Solver"].t - t
@@ -221,22 +190,22 @@ class Simulator(QObject):
         # convert storage entries
         out = {}
         for module, results in self._storage.iteritems():
-                if not isinstance(results, list):
-                    # flag or string -> nothing to convert
-                    entry = results
-                elif isinstance(results[0], np.ndarray):
-                    # convert list of 1d-arrays into 2d-array
-                    entry = np.array(results)
-                else:
-                    # convert list of scalars into 1d-array
-                    entry = np.array(results)
-                out.update({module: entry})
+            if not isinstance(results, list):
+                # flag or string -> nothing to convert
+                entry = results
+            elif isinstance(results[0], np.ndarray):
+                # convert list of 1d-arrays into 2d-array
+                entry = np.array(results)
+            else:
+                # convert list of scalars into 1d-array
+                entry = np.array(results)
+            out.update({module: entry})
 
         return out
 
-    @property
-    def module_list(self):
-        return self._module_list
+    # @property
+    # def module_list(self):
+    #     return self._module_list
 
     @property
     def settings(self):
