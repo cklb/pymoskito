@@ -6,6 +6,7 @@ from pymoskito.simulation_gui import SimulationGui
 # import self defined simulation modules
 from model import BallInTubeModel
 from control import *
+from feedforward import BallInTubeFeedforward
 from visualization import BallInTubeVisualizer
 
 # create gui
@@ -20,7 +21,7 @@ gui.set_visualizer(vis)
 # load default config
 gui.load_regimes_from_file("default.sreg")
 gui.apply_regime_by_name("test")
-gui.start_simulation()
+# gui.start_simulation()
 
 if __name__ == '__main__':
     import sys

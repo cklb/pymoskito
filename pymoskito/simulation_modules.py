@@ -171,6 +171,32 @@ class Controller(SimulationModule):
         pass
 
 
+class Feedforward(SimulationModule):
+    """
+    Base class for all user defined feedforward
+    """
+
+    def __init__(self, settings):
+        SimulationModule.__init__(self, settings)
+        assert ("input_order" in settings)
+
+    @property
+    def input_order(self):
+        return self._settings["input_order"]
+
+    def calc_output(self, input_dict):
+        return self._feedforward(input_dict["Trajectory"])
+
+    @abstractmethod
+    def _feedforward(self, traj_values):
+        """
+        placeholder for feedforward calculation
+        :param traj_values: values from trajectory with there derivation
+        :return: feedforward output
+        """
+        pass
+
+
 class TrajectoryException(SimulationException):
     pass
 
@@ -192,3 +218,4 @@ class Trajectory(SimulationModule):
     @abstractmethod
     def _desired_values(self, t):
         pass
+

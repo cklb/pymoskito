@@ -46,7 +46,7 @@ class Simulator(QObject):
                     # 'Sensor',
                     # 'Observer',
                     "Controller",
-                    # 'Feedforward',
+                    "Feedforward",
                     # 'Limiter',
                     "Trajectory"
                     ]
@@ -139,12 +139,8 @@ class Simulator(QObject):
         # perform control
         self._calc_module("Controller")
 
-        # # get feedforward values
-        # # TODO remember that this signal can be vector, too.
-        # if hasattr(self, 'feedforward'):
-        #     self.feedforward_output = self.feedforward.feed(self.trajectory_output)
-        # else:
-        #     self.feedforward_output = 0
+        # TODO remember that this signal can be vector, too.
+        self._calc_module("Feedforward")
 
         # # perform limitation
         # if hasattr(self, 'limiter'):
