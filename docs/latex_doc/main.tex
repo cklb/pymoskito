@@ -1,0 +1,139 @@
+\documentclass[a4paper]{scrartcl}
+\usepackage[latin9]{inputenc}
+\usepackage{a4wide}
+\usepackage{amsmath}			%Mathe
+\usepackage{amstext}			%Mathe
+\usepackage{dsfont}
+\parindent0cm
+\usepackage{graphicx}			%Importieren von Grafiken
+\usepackage[ngerman]{babel}		%für deutsches Dokument mit Inhaltsverzeichnis
+\usepackage{amssymb}
+\usepackage{pdflscape}			%für Querformat
+\usepackage{subfigure}			%für mehrere Bilder nebeneinander
+\usepackage{enumerate}
+
+\usepackage{tikz}
+\usetikzlibrary{shapes, arrows, positioning}
+\usetikzlibrary{backgrounds}
+
+
+%Globale Trennliste
+\usepackage[T1]{fontenc}
+
+%---------------------------------------------------------------------------------------
+\begin{document}
+
+\section*{PyMoskito}
+
+PyMoskito steht für \textbf{Py}thon based \textbf{Mo}dular \textbf{S}imulation \& Postprocessing \textbf{Ki}ckass \textbf{To}olbox und kann als universelles Werkzeug zur Simulation von typischen Problemen in der Regelungstechnik und anderen Bereichen eingesetzt werden. Die stärken liegen bei der Simulation von vielen Konfigurationen mit diversen Variationen in der Struktur oder in den Parametern.\\
+
+Der Grundstein für PyMoskito wurde im Wintersemester 2014/2015 in Form eines Oberseminars zum Thema "`Untersuchung der Ball and Beam Problematik"' gelegt. Dieses Oberseminar beinhaltete unter anderem die Aufgabe das System mit Python zu simulieren. Daraus entwickelte sich Stück für Stück die hier vorliegende Toolbox.\\
+
+% aufheben für Getting Started
+% Python 2.7
+%PyMoskito ist als Paket konzipiert und kann durch die setup.py installiert werden. Weiterhin sind Abhängigkeiten zu anderen Paketen zu nennen, die für PyMoskito benötigt.
+%\begin{itemize}
+%	\item numpy
+%	\item sympy
+%	\item scipy
+%	\item PyQt4
+%	\item cPickle
+%	\item vtk
+%\end{itemize}
+
+Zur Übersicht und einfachen Bedienung der Simulation enthält PyMoskito eine Benutzeroberfläche (GUI). Mit Hilfe der GUI werden folgende Funktionen abgedeckt:
+\begin{itemize}
+	\item einfache Konfiguaration des Regelkreises
+	\item Simulation einer eingestellten Regelkreisstruktur
+	\item Laden von gespeicherten Simulationskonfigurationen
+	\item automatische Simulation von Simulationssätzen
+	\item Speichern von Simulationsergebnisse zur späteren Bearbeitung
+	\item Schnittstelle zur 3D-Visualisierung des physikalischen Systems mit Hilfe von VTK
+	%	\item Abspielen, Stoppen, Zurücksetzen und anpassen der Abspielgeschwindigkeit der visuellen Darstellung
+	\item Abspielfunktionen für die 3D-Visualisierung
+	\item Darstellen der Simulationsergebnisse durch Graphen
+	\item Möglichkeit zur individuellen Weiterbearbeitung von Simulationsergebnissen im Postprocessing-Fenster
+	\item Verschiebbarkeit und Skalierung der einzelnen Fenster
+\end{itemize}
+
+PyMoskito bietet einen Simulationskern zur Ausführung der in Abbildung \ref{abb:schema_des_systemmodells} dargestellten Regelkreisstruktur und eine Nachbearbeitung von Simulationsergebnissen an. Die Module dieses Regelkreises sind hierbei
+einzeln konfigurierbar und bieten so die Möglichkeit verschiedenste Szenarien gleichzeitig
+abzudecken. Sie unterteilen sich dabei in zwei verschiedene Gruppen:
+\begin{enumerate}[I.]
+	\item generische, daher vom konkreten System unabhängige Blöcke die damit auch für
+	andere Systeme Verwendung finden können und
+	\item systemabhängige, speziell zugeschnittene Blöcke, die für jedes System neu implementiert werden müssen.
+\end{enumerate}
+
+\begin{figure}
+	\begin{center}
+		\tikzstyle{block} = [draw, rectangle, fill=blue!00, minimum height=3em, minimum width=6em]
+		\tikzstyle{systemBlock} = [draw, rectangle, fill=blue!20, minimum height=3em, minimum width=6em]
+		\tikzstyle{sum} = [draw, circle, node distance=10mm]
+		\tikzstyle{input} = [coordinate]
+		\tikzstyle{output} = [coordinate]
+		\tikzstyle{pinstyle} = [pin edge={to-,thin,black}]
+		
+		\begin{tikzpicture}[auto, node distance=10mm and 10mm,>=latex']
+			% place blocks
+			\node [block]			(trajektorie)	{Trajektorie};
+			\node [systemBlock, right=of trajektorie]	(regler)	{Regler};
+			\node [systemBlock, above=of regler]	(vorsteuerung)	{Vorsteuerung};
+			\node [sum, right=of regler]	(summierer2)	{};
+			\node [block, right=of summierer2]	(limitierung)	{Limitierung};
+			\node [systemBlock, right=of limitierung]	(system)	{System};
+			\node [output, right=of system]	(ausgang) 	{};
+			\node [block, below=of system, pin={[pinstyle]below:$d$}]	(sensor)	{Sensor};
+			\node [input, below=of sensor]	(stoerung) 	{};
+			\node [systemBlock, left=of sensor]	(beobachter)	{Beobachter};
+			
+			% draw connections
+			\draw [->]	(trajektorie)	-- node [name=w, below] {$w$}	(regler);
+			\draw [->]	(w)		|- (vorsteuerung);
+			\draw [->]	(regler)	-- node {$r$}	(summierer2);
+			\draw [->]	(vorsteuerung.east) -| node [near end] {$v$}	(summierer2);
+			\draw [->]	(summierer2)	-- node {$u$}	(limitierung);
+			\draw [->]	(limitierung)	-- node {$l$}	(system);
+			\draw [->]	(system)	-- node [name=y] {$y$} (ausgang);
+			\draw [->]	(y) |- (sensor);
+			\draw [->]	(sensor)	-- node {$s$}	(beobachter);
+			\draw [->]	(beobachter)	-| node[near end] {$\hat{x}$}	(regler);
+			
+			% draw branches
+			\fill (y|-system) circle [radius=1.5pt];
+			\fill (w|-trajektorie) circle [radius=1.5pt];
+		\end{tikzpicture}
+		
+		\caption[Schema des Regelkreises]{Schematische Darstellung des Regelkreises. Blau hinterlegte Komponenten
+			sind an das jeweilige System anzupassen, alle anderen
+			Blöcke sind generisch verwendbar.}
+		\label{abb:schema_des_systemmodells}
+	\end{center}
+\end{figure}
+Das System ist Modular aufgebaut, sodass Blöcke ausgetauscht oder weggelassen werden können. Neben dem eigentlichen Simulationssteuerung werden generische Klassen zur Verfügung gestellt, welche häufig benutzte Simulationselemente enthalten. Dazu zählen:
+\begin{itemize}
+	\item ODEInt, ein Integrator zur Lösung von Differentialgleichungssystemen 1. Ordnung
+	\item SmoothTransition, ein Trajektoriengenerator zur Erzeugung von glatten Übergängen zwischen gegebenen Zuständen und Zeitpunkten
+	\item HarmonicTrajectory, ein Trajektoriengenerator zur Erzeugung von harmonischen Sollwerten mit gegebener Frequenz und Amplitude
+	\item PIDController, ein Standard Regler in der Regelungstechnik
+	% später eventuell Implementierung als Basisklasse um dann von dieser abzuleiten (in Konflikt mit blauer Box)
+	\item Limitierung (noch zu implementieren)
+	\item Sensor (noch zu implementieren)
+\end{itemize}
+
+In PyMoskito gibt es zur Orientierung und als Hilfe bei der Implementierung einer eigenen Problemstellung, ein Beispiel. Es handelt sich um das in der Regelungstechnik beliebte "`Ball and Beam"' System. Bei der "`Ball and Beam"' Problematik geht es darum, einen Ball auf einem in der Mitte drehbar gelagerten Balken auf eine bestimmte Position zu regeln. Aus diesem Beispiel ist auch ersichtlich, welche Module bzw. Dateien bei einer neuen Problemstellung zu erstellen sind. Dazu gibt es in PyMoskito verschiedene Basisklassen, die überladen werden müssen. Dies stellt sicher das alle für die Simulation benötigten Bestandteile implementiert werden. Die folgende Aufstellung zeigt, die selber zu entwerfenden Elemente:
+\begin{itemize}
+	\item Zustandsraummodell ist entsprechenden dem Beispiel als right hand side zu hinterlegen
+	\item in der auszuführenden Datei muss die Benutzeroberfläche erstellt und initialisiert werden
+	\item Regelgesetze zur Stabilisierung des Regelkreises
+	\item Entwurf einer Standardsimulationskonfiguration
+	\item Optional: 3D-Visualisierung mit Hilfe von VTK
+	%	\item main.py, beinhaltet die Erstellung der grafischen Oberfläche
+	%	\item visualization.py, dient zur VTK basierten Visualisierung
+	%	\item settings.py, enthält die Parameter und Konstanten des Systems
+	%	\item model.py, hier wird das Modell als Zustandsraummodell implementiert
+	%	\item controll.py, dient zur Implementierung von eigenen Reglergesetzen
+	%	\item default.sreg, kann zur Konfiguration einer Simulation benutzt werden
+\end{itemize}
+
+\end{document}
