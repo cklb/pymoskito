@@ -14,10 +14,11 @@ class SimulationException(Exception):
 
 
 class SimulationModule(QObject):
-    """ Smallest Unit in Simulation Process.
-        Provides necessary functions like output calculation and holds
-        all settings is 'settings' all available settings have to be added
-        to this dict and have to be known a priori.
+    """
+    Smallest Unit in Simulation Process.
+    Provides necessary functions like output calculation and holds
+    all settings is 'settings' all available settings have to be added
+    to this dict and have to be known a priori.
     """
     __metaclass__ = SimulationModuleMeta
 
@@ -108,7 +109,7 @@ class Solver(SimulationModule):
         self._model = settings["Model"]
 
     def calc_output(self, input_vector):
-        self.set_input(input_vector["Controller"])
+        self.set_input(input_vector["ModelInputMixer"])
         output = self.integrate(input_vector["time"])
         try:
             self._model.check_consistency(output)
@@ -152,8 +153,8 @@ class Controller(SimulationModule):
         return self._settings["input_order"]
 
     def calc_output(self, input_dict):
-        input_values = next((input_dict[src] for src in self.input_sources if src == self._settings["input_type"]),
-                            None)
+        input_values = next((input_dict[src] for src in self.input_sources
+                             if src == self._settings["input_type"]), None)
         if input_values is None:
             raise ControllerException("Selected Input not available")
         desired_values = input_dict["Trajectory"]
@@ -219,3 +220,45 @@ class Trajectory(SimulationModule):
     def _desired_values(self, t):
         pass
 
+
+class SimulationCoreModule(QObject):
+    """
+    this SimulationModules does not appear in the
+    graphical user interface
+    """
+    __metaclass__ = SimulationModuleMeta
+
+    def __init__(self, settings):
+        QObject.__init__(self, None)
+        assert isinstance(settings, OrderedDict)
+        self._settings = settings
+
+    @property
+    def tick_divider(self):
+        return self._settings["tick divider"]
+
+    @abstractmethod
+    def calc_output(self, input_dict):
+        pass
+
+
+class AdditiveMixer(SimulationCoreModule):
+    """
+    Base class for all additive mixer which is needed in simulation core,
+    e.g. to add feedforward and controller output to new model input
+    """
+
+    def __init__(self, settings):
+        SimulationCoreModule.__init__(self, settings)
+        assert ("input_type" in settings)
+
+    def calc_output(self, input_dict):
+        input_values = []
+        for src in self._settings["input_type"]:
+            if src in input_dict:
+                input_values.append(input_dict[src])
+
+        return self._add(input_values)
+
+    def _add(self, input_values):
+        return [sum(i) for i in input_values]

@@ -13,7 +13,7 @@ from PyQt4.QtGui import QStandardItemModel, QStandardItem, QItemDelegate, QCombo
 from simulation_modules import SimulationModule
 from generic_simulation_modules import *
 from simulation_core import Simulator, SimulationSettings, SimulationStateChange
-
+from simulation_modules import AdditiveMixer
 
 class SimulatorModel(QStandardItemModel):
     def __init__(self, parent=None):
@@ -291,6 +291,10 @@ class SimulatorInteractor(QtCore.QObject):
             # store settings
             self._sim_data['modules'].update({module_name: settings})
 
+        # generate SimulationCoreModules
+        model_input_mixer = ModelInputMixer(settings=OrderedDict([("type", "ModelInputMixer")]))
+        self._sim_modules.update({"ModelInputMixer": model_input_mixer})
+
     def set_regime(self, reg):
         if reg is None:
             return
@@ -349,7 +353,7 @@ class SimulatorInteractor(QtCore.QObject):
                         break
 
                 if not found:
-                    print("_applyRegime(): setting {0} not available for {1}".format(key ,module_type))
+                    print("_applyRegime(): setting {0} not available for {1}".format(key, module_type))
                     continue
 
     def run_simulation(self):
@@ -454,3 +458,21 @@ class SimulatorInteractor(QtCore.QObject):
             self.simulation_finished.emit(self._sim_data)
         else:
             self.simulation_failed.emit(self._sim_data)
+
+"""
+SimulationCoreModules
+"""
+
+
+class ModelInputMixer(AdditiveMixer):
+    """
+    This mixer add feedforward output and controller output,
+    the result is the model input
+    """
+    def __init__(self, settings):
+        settings.update(input_type=["Controller", "Feedforward"])
+        settings.update([("tick divider", 1)])
+        AdditiveMixer.__init__(self, settings)
+
+    def _add(self, input_values):
+        return sum(input_values)

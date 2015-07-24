@@ -39,5 +39,5 @@ class BallInTubeFeedforward(Feedforward):
             + (2*d*T*x2_flat)/st.k_s\
             + x1_flat/st.k_s
 
-        return u
+        return np.array([u])
 

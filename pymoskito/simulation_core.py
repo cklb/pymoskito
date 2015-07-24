@@ -5,7 +5,6 @@ from PyQt4.QtCore import QObject, pyqtSignal, pyqtSlot
 
 from simulation_modules import SimulationException
 
-
 class SimulationStateChange(object):
     """
     Object that is emitted when Simulator changes its state.
@@ -40,6 +39,7 @@ class Simulator(QObject):
     state_changed = pyqtSignal(SimulationStateChange)
 
     # abilities (should match the module names) order has to be preserved since it is crucial for init step
+    # this list is unused
     _module_list = ["Model",
                     "Solver",
                     # 'Disturbance',
@@ -141,6 +141,8 @@ class Simulator(QObject):
 
         # TODO remember that this signal can be vector, too.
         self._calc_module("Feedforward")
+
+        self._calc_module("ModelInputMixer")
 
         # # perform limitation
         # if hasattr(self, 'limiter'):

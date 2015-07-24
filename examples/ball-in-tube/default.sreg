@@ -45,6 +45,9 @@
   Controller:
    type: PIDController
 
+  Feedforward:
+   type: BallInTubeFeedforward
+
   Trajectory:
    type: SmoothTransition
 
