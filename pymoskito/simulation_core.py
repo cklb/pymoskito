@@ -5,7 +5,6 @@ from PyQt4.QtCore import QObject, pyqtSignal, pyqtSlot
 
 from simulation_modules import SimulationException
 
-
 class SimulationStateChange(object):
     """
     Object that is emitted when Simulator changes its state.
@@ -42,13 +41,14 @@ class Simulator(QObject):
 
     # list of modules that might not always appear but have to be calculated in special order
     _dynamic_module_list = [
-        # 'Disturbance',
-        # 'Sensor',
+        # "Disturbance",
+        # "Sensor",
         "Observer",
         "Trajectory",
         "Controller",
-        # 'Feedforward',
-        # 'Limiter',
+        "Feedforward",
+        "ModelInputMixer",
+        # "Limiter",
     ]
 
     def __init__(self, settings, modules):

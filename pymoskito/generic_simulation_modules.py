@@ -7,7 +7,7 @@ from scipy.integrate import ode
 import sympy as sp
 import numpy as np
 from collections import OrderedDict
-from simulation_modules import Model, Solver, Trajectory
+from simulation_modules import Model, Solver, Trajectory, Controller
 
 
 class ODEInt(Solver):
@@ -64,9 +64,11 @@ class ODEInt(Solver):
         :return: system state at target time
         """
         state = self._solver.integrate(t + self._settings["step size"])
-        if self._model.root_function(state):
+        # check model constraints
+        new_state = self._model.root_function(state)
+        if new_state[0]:
             # reset solver since discontinuous change in equations happened
-            self._solver.set_initial_value(state, self.t)
+            self._solver.set_initial_value(new_state[1], self.t)
         return state
 
 
@@ -153,3 +155,70 @@ class HarmonicTrajectory(Trajectory):
         yd.append(a * (2 * np.pi * f) ** 4 * np.cos(2 * np.pi * f * t))
 
         return [y for idx, y in enumerate(yd) if idx <= self._settings["differential_order"]]
+
+
+class PIDController(Controller):
+    """
+    PID Controller
+    """
+    public_settings = OrderedDict([("Kp", 700),
+                                   ("Ki", 500),
+                                   ("Kd", 200),
+                                   ("output_limits", [0, 255]),
+                                   ("input_state", [2]),
+                                   ("tick divider", 1)])
+    last_time = 0
+    last_u = 0
+
+    def __init__(self, settings):
+        # add specific "private" settings
+        settings.update(input_order=0)
+        settings.update(output_dim=len(self.public_settings["input_state"]))
+        settings.update(input_type="system_state")
+        Controller.__init__(self, settings)
+
+        # define variables for data saving in the right dimension
+        self.e_old = np.zeros(len(self._settings["input_state"]))
+        self.integral_old = np.zeros(len(self._settings["input_state"]))
+
+    def _control(self, is_values, desired_values, t):
+        # input abbreviations
+        x = np.zeros(len(self._settings["input_state"]))
+        for idx, state in enumerate(self._settings["input_state"]):
+            x[idx] = is_values[int(state)]
+
+        yd = desired_values
+
+        # step size
+        dt = t - self.last_time
+        # save current time
+        self.last_time = t
+
+        if dt != 0:
+            for i in range(len(x)):
+                # error
+                e = yd[i] - x[i]
+                integral = e*dt + self.integral_old[i]
+                if integral > self._settings["output_limits"][1]:
+                    integral = self._settings["output_limits"][1]
+                elif integral < self._settings["output_limits"][0]:
+                    integral = self._settings["output_limits"][0]
+                differential = (e - self.e_old)/dt
+
+                output = self._settings["Kp"]*e\
+                         + self._settings["Ki"]*integral \
+                         + self._settings["Kd"]*differential
+
+                if output > self._settings["output_limits"][1]:
+                    output = self._settings["output_limits"][1]
+                elif output < self._settings["output_limits"][0]:
+                    output = self._settings["output_limits"][0]
+
+                # save data for new calculation
+                self.e_old[i] = e
+                self.integral_old[i] = integral
+            u = output
+        else:
+            u = self.last_u
+        self.last_u = u
+        return u
