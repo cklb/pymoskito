@@ -131,7 +131,7 @@ preamble = '- name: C1-simulation-setup\n'\
 +'\n'
 
 #-------------------------------------------------------------
-# main.py
+# main
 #-------------------------------------------------------------
 collection = ''
 for controller in simCases:
