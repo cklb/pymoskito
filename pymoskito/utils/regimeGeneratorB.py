@@ -90,7 +90,7 @@ def writeController(cName, pole, multiplicator):
     return tmp
 
 #-------------------------------------------------------------
-# main
+# main.py
 #-------------------------------------------------------------
 #ideal regime
 lines += writeRegime(controller, pole, parameter, paramRealValue, 'ideal')

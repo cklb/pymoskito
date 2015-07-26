@@ -155,7 +155,7 @@ class SimulatorInteractor(QtCore.QObject):
         # get all integrated simulation modules
         sim_modules = [cls for cls in SimulationModule.__subclasses__()]
 
-        # insert main items
+        # insert main.py items
         for module in sim_modules:
             name = QStandardItem(module.__name__)
             value = QStandardItem('None')
