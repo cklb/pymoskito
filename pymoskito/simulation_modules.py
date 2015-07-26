@@ -78,9 +78,10 @@ class Model(SimulationModule):
         function that signal the integrator when a reinitialisation should be performed
         due to discontinuities in the model equations.
         :param x: system state
-        :return: True if reset is advised
+        :return: tuple of: -reset flag
+                        and -new initial state to use
         """
-        return False
+        pass
 
     @abstractmethod
     def check_consistency(self, x):
@@ -109,7 +110,13 @@ class Solver(SimulationModule):
         self._model = settings["Model"]
 
     def calc_output(self, input_vector):
-        self.set_input(input_vector["ModelInputMixer"])
+        if "Limiter" in input_vector:
+            self.set_input(input_vector["Limiter"])
+        elif "ModelMixer" in input_vector:
+            self.set_input(input_vector["ModelMixer"])
+        else:
+            raise SolverException("ERROR input not provided.")
+
         output = self.integrate(input_vector["time"])
         try:
             self._model.check_consistency(output)
@@ -221,44 +228,28 @@ class Trajectory(SimulationModule):
         pass
 
 
-class SimulationCoreModule(QObject):
-    """
-    this SimulationModules does not appear in the
-    graphical user interface
-    """
-    __metaclass__ = SimulationModuleMeta
+class MixerException(Exception):
+    pass
 
+class SignalMixer(SimulationModule):
+    """
+    Base class for all Signal mixing modules
+    """
     def __init__(self, settings):
-        QObject.__init__(self, None)
-        assert isinstance(settings, OrderedDict)
-        self._settings = settings
+        assert "input signals" in settings
+        settings.update({"tick divider": 1})
+        SimulationModule.__init__(self, settings)
 
-    @property
-    def tick_divider(self):
-        return self._settings["tick divider"]
-
-    @abstractmethod
-    def calc_output(self, input_dict):
-        pass
+    def calc_output(self, input_vector):
+        signals = [value for signal, value in input_vector.iteritems()
+                   if signal in self._settings["input signals"]]
+        return self._mix(signals)
 
 
-class AdditiveMixer(SimulationCoreModule):
-    """
-    Base class for all additive mixer which is needed in simulation core,
-    e.g. to add feedforward and controller output to new model input
-    """
+class ModelMixer(SignalMixer):
+    pass
 
-    def __init__(self, settings):
-        SimulationCoreModule.__init__(self, settings)
-        assert ("input_type" in settings)
+class ObserverMIxer(SignalMixer):
+    pass
 
-    def calc_output(self, input_dict):
-        input_values = []
-        for src in self._settings["input_type"]:
-            if src in input_dict:
-                input_values.append(input_dict[src])
 
-        return self._add(input_values)
-
-    def _add(self, input_values):
-        return [sum(i) for i in input_values]

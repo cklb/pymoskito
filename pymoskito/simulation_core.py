@@ -39,17 +39,26 @@ class Simulator(QObject):
     finished = pyqtSignal()
     state_changed = pyqtSignal(SimulationStateChange)
 
+    # list of modules that have to appear in every run
+    _static_module_list = [
+        "Model",
+        "Solver"
+    ]
+
     # list of modules that might not always appear but have to be calculated in special order
     _dynamic_module_list = [
-        # "Disturbance",
-        # "Sensor",
+        "Disturbance",
+        "Sensor",
+        "ObserverMixer",
         "Observer",
         "Trajectory",
         "Controller",
         "Feedforward",
-        "ModelInputMixer",
-        # "Limiter",
+        "ModelMixer",
+        "Limiter",
     ]
+
+    module_list = _static_module_list + _dynamic_module_list
 
     def __init__(self, settings, modules):
         QObject.__init__(self, None)
@@ -73,7 +82,6 @@ class Simulator(QObject):
             self._current_outputs[mod_name] = []
 
         # init model output with current state
-        # TODO make use of start time setting
         self._current_outputs["Solver"] = self._simulation_modules["Model"].initial_state
 
         return
@@ -202,10 +210,6 @@ class Simulator(QObject):
             out.update({module: entry})
 
         return out
-
-    # @property
-    # def module_list(self):
-    #     return self._module_list
 
     @property
     def settings(self):

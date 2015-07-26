@@ -3,11 +3,13 @@ __author__ = 'stefan'
 ready to go implementations of generic simulation modules
 """
 
+from collections import OrderedDict
+
 from scipy.integrate import ode
 import sympy as sp
 import numpy as np
-from collections import OrderedDict
-from simulation_modules import Model, Solver, Trajectory, Controller
+
+from simulation_modules import Solver, SolverException, Trajectory, Controller, SignalMixer
 
 
 class ODEInt(Solver):
@@ -64,11 +66,16 @@ class ODEInt(Solver):
         :return: system state at target time
         """
         state = self._solver.integrate(t + self._settings["step size"])
+
         # check model constraints
         new_state = self._model.root_function(state)
         if new_state[0]:
             # reset solver since discontinuous change in equations happened
             self._solver.set_initial_value(new_state[1], self.t)
+
+        if not self._solver.successful():
+            raise SolverException("integration step was not succesful.")
+
         return state
 
 
@@ -222,3 +229,37 @@ class PIDController(Controller):
             u = self.last_u
         self.last_u = u
         return u
+
+class AdditiveMixer(SignalMixer):
+    """
+    Signal Mixer that ads up input signals
+    processing is done according to rules of numpy casting
+    """
+    public_settings = OrderedDict([("Input A", None),
+                                   ("Input B", None)])
+
+    def __init__(self, settings):
+        settings.update(("input signals", [settings["Input A"], settings["Input B"]]))
+        SignalMixer.__init__(self, settings)
+
+    def _mix(self, signal_values):
+        vals = np.array(signal_values)
+        return np.sum(vals, 0)
+
+
+# class ModelMixer(AdditiveMixer):
+#     public_settings = OrderedDict([("Input A", "Controller"),
+#                                    ("Input B", "Feedforward")])
+#
+#     def __init__(self, settings):
+#         settings.update(("input signals", [settings["Input A"], settings["Input B"]]))
+#         AdditiveMixer.__init__(self, settings)
+#
+#
+# class ObserverMixer(AdditiveMixer):
+#     public_settings = OrderedDict([("Input A", "Sensor"),
+#                                    ("Input B", "Disturbance")])
+#
+#     def __init__(self, settings):
+#         settings.update(("input signals", [settings["Input A"], settings["Input B"]]))
+#         AdditiveMixer.__init__(self, settings)

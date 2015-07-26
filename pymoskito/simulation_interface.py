@@ -13,7 +13,6 @@ from PyQt4.QtGui import QStandardItemModel, QStandardItem, QItemDelegate, QCombo
 from simulation_modules import SimulationModule
 from generic_simulation_modules import *
 from simulation_core import Simulator, SimulationSettings, SimulationStateChange
-from simulation_modules import AdditiveMixer
 
 class SimulatorModel(QStandardItemModel):
     def __init__(self, parent=None):
@@ -152,10 +151,10 @@ class SimulatorInteractor(QtCore.QObject):
         """
         fill model with items corresponding to all predefined SimulationModules
         """
-        # get all integrated simulation modules
-        sim_modules = [cls for cls in SimulationModule.__subclasses__()]
+        # get all supported simulation modules
+        sim_modules = [cls for cls in SimulationModule.__subclasses__() if cls.__name__ in Simulator.module_list]
 
-        # insert main.py items
+        # insert main items
         for module in sim_modules:
             name = QStandardItem(module.__name__)
             value = QStandardItem('None')
@@ -218,7 +217,7 @@ class SimulatorInteractor(QtCore.QObject):
         settings = OrderedDict()
         for row in range(item.rowCount()):
             property_name = str(item.child(row, 0).text())
-            # TODO this is not the good way --> use predefined types
+            # TODO this is not the good way --> switch to pyqtgraphs implementation
             if property_name == 'Method':
                 prop_val = str(item.child(row, 1).text())
             else:
@@ -290,10 +289,6 @@ class SimulatorInteractor(QtCore.QObject):
 
             # store settings
             self._sim_data['modules'].update({module_name: settings})
-
-        # generate SimulationCoreModules
-        model_input_mixer = ModelInputMixer(settings=OrderedDict([("type", "ModelInputMixer")]))
-        self._sim_modules.update({"ModelInputMixer": model_input_mixer})
 
     def set_regime(self, reg):
         if reg is None:
@@ -458,21 +453,3 @@ class SimulatorInteractor(QtCore.QObject):
             self.simulation_finished.emit(self._sim_data)
         else:
             self.simulation_failed.emit(self._sim_data)
-
-"""
-SimulationCoreModules
-"""
-
-
-class ModelInputMixer(AdditiveMixer):
-    """
-    This mixer add feedforward output and controller output,
-    the result is the model input
-    """
-    def __init__(self, settings):
-        settings.update(input_type=["Controller", "Feedforward"])
-        settings.update([("tick divider", 1)])
-        AdditiveMixer.__init__(self, settings)
-
-    def _add(self, input_values):
-        return sum(input_values)

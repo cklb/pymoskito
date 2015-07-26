@@ -80,7 +80,7 @@ class BallInTubeModel(Model):
 
     def root_function(self, x):
         """
-        this function set a flag if it is necessary and returned the new initial values
+        in this case this means zero crossing detection for the balls elevation.
         """
         if x[2] <= 0:
             x0 = [x[0], x[1], 0, 0]
@@ -89,7 +89,7 @@ class BallInTubeModel(Model):
             x0 = x
             flag = False
 
-        return [flag, x0]
+        return flag, x0
 
     def check_consistency(self, x):
         """
