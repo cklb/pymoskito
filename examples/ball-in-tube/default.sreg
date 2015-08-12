@@ -24,12 +24,16 @@
    step size: 0.02
    end time: 30
 
-
   Controller:
    type: PIDController
 
   Trajectory:
    type: SmoothTransition
+
+  ModelMixer:
+   type: AdditiveMixer
+   Input A: Controller
+   Input B: Feedforward
 
 - Name: test
   clear previous: !!python/bool True # decide whether previous settings should remain or not
@@ -51,4 +55,7 @@
   Trajectory:
    type: SmoothTransition
 
-
+  ModelMixer:
+   type: AdditiveMixer
+   Input A: Controller
+   Input B: Feedforward

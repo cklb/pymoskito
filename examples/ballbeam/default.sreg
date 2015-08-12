@@ -8,7 +8,7 @@
 
   Solver:
    type: ODEInt
-   measure rate: 1
+   measure rate: 10
    end time: 10
 
   Controller:
@@ -19,6 +19,11 @@
    type: HarmonicTrajectory
    Frequency: .1
    Amplitude: 3
+
+  ModelMixer:
+   type: AdditiveMixer
+   Input A: Controller
+   Input B: None
 
 - Name: test-linear
   clear previous: !!python/bool True

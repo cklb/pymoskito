@@ -4,9 +4,9 @@ from PyQt4 import QtGui, QtCore
 from pymoskito.simulation_gui import SimulationGui
 
 # import self defined simulation modules
-from model import BallInTubeModel
-from control import *
-from feedforward import BallInTubeFeedforward
+import model
+import control
+import feedforward
 from visualization import BallInTubeVisualizer
 
 # create gui

@@ -136,6 +136,9 @@ class Solver(SimulationModule):
     def t(self):
         pass
 
+    @abstractproperty
+    def successful(self):
+        pass
 
 class ControllerException(SimulationException):
     pass
@@ -249,7 +252,7 @@ class SignalMixer(SimulationModule):
 class ModelMixer(SignalMixer):
     pass
 
-class ObserverMIxer(SignalMixer):
+class ObserverMixer(SignalMixer):
     pass
 
 

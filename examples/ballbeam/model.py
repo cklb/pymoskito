@@ -2,6 +2,7 @@ __author__ = 'stefan'
 
 from collections import OrderedDict
 import numpy as np
+import pymoskito.pymoskito as pm
 from pymoskito.simulation_modules import Model, ModelException
 
 import settings as st
@@ -79,3 +80,4 @@ class BallBeamModel(Model):
         return input_vector[0]
 
 
+pm.register_simulation_module(Model, BallBeamModel)

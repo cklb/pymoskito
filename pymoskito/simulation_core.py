@@ -22,7 +22,7 @@ class SimulationStateChange(object):
             setattr(self, key, val)
 
 
-class SimulationSettings:
+class SimulationSettings(object):
     def __init__(self, start_time, end_time, measure_rate):
         self.start_time = start_time
         self.end_time = end_time
@@ -167,16 +167,17 @@ class Simulator(QObject):
         end_state = None
 
         # TODO make sure that results contain end_time/measure_rate entries
+        solver = self._simulation_modules["Solver"]
         while self._current_outputs["time"] < self._settings.end_time:
-            t = self._simulation_modules["Solver"].t
+            t = solver.t
             dt = 0
             while dt < 1 / self._settings.measure_rate:
                 try:
                     self._calc_step()
-                    dt = self._simulation_modules["Solver"].t - t
+                    dt = solver.t - t
 
                 except SimulationException as e:
-                    print("Simulator.run(): {0}".format(e.args[0]))
+                    print("Simulator.run()>> {0}: {1}".format(type(e).__name__, e.args[0]))
                     # overwrite end time with reached time
                     self._settings.end_time = self._current_outputs["time"]
                     self._storage.update(finished=False)

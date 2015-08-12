@@ -2,6 +2,7 @@ __author__ = 'christoph'
 
 from collections import OrderedDict
 import numpy as np
+import pymoskito.pymoskito as pm
 from pymoskito.simulation_modules import Model, ModelException
 
 import settings as st
@@ -104,4 +105,6 @@ class BallInTubeModel(Model):
         :param input_vector: input values
         :return: ball position
         """
-        return input_vector[0]
+        return input_vector[2]
+
+pm.register_simulation_module(Model, BallInTubeModel)

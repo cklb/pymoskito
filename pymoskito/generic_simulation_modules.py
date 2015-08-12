@@ -9,7 +9,8 @@ from scipy.integrate import ode
 import sympy as sp
 import numpy as np
 
-from simulation_modules import Solver, SolverException, Trajectory, Controller, SignalMixer
+import pymoskito as pm
+from simulation_modules import Solver, SolverException, Trajectory, Controller, SignalMixer, ModelMixer, ObserverMixer
 
 
 class ODEInt(Solver):
@@ -49,6 +50,10 @@ class ODEInt(Solver):
     @property
     def t(self):
         return self._solver.t
+
+    @property
+    def successful(self):
+        return self._solver.successful()
 
     def set_input(self, *args):
         """
@@ -239,7 +244,7 @@ class AdditiveMixer(SignalMixer):
                                    ("Input B", None)])
 
     def __init__(self, settings):
-        settings.update(("input signals", [settings["Input A"], settings["Input B"]]))
+        settings.update([("input signals", [settings["Input A"], settings["Input B"]])])
         SignalMixer.__init__(self, settings)
 
     def _mix(self, signal_values):
@@ -247,19 +252,12 @@ class AdditiveMixer(SignalMixer):
         return np.sum(vals, 0)
 
 
-# class ModelMixer(AdditiveMixer):
-#     public_settings = OrderedDict([("Input A", "Controller"),
-#                                    ("Input B", "Feedforward")])
-#
-#     def __init__(self, settings):
-#         settings.update(("input signals", [settings["Input A"], settings["Input B"]]))
-#         AdditiveMixer.__init__(self, settings)
-#
-#
-# class ObserverMixer(AdditiveMixer):
-#     public_settings = OrderedDict([("Input A", "Sensor"),
-#                                    ("Input B", "Disturbance")])
-#
-#     def __init__(self, settings):
-#         settings.update(("input signals", [settings["Input A"], settings["Input B"]]))
-#         AdditiveMixer.__init__(self, settings)
+# TODO Limiter
+
+# register all generic modules
+pm.register_simulation_module(Solver, ODEInt)
+pm.register_simulation_module(Trajectory, SmoothTransition)
+pm.register_simulation_module(Trajectory, HarmonicTrajectory)
+pm.register_simulation_module(Controller, PIDController)
+pm.register_simulation_module(ModelMixer, AdditiveMixer)
+pm.register_simulation_module(ObserverMixer, AdditiveMixer)

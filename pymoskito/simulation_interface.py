@@ -10,7 +10,7 @@ import string
 from PyQt4 import QtCore, QtGui
 from PyQt4.QtGui import QStandardItemModel, QStandardItem, QItemDelegate, QComboBox
 
-from simulation_modules import SimulationModule
+import simulation_modules
 from generic_simulation_modules import *
 from simulation_core import Simulator, SimulationSettings, SimulationStateChange
 
@@ -85,16 +85,17 @@ class ComboDelegate(QItemDelegate):
     def current_index_changed(self, idx):
         self.commitData.emit(self.sender())
 
-    def extract_entries(self, index):
+    @staticmethod
+    def extract_entries(index):
         """
         extract all possible choices for the selected SimulationModule
         """
         entries = ['None']
         idx = index.model().index(index.row(), 0, QtCore.QModelIndex())
         sim_module_name = str(index.model().itemFromIndex(idx).text())
-        sim_module = next((cls for cls in SimulationModule.__subclasses__() if cls.__name__ == sim_module_name),
-                          None)
-        for sub_module in sim_module.__subclasses__():
+        sim_module = getattr(simulation_modules, sim_module_name)
+        sub_modules = pm.get_registered_modules(sim_module)
+        for sub_module in sub_modules:
             entries.append(sub_module.__name__)
 
         return entries
@@ -151,12 +152,16 @@ class SimulatorInteractor(QtCore.QObject):
         """
         fill model with items corresponding to all predefined SimulationModules
         """
-        # get all supported simulation modules
-        sim_modules = [cls for cls in SimulationModule.__subclasses__() if cls.__name__ in Simulator.module_list]
+
+        # build initialisation list
+        # TODO complete sorting therefore add observer, sensor and so on again
+        setup_list = Simulator.module_list
+        setup_list.append("Trajectory")
+        setup_list.remove("Trajectory")
 
         # insert main items
-        for module in sim_modules:
-            name = QStandardItem(module.__name__)
+        for module in setup_list:
+            name = QStandardItem(module)
             value = QStandardItem('None')
             new_items = [name, value]
             self.target_model.appendRow(new_items)
@@ -183,18 +188,10 @@ class SimulatorInteractor(QtCore.QObject):
         """
         reads the public settings from a simulation module
         """
-        module = self._get_derived_class_by_name(SimulationModule, module_name)
-        sub_module = self._get_derived_class_by_name(module, sub_module_name)
-        return sub_module.public_settings
-
-    def _get_derived_class_by_name(self, parent_cls, name):
-        """
-        :param parent_cls: parent class
-        :param name: name of derived class
-        :return: derived class
-        """
-        return next((cls for cls in parent_cls.__subclasses__() if cls.__name__ == name),
-                    None)
+        module_cls = getattr(simulation_modules, module_name)
+        sub_module_cls = next((sub_mod for sub_mod in pm.get_registered_modules(module_cls)
+                               if sub_mod.__name__ == sub_module_name), None)
+        return sub_module_cls.public_settings
 
     def item_changed(self, item):
         if item.parent():
@@ -242,6 +239,7 @@ class SimulatorInteractor(QtCore.QObject):
         setup simulation Modules
         :param model: model holding the public settings of each module
         """
+
         for row in range(model.rowCount()):
             # build correct object and add it to the simulator
             module_item = model.item(row, 0)
@@ -253,8 +251,9 @@ class SimulatorInteractor(QtCore.QObject):
                 continue
 
             # get class
-            module_cls = self._get_derived_class_by_name(SimulationModule, module_name)
-            sub_module_cls = self._get_derived_class_by_name(module_cls, sub_module_name)
+            module_cls = getattr(simulation_modules, module_name)
+            sub_module_cls = next((sub_mod for sub_mod in pm.get_registered_modules(module_cls)
+                                   if sub_mod.__name__ == sub_module_name), None)
 
             # get public settings for module
             settings = self._get_settings(self.target_model, module_item.text())
@@ -316,16 +315,20 @@ class SimulatorInteractor(QtCore.QObject):
                 continue
 
             # sanity check
-            module_cls = self._get_derived_class_by_name(SimulationModule, module_name)
+            module_cls = getattr(simulation_modules, module_name)
             if not module_cls:
                 raise AttributeError("_apply_regime(): No module called {0}".format(module_name))
 
-            items = self.target_model.findItems(string.capwords(module_name))
+            items = self.target_model.findItems(module_name)
+            # items = self.target_model.findItems(string.capwords(module_name))
+            if not len(items):
+                raise ValueError("_apply_regime(): No item in List called {0}".format(module_name))
             module_item = items.pop(0)
             module_type = value["type"]
 
             # sanity check
-            sub_module_cls = self._get_derived_class_by_name(module_cls, module_type)
+            sub_module_cls = next((sub_mod for sub_mod in pm.get_registered_modules(module_cls)
+                                   if sub_mod.__name__ == module_type), None)
             if not sub_module_cls:
                 raise AttributeError("_apply_regime(): No sub-module called {0}".format(module_type))
 

@@ -1,6 +1,7 @@
 __author__ = 'christoph'
 
 from collections import OrderedDict
+import pymoskito.pymoskito as pm
 from pymoskito.simulation_modules import Feedforward
 import numpy as np
 import settings as st
@@ -41,3 +42,4 @@ class BallInTubeFeedforward(Feedforward):
 
         return np.array([u])
 
+pm.register_simulation_module(Feedforward, BallInTubeFeedforward)
