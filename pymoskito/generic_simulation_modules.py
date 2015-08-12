@@ -36,7 +36,7 @@ class ODEInt(Solver):
             self._solver = ode(self._model.state_function,
                                jac=self._model.jacobian)
         else:
-            self._solver = ode(self._settings["Model"].state_function)
+            self._solver = ode(self._model.state_function)
 
         self._solver.set_integrator(self._settings["Mode"],
                                     method=self._settings["Method"],
@@ -256,8 +256,8 @@ class AdditiveMixer(SignalMixer):
 
 # register all generic modules
 pm.register_simulation_module(Solver, ODEInt)
-pm.register_simulation_module(Trajectory, SmoothTransition)
 pm.register_simulation_module(Trajectory, HarmonicTrajectory)
+pm.register_simulation_module(Trajectory, SmoothTransition)
 pm.register_simulation_module(Controller, PIDController)
 pm.register_simulation_module(ModelMixer, AdditiveMixer)
 pm.register_simulation_module(ObserverMixer, AdditiveMixer)

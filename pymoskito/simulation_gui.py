@@ -35,8 +35,8 @@ class SimulationGui(QtGui.QMainWindow):
     class for the graphical user interface
     """
     # TODO enable closing plot docks by right-clicking their name
-    # add ability to stop an simulation
-    # add ability to stop regime execution
+    # TODO add ability to stop an simulation
+    # TODO add ability to stop regime execution
 
     runSimulation = pyqtSignal()
     playbackTimeChanged = pyqtSignal()
@@ -338,7 +338,9 @@ class SimulationGui(QtGui.QMainWindow):
         if not os.path.isdir(path):
             os.makedirs(path)
 
-        file_name = os.path.join(path, time.strftime('%Y%m%d-%H%M%S') + '_' + name + '.bbr')
+        # pmr - PyMoskito Result
+        file_name = os.path.join(path, time.strftime('%Y%m%d-%H%M%S') + '_' + name + '.pmr')
+        print self.currentDataset
         with open(file_name, 'wb') as f:
             cPickle.dump(self.currentDataset, f, protocol=2)
 
@@ -647,6 +649,6 @@ class SimulationGui(QtGui.QMainWindow):
         starts the post- and metaprocessing application
         """
         self.statusBar().showMessage('launching postprocessor', 1000)
-        if not self.postprocessor:
+        if hasattr(self, "postprocessor"):
             self.postprocessor = PostProcessor(self)
-        self.post.show()
+        self.postprocessor.show()

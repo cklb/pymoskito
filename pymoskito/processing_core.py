@@ -19,8 +19,8 @@ class ProcessingModule(QObject):
     _label_font_size = 1 * _base_font_size
     _title_font_size = 1.5 * _base_font_size
 
-    def __init__(self):
-        QObject.__init__()
+    def __init__(self, parent=None):
+        QObject.__init__(self, parent)
         self.name = self.__class__.__name__
         return
 

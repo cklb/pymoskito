@@ -94,7 +94,7 @@ class ComboDelegate(QItemDelegate):
         idx = index.model().index(index.row(), 0, QtCore.QModelIndex())
         sim_module_name = str(index.model().itemFromIndex(idx).text())
         sim_module = getattr(simulation_modules, sim_module_name)
-        sub_modules = pm.get_registered_modules(sim_module)
+        sub_modules = pm.get_registered_simulation_modules(sim_module)
         for sub_module in sub_modules:
             entries.append(sub_module.__name__)
 
@@ -189,8 +189,7 @@ class SimulatorInteractor(QtCore.QObject):
         reads the public settings from a simulation module
         """
         module_cls = getattr(simulation_modules, module_name)
-        sub_module_cls = next((sub_mod for sub_mod in pm.get_registered_modules(module_cls)
-                               if sub_mod.__name__ == sub_module_name), None)
+        sub_module_cls = pm.get_module_class_by_name("SimulationModule", module_cls, sub_module_name)
         return sub_module_cls.public_settings
 
     def item_changed(self, item):
@@ -252,8 +251,7 @@ class SimulatorInteractor(QtCore.QObject):
 
             # get class
             module_cls = getattr(simulation_modules, module_name)
-            sub_module_cls = next((sub_mod for sub_mod in pm.get_registered_modules(module_cls)
-                                   if sub_mod.__name__ == sub_module_name), None)
+            sub_module_cls = pm.get_simulation_module_class_by_name(module_cls, sub_module_name)
 
             # get public settings for module
             settings = self._get_settings(self.target_model, module_item.text())
@@ -327,8 +325,8 @@ class SimulatorInteractor(QtCore.QObject):
             module_type = value["type"]
 
             # sanity check
-            sub_module_cls = next((sub_mod for sub_mod in pm.get_registered_modules(module_cls)
-                                   if sub_mod.__name__ == module_type), None)
+            sub_module_cls = pm.get_module_class_by_name("SimulationModule", module_cls, module_type)
+
             if not sub_module_cls:
                 raise AttributeError("_apply_regime(): No sub-module called {0}".format(module_type))
 

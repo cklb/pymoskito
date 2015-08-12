@@ -5,6 +5,10 @@ import traceback
 from PyQt4 import QtCore, QtGui
 from PyQt4.QtCore import pyqtSignal
 
+import pymoskito as pm
+from processing_core import PostProcessingModule, MetaProcessingModule
+import generic_postprocessing_modules
+# import generic_metaprocessing_modules
 from tools import get_resource
 
 
@@ -136,7 +140,7 @@ class PostProcessor(QtGui.QMainWindow):
         self.setStatusBar(self.statusBar)
 
         # load test results
-        # filePath = os.path.join(os.pardir, 'results', 'simulation', 'default', 'example.bbr')
+        # filePath = os.path.join(os.pardir, 'results', 'simulation', 'default', 'example.pmr')
         # self._loadResultFile(filePath)
         #
         # load test post-results
@@ -148,7 +152,7 @@ class PostProcessor(QtGui.QMainWindow):
         dialog = QtGui.QFileDialog(self)
         dialog.setFileMode(QtGui.QFileDialog.ExistingFiles)
         dialog.setDirectory(path)
-        dialog.setNameFilter("BallBeam Result files (*.bbr)")
+        dialog.setNameFilter("PyMoskito Result files (*.pmr)")
 
         files = None
         if dialog.exec_():
@@ -218,43 +222,15 @@ class PostProcessor(QtGui.QMainWindow):
 
     def update_method_list(self):
         self.methodList.clear()
-         # TODO correct to new structure
-
-        # import all modules in current directory and display their names
-        module_names = []
-        path = os.path.join(os.curdir, 'postprocessing')
-        for f in os.listdir(path):
-            if not os.path.isfile(os.path.join(path, f)):
-                continue
-            elif f == '__init__.py':
-                continue
-            elif f[-3:] != '.py':
-                continue
-            else:
-                module_names.append(f[:-3])
-
-        for module in module_names:
-            self.methodList.addItem(module)
+        modules = pm.get_registered_processing_modules(PostProcessingModule)
+        for module in modules:
+            self.methodList.addItem(module[1])
 
     def update_meta_method_list(self):
         self.metaMethodList.clear()
-        # TODO correct to new structure
-
-        # import all modules in current directory and display their names
-        module_names = []
-        path = os.path.join(os.curdir, "metaprocessing")
-        for f in os.listdir(path):
-            if not os.path.isfile(os.path.join(path, f)):
-                continue
-            elif f == '__init__.py':
-                continue
-            elif f[-3:] != '.py':
-                continue
-            else:
-                module_names.append(f[:-3])
-
-        for module in module_names:
-            self.metaMethodList.addItem(module)
+        modules = pm.get_registered_processing_modules(MetaProcessingModule)
+        for module in modules:
+            self.metaMethodList.addItem(module[1])
 
     def run_post_processor(self, item):
         if not self.results:
@@ -263,14 +239,13 @@ class PostProcessor(QtGui.QMainWindow):
 
         if self.figureList.currentRow() >= 0:
             self.grid.removeWidget(self.current_figures[self.figureList.currentRow()]['figure'])
-
         del self.current_figures[:]
 
         name = str(item.text())
         print '>>> PostProcessor() running: ', name
 
-        module = __import__('.'.join(['postprocessing',name]))
-        processor = getattr(getattr(module, name), name)()
+        processor_cls = pm.get_processing_module_class_by_name(PostProcessingModule, name)
+        processor = processor_cls()
 
         figs = []
         try:
