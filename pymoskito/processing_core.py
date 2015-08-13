@@ -1,10 +1,13 @@
-__author__ = 'stefan'
+from __future__ import division
+import os
 from abc import ABCMeta, abstractmethod, abstractproperty
-from collections import OrderedDict
 from PyQt4.QtCore import QObject, pyqtWrapperType
+
+from tools import get_sub_value
 """
 Base Classes for modules in the result-processing environment
 """
+__author__ = 'stefan'
 
 class ProcessingModuleMeta(ABCMeta, pyqtWrapperType):
     pass
@@ -16,8 +19,15 @@ class ProcessingModule(QObject):
     """
     __metaclass__ = ProcessingModuleMeta
     _base_font_size = 14
-    _label_font_size = 1 * _base_font_size
     _title_font_size = 1.5 * _base_font_size
+    _label_font_size = 1 * _base_font_size
+
+    _export_formats = [
+        ".pdf",
+        # ".png",
+        # ".svg",
+        # ".eps"
+    ]
 
     def __init__(self, parent=None):
         QObject.__init__(self, parent)
@@ -49,7 +59,8 @@ class ProcessingModule(QObject):
                      all(name in result['regime name'] for name in names)),
                     None)
 
-    def _get_sub_dict(self, top_dict, keys):
+    @staticmethod
+    def _get_sub_dict(top_dict, keys):
         sub_dict = top_dict
         for key in keys:
             sub_dict = sub_dict[key]
@@ -73,6 +84,7 @@ class PostProcessingModule(ProcessingModule):
         """
         output = []
         for res in files:
+            print("processing data set: {0}".format(res["regime name"]))
             output.append(self.run(res))
 
         return output
@@ -81,69 +93,55 @@ class PostProcessingModule(ProcessingModule):
     def run(self, data):
         pass
 
-    def calcL1NormITAE(self, data):
-        '''
-        this function calculate the L1 Norm  with a
-        additional time weighting
+    @staticmethod
+    def calc_l1_norm_itae(is_values, desired_values, step_width):
+        """
+        this function calculates the L1 Norm with an additional time weighting between is and desired value
         unit: m*s**2
-        '''
-        y = data['results']['model_output.0']
-        yd = data['results']['trajectory_output.0']
-        dt = 1.0 / data['modules']['solver']['measure rate']
+        """
+        l1norm_itae = 0
+        for idx, val in enumerate(is_values):
+            # version 1
+            l1norm_itae += abs(desired_values[idx] - val) * step_width * (idx * step_width)
 
-        if not data['results']['finished']:
-            L1NormITAE = None
-        else:
-            L1NormITAE = 0
-            for idx, val in enumerate(y):
-                # version 1
-                L1NormITAE += abs(yd[idx] - val) * dt * (idx * dt)
-                # version 2 see also wikipedia
-                # L1NormITAE += abs(yd[idx] - val - (y[-1] - yd[-1]))*dt*(idx*dt)
-        return L1NormITAE
+            # version 2 see also wikipedia
+            # L1NormITAE += abs(yd[idx] - val - (y[-1] - yd[-1]))*dt*(idx*dt)
 
-    def calcL1NormAbs(self, data):
-        '''
-        this function calculate the L1 Norm
-        (absolute criterium)
+        return l1norm_itae
+
+    @staticmethod
+    def calc_l1_norm_abs(is_values, desired_values, step_width):
+        """
+        this function calculates the L1 Norm (absolute criterion) of a given dataset
         unit: m*s
-        '''
-        y = data['results']['model_output.0']
-        yd = data['results']['trajectory_output.0']
-        dt = 1.0 / data['modules']['solver']['measure rate']
+        """
+        l1_norm_abs = 0
+        for idx, val in enumerate(is_values):
+            # version 1
+            l1_norm_abs += abs(desired_values[idx] - val) * step_width
 
-        if not data['results']['finished']:
-            L1NormAbs = None
-        else:
-            L1NormAbs = 0
-            for idx, val in enumerate(y):
-                # version 1
-                L1NormAbs += abs(yd[idx] - val) * dt
-                # version 2 see also wikipedia
-                # L1NormAbs += abs(yd[idx] - val - (y[-1] - yd[-1]))*dt
-        return L1NormAbs
+            # version 2 see also wikipedia
+            # L1NormAbs += abs(yd[idx] - val - (y[-1] - yd[-1]))*dt
 
-    def writeOutputFiles(self, processorName, regimeName, figure, output):
-        '''
-        this function save calculated values
-        in a POF (postprocessing output file) File
-        and create pdf, png, svg datafiles from the plots
-        '''
+        return l1_norm_abs
 
-        filePath = os.path.join(os.path.pardir, 'results', 'postprocessing', processorName)
-        if not os.path.isdir(filePath):
-            os.makedirs(filePath)
+    def write_output_files(self, regime_name, figure, output):
+        """
+        this function exports the created diagrams and saves the calculated metrics in a POF
+        (postprocessing output file) File.
+        """
 
-        if regimeName:
-            fileName = os.path.join(filePath, regimeName)
-            with open(fileName + '.pof', 'w') as f:  # POF - Postprocessing Output File
-                f.write(repr(output))
+        file_path = os.path.join(os.path.pardir, "results", "postprocessing", self.name)
+        if not os.path.isdir(file_path):
+            os.makedirs(file_path)
+
+        file_name = os.path.join(file_path, regime_name)
+        with open(file_name + '.pof', 'w') as f:  # POF - Postprocessing Output File
+            f.write(repr(output))
 
         if figure:
-            figure.savefig(fileName + '.png')
-            figure.savefig(fileName + '.pgf')
-            figure.savefig(fileName + '.pdf')
-            figure.savefig(fileName + '.svg')
+            for export_format in self._export_formats:
+                figure.savefig(file_name + export_format)
 
 
 class MetaProcessingModule(ProcessingModule):
@@ -155,62 +153,64 @@ class MetaProcessingModule(ProcessingModule):
         ProcessingModule.__init__(self)
         return
 
-    def sortLists(self, a, b):
+    @staticmethod
+    def sort_lists(a, b):
         b = [x for (y, x) in sorted(zip(a, b))]
         a = sorted(a)
         return a, b
 
-    def plotSettings(self, axes, titel, grid, xlabel, ylabel, typ='line'):
-        axes.set_title(titel, size=st.title_size)
-        if grid == True:
+    def plot_settings(self, axes, title, grid, x_label, y_label, line_type="line"):
+        axes.set_title(title, size=self._title_font_size)
+        if grid:
             axes.grid(color='#ababab', linestyle='--')
-        axes.set_xlabel(xlabel, size=st.label_size)
-        axes.set_ylabel(ylabel, size=st.label_size)
-        if typ != 'bar':
+
+        axes.set_xlabel(x_label, size=self._label_font_size)
+        axes.set_ylabel(y_label, size=self._label_font_size)
+
+        if line_type != "bar":
             axes.legend(loc=0, fontsize='small', prop={'size': 8})
 
         return axes
 
-    def plotVariousController(self, source, axes, xPath, yPath, typ, xIndex=-1, yIndex=-1):
-        '''
-        plots y over x for all controllers
-        '''
-
+    def plot_family(self, family, axes, x_path, y_path, typ, x_index=-1, y_index=-1):
+        """
+        plots y over x for all controllers that can be found in sources
+        """
         width = 0.2
         counter = 0
         x_all = []
 
-        for controller in source:
-            xList = get_sub_value(source[controller], xPath)
-            yList = get_sub_value(source[controller], yPath)
-            xList, yList = self.sortLists(xList, yList)
+        for member in family:
+            x_list = self.get_sub_value(member, x_path)
+            y_list = get_sub_value(member, y_path)
+            x_list, y_list = self.sort_lists(x_list, y_list)
 
-            if xIndex >= 0:
-                xList[:] = [x[xIndex] for x in xList]
-            if yIndex >= 0:
-                yList[:] = [y[yIndex] for y in yList]
+            if x_index >= 0:
+                x_list[:] = [x[x_index] for x in x_list]
+            if y_index >= 0:
+                y_list[:] = [y[y_index] for y in y_list]
 
             # add x values to x_all if there are not in x_all
-            for val in xList:
+            for val in x_list:
                 if val not in x_all:
                     x_all.append(val)
 
             if typ == 'line':
-                axes.plot(xList, \
-                          yList, \
+                axes.plot(x_list, \
+                          y_list, \
                           'o-', \
                           label=controller, \
                           color=st.color_cycle[controller])
             elif typ == 'bar':
                 # remove all None from yList
-                xList[:] = [x for x, y in zip(xList, yList) if y]
-                yList[:] = [i for i in yList if i]
+                x_list[:] = [x for x, y in zip(x_list, y_list) if y]
+                y_list[:] = [i for i in y_list if i]
 
                 # correction for the position of the bar
-                xList[:] = [k + width * counter for k in xList]
+                x_list[:] = [k + width * counter for k in x_list]
 
-                axes.bar(xList, \
-                         yList, \
+                axes.bar(x_list, \
+                         y_list, \
                          width, \
                          label=controller, \
                          color=st.color_cycle[controller])

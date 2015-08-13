@@ -4,7 +4,7 @@ import numpy as np
 import matplotlib as mpl
 mpl.use("Qt4Agg")
 # mpl.rcParams['text.usetex'] = True
-# mpl.rcParams['text.latex.unicode'] = True
+mpl.rcParams['text.latex.unicode'] = True
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 from matplotlib.lines import Line2D as Line
@@ -19,20 +19,18 @@ class StepResponse(PostProcessingModule):
     """
     create diagrams of step responses
     """
-    name = 'Step Response'
     line_color = '#aaaaaa'
     line_style = '-'
     font_size = 20
-    #    epsPercent = 2./5
     spacing = 0.01
     counter = 0
+    eps = 1e-3
 
     def __init__(self):
         PostProcessingModule.__init__(self)
         return
 
     def run(self, data):
-        print("processing data set {0}".format(data["regime name"]))
 
         # dict for calculated values
         output = {}
@@ -40,10 +38,10 @@ class StepResponse(PostProcessingModule):
         # reset counter
         self.counter = 0
 
-        # calculate datasets
+        # calculate data sets
         t = data['results']['time']
         y = data['results']['Model']
-        yd = data['results']['Trajectory'][0][-1]
+        yd = data['results']['Trajectory'][-1][0]
 
         self.pos_label = np.arange(np.min(y) + 0.1*yd, yd, (yd-np.min(y))/4)
 
@@ -53,96 +51,76 @@ class StepResponse(PostProcessingModule):
         axes.set_title(r'\textbf{Sprungantwort}')
         axes.plot(t, y, c='k')
         axes.set_xlim(left=0, right=t[-1])
-        axes.set_ylim(0,3.5)
         axes.set_xlabel(r'\textit{Zeit [s]}')
-        axes.set_ylabel(r'\textit{Ballposition r(t) [m]}')
+        axes.set_ylabel(r'\textit{Systemausgang [m]}')
 
         # create desired line
-        desiredLine = Line([0, t[-1]], [yd, yd], lw=1, ls=self.line_style, c='k')
-        axes.add_line(desiredLine)
+        desired_line = Line([0, t[-1]], [yd, yd], lw=1, ls=self.line_style, c='k')
+        axes.add_line(desired_line)
 
         # calc rise-time (Anstiegszeit)
         try:
             tr = t[np.where(y > 0.9*yd)][0]
-            # create and add line
             self.create_time_line(axes, t, y, tr, r'$T_r$')
             output.update({'tr': tr})
         except IndexError:
             output.update({'tr': None})
-            # print 'AttackLine is not defined'
 
         # calc correction-time (Anregelzeit)
         try:
-            tanr = t[y.index([x for x in y if x > yd][0])]
-            # create and add line
-            self.create_time_line(axes, t, y, tanr, r'$T_{anr}$')
-            output.update({'tanr': tanr})
+            correction_time = t[np.where(y > yd)][0]
+            self.create_time_line(axes, t, y, correction_time, r'$T_{anr}$')
+            output.update({'tanr': correction_time})
         except IndexError:
-            # print 'RiseLine is not defined'
             output.update({'tanr': None})
 
         # calc overshoot-time and overshoot in percent (Überschwingzeit und Überschwingen)
         if output['tanr']:
             if yd > 0:
-                y_max = np.max(y[t.index(tanr):])
+                y_max = np.max(y[np.where(t > correction_time)])
             else:
-                y_max = np.min(y[t.index(tanr):])
-            #            lastval = 0
-            #            for val in y[t.index(tanr):]:
-            #                y_max = (val - yd)*yd
+                y_max = np.min(y[np.where(t > correction_time)])
 
-            #                if val < lastval:
-            #                    break
-            #                else:
-            #                    lastval = val
-            to = t[y.index(y_max)]
-            #            to = t[y.index(val)]
+            overshoot_time = t[np.where(y == y_max)][0]
             do = y_max - yd
             doPercent = do/yd * 100
-            #create and add line
-            self.create_time_line(axes, t, y, to, r'$T_o$')
-            output.update({'to': to, 'do': do, 'doPercent': doPercent})
+
+            self.create_time_line(axes, t, y, overshoot_time, r'$T_o$')
+            output.update({'to': overshoot_time, 'do': do, 'doPercent': doPercent})
         else:
-            # print 'OvershootLine is not defined'
             output.update({'to': None, 'do': None, 'doPercent': None})
 
         # calc damping-time (Beruhigungszeit)
         try:
-            #            eps = self.epsPercent*yd/100
-            eps = 1-e3
-            enterIdx = -1
+            enter_idx = -1
             for idx, val in enumerate(y):
-                if enterIdx == -1:
-                    if abs(val - yd) < eps:
-                        enterIdx = idx
+                if enter_idx == -1:
+                    if abs(val - yd) < self.eps:
+                        enter_idx = idx
                 else:
-                    if abs(val - yd) >= eps:
-                        enterIdx = -1
-            teps = t[enterIdx]
-            #create and add line
-            self.create_time_line(axes, t, y, teps, r'$T_{\epsilon}$')
-            output.update({'teps': teps})
+                    if abs(val - yd) >= self.eps:
+                        enter_idx = -1
+
+            damping_time = t[enter_idx]
+            self.create_time_line(axes, t, y, damping_time, r'$T_{\epsilon}$')
+            output.update({'teps': damping_time})
         except IndexError:
-            #print 'DampingLine is not defined'
             output.update({'teps': None})
 
         # create epsilon tube
-        upperBoundLine = Line([0, t[-1]], [yd+eps, yd+eps], ls='--', c=self.line_color)
-        axes.add_line(upperBoundLine)
-        lowerBoundLine = Line([0, t[-1]], [yd-eps, yd-eps], ls='--', c=self.line_color)
-        axes.add_line(lowerBoundLine)
+        upper_bound_line = Line([0, t[-1]], [yd + self.eps, yd + self.eps], ls='--', c=self.line_color)
+        axes.add_line(upper_bound_line)
+        lower_bound_line = Line([0, t[-1]], [yd - self.eps, yd - self.eps], ls='--', c=self.line_color)
+        axes.add_line(lower_bound_line)
 
         # calc control deviation
         control_deviation = y[-1] - yd
         output.update({'control_deviation': control_deviation})
 
-        # print time data
-        # print str(output) + '\n'
-
         self.calc_metrics(data, output)
 
-        # check for sim succes
-        if not data['results']['finished']:
+        # check for sim success
+        if not data["results"]["finished"]:
             for key in output.keys():
                 output[key] = None
 
@@ -153,36 +131,47 @@ class StepResponse(PostProcessingModule):
 
         canvas = FigureCanvas(fig)
 
-        self.writeOutputFiles(self.name, data['regime name'], fig, results)
+        self.write_output_files(data['regime name'], fig, results)
 
         return {'name': '_'.join([data['regime name'], self.name]), "figure": canvas}
 
     def create_time_line(self, axes, t, y, time_value, label):
         if time_value != t[-1]:
-            # create timeLine
             time_line = Line([time_value, time_value],
-                             [np.min(y), y[t.index(time_value)]],
+                             [np.min(y), y[np.where(t == time_value)][0]],
                              ls=self.line_style,
                              c=self.line_color)
             axes.add_line(time_line)
-            # create label
             axes.text(time_value + self.spacing, self.pos_label[self.counter],
                       label, size=self.font_size)
             self.counter += 1
 
     def calc_metrics(self, data, output):
         """
-        calculate metrics for comaprism
+        calculate metrics for comparison
         """
+        # change those when subclassing
+        l1_norm_itae = self.calc_l1_norm_itae(*self.get_metric_values(data))
+        l1_norm_abs = self.calc_l1_norm_abs(*self.get_metric_values(data))
 
-        L1NormITAE = self.calcL1NormITAE(data)
-        L1NormAbs = self.calcL1NormAbs(data)
-        #
-        #        print 'ITAE score: ', errorIntegral
-        print 'L1NormITAE: ', L1NormITAE
-        print 'L1NormAbs: ', L1NormAbs
+        print 'L1NormITAE: ', l1_norm_itae
+        print 'L1NormAbs: ', l1_norm_abs
         print '\n'
-        output.update({'L1NormITAE': L1NormITAE, 'L1NormAbs': L1NormAbs})
-#        output.update({'ITAE': errorIntegral})
+
+        output.update({'L1NormITAE': l1_norm_itae, 'L1NormAbs': l1_norm_abs})
+
+    @staticmethod
+    def get_metric_values(data):
+        """
+        helper function to extract data needed to calculate metrics for this postprocessor
+        overload to fit costum model
+        :param data: simulation data
+        :return: tuple of (is_values, desired_values, step_width)
+        """
+        metric_values = (data["results"]["Model"],
+                         data["results"]["Trajectory"],
+                         1/data["modules"]["Solver"]["measure rate"])
+
+        return metric_values
 
 pm.register_processing_module(PostProcessingModule, StepResponse)

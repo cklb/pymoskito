@@ -19,34 +19,36 @@ def get_resource(res_name):
     return os.path.join(resource_path, res_name)
 
 
-def sort_tree(dataList, sortKeyPath):
+def sort_tree(data_list, sort_key_path):
     """
-    helper method for data sorting
+    helper method for data sorting.
+
+    takes a list of simulation results and sorts them into a tree whose index is given by the sort_key_path
     """
     result = {}
-    for elem in dataList:
-        tempElem = copy.deepcopy(elem)
-        sortName = get_sub_value(tempElem, sortKeyPath)
-        if not result.has_key(sortName):
-            result.update({sortName: {}})
+    for elem in data_list:
+        temp_element = copy.deepcopy(elem)
+        sort_name = get_sub_value(temp_element, sort_key_path)
+        if sort_name not in result:
+            result.update({sort_name: {}})
 
-        while tempElem:
-            val, keys = _remove_deepest(tempElem)
+        while temp_element:
+            val, keys = _remove_deepest(temp_element)
             if keys:
-                _addSubVal(result[sortName], keys, val)
+                _add_sub_value(result[sort_name], keys, val)
 
     return result
 
 
-def get_sub_value(source, keyPath):
-    subDict = source
-    for key in keyPath:
-        subDict = subDict[key]
+def get_sub_value(source, key_path):
+    sub_dict = source
+    for key in key_path:
+        sub_dict = sub_dict[key]
 
-    return subDict
+    return sub_dict
 
 
-def _remove_deepest(topDict, keys=None):
+def _remove_deepest(top_dict, keys=None):
     """
     iterates recursively over dict and removes deepest entry.
     :returns entry and path to entry
@@ -54,37 +56,37 @@ def _remove_deepest(topDict, keys=None):
     if not keys:
         keys = []
 
-    for key in topDict.keys():
-        val = topDict[key]
+    for key in top_dict.keys():
+        val = top_dict[key]
         if isinstance(val, dict):
             if val:
                 keys.append(key)
                 return _remove_deepest(val, keys)
             else:
-                del topDict[key]
+                del top_dict[key]
                 continue
         else:
-            del topDict[key]
+            del top_dict[key]
             keys.append(key)
             return val, keys
 
     return None, None
 
 
-def _addSubVal(topDict, keys, val):
+def _add_sub_value(top_dict, keys, val):
     if len(keys) == 1:
         # we are here
-        if keys[0] in topDict:
-            topDict[keys[0]].append(val)
+        if keys[0] in top_dict:
+            top_dict[keys[0]].append(val)
         else:
-            topDict.update({keys[0]: [val]})
+            top_dict.update({keys[0]: [val]})
         return
 
     # keep iterating
-    if keys[0] not in topDict:
-        topDict.update({keys[0]: {}})
+    if keys[0] not in top_dict:
+        top_dict.update({keys[0]: {}})
 
-    _addSubVal(topDict[keys[0]], keys[1:], val)
+    _add_sub_value(top_dict[keys[0]], keys[1:], val)
     return
 
 
@@ -120,4 +122,3 @@ def get_coefficients(poles):
         poly = poly.expand()
 
     return np.array([p]).astype(float)
-

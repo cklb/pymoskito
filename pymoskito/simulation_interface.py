@@ -96,7 +96,7 @@ class ComboDelegate(QItemDelegate):
         sim_module = getattr(simulation_modules, sim_module_name)
         sub_modules = pm.get_registered_simulation_modules(sim_module)
         for sub_module in sub_modules:
-            entries.append(sub_module.__name__)
+            entries.append(sub_module[1])
 
         return entries
 
