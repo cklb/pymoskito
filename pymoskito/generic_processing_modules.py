@@ -10,7 +10,8 @@ from matplotlib.figure import Figure
 from matplotlib.lines import Line2D as Line
 
 import pymoskito as pm
-from processing_core import PostProcessingModule
+from processing_core import PostProcessingModule, MetaProcessingModule
+from tools import sort_tree, get_sub_value
 
 __author__ = 'stefan'
 
@@ -150,7 +151,7 @@ class StepResponse(PostProcessingModule):
         """
         calculate metrics for comparison
         """
-        # change those when subclassing
+        # TODO check those they produce crap see output
         l1_norm_itae = self.calc_l1_norm_itae(*self.get_metric_values(data))
         l1_norm_abs = self.calc_l1_norm_abs(*self.get_metric_values(data))
 
@@ -164,7 +165,7 @@ class StepResponse(PostProcessingModule):
     def get_metric_values(data):
         """
         helper function to extract data needed to calculate metrics for this postprocessor
-        overload to fit costum model
+        overload to fit custom model
         :param data: simulation data
         :return: tuple of (is_values, desired_values, step_width)
         """
@@ -175,3 +176,57 @@ class StepResponse(PostProcessingModule):
         return metric_values
 
 pm.register_processing_module(PostProcessingModule, StepResponse)
+
+
+class XYMetaProcessor(MetaProcessingModule):
+    """
+    create XY-diagrams for the given key to be compared
+    """
+    def __init__(self, sort_key, x_path, y_path):
+        MetaProcessingModule.__init__(self)
+        self.sort_key = sort_key
+        self.x_path = x_path
+        self.y_path = y_path
+
+        self.fig = None
+        self.axes = None
+
+        return
+
+    def run(self, post_results):
+        # create tree with relevant data
+        source = sort_tree(post_results, self.sort_key)
+
+        # create plot
+        self.fig = Figure()
+        self.axes = self.fig.add_subplot(111)
+
+        self.plot_family(source, self.x_path, self.y_path, "line")
+        self.set_plot_labeling()
+
+        # # plot for time-difference
+        # axes1 = fig.add_subplot(212)
+        # axes1 = self.plotVariousController(source, axes1,\
+        #         xPath=['modules','trajectory', 'delta t'],\
+        #         yPath=['metrics','t_diff'],\
+        #         typ='line')
+        # axes1 = self.plotSettings(axes1,\
+        #         titel=r'\"Ubergangszeitfehler \"uber $\Delta t$',\
+        #         grid=True,\
+        #         xlabel=r'$\Delta t \, \lbrack s\rbrack$',\
+        #         ylabel=r'$e_{t} \, \lbrack s \rbrack$',\
+        #         )
+        #
+        # # spacing
+        # fig.subplots_adjust(wspace=0.5, hspace=0.5)
+
+        # extract member_names (subtract common appendix like *Controller or *Feedforward)
+        member_names = [x[:-len(self.x_path[1])] for x in source.keys()]
+
+        canvas = FigureCanvas(self.fig)
+
+        # write output files
+        file_name = self.name + "_".join([self.x_path[1], "("]) + "".join(member_names) + ")"
+        self.write_output_files(file_name, self.fig)
+
+        return [{'figure': canvas, 'name': self.name}]

@@ -1,9 +1,11 @@
 from __future__ import division
 import os
-from abc import ABCMeta, abstractmethod, abstractproperty
+from abc import ABCMeta, abstractmethod
+
 from PyQt4.QtCore import QObject, pyqtWrapperType
 
 from tools import get_sub_value
+
 """
 Base Classes for modules in the result-processing environment
 """
@@ -18,9 +20,17 @@ class ProcessingModule(QObject):
     Each Module's run method is called with a list of results by the processing_gui
     """
     __metaclass__ = ProcessingModuleMeta
+
+    # fonts
     _base_font_size = 14
     _title_font_size = 1.5 * _base_font_size
     _label_font_size = 1 * _base_font_size
+
+    # colors
+    _grid_color = "#ababab"
+
+    # lines
+    _grid_line_style = "--"
 
     _export_formats = [
         ".pdf",
@@ -65,6 +75,23 @@ class ProcessingModule(QObject):
         for key in keys:
             sub_dict = sub_dict[key]
         return sub_dict
+
+    def write_output_files(self, result_name, figure, output=None):
+        """
+        this function exports the created diagram and saves calculation results  a POF
+        (processing output file) File.
+        """
+        file_path = os.path.join(os.path.pardir, "results", "processing", self.name)
+        if not os.path.isdir(file_path):
+            os.makedirs(file_path)
+
+        file_name = os.path.join(file_path, result_name)
+        with open(file_name + '.pof', 'w') as f:
+            f.write(repr(output))
+
+        if figure:
+            for export_format in self._export_formats:
+                figure.savefig(file_name + export_format)
 
 
 class PostProcessingModule(ProcessingModule):
@@ -125,24 +152,6 @@ class PostProcessingModule(ProcessingModule):
 
         return l1_norm_abs
 
-    def write_output_files(self, regime_name, figure, output):
-        """
-        this function exports the created diagrams and saves the calculated metrics in a POF
-        (postprocessing output file) File.
-        """
-
-        file_path = os.path.join(os.path.pardir, "results", "postprocessing", self.name)
-        if not os.path.isdir(file_path):
-            os.makedirs(file_path)
-
-        file_name = os.path.join(file_path, regime_name)
-        with open(file_name + '.pof', 'w') as f:  # POF - Postprocessing Output File
-            f.write(repr(output))
-
-        if figure:
-            for export_format in self._export_formats:
-                figure.savefig(file_name + export_format)
-
 
 class MetaProcessingModule(ProcessingModule):
     """
@@ -153,35 +162,30 @@ class MetaProcessingModule(ProcessingModule):
         ProcessingModule.__init__(self)
         return
 
-    @staticmethod
-    def sort_lists(a, b):
-        b = [x for (y, x) in sorted(zip(a, b))]
-        a = sorted(a)
-        return a, b
+    def set_plot_labeling(self, title="", grid=True, x_label="", y_label="", line_type="line"):
+        """
+        helper to quickly set axis labeling with the good font sizes
+        """
+        self.axes.set_title(title, size=self._title_font_size)
+        self.axes.set_xlabel(x_label, size=self._label_font_size)
+        self.axes.set_ylabel(y_label, size=self._label_font_size)
 
-    def plot_settings(self, axes, title, grid, x_label, y_label, line_type="line"):
-        axes.set_title(title, size=self._title_font_size)
         if grid:
-            axes.grid(color='#ababab', linestyle='--')
-
-        axes.set_xlabel(x_label, size=self._label_font_size)
-        axes.set_ylabel(y_label, size=self._label_font_size)
+            self.axes.grid(color=self._grid_color, linestyle=self._grid_line_style)
 
         if line_type != "bar":
-            axes.legend(loc=0, fontsize='small', prop={'size': 8})
+            self.axes.legend(loc=0, fontsize='small', prop={'size': 8})
 
-        return axes
-
-    def plot_family(self, family, axes, x_path, y_path, typ, x_index=-1, y_index=-1):
+    def plot_family(self, family, x_path, y_path, typ, x_index=-1, y_index=-1):
         """
-        plots y over x for all controllers that can be found in sources
+        plots y over x for all members that can be found in family sources
         """
         width = 0.2
         counter = 0
         x_all = []
 
         for member in family:
-            x_list = self.get_sub_value(member, x_path)
+            x_list = get_sub_value(member, x_path)
             y_list = get_sub_value(member, y_path)
             x_list, y_list = self.sort_lists(x_list, y_list)
 
@@ -196,11 +200,7 @@ class MetaProcessingModule(ProcessingModule):
                     x_all.append(val)
 
             if typ == 'line':
-                axes.plot(x_list, \
-                          y_list, \
-                          'o-', \
-                          label=controller, \
-                          color=st.color_cycle[controller])
+                self.axes.plot(x_list, y_list, 'o-', label=member) #, color=st.color_cycle[member])
             elif typ == 'bar':
                 # remove all None from yList
                 x_list[:] = [x for x, y in zip(x_list, y_list) if y]
@@ -209,11 +209,7 @@ class MetaProcessingModule(ProcessingModule):
                 # correction for the position of the bar
                 x_list[:] = [k + width * counter for k in x_list]
 
-                axes.bar(x_list, \
-                         y_list, \
-                         width, \
-                         label=controller, \
-                         color=st.color_cycle[controller])
+                self.axes.bar(x_list, y_list, width, label=member) #, color=st.color_cycle[controller])
                 counter += 1
 
         if (typ == 'bar') and (len(x_all) > 1):
@@ -232,23 +228,5 @@ class MetaProcessingModule(ProcessingModule):
             if typ == 'bar':
                 x_all[:] = [i + width * counter for i in x_all]
 
-            axes.set_xticks(x_all)
-            axes.set_xticklabels(x_all_label)
-
-        return axes
-
-    def writeOutputFiles(self, name, figure):
-        '''
-        this function create pdf, png, svg datafiles from the plots
-        '''
-        filePath = os.path.join(os.path.pardir, \
-                                'results', 'metaprocessing', self.name)
-        if not os.path.isdir(filePath):
-            os.makedirs(filePath)
-
-        fileName = os.path.join(filePath, name)
-
-        if figure:
-            figure.savefig(fileName + '.png')
-            # figure.savefig(fileName + '.pdf')
-            # figure.savefig(fileName + '.svg')
+            self.axes.set_xticks(x_all)
+            self.axes.set_xticklabels(x_all_label)

@@ -15,7 +15,7 @@ from pymoskito.simulation_modules import SimulationModule, ModelMixer, Controlle
 import pymoskito.generic_simulation_modules as sim_modules
 
 from pymoskito.processing_core import PostProcessingModule, MetaProcessingModule
-import pymoskito.generic_postprocessing_modules as post_modules
+import pymoskito.generic_processing_modules as post_modules
 
 class TestPymoskito(unittest.TestCase):
 
@@ -23,7 +23,7 @@ class TestPymoskito(unittest.TestCase):
         pass
 
     def test_registration(self):
-        # remember automatic registration in Module Definition by import
+        # remember automatic registration in Module Definition is done by importing
 
         # general call
         self.assertEqual([(sim_modules.AdditiveMixer, "AdditiveMixer")],

@@ -6,8 +6,8 @@ from PyQt4 import QtCore, QtGui
 from PyQt4.QtCore import pyqtSignal
 
 import pymoskito as pm
-from processing_core import PostProcessingModule, MetaProcessingModule
-import generic_postprocessing_modules
+from processing_core import ProcessingModule, PostProcessingModule, MetaProcessingModule
+import generic_processing_modules
 # import generic_metaprocessing_modules
 from tools import get_resource
 
@@ -15,10 +15,9 @@ from tools import get_resource
 class PostProcessor(QtGui.QMainWindow):
 
     resultsChanged = pyqtSignal()
-    figuresChanged = pyqtSignal()
-
     postResultsChanged = pyqtSignal()
-    metaFiguresChanged = pyqtSignal()
+
+    figures_changed = pyqtSignal(list, str)
 
     def __init__(self, parent=None):
         QtGui.QMainWindow.__init__(self, parent)
@@ -60,7 +59,7 @@ class PostProcessor(QtGui.QMainWindow):
         self.actReloadMethods.setText("reload methods")
         self.actReloadMethods.setIcon(QtGui.QIcon(get_resource("reload.png")))
         self.actReloadMethods.setDisabled(False)
-        self.actReloadMethods.triggered.connect(self.update_method_list)
+        self.actReloadMethods.triggered.connect(self.update_post_method_list)
 
         self.actReloadMetaMethods = QtGui.QAction(self)
         self.actReloadMetaMethods.setText("reload meta methods")
@@ -85,8 +84,11 @@ class PostProcessor(QtGui.QMainWindow):
         self.grid.setColumnStretch(1, 1)
 
         self.methodList = QtGui.QListWidget(self)
-        self.methodList.itemDoubleClicked.connect(self.run_post_processor)
-        self.update_method_list()
+        self.methodList.itemDoubleClicked.connect(self.post_processor_clicked)
+        self.update_post_method_list()
+        self.metaMethodList = QtGui.QListWidget(self)
+        self.metaMethodList.itemDoubleClicked.connect(self.meta_processor_clicked)
+        self.update_meta_method_list()
         
         self.resultList = QtGui.QListWidget(self)
         self.resultsChanged.connect(self.update_result_list)
@@ -95,42 +97,37 @@ class PostProcessor(QtGui.QMainWindow):
         self.delShort = QtGui.QShortcut(QtGui.QKeySequence(QtCore.Qt.Key_Delete), self.resultList)
         self.delShort.activated.connect(self.remove_result_item)
 
-        self.figureList = QtGui.QListWidget(self)
-        self.figureList.currentItemChanged.connect(self.current_figure_changed)
-        self.figuresChanged.connect(self.update_post_figure_list)
-        self.current_figures = []
-        
+        # figures
+        self._figure_dict = {}
+        self.figures_changed.connect(self.update_figure_lists)
+
+        self.post_figure_list = QtGui.QListWidget(self)
+        self.post_figure_list.currentItemChanged.connect(self.current_figure_changed)
+        self.meta_figure_list = QtGui.QListWidget(self)
+        self.meta_figure_list.currentItemChanged.connect(self.current_figure_changed)
+
         self.plotView = QtGui.QWidget()
         self.lastFigure = None
 
-        self.metaMethodList = QtGui.QListWidget(self)
-        self.metaMethodList.itemDoubleClicked.connect(self.run_meta_processor)
-        self.update_meta_method_list()
-        
         self.postResultList = QtGui.QListWidget(self)
         self.postResultsChanged.connect(self.update_post_result_list)
         self.postResults = []
         self.delShortPost = QtGui.QShortcut(QtGui.QKeySequence(QtCore.Qt.Key_Backspace), self.postResultList)
         self.delShortPost.activated.connect(self.remove_post_result_item)
 
-        self.metaFigureList = QtGui.QListWidget(self)
-        self.metaFigureList.currentItemChanged.connect(self.current_figure_changed)
-        self.metaFiguresChanged.connect(self.update_meta_figure_list)
-        self.current_metaFigures = []
-        
         self.grid.addWidget(QtGui.QLabel("result files:"), 0, 0)
         self.grid.addWidget(self.resultList, 1, 0)
         self.grid.addWidget(QtGui.QLabel("postprocessors:"), 2, 0)
         self.grid.addWidget(self.methodList, 3, 0)
         self.grid.addWidget(QtGui.QLabel("figures:"), 4, 0)
-        self.grid.addWidget(self.figureList, 5, 0)
+        self.grid.addWidget(self.post_figure_list, 5, 0)
         self.grid.addWidget(QtGui.QLabel("selected figure:"), 0, 1)
         self.grid.addWidget(QtGui.QLabel("postprocessor files:"), 0, 2)
         self.grid.addWidget(self.postResultList, 1, 2)
         self.grid.addWidget(QtGui.QLabel("metaprocessors:"), 2, 2)
         self.grid.addWidget(self.metaMethodList, 3, 2)
         self.grid.addWidget(QtGui.QLabel("figures:"), 4, 2)
-        self.grid.addWidget(self.metaFigureList, 5, 2)
+        self.grid.addWidget(self.meta_figure_list, 5, 2)
 
         self.mainFrame.setLayout(self.grid)
         self.setCentralWidget(self.mainFrame)
@@ -220,7 +217,7 @@ class PostProcessor(QtGui.QMainWindow):
             del self.postResults[self.postResultList.currentRow()]
             self.postResultList.takeItem(self.postResultList.currentRow())
 
-    def update_method_list(self):
+    def update_post_method_list(self):
         self.methodList.clear()
         modules = pm.get_registered_processing_modules(PostProcessingModule)
         for module in modules:
@@ -232,93 +229,106 @@ class PostProcessor(QtGui.QMainWindow):
         for module in modules:
             self.metaMethodList.addItem(module[1])
 
-    def run_post_processor(self, item):
+    def post_processor_clicked(self, item):
+        self.run_processor(str(item.text()), "post")
+
+    def meta_processor_clicked(self, item):
+        self.run_processor(str(item.text()), "meta")
+
+    def run_processor(self, name, processor_type):
         if not self.results:
-            print 'runPostprocessor(): Error no result file loaded!'
+            print 'run_processor() Error: no result file loaded!'
             return
 
-        if self.figureList.currentRow() >= 0:
-            self.grid.removeWidget(self.current_figures[self.figureList.currentRow()]['figure'])
-        del self.current_figures[:]
+        # if self.post_figure_list.currentRow() >= 0:
+        #     self.grid.removeWidget(self.current_figures[self.post_figure_list.currentRow()]['figure'])
+        # del self.current_figures[:]
 
-        name = str(item.text())
-        print '>>> PostProcessor() running: ', name
+        if processor_type == "post":
+            base_cls = PostProcessingModule
+        elif processor_type == "meta":
+            base_cls = MetaProcessingModule
+        else:
+            raise ValueError("unknown processor type {0}".format(processor_type))
 
-        processor_cls = pm.get_processing_module_class_by_name(PostProcessingModule, name)
+        processor_cls = pm.get_processing_module_class_by_name(base_cls, name)
         processor = processor_cls()
 
         figs = []
         try:
+            print(">>> Processor() running: {0}".format(name))
             figs = processor.process(self.results)
-            self.current_figures = figs
-
         except Exception, err:
             print 'Error in Postprocessor!'
             print traceback.format_exc()
 
         print '>>> finished.'
 
-        self.figureList.setFocus()
-        self.figuresChanged.emit()
+        self.post_figure_list.setFocus()
+        self.figures_changed.emit(figs, processor_type)
         
-    def run_meta_processor(self, item):
-        if not self.postResults:
-            print 'runMetaprocessor(): Error no post-result files loaded!'
-            return
-
-        if self.metaFigureList.currentRow() >= 0:
-            self.grid.removeWidget(self.current_metaFigures[self.metaFigureList.currentRow()]['figure'])
-
-        del self.current_metaFigures[:]
-
-        name = str(item.text())
-        print 'MetaProcessor() running: ', name
-
-        module = __import__('.'.join(['metaprocessing', name]))
-        processor = getattr(getattr(module, name), name)()
-
-        figs = []
-        try:
-            figs = processor.run(self.postResults)
-            self.current_metaFigures = figs
-
-        except Exception, err:
-            print 'Error in Metaprocessor!'
-            print traceback.format_exc()
-
-        self.metaFigureList.setFocus()
-        self.metaFiguresChanged.emit()
+    # def run_meta_processor(self, item):
+    #     if not self.postResults:
+    #         print 'runMetaprocessor(): Error no post-result files loaded!'
+    #         return
+    #
+    #     if self.meta_figure_list.currentRow() >= 0:
+    #         self.grid.removeWidget(self.current_metaFigures[self.meta_figure_list.currentRow()]['figure'])
+    #
+    #     del self.current_metaFigures[:]
+    #
+    #     name = str(item.text())
+    #     print 'MetaProcessor() running: ', name
+    #
+    #     module = __import__('.'.join(['metaprocessing', name]))
+    #     processor = getattr(getattr(module, name), name)()
+    #
+    #     figs = []
+    #     try:
+    #         figs = processor.run(self.postResults)
+    #         self.current_metaFigures = figs
+    #
+    #     except Exception, err:
+    #         print 'Error in Metaprocessor!'
+    #         print traceback.format_exc()
+    #
+    #     self.meta_figure_list.setFocus()
+    #     self.metaFiguresChanged.emit(figs, "meta")
     
-    def update_post_figure_list(self):
-        self.figureList.clear()
-        for fig in self.current_figures:
-            name = fig['name']
-            self.figureList.addItem(name)
+    def update_figure_lists(self, figures, target_type):
+        # remove no longer needed elements TODO make this work
+        for item, fig in [(key, val[0]) for key, val in self._figure_dict.iteritems() if val[1] == target_type]:
+            if fig not in [fig["figure"] for fig in figures]:
+                if target_type == "post":
+                    self.post_figure_list.removeItemWidget(item)
+                elif target_type == "meta":
+                    self.meta_figure_list.removeItemWidget(item)
+                del self._figure_dict[item]
 
-        self.figureList.setCurrentItem(self.figureList.item(0))
+        # add new ones to internal storage
+        for fig in figures:
+            if fig["figure"] not in self._figure_dict.values():
+                self._figure_dict.update([(QtGui.QListWidgetItem(fig["name"]), (fig["figure"], target_type))])
 
-    def update_meta_figure_list(self):
-        self.metaFigureList.clear()
-        for fig in self.current_metaFigures:
-            name = fig['name']
-            self.metaFigureList.addItem(name)
+        # add to display
+        for key, val in self._figure_dict.iteritems():
+            if val[1] == "post":
+                self.post_figure_list.addItem(key)
+            elif val[1] == "meta":
+                self.meta_figure_list.addItem(key)
 
-        self.metaFigureList.setCurrentItem(self.metaFigureList.item(0))
+        self.post_figure_list.setCurrentItem(self.post_figure_list.item(0))
+        self.meta_figure_list.setCurrentItem(self.meta_figure_list.item(0))
 
     def current_figure_changed(self, current_item, last_item=None):
-        if self.figureList.hasFocus():
-            figures = self.current_figures
-            figure_list = self.figureList
-        else:
-            figures = self.current_metaFigures
-            figure_list = self.metaFigureList
+        figures = self._figure_dict
 
         if self.lastFigure:
             self.grid.removeWidget(self.lastFigure)
             self.lastFigure.setVisible(False)
 
         if current_item:
-            figure_widget = figures[figure_list.currentRow()]['figure']
+            figure_widget = figures[current_item][0]
             self.grid.addWidget(figure_widget, 1, 1, 5, 1)
             figure_widget.setVisible(True)
             self.lastFigure = figure_widget
@@ -327,9 +337,9 @@ class PostProcessor(QtGui.QMainWindow):
         self.displayLeft = not self.displayLeft
         if self.displayLeft:
             self.actSwitch.setIcon(QtGui.QIcon('data/left_mode.png'))
-            self.figureList.setFocus()
-            self.current_figure_changed(self.figureList.currentItem())
+            self.post_figure_list.setFocus()
+            self.current_figure_changed(self.post_figure_list.currentItem())
         else:
             self.actSwitch.setIcon(QtGui.QIcon('data/right_mode.png'))
-            self.metaFigureList.setFocus()
-            self.current_figure_changed(self.metaFigureList.currentItem())
+            self.meta_figure_list.setFocus()
+            self.current_figure_changed(self.meta_figure_list.currentItem())

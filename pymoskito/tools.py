@@ -7,6 +7,11 @@ import sympy as sp
 import numpy as np
 import copy
 
+def sort_lists(a, b):
+    b = [x for (y, x) in sorted(zip(a, b))]
+    a = sorted(a)
+    return a, b
+
 
 def get_resource(res_name):
     """
