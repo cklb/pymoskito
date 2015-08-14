@@ -34,11 +34,11 @@ class BallInTubeFeedforward(Feedforward):
             d = st.d_p
 
         # feed forward control
-        u = T**2*(yd[4]*st.m*st.A_Sp**2 - 2*st.k_L*(st.k_V*x2_flat - st.A_B*yd[2])**2)\
+        u = (T**2*(yd[4]*st.m*st.A_Sp**2 - 2*st.k_L*(st.k_V*x2_flat - st.A_B*yd[2])**2)\
             / (2*st.k_s*st.k_V*st.k_L*(st.k_V*x1_flat - st.A_B*yd[1]))\
             + (T**2*st.A_B*yd[3])/(st.k_s * st.k_V)\
             + (2*d*T*x2_flat)/st.k_s\
-            + x1_flat/st.k_s
+            + x1_flat/st.k_s)*(255/12)
 
         return np.array([u])
 
