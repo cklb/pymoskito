@@ -434,10 +434,10 @@ class SimulatorInteractor(QtCore.QObject):
         """
 
         # TODO make this able to calc error for vector-like model output
-
         # control and observer error
-        c_error = self._get_result_by_name("Trajectory")[:, 0] - self._get_result_by_name("Model")
-        self._sim_data['results'].update(control_error=c_error)
+        if "Trajectory" in self._sim_data["results"]:
+            c_error = self._get_result_by_name("Trajectory")[:, 0] - self._get_result_by_name("Model")
+            self._sim_data['results'].update(control_error=c_error)
         if "Observer" in self._sim_data["results"]:
             o_error = self._get_result_by_name("Solver") - self._get_result_by_name("Observer")
             self._sim_data['results'].update(observer_error=o_error)
