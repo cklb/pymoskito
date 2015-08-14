@@ -20,7 +20,7 @@ class ODEInt(Solver):
     public_settings = OrderedDict([
         ("Mode", "vode"),
         ("Method", "adams"),
-        ("measure rate", 1e2),
+        ("measure rate", 500),
         ("step size", 1e-3),
         ("rTol", 1e-6),
         ("aTol", 1e-9),

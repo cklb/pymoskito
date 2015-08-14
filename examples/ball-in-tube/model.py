@@ -96,7 +96,7 @@ class BallInTubeModel(Model):
         """
         Checks if the model rules are violated
         """
-        if x[2] > (self._settings['tube_length'] + self._settings['tube_length']*0.2):
+        if x[2] > (self._settings['tube_length']): #+ self._settings['tube_length']*0.2):
             raise ModelException('Ball flew out of the tube')
 
     def calc_output(self, input_vector):
