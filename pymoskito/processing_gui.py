@@ -14,15 +14,15 @@ from tools import get_resource
 
 class PostProcessor(QtGui.QMainWindow):
 
-    resultsChanged = pyqtSignal()
-    postResultsChanged = pyqtSignal()
+    sim_results_changed = pyqtSignal()
+    post_results_changed = pyqtSignal()
 
     figures_changed = pyqtSignal(list, str)
 
     def __init__(self, parent=None):
         QtGui.QMainWindow.__init__(self, parent)
-        self.setWindowTitle("Postprocessing")
-        self.setWindowIcon(QtGui.QIcon(get_resource("postprocessing.png")))
+        self.setWindowTitle("Processing")
+        self.setWindowIcon(QtGui.QIcon(get_resource("processing.png")))
         self.mainFrame = QtGui.QWidget(self)
         self.resize(1000, 600)
 
@@ -90,11 +90,11 @@ class PostProcessor(QtGui.QMainWindow):
         self.metaMethodList.itemDoubleClicked.connect(self.meta_processor_clicked)
         self.update_meta_method_list()
         
-        self.resultList = QtGui.QListWidget(self)
-        self.resultsChanged.connect(self.update_result_list)
+        self.sim_result_list = QtGui.QListWidget(self)
+        self.sim_results_changed.connect(self.update_result_list)
         self.results = []
 
-        self.delShort = QtGui.QShortcut(QtGui.QKeySequence(QtCore.Qt.Key_Delete), self.resultList)
+        self.delShort = QtGui.QShortcut(QtGui.QKeySequence(QtCore.Qt.Key_Delete), self.sim_result_list)
         self.delShort.activated.connect(self.remove_result_item)
 
         # figures
@@ -109,22 +109,22 @@ class PostProcessor(QtGui.QMainWindow):
         self.plotView = QtGui.QWidget()
         self.lastFigure = None
 
-        self.postResultList = QtGui.QListWidget(self)
-        self.postResultsChanged.connect(self.update_post_result_list)
-        self.postResults = []
-        self.delShortPost = QtGui.QShortcut(QtGui.QKeySequence(QtCore.Qt.Key_Backspace), self.postResultList)
+        self.post_result_list = QtGui.QListWidget(self)
+        self.post_results_changed.connect(self.update_post_result_list)
+        self.post_results = []
+        self.delShortPost = QtGui.QShortcut(QtGui.QKeySequence(QtCore.Qt.Key_Backspace), self.post_result_list)
         self.delShortPost.activated.connect(self.remove_post_result_item)
 
         self.grid.addWidget(QtGui.QLabel("result files:"), 0, 0)
-        self.grid.addWidget(self.resultList, 1, 0)
-        self.grid.addWidget(QtGui.QLabel("postprocessors:"), 2, 0)
+        self.grid.addWidget(self.sim_result_list, 1, 0)
+        self.grid.addWidget(QtGui.QLabel("Postprocessors:"), 2, 0)
         self.grid.addWidget(self.methodList, 3, 0)
         self.grid.addWidget(QtGui.QLabel("figures:"), 4, 0)
         self.grid.addWidget(self.post_figure_list, 5, 0)
         self.grid.addWidget(QtGui.QLabel("selected figure:"), 0, 1)
         self.grid.addWidget(QtGui.QLabel("postprocessor files:"), 0, 2)
-        self.grid.addWidget(self.postResultList, 1, 2)
-        self.grid.addWidget(QtGui.QLabel("metaprocessors:"), 2, 2)
+        self.grid.addWidget(self.post_result_list, 1, 2)
+        self.grid.addWidget(QtGui.QLabel("Metaprocessors:"), 2, 2)
         self.grid.addWidget(self.metaMethodList, 3, 2)
         self.grid.addWidget(QtGui.QLabel("figures:"), 4, 2)
         self.grid.addWidget(self.meta_figure_list, 5, 2)
@@ -166,21 +166,21 @@ class PostProcessor(QtGui.QMainWindow):
         with open(file_name, 'rb') as f:
             self.results.append(cPickle.load(f))
 
-        self.resultsChanged.emit()
+        self.sim_results_changed.emit()
 
     def update_result_list(self):
-        self.resultList.clear()
+        self.sim_result_list.clear()
         for res in self.results:
             name = res['regime name']
-            self.resultList.addItem(name)
+            self.sim_result_list.addItem(name)
 
     def remove_result_item(self):
-        if self.resultList.currentRow() >= 0:
-            del self.results[self.resultList.currentRow()]
-            self.resultList.takeItem(self.resultList.currentRow())
+        if self.sim_result_list.currentRow() >= 0:
+            del self.results[self.sim_result_list.currentRow()]
+            self.sim_result_list.takeItem(self.sim_result_list.currentRow())
 
     def load_post_result_files(self):
-        path = os.path.join(os.path.pardir, "results", "postprocessing")
+        path = os.path.join(os.path.pardir, "results", "processing")
         dialog = QtGui.QFileDialog(self)
         dialog.setFileMode(QtGui.QFileDialog.ExistingFiles)
         dialog.setDirectory(path)
@@ -200,22 +200,22 @@ class PostProcessor(QtGui.QMainWindow):
         """
         name = os.path.split(file_name)[-1][:-4]
         with open(file_name, 'r') as f:
-            results = eval(f.read())
+            results = cPickle.load(f)
             results.update({'name': name})
-            self.postResults.append(results)
+            self.post_results.append(results)
 
-        self.postResultsChanged.emit()
+        self.post_results_changed.emit()
 
     def update_post_result_list(self):
-        self.postResultList.clear()
-        for res in self.postResults:
+        self.post_result_list.clear()
+        for res in self.post_results:
             name = res['name']
-            self.postResultList.addItem(name)
+            self.post_result_list.addItem(name)
 
     def remove_post_result_item(self):
-        if self.postResultList.currentRow() >= 0:
-            del self.postResults[self.postResultList.currentRow()]
-            self.postResultList.takeItem(self.postResultList.currentRow())
+        if self.post_result_list.currentRow() >= 0:
+            del self.post_results[self.post_result_list.currentRow()]
+            self.post_result_list.takeItem(self.post_result_list.currentRow())
 
     def update_post_method_list(self):
         self.methodList.clear()
@@ -236,20 +236,18 @@ class PostProcessor(QtGui.QMainWindow):
         self.run_processor(str(item.text()), "meta")
 
     def run_processor(self, name, processor_type):
-        if not self.results:
-            print 'run_processor() Error: no result file loaded!'
-            return
-
-        # if self.post_figure_list.currentRow() >= 0:
-        #     self.grid.removeWidget(self.current_figures[self.post_figure_list.currentRow()]['figure'])
-        # del self.current_figures[:]
-
         if processor_type == "post":
+            result_files = self.results
             base_cls = PostProcessingModule
         elif processor_type == "meta":
+            result_files = self.post_results
             base_cls = MetaProcessingModule
         else:
             raise ValueError("unknown processor type {0}".format(processor_type))
+
+        if not result_files:
+            print 'run_processor() Error: no result file loaded!'
+            return
 
         processor_cls = pm.get_processing_module_class_by_name(base_cls, name)
         processor = processor_cls()
@@ -259,51 +257,23 @@ class PostProcessor(QtGui.QMainWindow):
             print(">>> Processor() running: {0}".format(name))
             figs = processor.process(self.results)
         except Exception, err:
-            print 'Error in Postprocessor!'
+            print "Error in processor!"
             print traceback.format_exc()
 
+        self.figures_changed.emit(figs, processor_type)
         print '>>> finished.'
 
-        self.figures_changed.emit(figs, processor_type)
-        
-    # def run_meta_processor(self, item):
-    #     if not self.postResults:
-    #         print 'runMetaprocessor(): Error no post-result files loaded!'
-    #         return
-    #
-    #     if self.meta_figure_list.currentRow() >= 0:
-    #         self.grid.removeWidget(self.current_metaFigures[self.meta_figure_list.currentRow()]['figure'])
-    #
-    #     del self.current_metaFigures[:]
-    #
-    #     name = str(item.text())
-    #     print 'MetaProcessor() running: ', name
-    #
-    #     module = __import__('.'.join(['metaprocessing', name]))
-    #     processor = getattr(getattr(module, name), name)()
-    #
-    #     figs = []
-    #     try:
-    #         figs = processor.run(self.postResults)
-    #         self.current_metaFigures = figs
-    #
-    #     except Exception, err:
-    #         print 'Error in Metaprocessor!'
-    #         print traceback.format_exc()
-    #
-    #     self.meta_figure_list.setFocus()
-    #     self.metaFiguresChanged.emit(figs, "meta")
-    
     def update_figure_lists(self, figures, target_type):
-        # remove no longer needed elements TODO make this work
+        # remove no longer needed elements
         for item, fig in [(key, val[0]) for key, val in self._figure_dict.iteritems() if val[1] == target_type]:
             if fig not in [new_fig["figure"] for new_fig in figures]:
                 if target_type == "post":
                     old_item = self.post_figure_list.takeItem(self.post_figure_list.row(item))
+                    del old_item
                 elif target_type == "meta":
                     old_item = self.meta_figure_list.takeItem(self.meta_figure_list.row(item))
+                    del old_item
 
-                del old_item
                 del self._figure_dict[item]
 
         # add new ones to internal storage
@@ -337,10 +307,10 @@ class PostProcessor(QtGui.QMainWindow):
     def switch_sides(self):
         self.displayLeft = not self.displayLeft
         if self.displayLeft:
-            self.actSwitch.setIcon(QtGui.QIcon('data/left_mode.png'))
+            self.actSwitch.setIcon(QtGui.QIcon(get_resource("left_mode.png")))
             self.post_figure_list.setFocus()
             self.current_figure_changed(self.post_figure_list.currentItem())
         else:
-            self.actSwitch.setIcon(QtGui.QIcon('data/right_mode.png'))
+            self.actSwitch.setIcon(QtGui.QIcon(get_resource("right_mode.png")))
             self.meta_figure_list.setFocus()
             self.current_figure_changed(self.meta_figure_list.currentItem())

@@ -1,4 +1,5 @@
 from __future__ import division
+import cPickle as cp
 import os
 from abc import ABCMeta, abstractmethod
 
@@ -44,6 +45,15 @@ class ProcessingModule(QObject):
         self.name = self.__class__.__name__
         return
 
+    @abstractmethod
+    def process(self, result_data):
+        """
+        function that is called when the Processing environment processes all loaded result files
+        :param result_data: list of result dicts
+        :return: list of diagrams
+        """
+        pass
+
     def extract_setting(self, data_list, names, module_name, setting_name):
         """
         extracts settings from simulation data
@@ -86,8 +96,9 @@ class ProcessingModule(QObject):
             os.makedirs(file_path)
 
         file_name = os.path.join(file_path, result_name)
-        with open(file_name + '.pof', 'w') as f:
-            f.write(repr(output))
+        if output:
+            with open(file_name + '.pof', 'w') as f:
+                cp.dump(output, f)
 
         if figure:
             for export_format in self._export_formats:

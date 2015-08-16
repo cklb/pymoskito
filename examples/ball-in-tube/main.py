@@ -8,6 +8,7 @@ from pymoskito.processing_gui import PostProcessor
 import model
 import control
 import feedforward
+import processing
 from visualization import BallInTubeVisualizer
 
 # create gui

@@ -183,7 +183,7 @@ class SimulationGui(QtGui.QMainWindow):
 
         self.actPostprocessing = QtGui.QAction(self)
         self.actPostprocessing.setText('launch postprocessor')
-        self.actPostprocessing.setIcon(QtGui.QIcon(get_resource("postprocessing.png")))
+        self.actPostprocessing.setIcon(QtGui.QIcon(get_resource("processing.png")))
         self.actPostprocessing.setDisabled(False)
         self.actPostprocessing.triggered.connect(self.postprocessing_clicked)
 

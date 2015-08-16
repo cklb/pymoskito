@@ -175,8 +175,6 @@ class StepResponse(PostProcessingModule):
 
         return metric_values
 
-pm.register_processing_module(PostProcessingModule, StepResponse)
-
 
 class XYMetaProcessor(MetaProcessingModule):
     """
@@ -193,7 +191,7 @@ class XYMetaProcessor(MetaProcessingModule):
 
         return
 
-    def run(self, post_results):
+    def process(self, post_results):
         # create tree with relevant data
         source = sort_tree(post_results, self.sort_key)
 
@@ -203,22 +201,6 @@ class XYMetaProcessor(MetaProcessingModule):
 
         self.plot_family(source, self.x_path, self.y_path, "line")
         self.set_plot_labeling()
-
-        # # plot for time-difference
-        # axes1 = fig.add_subplot(212)
-        # axes1 = self.plotVariousController(source, axes1,\
-        #         xPath=['modules','trajectory', 'delta t'],\
-        #         yPath=['metrics','t_diff'],\
-        #         typ='line')
-        # axes1 = self.plotSettings(axes1,\
-        #         titel=r'\"Ubergangszeitfehler \"uber $\Delta t$',\
-        #         grid=True,\
-        #         xlabel=r'$\Delta t \, \lbrack s\rbrack$',\
-        #         ylabel=r'$e_{t} \, \lbrack s \rbrack$',\
-        #         )
-        #
-        # # spacing
-        # fig.subplots_adjust(wspace=0.5, hspace=0.5)
 
         # extract member_names (subtract common appendix like *Controller or *Feedforward)
         member_names = [x[:-len(self.x_path[1])] for x in source.keys()]
@@ -230,3 +212,6 @@ class XYMetaProcessor(MetaProcessingModule):
         self.write_output_files(file_name, self.fig)
 
         return [{'figure': canvas, 'name': self.name}]
+
+
+pm.register_processing_module(PostProcessingModule, StepResponse)
