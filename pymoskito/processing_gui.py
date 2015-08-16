@@ -264,7 +264,6 @@ class PostProcessor(QtGui.QMainWindow):
 
         print '>>> finished.'
 
-        self.post_figure_list.setFocus()
         self.figures_changed.emit(figs, processor_type)
         
     # def run_meta_processor(self, item):
@@ -298,11 +297,13 @@ class PostProcessor(QtGui.QMainWindow):
     def update_figure_lists(self, figures, target_type):
         # remove no longer needed elements TODO make this work
         for item, fig in [(key, val[0]) for key, val in self._figure_dict.iteritems() if val[1] == target_type]:
-            if fig not in [fig["figure"] for fig in figures]:
+            if fig not in [new_fig["figure"] for new_fig in figures]:
                 if target_type == "post":
-                    self.post_figure_list.removeItemWidget(item)
+                    old_item = self.post_figure_list.takeItem(self.post_figure_list.row(item))
                 elif target_type == "meta":
-                    self.meta_figure_list.removeItemWidget(item)
+                    old_item = self.meta_figure_list.takeItem(self.meta_figure_list.row(item))
+
+                del old_item
                 del self._figure_dict[item]
 
         # add new ones to internal storage
@@ -327,7 +328,7 @@ class PostProcessor(QtGui.QMainWindow):
             self.grid.removeWidget(self.lastFigure)
             self.lastFigure.setVisible(False)
 
-        if current_item:
+        if current_item in figures:
             figure_widget = figures[current_item][0]
             self.grid.addWidget(figure_widget, 1, 1, 5, 1)
             figure_widget.setVisible(True)
