@@ -83,12 +83,18 @@ class BallInTubeModel(Model):
         """
         in this case this means zero crossing detection for the balls elevation.
         """
+        x0 = x
+        flag = False
+
         if x[2] <= 0:
-            x0 = [x[0], x[1], 0, 0]
+            x0[2] = 0
+            x0[3] = 0
             flag = True
-        else:
-            x0 = x
-            flag = False
+
+        if x[0] <= 0:
+            x0[0] = 0
+            x0[1] = 0
+            flag = True
 
         return flag, x0
 

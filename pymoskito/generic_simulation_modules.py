@@ -140,6 +140,72 @@ class SmoothTransition(Trajectory):
 
         return y
 
+# sorry for this class, but i needed a Trajectory with a specific degree
+class PolynomialTrajectory(Trajectory):
+    """
+    provides a smooth trajectory with a chosen degree
+    """
+
+    public_settings = {
+        'degree': 9,
+        'x0': 0.2,
+        'xe': 1.0,
+        't0': 5,
+        'te': 10,
+    }
+
+    def __init__(self, settings):
+        Trajectory.__init__(self, settings)
+
+         # calculate gamma
+        if self.public_settings['degree'] % 2 == 0:
+            raise ValueError('Degree must be odd')
+
+        gamma = int((self.public_settings['degree'] - 1)/2)
+
+        # calculate alpha
+        alpha = sp.factorial(2*gamma + 1)
+
+        # calculate symbolic expressions
+        tau, k = sp.symbols('tau, k')
+
+        f = sp.binomial(gamma, k) * (-1)**k * tau**(gamma+k+1) / (gamma+k+1)
+        phi = alpha/sp.factorial(gamma)**2 * sp.summation(f, (k, 0, gamma))
+
+        # diff
+        dphi_sym = [phi]
+        for order in range(self._settings["differential_order"]):
+            dphi_sym.append(dphi_sym[-1].diff(tau))
+
+        self.dphi_num = []
+        for derivation in dphi_sym:
+            self.dphi_num.append(sp.lambdify(tau, derivation, 'numpy'))
+
+    def _desired_values(self, t):
+        """
+        Calculates desired trajectory
+        """
+
+        yd = [0]*len(self.dphi_num)
+        t0 = self._settings['t0']        # start time
+        te = self._settings['te']        # end time
+
+        if t < t0:
+            yd[0] = self._settings['x0']
+        elif t > te:
+            yd[0] = self._settings['xe']
+        else:
+            for order, dphi in enumerate(self.dphi_num):
+
+                if not order:
+                    x0 = self._settings['x0']
+                else:
+                    x0 = 0
+
+                yd[order] = x0 + (self._settings['xe'] - self._settings['x0'])\
+                                 * dphi((t - t0)/(te - t0)) * 1/(te - t0)**order
+        return yd
+
 
 class HarmonicTrajectory(Trajectory):
     """
@@ -147,8 +213,9 @@ class HarmonicTrajectory(Trajectory):
     with derivatives up to order 4
     """
     # TODO provide formula up to order n
-    public_settings = OrderedDict([("Amplitude", 0.5),
-                                   ("Frequency", 5)])
+    public_settings = OrderedDict([("Amplitude", 0.25),
+                                   ("Frequency", 0.1),
+                                   ("Offset", 0.75)])
 
     def __init__(self, settings):
         Trajectory.__init__(self, settings)
@@ -159,15 +226,22 @@ class HarmonicTrajectory(Trajectory):
 
         a = self._settings['Amplitude']
         f = self._settings['Frequency']
+        off = self._settings["Offset"]
+        
+        # i need sin for a test
+        # yd.append(a * np.cos(2 * np.pi * f * t))
+        # yd.append(-a * 2 * np.pi * f * np.sin(2 * np.pi * f * t))
+        # yd.append(-a * (2 * np.pi * f) ** 2 * np.cos(2 * np.pi * f * t))
+        # yd.append(a * (2 * np.pi * f) ** 3 * np.sin(2 * np.pi * f * t))
+        # yd.append(a * (2 * np.pi * f) ** 4 * np.cos(2 * np.pi * f * t))
 
-        yd.append(a * np.cos(2 * np.pi * f * t))
-        yd.append(-a * 2 * np.pi * f * np.sin(2 * np.pi * f * t))
-        yd.append(-a * (2 * np.pi * f) ** 2 * np.cos(2 * np.pi * f * t))
-        yd.append(a * (2 * np.pi * f) ** 3 * np.sin(2 * np.pi * f * t))
-        yd.append(a * (2 * np.pi * f) ** 4 * np.cos(2 * np.pi * f * t))
+        yd.append(a * np.sin(2 * np.pi * f * t) + off)
+        yd.append(a * 2 * np.pi * f * np.cos(2 * np.pi * f * t))
+        yd.append(-a * (2 * np.pi * f) ** 2 * np.sin(2 * np.pi * f * t))
+        yd.append(-a * (2 * np.pi * f) ** 3 * np.cos(2 * np.pi * f * t))
+        yd.append(a * (2 * np.pi * f) ** 4 * np.sin(2 * np.pi * f * t))
 
         return [y for idx, y in enumerate(yd) if idx <= self._settings["differential_order"]]
-
 
 class PIDController(Controller):
     """
@@ -257,6 +331,7 @@ class AdditiveMixer(SignalMixer):
 # register all generic modules
 pm.register_simulation_module(Solver, ODEInt)
 pm.register_simulation_module(Trajectory, SmoothTransition)
+pm.register_simulation_module(Trajectory, PolynomialTrajectory)
 pm.register_simulation_module(Trajectory, HarmonicTrajectory)
 pm.register_simulation_module(Controller, PIDController)
 pm.register_simulation_module(ModelMixer, AdditiveMixer)

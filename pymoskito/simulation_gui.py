@@ -601,6 +601,9 @@ class SimulationGui(QtGui.QMainWindow):
         time_line = pg.InfiniteLine(self.playbackTime, angle=90, movable=False, pen=pg.mkPen('#FF0000', width=2.0))
         widget.getPlotItem().addItem(time_line)
 
+        # enable grid
+        widget.showGrid(True, True)
+
         dock.addWidget(widget)
 
         self.plotDocks.append(dock)

@@ -20,7 +20,7 @@
 
   Solver:
    type: ODEInt
-   measure rate: 10
+   measure rate: 100
    step size: 0.02
    end time: 30
 
@@ -43,14 +43,11 @@
 
   Solver:
    type: ODEInt
-   measure rate: 10
+   measure rate: 100
    end time: 10
 
   Controller:
    type: PIDController
-
-  Feedforward:
-   type: BallInTubeFeedforward
 
   Trajectory:
    type: SmoothTransition
