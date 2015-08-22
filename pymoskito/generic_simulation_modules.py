@@ -36,7 +36,7 @@ class ODEInt(Solver):
             self._solver = ode(self._model.state_function,
                                jac=self._model.jacobian)
         else:
-            self._solver = ode(self._settings["Model"].state_function)
+            self._solver = ode(self._model.state_function)
 
         self._solver.set_integrator(self._settings["Mode"],
                                     method=self._settings["Method"],

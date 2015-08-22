@@ -108,6 +108,7 @@ class Solver(SimulationModule):
         assert ("Model" in settings)
         assert isinstance(settings["Model"], Model)
         self._model = settings["Model"]
+        del settings["Model"]
 
     def calc_output(self, input_vector):
         if "Limiter" in input_vector:
