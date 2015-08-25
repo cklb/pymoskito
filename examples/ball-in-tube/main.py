@@ -13,7 +13,7 @@ from visualization import BallInTubeVisualizer
 
 # create gui
 app = QtGui.QApplication([])
-if 1:
+if 0:
     gui = PostProcessor()
     gui.show()
 else:

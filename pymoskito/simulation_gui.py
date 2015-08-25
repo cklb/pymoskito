@@ -340,7 +340,7 @@ class SimulationGui(QtGui.QMainWindow):
 
         # pmr - PyMoskito Result
         file_name = os.path.join(path, time.strftime('%Y%m%d-%H%M%S') + '_' + name + '.pmr')
-        print self.currentDataset
+
         with open(file_name, 'wb') as f:
             cPickle.dump(self.currentDataset, f, protocol=2)
 

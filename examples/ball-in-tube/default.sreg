@@ -1,39 +1,5 @@
  # default regime file that is loaded when the simulation environment starts up
  # use this to create your own files
-- Name: teststation_with_real_parameters
-  clear previous: !!python/bool True # decide whether previous settings should remain or not
-
-  Model:
-   type: BallInTubeModel
-   T_n: 0.2484
-   d_R: 64.4e-3
-   k_V: 4.3059e-5
-   k_L: 6.1077e-4
-   d_B: 57.7e-3
-   T_p: 0.2484
-   d_p: 1.1061
-   m: 2.4e-3
-   tube_length: 1.5
-   d_n: 1.1061
-   k_s: 9.42075
-   initial state: [0,0,0,0]
-
-  Solver:
-   type: ODEInt
-   measure rate: 100
-   step size: 0.02
-   end time: 30
-
-  Controller:
-   type: PIDController
-
-  Trajectory:
-   type: SmoothTransition
-
-  ModelMixer:
-   type: AdditiveMixer
-   Input A: Controller
-   Input B: Feedforward
 
 - Name: test
   clear previous: !!python/bool True # decide whether previous settings should remain or not
@@ -43,14 +9,174 @@
 
   Solver:
    type: ODEInt
-   measure rate: 100
+   measure rate: 500
+   step size: 0.02
    end time: 10
 
   Controller:
    type: PIDController
+   Kp: 600
+   Ki: 570
+   Kd: 230
 
   Trajectory:
    type: SmoothTransition
+
+  ModelMixer:
+   type: AdditiveMixer
+   Input A: Controller
+   Input B: Feedforward
+
+- Name: exp_k_L
+  clear previous: !!python/bool True # decide whether previous settings should remain or not
+
+  Model:
+   type: BallInTubeModel
+   initial state: [0, 0, 1.411, 0]
+
+  Solver:
+   type: ODEInt
+   measure rate: 500
+   step size: 0.02
+   end time: 10
+
+  ModelMixer:
+   type: AdditiveMixer
+   Input A: Controller
+   Input B: Feedforward
+
+- Name: exp_k_V
+  clear previous: !!python/bool True # decide whether previous settings should remain or not
+
+  Model:
+   type: BallInTubeModel
+   tube_length: 2
+
+  Solver:
+   type: ODEInt
+   measure rate: 500
+   step size: 0.02
+   end time: 10
+
+  Controller:
+   type: OpenLoop
+   pwm: 180
+
+  Trajectory:
+   type: SmoothTransition
+
+  ModelMixer:
+   type: AdditiveMixer
+   Input A: Controller
+   Input B: Feedforward
+
+- Name: exp_step_180
+  clear previous: !!python/bool True # decide whether previous settings should remain or not
+
+  Model:
+   type: BallInTubeModel
+   tube_length: 5
+   initial state: [33.3066666667, 0, 0, 0]
+
+  Solver:
+   type: ODEInt
+   measure rate: 500
+   step size: 0.02
+   end time: 10
+
+  Controller:
+   type: OpenLoop
+   pwm: 180
+
+  Trajectory:
+   type: SmoothTransition
+
+  ModelMixer:
+   type: AdditiveMixer
+   Input A: Controller
+   Input B: Feedforward
+
+- Name: exp_step_255
+  clear previous: !!python/bool True # decide whether previous settings should remain or not
+
+  Model:
+   type: BallInTubeModel
+   tube_length: 5
+   initial state: [33.369, 0, 0, 0]
+
+  Solver:
+   type: ODEInt
+   measure rate: 500
+   step size: 0.02
+   end time: 10
+
+  Controller:
+   type: OpenLoop
+   pwm: 255
+
+  Trajectory:
+   type: SmoothTransition
+
+  ModelMixer:
+   type: AdditiveMixer
+   Input A: Controller
+   Input B: Feedforward
+
+- Name: exp_harmonic
+  clear previous: !!python/bool True # decide whether previous settings should remain or not
+
+  Model:
+   type: BallInTubeModel
+   tube_length: 2
+
+  Solver:
+   type: ODEInt
+   measure rate: 500
+   step size: 0.02
+   end time: 45
+
+  Controller:
+   type: PIDController
+   Kp: 600
+   Ki: 570
+   Kd: 230
+
+  Trajectory:
+   type: HarmonicTrajectory
+   Amplitude: 0.25
+   Frequency: 0.1
+   Offset: 0.75
+
+  ModelMixer:
+   type: AdditiveMixer
+   Input A: Controller
+   Input B: Feedforward
+
+- Name: exp_trajectory
+  clear previous: !!python/bool True # decide whether previous settings should remain or not
+
+  Model:
+   type: BallInTubeModel
+
+  Solver:
+   type: ODEInt
+   measure rate: 500
+   step size: 0.02
+   end time: 25
+
+  Controller:
+   type: PIDController
+   Kp: 600
+   Ki: 570
+   Kd: 230
+
+  Trajectory:
+   type: PolynomialTrajectory
+   x0: 0.2
+   te: 10
+   t0: 5
+   degree: 9
+   xe: 1.0
 
   ModelMixer:
    type: AdditiveMixer
