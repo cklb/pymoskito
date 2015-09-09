@@ -5,6 +5,7 @@ from PyQt4.QtCore import QObject, pyqtSignal, pyqtSlot
 
 from simulation_modules import SimulationException
 
+
 class SimulationStateChange(object):
     """
     Object that is emitted when Simulator changes its state.
