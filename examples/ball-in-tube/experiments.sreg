@@ -1,0 +1,220 @@
+ # default regime file that is loaded when the simulation environment starts up
+ # use this to create your own files
+
+- Name: test
+  clear previous: !!python/bool True # decide whether previous settings should remain or not
+
+  Model:
+   type: BallInTubeModel
+
+  Solver:
+   type: ODEInt
+   measure rate: 500
+   step size: 0.02
+   end time: 10
+
+  Controller:
+   type: PIDController
+   Kp: 600
+   Ki: 570
+   Kd: 230
+
+  Trajectory:
+   type: SmoothTransition
+
+  ModelMixer:
+   type: AdditiveMixer
+   Input A: Controller
+   Input B: Feedforward
+
+- Name: exp_k_L
+  clear previous: !!python/bool True # decide whether previous settings should remain or not
+
+  Model:
+   type: BallInTubeModel
+   initial state: [0, 0, 1.411, 0]
+
+  Solver:
+   type: ODEInt
+   measure rate: 500
+   step size: 0.02
+   end time: 10
+
+  ModelMixer:
+   type: AdditiveMixer
+   Input A: Controller
+   Input B: Feedforward
+
+- Name: exp_k_V
+  clear previous: !!python/bool True # decide whether previous settings should remain or not
+
+  Model:
+   type: BallInTubeModel
+   tube_length: 2
+
+  Solver:
+   type: ODEInt
+   measure rate: 500
+   step size: 0.02
+   end time: 10
+
+  Controller:
+   type: OpenLoop
+   pwm: 180
+
+  Trajectory:
+   type: SmoothTransition
+
+  ModelMixer:
+   type: AdditiveMixer
+   Input A: Controller
+   Input B: Feedforward
+
+- Name: exp_step_180
+  clear previous: !!python/bool True # decide whether previous settings should remain or not
+
+  Model:
+   type: BallInTubeModel
+   tube_length: 5
+   initial state: [33.3066666667, 0, 0, 0]
+
+  Solver:
+   type: ODEInt
+   measure rate: 500
+   step size: 0.02
+   end time: 10
+
+  Controller:
+   type: OpenLoop
+   pwm: 180
+
+  Trajectory:
+   type: SmoothTransition
+
+  ModelMixer:
+   type: AdditiveMixer
+   Input A: Controller
+   Input B: Feedforward
+
+- Name: exp_step_255
+  clear previous: !!python/bool True # decide whether previous settings should remain or not
+
+  Model:
+   type: BallInTubeModel
+   tube_length: 5
+   initial state: [33.369, 0, 0, 0]
+
+  Solver:
+   type: ODEInt
+   measure rate: 500
+   step size: 0.02
+   end time: 10
+
+  Controller:
+   type: OpenLoop
+   pwm: 255
+
+  Trajectory:
+   type: SmoothTransition
+
+  ModelMixer:
+   type: AdditiveMixer
+   Input A: Controller
+   Input B: Feedforward
+
+- Name: exp_harmonic
+  clear previous: !!python/bool True # decide whether previous settings should remain or not
+
+  Model:
+   type: BallInTubeModel
+   tube_length: 2
+
+  Solver:
+   type: ODEInt
+   measure rate: 500
+   step size: 0.02
+   end time: 45
+
+  Controller:
+   type: PIDController
+   Kp: 600
+   Ki: 570
+   Kd: 230
+
+  Trajectory:
+   type: HarmonicTrajectory
+   Amplitude: 0.25
+   Frequency: 0.1
+   Offset: 0.75
+
+  ModelMixer:
+   type: AdditiveMixer
+   Input A: Controller
+   Input B: Feedforward
+
+- Name: exp_trajectory
+  clear previous: !!python/bool True # decide whether previous settings should remain or not
+
+  Model:
+   type: BallInTubeModel
+
+  Solver:
+   type: ODEInt
+   measure rate: 500
+   step size: 0.02
+   end time: 25
+
+  Controller:
+   type: PIDController
+   Kp: 600
+   Ki: 570
+   Kd: 230
+
+  Trajectory:
+   type: PolynomialTrajectory
+   x0: 0.2
+   te: 10
+   t0: 5
+   degree: 9
+   xe: 1.0
+
+  ModelMixer:
+   type: AdditiveMixer
+   Input A: Controller
+   Input B: Feedforward
+
+- Name: initial_ball_speed
+  clear previous: !!python/bool True # decide whether previous settings should remain or not
+
+  Model:
+   type: BallInTubeModel
+   initial state: [0, 0, 0, 1.65]
+
+  Solver:
+   type: ODEInt
+   measure rate: 500
+   step size: 0.001
+   end time: 5
+
+  ModelMixer:
+   type: AdditiveMixer
+   Input A: Controller
+   Input B: Feedforward
+
+- Name: initial_fan_speed
+  clear previous: !!python/bool True # decide whether previous settings should remain or not
+
+  Model:
+   type: BallInTubeModel
+   initial state: [100, 0, 0, 0]
+
+  Solver:
+   type: ODEInt
+   measure rate: 500
+   step size: 0.001
+   end time: 5
+
+  ModelMixer:
+   type: AdditiveMixer
+   Input A: Controller
+   Input B: Feedforward
