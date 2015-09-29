@@ -10,7 +10,15 @@ import sympy as sp
 import numpy as np
 
 import pymoskito as pm
-from simulation_modules import Solver, SolverException, Trajectory, Controller, SignalMixer, ModelMixer, ObserverMixer
+
+from simulation_modules import Solver, \
+    SolverException, \
+    Trajectory, \
+    Controller,\
+    SignalMixer,\
+    ModelMixer,\
+    ObserverMixer,\
+    Limiter
 
 
 class ODEInt(Solver):
@@ -120,7 +128,7 @@ class SmoothTransition(Trajectory):
         """
         Calculates desired trajectory
         """
-        y = [0]*len(self.dphi_num)
+        y = [0] * len(self.dphi_num)
         yd = self._settings['states']
         t0 = self._settings['start time']
         dt = self._settings['delta t']
@@ -136,90 +144,36 @@ class SmoothTransition(Trajectory):
                 else:
                     ya = 0
 
-                y[order] = ya + (yd[1] - yd[0])*dphi((t - t0)/dt)*1/dt**order
+                y[order] = ya + (yd[1] - yd[0]) * dphi((t - t0) / dt) * 1 / dt ** order
 
         return y
-
-# sorry for this class, but i needed a Trajectory with a specific degree
-class PolynomialTrajectory(Trajectory):
-    """
-    provides a smooth trajectory with a chosen degree
-    """
-
-    public_settings = {
-        'degree': 9,
-        'x0': 0.2,
-        'xe': 1.0,
-        't0': 5,
-        'te': 10,
-    }
-
-    def __init__(self, settings):
-        Trajectory.__init__(self, settings)
-
-         # calculate gamma
-        if self.public_settings['degree'] % 2 == 0:
-            raise ValueError('Degree must be odd')
-
-        gamma = int((self.public_settings['degree'] - 1)/2)
-
-        # calculate alpha
-        alpha = sp.factorial(2*gamma + 1)
-
-        # calculate symbolic expressions
-        tau, k = sp.symbols('tau, k')
-
-        f = sp.binomial(gamma, k) * (-1)**k * tau**(gamma+k+1) / (gamma+k+1)
-        phi = alpha/sp.factorial(gamma)**2 * sp.summation(f, (k, 0, gamma))
-
-        # diff
-        dphi_sym = [phi]
-        for order in range(self._settings["differential_order"]):
-            dphi_sym.append(dphi_sym[-1].diff(tau))
-
-        self.dphi_num = []
-        for derivation in dphi_sym:
-            self.dphi_num.append(sp.lambdify(tau, derivation, 'numpy'))
-
-    def _desired_values(self, t):
-        """
-        Calculates desired trajectory
-        """
-
-        yd = [0]*len(self.dphi_num)
-        t0 = self._settings['t0']        # start time
-        te = self._settings['te']        # end time
-
-        if t < t0:
-            yd[0] = self._settings['x0']
-        elif t > te:
-            yd[0] = self._settings['xe']
-        else:
-            for order, dphi in enumerate(self.dphi_num):
-
-                if not order:
-                    x0 = self._settings['x0']
-                else:
-                    x0 = 0
-
-                yd[order] = x0 + (self._settings['xe'] - self._settings['x0'])\
-                                 * dphi((t - t0)/(te - t0)) * 1/(te - t0)**order
-        return yd
 
 
 class HarmonicTrajectory(Trajectory):
     """
-    This generator provides a scalar harmonic cosine signal
-    with derivatives up to order 4
+    This generator provides a scalar harmonic sinus signal
+    with derivatives up to order n
     """
-    # TODO provide formula up to order n
+
     public_settings = OrderedDict([("Amplitude", 0.25),
                                    ("Frequency", 0.1),
-                                   ("Offset", 0.75)])
+                                   ("Offset", 0.75),
+                                   ("Phase in degree", 0)])
 
     def __init__(self, settings):
         Trajectory.__init__(self, settings)
-        assert(settings["differential_order"] <= 4)
+
+        # calculate symbolic derivatives up to order n
+        t, a, f, off, p = sp.symbols("t, a, f, off, p")
+        self.yd_sym = []
+        harmonic = a * sp.sin(2 * sp.pi * f * t + p) + off
+
+        for idx in range(settings["differential_order"] + 1):
+            self.yd_sym.append(harmonic.diff(t, idx))
+
+        # lambdify
+        for idx, val in enumerate(self.yd_sym):
+            self.yd_sym[idx] = sp.lambdify((t, a, f, off, p), val, "numpy")
 
     def _desired_values(self, t):
         yd = []
@@ -227,21 +181,13 @@ class HarmonicTrajectory(Trajectory):
         a = self._settings['Amplitude']
         f = self._settings['Frequency']
         off = self._settings["Offset"]
-        
-        # i need sin for a test
-        # yd.append(a * np.cos(2 * np.pi * f * t))
-        # yd.append(-a * 2 * np.pi * f * np.sin(2 * np.pi * f * t))
-        # yd.append(-a * (2 * np.pi * f) ** 2 * np.cos(2 * np.pi * f * t))
-        # yd.append(a * (2 * np.pi * f) ** 3 * np.sin(2 * np.pi * f * t))
-        # yd.append(a * (2 * np.pi * f) ** 4 * np.cos(2 * np.pi * f * t))
+        p = self._settings["Phase in degree"] * np.pi / 360
 
-        yd.append(a * np.sin(2 * np.pi * f * t) + off)
-        yd.append(a * 2 * np.pi * f * np.cos(2 * np.pi * f * t))
-        yd.append(-a * (2 * np.pi * f) ** 2 * np.sin(2 * np.pi * f * t))
-        yd.append(-a * (2 * np.pi * f) ** 3 * np.cos(2 * np.pi * f * t))
-        yd.append(a * (2 * np.pi * f) ** 4 * np.sin(2 * np.pi * f * t))
+        for val in self.yd_sym:
+            yd.append(val(t, a, f, off, p))
 
-        return [y for idx, y in enumerate(yd) if idx <= self._settings["differential_order"]]
+        return yd
+
 
 class PIDController(Controller):
     """
@@ -284,16 +230,16 @@ class PIDController(Controller):
             for i in range(len(x)):
                 # error
                 e = yd[i] - x[i]
-                integral = e*dt + self.integral_old[i]
+                integral = e * dt + self.integral_old[i]
                 if integral > self._settings["output_limits"][1]:
                     integral = self._settings["output_limits"][1]
                 elif integral < self._settings["output_limits"][0]:
                     integral = self._settings["output_limits"][0]
-                differential = (e - self.e_old)/dt
+                differential = (e - self.e_old) / dt
 
-                output = self._settings["Kp"]*e\
-                         + self._settings["Ki"]*integral \
-                         + self._settings["Kd"]*differential
+                output = self._settings["Kp"] * e \
+                         + self._settings["Ki"] * integral \
+                         + self._settings["Kd"] * differential
 
                 if output > self._settings["output_limits"][1]:
                     output = self._settings["output_limits"][1]
@@ -308,6 +254,7 @@ class PIDController(Controller):
             u = self.last_u
         self.last_u = u
         return u
+
 
 class AdditiveMixer(SignalMixer):
     """
@@ -326,13 +273,30 @@ class AdditiveMixer(SignalMixer):
         return np.sum(vals, 0)
 
 
-# TODO Limiter
+class ModelInputLimiter(Limiter):
+    """
+    ModelInputLimiter that limits the model input value
+    """
+
+    public_settings = OrderedDict([("Limits", [0, 240])])
+
+    def __init__(self, settings):
+        settings.update([("input signal", "ModelMixer")])
+        Limiter.__init__(self, settings)
+
+    def _limit(self, value):
+        if value < self._settings["Limits"][0]:
+            value = self._settings["Limits"][0]
+        if value > self._settings["Limits"][1]:
+            value = self._settings["Limits"][1]
+
+        return value
 
 # register all generic modules
 pm.register_simulation_module(Solver, ODEInt)
 pm.register_simulation_module(Trajectory, SmoothTransition)
-pm.register_simulation_module(Trajectory, PolynomialTrajectory)
 pm.register_simulation_module(Trajectory, HarmonicTrajectory)
 pm.register_simulation_module(Controller, PIDController)
 pm.register_simulation_module(ModelMixer, AdditiveMixer)
 pm.register_simulation_module(ObserverMixer, AdditiveMixer)
+pm.register_simulation_module(Limiter, ModelInputLimiter)

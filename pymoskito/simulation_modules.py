@@ -141,6 +141,7 @@ class Solver(SimulationModule):
     def successful(self):
         pass
 
+
 class ControllerException(SimulationException):
     pass
 
@@ -235,6 +236,7 @@ class Trajectory(SimulationModule):
 class MixerException(Exception):
     pass
 
+
 class SignalMixer(SimulationModule):
     """
     Base class for all Signal mixing modules
@@ -253,7 +255,29 @@ class SignalMixer(SimulationModule):
 class ModelMixer(SignalMixer):
     pass
 
+
 class ObserverMixer(SignalMixer):
     pass
 
 
+class Limiter(SimulationModule):
+    """
+    Base class for all limiter variants
+    """
+
+    def __init__(self, settings):
+        assert "input signal" in settings
+        settings.update({"tick divider": 1})
+        SimulationModule.__init__(self, settings)
+
+    def calc_output(self, input_dict):
+        return self._limit(input_dict[self._settings["input signal"]])
+
+    @abstractmethod
+    def _limit(self, value):
+        """
+        placeholder for limiter calculation
+        :param value: values to limit
+        :return: limiter output
+        """
+        pass
