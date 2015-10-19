@@ -49,10 +49,22 @@ m0 = m0_real + (m1_real - m1) + (m2_real - m2)
 beam_length = 1.575     # m
 beam_width = 0.01       # m
 beam_depth = 0.15       # m
+
+# information in mm
+
 # cart parameter
-cart_length = 0.15
-cart_width = 0.05
-cart_depth = 0.15
+cart_length = 145/1000
+cart_width = 60/1000
+cart_depth = 135/1000
 
+axis_height = 47.5/1000
+axis_radius = (11.8/1000)/2
 
+pendulum_shaft_height = 27/1000
+pendulum_shaft_radius = (40/1000)/2
 
+pendulum_weight_height = 40/1000
+pendulum_weight_radius = (30/1000)/2
+
+short_pendulum_height = 100/1000 + pendulum_shaft_radius
+short_pendulum_radius = (10/1000)/2
