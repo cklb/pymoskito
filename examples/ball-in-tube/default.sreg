@@ -28,6 +28,24 @@
    Input A: Controller
    Input B: Feedforward
 
+- Name: test_spring
+  clear previous: !!python/bool True # decide whether previous settings should remain or not
+
+  Model:
+   type: BallInTubeSpringModel
+   initial state: [0, 0, 1, 0]
+
+  Solver:
+   type: ODEInt
+   measure rate: 500
+   step size: 0.001
+   end time: 5
+
+  ModelMixer:
+   type: AdditiveMixer
+   Input A: Controller
+   Input B: Feedforward
+
 - Name: initial_ball_speed
   clear previous: !!python/bool True # decide whether previous settings should remain or not
 

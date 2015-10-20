@@ -87,7 +87,7 @@ class ODEInt(Solver):
             self._solver.set_initial_value(new_state[1], self.t)
 
         if not self._solver.successful():
-            raise SolverException("integration step was not succesful.")
+            raise SolverException("integration step was not successful.")
 
         return state
 
