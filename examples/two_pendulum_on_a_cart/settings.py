@@ -23,17 +23,17 @@ end_time = 20
 g = 9.81                # m/s**2
 # cart:
 m0_real = 4.2774        # kg
-d0 = -10                # Ns/m
+d0 = 10                # Ns/m
 # long pendulum:
 m1_real = 0.3211        # kg
 a1 = 0.3533             # m
 J1_real = 0.072         # kgm**2
-d1 = -0.023             # Ns
+d1 = 0.023             # Ns
 # short pendulum
 m2_real = 0.2355        # kg
 a2 = 0.0963             # m
 J2_real = 0.0044        # kgm**2
-d2 = -0.00145           # Ns
+d2 = 0.00145           # Ns
 
 # transform the mass and length of the original system in to a
 # mass and length of a point-mass-system

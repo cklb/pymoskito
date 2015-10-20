@@ -58,20 +58,26 @@ class TwoPendulumModel(Model):
         x4 = x[3]
         x5 = x[4]
         x6 = x[5]
-        F = args[0]
+        F_star = args[0]
+        M1_star = 0
+        M2_star = 0
 
         # transformation of the input
         M = self.m0 + self.m1*(np.sin(x3))**2 + self.m2*(np.sin(x5))**2
         F1 = self.m1*np.sin(x3)*(self.g*np.cos(x3) - self.l1*x4**2)
         F2 = self.m2*np.sin(x5)*(self.g*np.cos(x5) - self.l2*x6**2)
-        u = (F + F1 + F2)/M
+        u = (F1
+             + F2
+             + (F_star - self.d0*x2)
+             + (M1_star - self.d1*x4)*np.cos(x3)/self.l1
+             + (M2_star - self.d2*x6)*np.cos(x5)/self.l2)/M
 
         dx1 = x2
         dx2 = u
         dx3 = x4
-        dx4 = self.g*np.sin(x3)/self.l1 + u*np.cos(x3)/self.l1
+        dx4 = self.g*np.sin(x3)/self.l1 + u*np.cos(x3)/self.l1 + (M1_star - self.d1*x4)/(self.m1*self.l1**2)
         dx5 = x6
-        dx6 = self.g*np.sin(x5)/self.l2 + u*np.cos(x5)/self.l2
+        dx6 = self.g*np.sin(x5)/self.l2 + u*np.cos(x5)/self.l2 + (M2_star - self.d2*x6)/(self.m2*self.l2**2)
 
         return np.array([dx1, dx2, dx3, dx4, dx5, dx6])
 
