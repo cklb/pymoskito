@@ -128,3 +128,45 @@ def get_coefficients(poles):
         poly = poly.expand()
 
     return np.array([p]).astype(float)
+
+
+def rotation_matrix_xyz(axis, angle, angle_dim):
+    """
+    calculate the rotation matrix for a rotation around
+    a given axis with the angle phi
+    :param axis: rotation axis
+    :param angle: rotation angle
+    :param angle_dim: angle dimensions, options: rad, deg
+    :return: rotation_matrix
+    """
+    assert angle_dim is "deg" or angle_dim is "rad"
+    assert axis is "x" or axis is "y" or axis is "z"
+    x = 0
+    y = 0
+    z = 0
+
+    if angle_dim is "deg":
+        a = np.deg2rad(angle)
+    else:
+        a = angle
+
+    if axis is "x":
+        x = 1
+        y = 0
+        z = 0
+    if axis is "y":
+        x = 0
+        y = 1
+        z = 0
+    if axis is "z":
+        x = 0
+        y = 0
+        z = 1
+
+    s = np.sin(a)
+    c = np.cos(a)
+    rotation_matrix = np.array([[c + x**2*(1 - c), x*y*(1 - c) - z*s, x*z*(1 - c) + y*s],
+                                [y*x*(1 - c) + z*s, c + y**2*(1 - c), y*z*(1 - c) - x*s],
+                                [z*x*(1 - c) - y*s, z*y*(1 - c) + x*s, c + z**2*(1 - c)]])
+
+    return rotation_matrix
