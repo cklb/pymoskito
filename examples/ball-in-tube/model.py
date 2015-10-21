@@ -118,8 +118,7 @@ class BallInTubeSpringModel(Model):
     """
     Implementation of the Ball in Tube System with a spring on the bottom
     """
-    public_settings = OrderedDict([('D', st.D),
-                                   ('d_B', st.d_B),
+    public_settings = OrderedDict([('d_B', st.d_B),
                                    ('d_n', st.d_n),
                                    ('d_p', st.d_p),
                                    ('d_R', st.d_R),
@@ -130,6 +129,8 @@ class BallInTubeSpringModel(Model):
                                    ('T_n', st.T_n),
                                    ('T_p', st.T_p),
                                    ('g',   st.g),
+                                   ('K', st.K),
+                                   ('D', st.D),
                                    ('tube_length', st.tube_length),
                                    ('initial state', st.initial_state),
                                    ])
@@ -140,7 +141,6 @@ class BallInTubeSpringModel(Model):
         Model.__init__(self, settings)
 
         # shortcuts for readability
-        self.D = self._settings['D']
         self.d_B = self._settings['d_B']
         self.d_n = self._settings['d_n']
         self.d_p = self._settings['d_p']
@@ -154,6 +154,8 @@ class BallInTubeSpringModel(Model):
         self.T_p = self._settings['T_p']
         self.T = self.T_p
         self.g = self._settings['g']
+        self.K = self._settings['K']
+        self.D = self._settings['D']
         self.tube_length = self._settings['tube_length']
         self.A_B = np.pi*self.d_B**2/4
         self.A_R = np.pi*self.d_R**2/4
@@ -182,12 +184,14 @@ class BallInTubeSpringModel(Model):
 
         dx1 = x2
         dx2 = -x1/self.T**2 - 2*self.d*x2/self.T + self.k_s*u*12/(255*self.T**2)
+        dx3 = x4
+
         if x3 < 0:
-            dx3 = x4
-            dx4 = -(st.D*x3)/self.m - self.g
+            # realize a extra spring with spring stiffness K and spring damping D
+            dx4 = -(self.K*x3)/self.m - (self.D*x4)/self.m \
+                   +(self.k_L*((self.k_V*x1 - self.A_B*x4)/self.A_Sp)**2)/self.m - self.g
         else:
-            dx3 = x4
-            dx4 = (self.k_L*((self.k_V*x1 - self.A_B*x4)/self.A_Sp)**2 - self.m*self.g)/self.m
+            dx4 = (self.k_L*((self.k_V*x1 - self.A_B*x4)/self.A_Sp)**2)/self.m - self.g
 
         return [dx1, dx2, dx3, dx4]
 
@@ -198,6 +202,7 @@ class BallInTubeSpringModel(Model):
         x0 = x
         flag = False
 
+        # this is not necessary, because of the spring at the bottom
         # ballposition
         # if x[2] <= 0:
         #     x0[2] = 0

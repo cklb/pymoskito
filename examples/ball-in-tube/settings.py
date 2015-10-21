@@ -45,7 +45,8 @@ d_B = 60.0e-3
 
 g = 9.81            # m/s^2
 m = 2.8e-3
-D = 10e-1          # N/m
+K = 10000            # N/m
+D = 1               # Ns/m
 
 A_B = np.pi*d_B**2/4
 A_R = np.pi*d_R**2/4

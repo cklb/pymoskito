@@ -12,7 +12,7 @@
    type: ODEInt
    measure rate: 500
    step size: 0.001
-   end time: 5
+   end time: 10
 
   ModelMixer:
    type: AdditiveMixer

@@ -20,9 +20,6 @@
   Trajectory:
    type: HarmonicTrajectory
 
-  Limiter:
-   type: ModelInputLimiter
-
   ModelMixer:
    type: AdditiveMixer
    Input A: Controller
