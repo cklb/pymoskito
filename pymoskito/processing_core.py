@@ -57,12 +57,21 @@ class ProcessingModule(QObject):
     def extract_setting(self, data_list, names, module_name, setting_name):
         """
         extracts settings from simulation data
+        :param data_list:
+        :param names:
+        :param module_name:
+        :param setting_name:
+        :return:
         """
         return self.extract(data_list, ["modules", module_name, setting_name], names)
 
     def extract_values(self, data_list, names, value_name):
         """
         extracts values from simulation data
+        :param data_list:
+        :param names:
+        :param value_name:
+        :return:
         """
         return self.extract(data_list, ["results", value_name], names)
 
@@ -71,6 +80,10 @@ class ProcessingModule(QObject):
         general extraction from simulation data
         where the regime name contains all strings
         listed in names
+        :param data_list:
+        :param keys:
+        :param names:
+        :return:
         """
         if not isinstance(names, list):
             names = [names]
@@ -90,6 +103,10 @@ class ProcessingModule(QObject):
         """
         this function exports the created diagram and saves calculation results  a POF
         (processing output file) File.
+        :param result_name:
+        :param figure:
+        :param output:
+        :return:
         """
         file_path = os.path.join(os.path.pardir, "results", "processing", self.name)
         if not os.path.isdir(file_path):
@@ -119,6 +136,7 @@ class PostProcessingModule(ProcessingModule):
         worker-wrapper function that processes an array of result files
         This is an convenience wrapper for simple processor implementation.
         Overload for more sophisticated implementations
+        :param files:
         """
         output = []
         for res in files:
@@ -136,6 +154,9 @@ class PostProcessingModule(ProcessingModule):
         """
         this function calculates the L1 Norm with an additional time weighting between is and desired value
         unit: m*s**2
+        :param step_width:
+        :param desired_values:
+        :param is_values:
         """
         l1norm_itae = 0
         for idx, val in enumerate(is_values):
@@ -152,6 +173,9 @@ class PostProcessingModule(ProcessingModule):
         """
         this function calculates the L1 Norm (absolute criterion) of a given dataset
         unit: m*s
+        :param step_width:
+        :param desired_values:
+        :param is_values:
         """
         l1_norm_abs = 0
         for idx, val in enumerate(is_values):
@@ -176,6 +200,12 @@ class MetaProcessingModule(ProcessingModule):
     def set_plot_labeling(self, title="", grid=True, x_label="", y_label="", line_type="line"):
         """
         helper to quickly set axis labeling with the good font sizes
+        :param title:
+        :param grid:
+        :param x_label:
+        :param y_label:
+        :param line_type:
+        :return:
         """
         self.axes.set_title(title, size=self._title_font_size)
         self.axes.set_xlabel(x_label, size=self._label_font_size)
@@ -190,6 +220,13 @@ class MetaProcessingModule(ProcessingModule):
     def plot_family(self, family, x_path, y_path, typ, x_index=-1, y_index=-1):
         """
         plots y over x for all members that can be found in family sources
+        :param family:
+        :param x_path:
+        :param y_path:
+        :param typ:
+        :param x_index:
+        :param y_index:
+        :return:
         """
         width = 0.2
         counter = 0

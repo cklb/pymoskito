@@ -167,6 +167,8 @@ class Simulator(QObject):
         end_state = None
 
         # TODO make sure that results contain end_time/measure_rate entries
+        # TODO store values for timestamp t=0, store initial states for model and observer
+
         solver = self._simulation_modules["Solver"]
         while self._current_outputs["time"] < self._settings.end_time:
             t = solver.t

@@ -3,7 +3,7 @@
 import sympy as sp
 import numpy as np
 
-from simulation_modules import SimulationModule
+from pymoskito.simulation_modules import SimulationModule
 from examples.ballbeam import settings as st
 
 

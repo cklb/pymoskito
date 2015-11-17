@@ -150,6 +150,8 @@ class StepResponse(PostProcessingModule):
     def calc_metrics(self, data, output):
         """
         calculate metrics for comparison
+        :param output:
+        :param data:
         """
         # TODO check those they produce crap see output
         l1_norm_itae = self.calc_l1_norm_itae(*self.get_metric_values(data))

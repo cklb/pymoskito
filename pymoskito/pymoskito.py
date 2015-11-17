@@ -8,9 +8,13 @@ wrapper for easy user interaction
 
 _registry = {}
 
+
 def register_module(module_cls, module_type, cls, type_check=True):
     """
     main hook to register a class in the pymoskito framework
+    :param type_check:
+    :param module_type:
+    :param module_cls:
     :param cls: class to be registered
     :return: None
     """
@@ -30,23 +34,32 @@ def register_module(module_cls, module_type, cls, type_check=True):
     cls_entry[module_type.__name__] = entry
     _registry[module_cls.__name__] = cls_entry
 
+
 def get_registered_modules(module_cls, module_type):
     """
     main hook to retrieve registered classes of a module type for a specific module class
+    :param module_cls:
+    :param module_type:
     :return:
     """
     return _registry.get(module_cls, {}).get(module_type, [])
 
+
 def get_module_class_by_name(module_cls, module_type, module_name):
     """
     return class object for given name
+    :param module_name:
+    :param module_type:
+    :param module_cls:
     """
     return next((mod[0] for mod in get_registered_modules(module_cls, module_type)
                  if mod[1] == module_name), None)
 
+
 def register_simulation_module(module_type, cls):
     """
     main hook to register a module in the pymoskito framework
+    :param module_type:
     :param cls: class to be registered
     :return: None
     """
@@ -68,12 +81,15 @@ def get_registered_simulation_modules(module_type):
     """
     return get_registered_modules(SimulationModule, module_type)
 
+
 def get_simulation_module_class_by_name(module_type, module_name):
     return get_module_class_by_name(SimulationModule, module_type, module_name)
+
 
 def register_processing_module(module_type, cls):
     """
     main hook to register a class in the pymoskito framework
+    :param module_type:
     :param cls: class to be registered
     :return: None
     """
@@ -82,12 +98,15 @@ def register_processing_module(module_type, cls):
 
     register_module(ProcessingModule, module_type, cls)
 
+
 def get_registered_processing_modules(module_type):
     """
     main hook to retrieve registered classes for a specific simulation module
+    :param module_type:
     :return:
     """
     return get_registered_modules(ProcessingModule, module_type)
+
 
 def get_processing_module_class_by_name(module_type, module_name):
     return get_module_class_by_name(ProcessingModule, module_type, module_name)
