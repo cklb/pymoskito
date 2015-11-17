@@ -297,6 +297,14 @@ class TwoPendulumVisualizer(Visualizer):
         self.ren.GetActiveCamera().SetRoll(180)
         self.ren.GetActiveCamera().SetFocalPoint(0, 0, 0)
 
+        self.position = self.ren.GetActiveCamera().GetPosition()
+        self.focal_point = self.ren.GetActiveCamera().GetFocalPoint()
+        self.view_up = self.ren.GetActiveCamera().GetViewUp()
+        self.view_angle = self.ren.GetActiveCamera().GetViewAngle()
+        self.parallel_projection = self.ren.GetActiveCamera().GetParallelProjection()
+        self.parallel_scale = self.ren.GetActiveCamera().GetParallelScale()
+        self.clipping_range = self.ren.GetActiveCamera().GetClippingRange()
+
     def calc_positions(self, x):
         """
         Calculate stationary vectors and rot. matrices for bodies

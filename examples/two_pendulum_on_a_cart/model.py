@@ -48,6 +48,8 @@ class TwoPendulumModel(Model):
     def state_function(self, t, x, args):
         """
         Calculations of system state changes
+        :param x: state
+        :param t: time
         :type args: system input force on the cart
         """
 

@@ -187,6 +187,13 @@ class SimulationGui(QtGui.QMainWindow):
         self.actPostprocessing.setDisabled(False)
         self.actPostprocessing.triggered.connect(self.postprocessing_clicked)
 
+        self.act_reset_camera = QtGui.QAction(self)
+        self.act_reset_camera.setText('reset camera')
+        self.act_reset_camera.setIcon(QtGui.QIcon(get_resource("reset_camera.png")))
+        self.act_reset_camera.setDisabled(False)
+        self.act_reset_camera.triggered.connect(self.reset_camera_clicked)
+
+
         # toolbar for control
         self.toolbarSim = QtGui.QToolBar('Simulation')
         self.toolbarSim.setIconSize(QtCore.QSize(32, 32))
@@ -202,6 +209,7 @@ class SimulationGui(QtGui.QMainWindow):
         self.toolbarSim.addWidget(self.speedDial)
         self.toolbarSim.addWidget(self.timeSlider)
         self.toolbarSim.addAction(self.actPostprocessing)
+        self.toolbarSim.addAction(self.act_reset_camera)
         self.postprocessor = None
 
         # regime management
@@ -212,7 +220,7 @@ class SimulationGui(QtGui.QMainWindow):
         self.regimeFinished.connect(self.run_next_regime)
         self.finishedRegimeBatch.connect(self.regime_batch_finished)
 
-        # statusbar
+        # status bar
         self.status = QtGui.QStatusBar(self)
         self.setStatusBar(self.status)
         self.statusLabel = QtGui.QLabel('Ready.')
@@ -655,3 +663,10 @@ class SimulationGui(QtGui.QMainWindow):
         if hasattr(self, "postprocessor"):
             self.postprocessor = PostProcessor(self)
         self.postprocessor.show()
+
+    def reset_camera_clicked(self):
+        """
+        reset camera in vtk window
+        """
+        self.visualizer.reset_camera()
+        self.vtkWidget.GetRenderWindow().Render()

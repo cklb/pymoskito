@@ -20,3 +20,20 @@ class Visualizer:
         :param x: system state vector
         """
         pass
+
+    def reset_camera(self):
+        """
+        reset camera to original view
+        :return:
+        """
+        # TODO make this universal
+        if hasattr(self, 'ren'):
+            camera = self.ren.GetActiveCamera()
+            camera.SetPosition(self.position)
+            camera.SetFocalPoint(self.focal_point)
+            camera.SetViewUp(self.view_up)
+            camera.SetViewAngle(self.view_angle)
+            camera.SetParallelProjection(self.parallel_projection)
+            camera.SetParallelScale(self.parallel_scale)
+            camera.SetClippingRange(self.clipping_range)
+

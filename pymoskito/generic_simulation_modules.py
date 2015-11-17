@@ -14,6 +14,7 @@ import pymoskito as pm
 from simulation_modules import Solver, \
     SolverException, \
     Trajectory, \
+    TrajectoryException, \
     Controller,\
     SignalMixer,\
     ModelMixer,\
@@ -189,6 +190,23 @@ class HarmonicTrajectory(Trajectory):
         return yd
 
 
+class Setpoint(Trajectory):
+    """
+    provides a setpoint selection for arbitrary states
+    if a state is not selected it gets the setpoint 0
+    """
+
+    public_settings = OrderedDict([("State", [2, 4]),
+                                   ("Setpoint", [0, 0])])
+    def __init__(self, settings):
+        Trajectory.__init__(self, settings)
+        if len(self._settings["State"]) != len(self._settings["Setpoint"]):
+            raise TrajectoryException("The amount of states and setpoints is not equal")
+
+    def _desired_values(self, t):
+        yd = self._settings["Setpoint"]
+        return yd
+
 class PIDController(Controller):
     """
     PID Controller
@@ -296,6 +314,7 @@ class ModelInputLimiter(Limiter):
 pm.register_simulation_module(Solver, ODEInt)
 pm.register_simulation_module(Trajectory, SmoothTransition)
 pm.register_simulation_module(Trajectory, HarmonicTrajectory)
+pm.register_simulation_module(Trajectory, Setpoint)
 pm.register_simulation_module(Controller, PIDController)
 pm.register_simulation_module(ModelMixer, AdditiveMixer)
 pm.register_simulation_module(ObserverMixer, AdditiveMixer)
