@@ -53,7 +53,7 @@ class ODEInt(Solver):
                                     atol=self._settings["aTol"],
                                     max_step=self._settings["step size"]
                                     )
-        self._solver.set_initial_value(self._model.initial_state,
+        self._solver.set_initial_value(np.atleast_1d(self._model.initial_state),
                                        t=self._settings["start time"])
 
     @property
@@ -147,7 +147,7 @@ class SmoothTransition(Trajectory):
 
                 y[order] = ya + (yd[1] - yd[0]) * dphi((t - t0) / dt) * 1 / dt ** order
 
-        return y
+        return np.atleast_1d(y)
 
 
 class HarmonicTrajectory(Trajectory):
@@ -187,7 +187,7 @@ class HarmonicTrajectory(Trajectory):
         for val in self.yd_sym:
             yd.append(val(t, a, f, off, p))
 
-        return yd
+        return np.atleast_1d(yd)
 
 
 class Setpoint(Trajectory):
@@ -205,7 +205,7 @@ class Setpoint(Trajectory):
 
     def _desired_values(self, t):
         yd = self._settings["Setpoint"]
-        return yd
+        return np.atleast_1d(yd)
 
 class PIDController(Controller):
     """

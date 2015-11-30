@@ -5,6 +5,9 @@ from matplotlib import rcParams
 rcParams['text.usetex'] = True
 # rcParams['text.latex.unicode'] = True
 
+import settings as st
+import pymoskito.tools as to
+
 def preview(expr, **kwargs):
     """
     support function to diyplay nice formula
@@ -17,6 +20,8 @@ def preview(expr, **kwargs):
     plt.text(0.1, 0.1, latex_str, fontsize=20)
     plt.axis('off')
     plt.show()
+
+mat2array = [{'ImmutableMatrix': np.array}, 'numpy'] # settings for lambdify function
 
 params = sp.symbols('x0_d0, x0_d1,'
                     ' phi1_d0, phi1_d1,'
@@ -72,20 +77,32 @@ dict_names = {x0_d0: r'x_{0}',
               phi1_d1: r'\dot{\varphi}_{1}',
               phi2_d0: r'\varphi_{2}',
               phi2_d1: r'\dot{\varphi}_{2}'}
+simplification_list = [(sp.sin(phi1_d0), 0), (sp.sin(phi2_d0), 0),
+            (phi1_d1, 0), (phi2_d1, 0),
+            (sp.cos(phi1_d0)**2, 1), (sp.cos(phi2_d0)**2, 1),
+            (sp.cos(phi1_d0)**3, sp.cos(phi1_d0)),
+            (sp.cos(phi2_d0)**3, sp.cos(phi2_d0))]
 
 A = sys.jacobian(x)
-A = A.subs([(sp.sin(phi1_d0), 0), (sp.sin(phi2_d0), 0),
-            (phi1_d1, 0), (phi2_d1, 0),
-            (sp.cos(phi1_d0)**2, 1), (sp.cos(phi2_d0)**2, 1),
-            (sp.cos(phi1_d0)**3, sp.cos(phi1_d0)),
-            (sp.cos(phi2_d0)**3, sp.cos(phi2_d0))])
+A = A.subs(simplification_list)
 # preview(A, mode='equation', mat_str="array", symbol_names=dict_names)
+
+# B with all control action (F, M1, M2)
 B = sys.jacobian(u)
-B = B.subs([(sp.sin(phi1_d0), 0), (sp.sin(phi2_d0), 0),
-            (phi1_d1, 0), (phi2_d1, 0),
-            (sp.cos(phi1_d0)**2, 1), (sp.cos(phi2_d0)**2, 1),
-            (sp.cos(phi1_d0)**3, sp.cos(phi1_d0)),
-            (sp.cos(phi2_d0)**3, sp.cos(phi2_d0))])
+B = B.subs(simplification_list)
 # preview(B, mode='equation', mat_str="array", symbol_names=dict_names)
 
+# B with only F as control action
+B = B[:,0]
 
+eq_state = [x0_d0, x0_d1, phi1_d0, phi1_d1,phi2_d0, phi2_d1]
+parameter = [m0, m1, m2, l1, l2, g, d0, d1, d2]
+A_func = sp.lambdify((eq_state, parameter), A, modules=mat2array)
+B_func = sp.lambdify((eq_state, parameter), B, modules=mat2array)
+
+# real_parameter = [np.pi, np.pi, st.m0, st.m1, st.m2, st.l1, st.l2, st.g, st.d0, st.d1, st.d2]
+#
+# A_num = A_func(*real_parameter)
+# B_num = B_func(*real_parameter)
+#
+# K = to.ackerSISO(A_num, B_num, poles=[-10.1,-8.2,-6.9,-5,-2.5,-1.5])

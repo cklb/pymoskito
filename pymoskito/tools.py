@@ -111,6 +111,7 @@ def lie_derivative(h, f, x, n):
 def get_coefficients(poles):
     """
     calculate the coefficient of a characteristic polynomial
+    :param poles: contains a list of poles
     """
     s = sp.symbols('s')
     poly = 1
@@ -170,3 +171,93 @@ def rotation_matrix_xyz(axis, angle, angle_dim):
                                 [z*x*(1 - c) - y*s, z*y*(1 - c) + x*s, c + z**2*(1 - c)]])
 
     return rotation_matrix
+
+def controlability_matrix(A, B):
+    """
+    calculate controlability matrix and check controlability of the system
+    :param A:
+    :param B:
+    :return:
+    """
+
+    # check dimension of matrix A and B
+    if A.shape[0] != A.shape[1]:
+        raise ValueError('A is not square')
+    if A.shape[0] != B.shape[0]:
+        raise ValueError('Dimension of A and B does not match')
+    n = A.shape[0]
+
+    # calculate controlability matrix
+    Qc = B
+    for x in range(1,n):
+        Qc = np.concatenate((Qc, np.dot(np.linalg.matrix_power(A, x), B)), axis=1)
+
+    # check controlability of the system
+    if np.linalg.matrix_rank(Qc) != n:
+        raise ValueError('System is not controllable')
+
+    return Qc
+
+
+def ackerSISO(A, B, poles):
+    """
+    place poles and return a numpy row-matrix
+   - place poles for a state feedback: you have to not transpose A and B
+   - place poles for a observer: you have to transpose A and C,
+     you will get a transposed L
+    :param A:
+    :param B:
+    :param poles:
+    :return:
+    """
+
+    #check consistency
+    if A.shape[0] != A.shape[1]:
+        raise ValueError('A is not square')
+    n = A.shape[0]
+    if n != B.shape[0]:
+        raise ValueError('Dimension of A and B does not match')
+    m = B.shape[1]
+    if m != 1:
+        raise ValueError('Dimension of B implies that is not a SISO system')
+    if n != len(poles):
+        raise ValueError('Dimension of A and the number of poles does not match')
+
+
+    p = get_coefficients(poles)[0]
+
+    # calculate controlability matrix
+    Q = controlability_matrix(A, B)
+    Q_inv = np.linalg.inv(Q)
+
+    # last row in the inverse controlability matrix
+    t1T = Q_inv[-1, :]
+
+    cm = np.linalg.matrix_power(A, n)
+    for i in range(n):
+        cm = cm + p[i] * np.linalg.matrix_power(A, i)
+
+    K = np.dot(t1T, cm)
+
+    return K
+
+def calc_prefilter(A, B, C, K=None):
+    """
+    calculate the prefilter and return a float
+    :param A:
+    :param B:
+    :param C:
+    :param K:
+    :return:
+    """
+    # prefilter: V = -[C(A-BK)^-1*B]^-1
+    if K is not None:
+        try:
+            V = -np.linalg.inv(np.dot(np.dot(C,(np.linalg.inv(A-B*K))),B))[0][0]
+        except np.linalg.linalg.LinAlgError:
+            print 'Can not calculate V, because of a Singular Matrix'
+            V = 1
+    else:
+        return 0
+
+    return V

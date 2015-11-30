@@ -220,11 +220,11 @@ class SimulatorInteractor(QtCore.QObject):
                 val_str = str(item.child(row, 1).text())
                 if '[' in val_str:
                     # parse vector
-                    prop_val = [float(x) for x in val_str[1:-1].split(',')]
+                    prop_val = np.array([float(x) for x in val_str[1:-1].split(',')])
                 else:
                     # parse scalar
                     try:
-                        prop_val = float(val_str)
+                        prop_val = np.array(float(val_str))
                     except ValueError:
                         # well then it is probably no float
                         prop_val = val_str

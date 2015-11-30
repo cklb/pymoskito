@@ -6,6 +6,7 @@ from pymoskito.processing_gui import PostProcessor
 
 # import self defined simulation modules
 import model
+import control
 from visualization import TwoPendulumVisualizer
 
 # create gui
