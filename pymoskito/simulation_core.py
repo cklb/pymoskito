@@ -118,7 +118,8 @@ class Simulator(QObject):
         # update time and current state
         self._current_outputs["time"] = self._simulation_modules["Solver"].t
         self._input_vector = dict(time=self._current_outputs["time"],
-                                  system_state=self._current_outputs["Solver"])
+                                  system_state=self._current_outputs["Solver"]
+                                  .reshape(self._current_outputs["Solver"].shape[0], 1))
 
         # apply new output
         self._current_outputs["Model"] = \

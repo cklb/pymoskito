@@ -81,7 +81,13 @@ class TwoPendulumModel(Model):
         dx5 = x6
         dx6 = self.g*np.sin(x5)/self.l2 + u*np.cos(x5)/self.l2 + (M2_star - self.d2*x6)/(self.m2*self.l2**2)
 
-        return np.array([dx1, dx2, dx3, dx4, dx5, dx6])
+        dx = np.array([[dx1],
+                       [dx2],
+                       [dx3],
+                       [dx4],
+                       [dx5],
+                       [dx6]])
+        return dx
 
     def root_function(self, x):
         return [False]

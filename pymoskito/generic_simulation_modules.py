@@ -198,14 +198,19 @@ class Setpoint(Trajectory):
 
     public_settings = OrderedDict([("State", [2, 4]),
                                    ("Setpoint", [0, 0])])
+
     def __init__(self, settings):
         Trajectory.__init__(self, settings)
         if len(self._settings["State"]) != len(self._settings["Setpoint"]):
             raise TrajectoryException("The amount of states and setpoints is not equal")
 
     def _desired_values(self, t):
-        yd = self._settings["Setpoint"]
-        return np.atleast_1d(yd)
+        yd = np.zeros((len(self._settings["Setpoint"]), self._settings["differential_order"]))
+
+        for idx, val in enumerate(self._settings["Setpoint"]):
+            yd[idx, 0] = val
+
+        return yd
 
 class PIDController(Controller):
     """
