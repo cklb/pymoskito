@@ -53,6 +53,13 @@ class TwoPendulumModel(Model):
         :type args: system input force on the cart
         """
 
+
+
+        # TODO pendulum swings in the wrong direction
+
+
+
+
         # definitional
         x1 = x[0]
         x2 = x[1]
@@ -98,13 +105,13 @@ class TwoPendulumModel(Model):
         """
         pass
 
-    def calc_output(self, input_vector):
+    def calc_output(self, input):
         """
         return cart position as output
-        :param input_vector: input values
+        :param input: input values
         :return: cart position
         """
-        return input_vector[0]
+        return np.atleast_2d(input[0])
 
 
 pm.register_simulation_module(Model, TwoPendulumModel)

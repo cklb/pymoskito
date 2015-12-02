@@ -8,6 +8,7 @@ import settings as st
 import symbolic_calculation as symcalc
 import pymoskito.tools as to
 
+
 class LinearStateFeedback(Controller):
 
     public_settings = OrderedDict([('poles', [-10.1,-8.2,-6.9,-5,-2.5,-1.5]),
@@ -24,20 +25,19 @@ class LinearStateFeedback(Controller):
 
         # pole placement
         parameter = [st.m0, st.m1, st.m2, st.l1, st.l2, st.g, st.d0, st.d1, st.d2]
-        A = symcalc.A_func(list(self._settings['rest position']), parameter)
-        B = symcalc.B_func(list(self._settings['rest position']), parameter)
-        self.K = to.ackerSISO(A, B, self._settings['poles'])
-        self.V = 0
+        self.A = symcalc.A_func(list(self._settings['rest position']), parameter)
+        self.B = symcalc.B_func(list(self._settings['rest position']), parameter)
+        self.C = symcalc.C
+        self.K = to.ackerSISO(self.A, self.B, self._settings['poles'])
+        self.V = to.calc_prefilter(self.A, self.B, self.C, self.K)
 
     def _control(self, is_values, desired_values, t):
         # input abbreviations
         x = is_values
         yd = desired_values
-        print 'x: ', x, ' type: ', type(x)
-        print 'yd: ', yd, ' type: ', type(yd)
-        print 'K: ', self.K, ' type: ', type(self.K)
 
-        u = np.dot(-self.K,np.transpose(x))[0,0] + yd[0]*self.V
-        return
+        u = - np.dot(self.K, x) + np.dot(yd, self.V)
+
+        return u
 
 pm.register_simulation_module(Controller, LinearStateFeedback)

@@ -24,7 +24,7 @@
 
   Model:
    type: TwoPendulumModel
-   initial state: [0, 0, 0, 0, 0, 0]
+   initial state: [0.5, 0, 3.141, 0, 3.141, 0]
 
   Solver:
    type: ODEInt
@@ -37,6 +37,39 @@
 
   Trajectory:
    type: Setpoint
+   State: [0]
+   Setpoint: [0]
+
+  ModelMixer:
+   type: AdditiveMixer
+   Input A: Controller
+   Input B: Feedforward
+
+- Name: PID
+  clear previous: !!python/bool True # decide whether previous settings should remain or not
+
+  Model:
+   type: TwoPendulumModel
+   initial state: [0.5, 0, 3.141, 0, 3.141, 0]
+
+  Solver:
+   type: ODEInt
+   measure rate: 500
+   step size: 0.001
+   end time: 10
+
+  Controller:
+   type: PIDController
+   Kp: 1
+   Ki: 0
+   Kd: 0
+   output_limits: [-200, 200]
+   input_state: [0]
+
+  Trajectory:
+   type: Setpoint
+   State: [0]
+   Setpoint: [0]
 
   ModelMixer:
    type: AdditiveMixer

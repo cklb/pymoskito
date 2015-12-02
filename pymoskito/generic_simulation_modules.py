@@ -205,7 +205,7 @@ class Setpoint(Trajectory):
             raise TrajectoryException("The amount of states and setpoints is not equal")
 
     def _desired_values(self, t):
-        yd = np.zeros((len(self._settings["Setpoint"]), self._settings["differential_order"]))
+        yd = np.zeros((len(self._settings["Setpoint"]), self._settings["differential_order"] + 1))
 
         for idx, val in enumerate(self._settings["Setpoint"]):
             yd[idx, 0] = val

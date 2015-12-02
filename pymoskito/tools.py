@@ -111,8 +111,11 @@ def lie_derivative(h, f, x, n):
 def get_coefficients(poles):
     """
     calculate the coefficient of a characteristic polynomial
-    :param poles: contains a list of poles
+    :param poles: list or numpy array with poles
+    :return: coefficients as a 2d numpy array (row vector)
     """
+
+    poles = np.atleast_1d(poles)
     s = sp.symbols('s')
     poly = 1
     for s_i in poles:
@@ -128,7 +131,7 @@ def get_coefficients(poles):
         poly = poly / s
         poly = poly.expand()
 
-    return np.array([p]).astype(float)
+    return np.atleast_2d(p)
 
 
 def rotation_matrix_xyz(axis, angle, angle_dim):
@@ -223,23 +226,23 @@ def ackerSISO(A, B, poles):
     if n != len(poles):
         raise ValueError('Dimension of A and the number of poles does not match')
 
-
-    p = get_coefficients(poles)[0]
+    p = get_coefficients(poles)
 
     # calculate controlability matrix
     Q = controlability_matrix(A, B)
     Q_inv = np.linalg.inv(Q)
 
     # last row in the inverse controlability matrix
-    t1T = Q_inv[-1, :]
+    t1T = np.atleast_2d(Q_inv[-1])
 
     cm = np.linalg.matrix_power(A, n)
     for i in range(n):
-        cm = cm + p[i] * np.linalg.matrix_power(A, i)
+        cm = cm + p[0][i] * np.linalg.matrix_power(A, i)
 
     K = np.dot(t1T, cm)
 
     return K
+
 
 def calc_prefilter(A, B, C, K=None):
     """
@@ -253,11 +256,11 @@ def calc_prefilter(A, B, C, K=None):
     # prefilter: V = -[C(A-BK)^-1*B]^-1
     if K is not None:
         try:
-            V = -np.linalg.inv(np.dot(np.dot(C,(np.linalg.inv(A-B*K))),B))[0][0]
+            V = - np.linalg.inv(np.dot(np.dot(C, np.linalg.inv(A - np.dot(B, K))), B))
         except np.linalg.linalg.LinAlgError:
             print 'Can not calculate V, because of a Singular Matrix'
-            V = 1
+            V = np.array([[1]])
     else:
-        return 0
+        V = np.array([[1]])
 
     return V

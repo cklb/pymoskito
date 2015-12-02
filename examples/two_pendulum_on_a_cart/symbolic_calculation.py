@@ -93,7 +93,9 @@ B = B.subs(simplification_list)
 # preview(B, mode='equation', mat_str="array", symbol_names=dict_names)
 
 # B with only F as control action
-B = B[:,0]
+B = B[:, 0]
+
+C = np.array([[1, 0, 0, 0, 0, 0]])
 
 eq_state = [x0_d0, x0_d1, phi1_d0, phi1_d1,phi2_d0, phi2_d1]
 parameter = [m0, m1, m2, l1, l2, g, d0, d1, d2]
