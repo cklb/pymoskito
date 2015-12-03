@@ -53,13 +53,6 @@ class TwoPendulumModel(Model):
         :type args: system input force on the cart
         """
 
-
-
-        # TODO pendulum swings in the wrong direction
-
-
-
-
         # definitional
         x1 = x[0]
         x2 = x[1]

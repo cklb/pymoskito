@@ -60,7 +60,7 @@
 
   Controller:
    type: PIDController
-   Kp: 1
+   Kp: 5
    Ki: 0
    Kd: 0
    output_limits: [-200, 200]

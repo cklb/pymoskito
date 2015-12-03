@@ -32,11 +32,12 @@ class TwoPendulumVisualizer(Visualizer):
         # actor
         self.beam_Actor = vtk.vtkLODActor()
         self.beam_Actor.SetMapper(self.beam_Mapper)
-        self.beam_Actor.SetPosition(0, (st.cart_width/2 + st.beam_width/2), 0)
+        self.beam_Actor.SetPosition(0, -(st.cart_width/2 + st.beam_width/2), 0)
 
         # make it look nice
         self.beam_Prop = self.beam_Actor.GetProperty()
-        self.beam_Prop.SetColor(101 / 255, 123 / 255, 131 / 255)
+        # RAL 9007, grey-aluminium
+        self.beam_Prop.SetColor(142 / 255, 142 / 255, 139 / 255)
 
         self.ren.AddActor(self.beam_Actor)
 
@@ -59,7 +60,9 @@ class TwoPendulumVisualizer(Visualizer):
 
         # make it look nice
         self.cart_Prop = self.cart_Actor.GetProperty()
-        self.cart_Prop.SetColor(101 / 255, 123 / 255, 131 / 255)
+        # RAL 7011, iron-grey
+        self.cart_Prop.SetColor(64 / 255, 74 / 255, 84 / 255)
+
         self.ren.AddActor(self.cart_Actor)
         # save pose
         self.cart_pose = [np.array([0, 0, 0]), np.eye(3)]
@@ -78,12 +81,13 @@ class TwoPendulumVisualizer(Visualizer):
         # actor
         self.axis_Actor = vtk.vtkLODActor()
         self.axis_Actor.SetPosition(0, 0, st.cart_depth/2 + st.axis_height/2)
-        self.axis_Actor.RotateX(90)
+        self.axis_Actor.RotateWXYZ(90, 1, 0, 0)
         self.axis_Actor.SetMapper(self.axis_Mapper)
 
         # make it look nice
         self.axis_Prop = self.axis_Actor.GetProperty()
-        self.axis_Prop.SetColor(90 / 255, 123 / 255, 131 / 255)
+        # RAL 7011, iron-grey
+        self.axis_Prop.SetColor(64 / 255, 74 / 255, 84 / 255)
 
         self.ren.AddActor(self.axis_Actor)
         # save pose
@@ -107,12 +111,13 @@ class TwoPendulumVisualizer(Visualizer):
         self.short_pendulum_shaft_Actor.SetPosition(0,
                                                     0,
                                                     st.cart_depth/2 + st.axis_height + st.pendulum_shaft_height/2)
-        self.short_pendulum_shaft_Actor.RotateX(90)
+        self.short_pendulum_shaft_Actor.RotateWXYZ(90, 1, 0, 0)
         self.short_pendulum_shaft_Actor.SetMapper(self.short_pendulum_shaft_Mapper)
 
         # make it look nice
         self.short_pendulum_shaft_Prop = self.short_pendulum_shaft_Actor.GetProperty()
-        self.short_pendulum_shaft_Prop.SetColor(90 / 255, 123 / 255, 131 / 255)
+        # RAL 9007, grey-aluminium, a little bit darker
+        self.short_pendulum_shaft_Prop.SetColor(122 / 255, 122 / 255, 119 / 255)
 
         self.ren.AddActor(self.short_pendulum_shaft_Actor)
         # save pose
@@ -135,18 +140,19 @@ class TwoPendulumVisualizer(Visualizer):
         # actor
         self.short_pendulum_Actor = vtk.vtkLODActor()
         self.short_pendulum_Actor.SetPosition(0,
-                                              -st.short_pendulum_height/2,
+                                              st.short_pendulum_height/2,
                                               st.cart_depth/2 + st.axis_height + st.pendulum_shaft_height/2)
         self.short_pendulum_Actor.RotateWXYZ(0, 1, 0, 0)
         self.short_pendulum_Actor.SetMapper(self.short_pendulum_Mapper)
 
         # make it look nice
         self.short_pendulum_Prop = self.short_pendulum_Actor.GetProperty()
-        self.short_pendulum_Prop.SetColor(90 / 255, 123 / 255, 131 / 255)
+        # RAL 9007, grey-aluminium, a little bit darker
+        self.short_pendulum_Prop.SetColor(122 / 255, 122 / 255, 119 / 255)
 
         self.ren.AddActor(self.short_pendulum_Actor)
         self.short_pendulum_pose = [np.array([0,
-                                              -st.short_pendulum_height/2,
+                                              st.short_pendulum_height/2,
                                               st.cart_depth/2 + st.axis_height + st.pendulum_shaft_height/2]),
                                     np.eye(3)]
 
@@ -164,18 +170,19 @@ class TwoPendulumVisualizer(Visualizer):
         # actor
         self.short_pendulum_weight_Actor = vtk.vtkLODActor()
         self.short_pendulum_weight_Actor.SetPosition(0,
-                                                     -(st.short_pendulum_height + st.pendulum_weight_height/2),
+                                                     (st.short_pendulum_height + st.pendulum_weight_height/2),
                                                      st.cart_depth/2 + st.axis_height + st.pendulum_shaft_height/2)
         self.short_pendulum_weight_Actor.RotateWXYZ(0, 1, 0, 0)
         self.short_pendulum_weight_Actor.SetMapper(self.short_pendulum_weight_Mapper)
 
         # make it look nice
         self.short_pendulum_weight_Prop = self.short_pendulum_weight_Actor.GetProperty()
-        # self.short_pendulum_weight_Prop.SetColor(90 / 255, 123 / 255, 131 / 255)
+        # RAL 9006, white-aluminium
+        self.short_pendulum_weight_Prop.SetColor(162 / 255, 166 / 255, 164 / 255)
 
         self.ren.AddActor(self.short_pendulum_weight_Actor)
         self.short_pendulum_weight_pose = [np.array([0,
-                                                     -(st.short_pendulum_height + st.pendulum_weight_height/2),
+                                                     (st.short_pendulum_height + st.pendulum_weight_height/2),
                                                      st.cart_depth/2 + st.axis_height + st.pendulum_shaft_height/2]),
                                            np.eye(3)]
 
@@ -199,12 +206,13 @@ class TwoPendulumVisualizer(Visualizer):
                                                    + st.axis_height
                                                    + st.pendulum_shaft_height
                                                    + st.pendulum_shaft_height/2)
-        self.long_pendulum_shaft_Actor.RotateX(90)
+        self.long_pendulum_shaft_Actor.RotateWXYZ(90, 1, 0, 0)
         self.long_pendulum_shaft_Actor.SetMapper(self.long_pendulum_shaft_Mapper)
 
         # make it look nice
         self.long_pendulum_shaft_Prop = self.long_pendulum_shaft_Actor.GetProperty()
-        self.long_pendulum_shaft_Prop.SetColor(90 / 255, 123 / 255, 131 / 255)
+        # RAL 9007, grey-aluminium
+        self.long_pendulum_shaft_Prop.SetColor(142 / 255, 142 / 255, 139 / 255)
 
         self.ren.AddActor(self.long_pendulum_shaft_Actor)
         # save pose
@@ -230,7 +238,7 @@ class TwoPendulumVisualizer(Visualizer):
         # actor
         self.long_pendulum_Actor = vtk.vtkLODActor()
         self.long_pendulum_Actor.SetPosition(0,
-                                             -st.long_pendulum_height/2,
+                                             st.long_pendulum_height/2,
                                              st.cart_depth/2
                                              + st.axis_height
                                              + st.pendulum_shaft_height
@@ -240,11 +248,12 @@ class TwoPendulumVisualizer(Visualizer):
 
         # make it look nice
         self.long_pendulum_Prop = self.long_pendulum_Actor.GetProperty()
-        self.long_pendulum_Prop.SetColor(90 / 255, 123 / 255, 131 / 255)
+        # RAL 9007, grey-aluminium
+        self.long_pendulum_Prop.SetColor(142 / 255, 142 / 255, 139 / 255)
 
         self.ren.AddActor(self.long_pendulum_Actor)
         self.long_pendulum_pose = [np.array([0,
-                                             -st.long_pendulum_height/2,
+                                             st.long_pendulum_height/2,
                                              st.cart_depth/2
                                              + st.axis_height
                                              + st.pendulum_shaft_height
@@ -265,7 +274,7 @@ class TwoPendulumVisualizer(Visualizer):
         # actor
         self.long_pendulum_weight_Actor = vtk.vtkLODActor()
         self.long_pendulum_weight_Actor.SetPosition(0,
-                                                    -(st.long_pendulum_height + st.pendulum_weight_height/2),
+                                                    (st.long_pendulum_height + st.pendulum_weight_height/2),
                                                     st.cart_depth/2
                                                     + st.axis_height
                                                     + st.pendulum_shaft_height
@@ -275,11 +284,12 @@ class TwoPendulumVisualizer(Visualizer):
 
         # make it look nice
         self.long_pendulum_weight_Prop = self.long_pendulum_weight_Actor.GetProperty()
-        # self.long_pendulum_weight_Prop.SetColor(90 / 255, 123 / 255, 131 / 255)
+        # RAL 9006, white-aluminium
+        self.long_pendulum_weight_Prop.SetColor(162 / 255, 166 / 255, 164 / 255)
 
         self.ren.AddActor(self.long_pendulum_weight_Actor)
         self.long_pendulum_weight_pose = [np.array([0,
-                                                    -(st.long_pendulum_height + st.pendulum_weight_height/2),
+                                                    (st.long_pendulum_height + st.pendulum_weight_height/2),
                                                     st.cart_depth/2
                                                     + st.axis_height
                                                     + st.pendulum_shaft_height
@@ -294,7 +304,6 @@ class TwoPendulumVisualizer(Visualizer):
         # get everybody into the frame
         self.ren.ResetCamera()
         self.ren.GetActiveCamera().Zoom(1.45)
-        self.ren.GetActiveCamera().SetRoll(180)
         self.ren.GetActiveCamera().SetFocalPoint(0, 0, 0)
 
         self.position = self.ren.GetActiveCamera().GetPosition()
