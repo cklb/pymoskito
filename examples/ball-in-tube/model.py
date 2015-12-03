@@ -54,6 +54,8 @@ class BallInTubeModel(Model):
     def state_function(self, t, x, args):
         """
         Calculations of system state changes
+        :param x: state
+        :param t: time
         :type args: system input u
         """
 
@@ -77,11 +79,15 @@ class BallInTubeModel(Model):
         dx3 = x4
         dx4 = (self.k_L*((self.k_V*x1 - self.A_B*x4)/self.A_Sp)**2 - self.m*self.g)/self.m
 
-        return [dx1, dx2, dx3, dx4]
+        return np.array([[dx1],
+                         [dx2],
+                         [dx3],
+                         [dx4]])
 
     def root_function(self, x):
         """
         in this case this means zero crossing detection for the balls elevation.
+        :param x: state
         """
         x0 = x
         flag = False
@@ -101,6 +107,7 @@ class BallInTubeModel(Model):
     def check_consistency(self, x):
         """
         Checks if the model rules are violated
+        :param x: state
         """
         if x[2] > (self._settings['tube_length']): #+ self._settings['tube_length']*0.2):
             raise ModelException('Ball flew out of the tube')
@@ -111,7 +118,7 @@ class BallInTubeModel(Model):
         :param input_vector: input values
         :return: ball position
         """
-        return input_vector[2]
+        return np.array([input_vector[2]], dtype=float)
 
 
 class BallInTubeSpringModel(Model):
@@ -164,6 +171,8 @@ class BallInTubeSpringModel(Model):
     def state_function(self, t, x, args):
         """
         Calculations of system state changes
+        :param x: state
+        :param t: time
         :type args: system input u
         """
 
@@ -193,11 +202,15 @@ class BallInTubeSpringModel(Model):
         else:
             dx4 = (self.k_L*((self.k_V*x1 - self.A_B*x4)/self.A_Sp)**2)/self.m - self.g
 
-        return [dx1, dx2, dx3, dx4]
+        return np.array([[dx1],
+                         [dx2],
+                         [dx3],
+                         [dx4]])
 
     def root_function(self, x):
         """
         in this case this means zero crossing detection for the balls elevation.
+        :param x: state
         """
         x0 = x
         flag = False
@@ -220,6 +233,7 @@ class BallInTubeSpringModel(Model):
     def check_consistency(self, x):
         """
         Checks if the model rules are violated
+        :param x: state
         """
         if x[2] > (self._settings['tube_length']): #+ self._settings['tube_length']*0.2):
             raise ModelException('Ball flew out of the tube')
@@ -230,7 +244,7 @@ class BallInTubeSpringModel(Model):
         :param input_vector: input values
         :return: ball position
         """
-        return input_vector[2]
+        return np.array([input_vector[2]], dtype=float)
 
 pm.register_simulation_module(Model, BallInTubeModel)
 pm.register_simulation_module(Model, BallInTubeSpringModel)

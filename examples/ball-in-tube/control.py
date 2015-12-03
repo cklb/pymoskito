@@ -13,6 +13,7 @@ class ExactInputOutputLinearisation(Controller):
     """
     controller which use the flatness virtue of the system
     """
+    # TODO check this class on 'array unification'
     public_settings = OrderedDict([("poles", [-3.1, -3.1, -3.1, -3.1]),
                                   ("tick divider", 1)])
 
@@ -62,7 +63,9 @@ class ExactInputOutputLinearisation(Controller):
 
 class OpenLoop(Controller):
     """
+    manual pwm input
     """
+    # TODO check this class on 'array unification'
     public_settings = OrderedDict([("pwm", 220),
                                    ("tick divider", 1)])
 

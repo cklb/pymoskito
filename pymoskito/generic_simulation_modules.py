@@ -129,15 +129,15 @@ class SmoothTransition(Trajectory):
         """
         Calculates desired trajectory
         """
-        y = [0] * len(self.dphi_num)
+        y = np.zeros((1, len(self.dphi_num)))
         yd = self._settings['states']
         t0 = self._settings['start time']
         dt = self._settings['delta t']
 
         if t < t0:
-            y[0] = yd[0]
+            y[0][0] = yd[0]
         elif t > t0 + dt:
-            y[0] = yd[1]
+            y[0][0] = yd[1]
         else:
             for order, dphi in enumerate(self.dphi_num):
                 if order == 0:
@@ -145,9 +145,9 @@ class SmoothTransition(Trajectory):
                 else:
                     ya = 0
 
-                y[order] = ya + (yd[1] - yd[0]) * dphi((t - t0) / dt) * 1 / dt ** order
+                y[0][order] = ya + (yd[1] - yd[0]) * dphi((t - t0) / dt) * 1 / dt ** order
 
-        return np.atleast_1d(y)
+        return y
 
 
 class HarmonicTrajectory(Trajectory):
@@ -177,17 +177,19 @@ class HarmonicTrajectory(Trajectory):
             self.yd_sym[idx] = sp.lambdify((t, a, f, off, p), val, "numpy")
 
     def _desired_values(self, t):
-        yd = []
+        # yd = []
+        yd = np.zeros((1, self._settings['differential_order'] + 1))
 
         a = self._settings['Amplitude']
         f = self._settings['Frequency']
         off = self._settings["Offset"]
         p = self._settings["Phase in degree"] * np.pi / 360
 
-        for val in self.yd_sym:
-            yd.append(val(t, a, f, off, p))
+        for idx, val in enumerate(self.yd_sym):
+            yd[0][idx] = val(t, a, f, off, p)
+            # yd.append(val(t, a, f, off, p))
 
-        return np.atleast_1d(yd)
+        return yd
 
 
 class Setpoint(Trajectory):
@@ -223,7 +225,7 @@ class PIDController(Controller):
                                    ("input_state", [2]),
                                    ("tick divider", 1)])
     last_time = 0
-    last_u = 0
+
 
     def __init__(self, settings):
         # add specific "private" settings
@@ -233,14 +235,16 @@ class PIDController(Controller):
         Controller.__init__(self, settings)
 
         # define variables for data saving in the right dimension
-        self.e_old = np.zeros(len(self._settings["input_state"]))
-        self.integral_old = np.zeros(len(self._settings["input_state"]))
+        self.e_old = np.zeros((len(self._settings["input_state"]), 1))          # column vector
+        self.integral_old = np.zeros((len(self._settings["input_state"]), 1))   # column vector
+        self.last_u = np.zeros((len(self._settings["input_state"]), 1))         # column vector
+        self.output = np.zeros((len(self._settings["input_state"]), 1))         # column vector
 
     def _control(self, is_values, desired_values, t):
         # input abbreviations
-        x = np.zeros(len(self._settings["input_state"]))
+        x = np.zeros((len(self._settings["input_state"]), 1))
         for idx, state in enumerate(self._settings["input_state"]):
-            x[idx] = is_values[int(state)]
+            x[idx][0] = is_values[int(state)][0]
 
         yd = desired_values
 
@@ -252,27 +256,27 @@ class PIDController(Controller):
         if dt != 0:
             for i in range(len(x)):
                 # error
-                e = yd[i] - x[i]
-                integral = e * dt + self.integral_old[i]
+                e = yd[i][0] - x[i][0]
+                integral = e * dt + self.integral_old[i][0]
                 if integral > self._settings["output_limits"][1]:
                     integral = self._settings["output_limits"][1]
                 elif integral < self._settings["output_limits"][0]:
                     integral = self._settings["output_limits"][0]
-                differential = (e - self.e_old) / dt
+                differential = (e - self.e_old[i][0]) / dt
 
-                output = self._settings["Kp"] * e \
-                         + self._settings["Ki"] * integral \
-                         + self._settings["Kd"] * differential
+                self.output[i][0] = self._settings["Kp"] * e \
+                                    + self._settings["Ki"] * integral \
+                                    + self._settings["Kd"] * differential
 
-                if output > self._settings["output_limits"][1]:
-                    output = self._settings["output_limits"][1]
-                elif output < self._settings["output_limits"][0]:
-                    output = self._settings["output_limits"][0]
+                if self.output[i][0] > self._settings["output_limits"][1]:
+                    self.output[i][0] = self._settings["output_limits"][1]
+                elif self.output[i][0] < self._settings["output_limits"][0]:
+                    self.output[i][0] = self._settings["output_limits"][0]
 
                 # save data for new calculation
-                self.e_old[i] = e
-                self.integral_old[i] = integral
-            u = output
+                self.e_old[i][0] = e
+                self.integral_old[i][0] = integral
+            u = self.output
         else:
             u = self.last_u
         self.last_u = u

@@ -3,7 +3,7 @@ import numpy as np
 from collections import OrderedDict
 import pymoskito.pymoskito as pm
 from pymoskito.simulation_modules import Controller
-from pymoskito.tools import get_coefficients
+import pymoskito.tools as to
 
 import settings as st
 # from linearization import Linearization
@@ -54,39 +54,39 @@ class FController(Controller):
         Controller.__init__(self, settings)
 
         # run pole placement
-        self.k = get_coefficients(self._settings["poles"])[0]
+        self.K = to.get_coefficients(self._settings["poles"])
 
     def _control(self, is_values, desired_values, t=None):
         # input abbreviations
-        x = is_values
+        x1, x2, x3, x4 = is_values
         yd = desired_values
 
         # calculate nonlinear terms phi
-        phi1 = x[0]
-        phi2 = x[1]  
-        phi3 = -st.B*st.G*np.sin(x[2])
-        phi4 = -st.B*st.G*x[3]*np.cos(x[2])
+        phi1 = x1
+        phi2 = x2
+        phi3 = -st.B*st.G*np.sin(x3)
+        phi4 = -st.B*st.G*x4*np.cos(x3)
         
         # calculate fictional input v
-        v = yd[4] + \
-            self.k[3]*(yd[3] - phi4) + \
-            self.k[2]*(yd[2] - phi3) + \
-            self.k[1]*(yd[1] - phi2) + \
-            self.k[0]*(yd[0] - phi1)
+        v = yd[0,[4]] + \
+            self.K[0,[3]]*(yd[0,[3]] - phi4) + \
+            self.K[0,[2]]*(yd[0,[2]] - phi3) + \
+            self.K[0,[1]]*(yd[0,[1]] - phi2) + \
+            self.K[0,[0]]*(yd[0,[0]] - phi1)
 
         # calculate a(x)
-        a = -st.B*st.G*np.cos(x[2])
+        a = -st.B*st.G*np.cos(x3)
         # calculate b(x)
-        b = st.B*st.G*x[3]**2*np.sin(x[2])
+        b = st.B*st.G*x4**2*np.sin(x3)
         
         # calculate u
         u = (v-b)/a
 
         # transform back
-        tau = u * (st.M*x[0]**2 + st.J + st.Jb)\
-              + st.M*(2*x[0]*x[1]*x[3] + st.G*x[0]*np.cos(x[2]))
+        tau = u * (st.M*x1**2 + st.J + st.Jb)\
+              + st.M*(2*x1*x2*x4 + st.G*x1*np.cos(x3))
         
-        return tau
+        return np.array([tau], dtype=float)
 
 # #---------------------------------------------------------------------
 # # controller created by changing g(x)

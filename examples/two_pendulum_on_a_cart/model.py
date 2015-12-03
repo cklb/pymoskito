@@ -104,7 +104,7 @@ class TwoPendulumModel(Model):
         :param input: input values
         :return: cart position
         """
-        return np.atleast_2d(input[0])
+        return np.array([input[0]], dtype=float)
 
 
 pm.register_simulation_module(Model, TwoPendulumModel)

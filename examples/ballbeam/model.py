@@ -39,6 +39,8 @@ class BallBeamModel(Model):
     def state_function(self, t, x, args):
         """
         Calculations of system state changes
+        :param x: state
+        :param t: time
         :type args: system input tau
         """
 
@@ -57,14 +59,23 @@ class BallBeamModel(Model):
         u = (tau - self.M * (2 * x1 * x2 * x4 + self.G * x1 * np.cos(x3))) / (self.M * x1 ** 2 + self.J + self.Jb)
         dx4 = u
 
-        return np.array([dx1, dx2, dx3, dx4])
+        return np.array([[dx1],
+                         [dx2],
+                         [dx3],
+                         [dx4]])
 
     def root_function(self, x):
+        """
+        is not used
+        :param x: state
+        :return:
+        """
         return [False]
 
     def check_consistency(self, x):
         """
         Check if the ball remains on the beam
+        :param x: state
         """
         if abs(x[0]) > float(self._settings['beam length']) / 2:
             raise ModelException('Ball fell down.')
@@ -77,7 +88,7 @@ class BallBeamModel(Model):
         :param input_vector: input values
         :return: ball position
         """
-        return input_vector[0]
+        return np.array([input_vector[0]], dtype=float)
 
 
 pm.register_simulation_module(Model, BallBeamModel)

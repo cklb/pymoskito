@@ -131,7 +131,7 @@ def get_coefficients(poles):
         poly = poly / s
         poly = poly.expand()
 
-    return np.atleast_2d(p)
+    return np.array([p], dtype=float)
 
 
 def rotation_matrix_xyz(axis, angle, angle_dim):

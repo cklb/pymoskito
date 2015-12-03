@@ -11,7 +11,7 @@ class BallInTubeFeedforward(Feedforward):
     """
     calculate feedforward, based on the flatness of the system
     """
-
+    # TODO check this class on 'array unification'
     public_settings = OrderedDict([("tick divider", 1)])
 
     def __init__(self, settings):

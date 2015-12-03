@@ -327,6 +327,7 @@ class SimulationGui(QtGui.QMainWindow):
     def save_data(self, name=None):
         """
         save current dataset
+        :param name: name of the file
         """
 
         if not name:
@@ -366,6 +367,7 @@ class SimulationGui(QtGui.QMainWindow):
     def load_regimes_from_file(self, file_name):
         """
         load simulation regime from file
+        :param file_name:
         """
         self.regime_file_name = os.path.split(file_name)[-1][:-5]
         print("loading regime file: {0}".format(self.regime_file_name))
@@ -396,12 +398,13 @@ class SimulationGui(QtGui.QMainWindow):
     def regime_dclicked(self, item):
         """
         applies the selected regime to the current target
+        :param item:
         """
         self.apply_regime_by_name(str(item.text()))
 
     def apply_regime_by_name(self, regime_name):
         """
-        param regime_name:
+        :param regime_name:
         :return:
         """
         # get regime obj
@@ -453,6 +456,7 @@ class SimulationGui(QtGui.QMainWindow):
         """
         main.py hook to be called by the simulation interface if integration is finished
         integration finished, enable play button and update plots
+        :param data:
         """
         self.actSimulate.setDisabled(False)
         self.actPlayPause.setDisabled(False)
@@ -487,8 +491,9 @@ class SimulationGui(QtGui.QMainWindow):
     def simulation_failed(self, data):
         """
         integration failed, enable play button and update plots
-        #TODO show warning window
+        :param data:
         """
+        #TODO show warning window
         self.statusLabel.setText('simulation failed!')
         self.simulation_finished(data)
 
@@ -511,7 +516,7 @@ class SimulationGui(QtGui.QMainWindow):
 
     def increment_playback_time(self):
         """
-        go one timestep forward in playback
+        go one time step forward in playback
         """
         increment = self.playbackGain * self.playbackTimeout / 1000
         if self.playbackTime + increment <= self.currentEndTime:
@@ -528,6 +533,7 @@ class SimulationGui(QtGui.QMainWindow):
     def update_playback_gain(self, val):
         """
         adjust playback time to slider value
+        :param val:
         """
         self.playbackGain = 10**(5.0*(val - self.speedDial.maximum()/2)/self.speedDial.maximum())
 
@@ -544,7 +550,7 @@ class SimulationGui(QtGui.QMainWindow):
         updates the graphical user interface, including:
             - timestamp
             - visualisation
-            - timecurser in diagrams
+            - time curser in diagrams
         """
         if not self.validData:
             return
@@ -593,10 +599,15 @@ class SimulationGui(QtGui.QMainWindow):
             elif len(results.shape) == 2:
                 for col in range(results.shape[1]):
                     self.dataList.insertItem(0, "{0}.{1}".format(module, col))
+            elif len(results.shape) == 3:
+                for col in range(results.shape[2]):
+                    self.dataList.insertItem(0, "{0}.{1}".format(module, col))
+
 
     def create_plot(self, item):
         """
         creates a plot widget corresponding to the ListItem
+        :param item:
         """
         title = str(item.text())
         data = self._get_data_by_name(title)
@@ -625,7 +636,10 @@ class SimulationGui(QtGui.QMainWindow):
         if len(tmp) == 1:
             data = self.currentDataset['results'][tmp[0]]
         elif len(tmp) == 2:
-            data = self.currentDataset['results'][tmp[0]][:, tmp[1]]
+            if len(self.currentDataset['results'][tmp[0]].shape) == 2:
+                data = self.currentDataset['results'][tmp[0]][:, tmp[1]]
+            if len(self.currentDataset['results'][tmp[0]].shape) == 3:
+                data = self.currentDataset['results'][tmp[0]][:,:,tmp[1]][..., 0]  # nice indexing :)
 
         return data
 
@@ -653,6 +667,11 @@ class SimulationGui(QtGui.QMainWindow):
                     widget.getPlotItem().plot(x=x_data, y=y_data)
 
     def target_view_changed(self, index):
+        """
+        ?
+        :param index:
+        :return:
+        """
         self.targetView.resizeColumnToContents(0)
 
     def postprocessing_clicked(self):
