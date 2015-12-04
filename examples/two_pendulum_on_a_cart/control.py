@@ -11,13 +11,16 @@ import pymoskito.tools as to
 
 class LinearStateFeedback(Controller):
 
-    public_settings = OrderedDict([('poles', [-10.1,-8.2,-6.9,-5,-2.5,-1.5]),
-                                   ('rest position', [0, 0, 0, 0, 0, 0]),
+    public_settings = OrderedDict([('poles', [-1,-1,-1,-1,-1,-1]),
+                                   # ('poles', [-10.1,-8.2,-6.9,-5,-2.5,-1.5]),
+                                   # ('poles', [-2+1j, -2-1j, -2, -4, -3+1.8j, -3-1.8j]),
+                                   ('equilibrium', [0, 0, np.pi, 0, np.pi, 0]),
+                                   # ('equilibrium', [0, 0, 0, 0, 0, 0]),
                                    ('tick divider', 1)])
 
     def __init__(self, settings):
         # add specific private settings
-        settings.update(input_order=1)
+        settings.update(input_order=0)
         settings.update(ouput_dim=1)
         settings.update(input_type='system_state')
 
@@ -25,8 +28,8 @@ class LinearStateFeedback(Controller):
 
         # pole placement
         parameter = [st.m0, st.m1, st.m2, st.l1, st.l2, st.g, st.d0, st.d1, st.d2]
-        self.A = symcalc.A_func(list(self._settings['rest position']), parameter)
-        self.B = symcalc.B_func(list(self._settings['rest position']), parameter)
+        self.A = symcalc.A_func(list(self._settings['equilibrium']), parameter)
+        self.B = symcalc.B_func(list(self._settings['equilibrium']), parameter)
         self.C = symcalc.C
         self.K = to.ackerSISO(self.A, self.B, self._settings['poles'])
         self.V = to.calc_prefilter(self.A, self.B, self.C, self.K)
@@ -36,7 +39,7 @@ class LinearStateFeedback(Controller):
         x = is_values
         yd = desired_values
 
-        u = - np.dot(self.K, x) + np.dot(yd, self.V)
+        u = - np.dot(self.K, x) + np.dot(self.V, yd[0,0])
 
         return u
 

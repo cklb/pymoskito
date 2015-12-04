@@ -6,6 +6,7 @@ import os
 import sympy as sp
 import numpy as np
 import copy
+import warnings
 
 
 def sort_lists(a, b):
@@ -115,7 +116,7 @@ def get_coefficients(poles):
     :return: coefficients as a 2d numpy array (row vector)
     """
 
-    poles = np.atleast_1d(poles)
+    poles = np.array(poles)
     s = sp.symbols('s')
     poly = 1
     for s_i in poles:
@@ -130,6 +131,19 @@ def get_coefficients(poles):
         poly = poly - p[i]
         poly = poly / s
         poly = poly.expand()
+
+    # convert numbers and complex objects from multiplication to a complex number
+    p = [complex(x) for x in p]
+    # if imaginary part if greater than the boundary, then set imaginary part null
+    boundary = 1e-12
+    for idx, val in enumerate(p):
+        val = complex(val)
+        if abs(val.imag) > boundary:
+            msg = "Imaginary Part of the coefficient p[" + \
+                  str(idx) + "] is not null (" + str(val.imag) + ") for a given boundary of " + \
+                  str(boundary)
+            warnings.warn(msg)
+        p[idx] = val.real
 
     return np.array([p], dtype=float)
 

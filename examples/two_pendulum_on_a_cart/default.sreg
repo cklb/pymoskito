@@ -24,7 +24,7 @@
 
   Model:
    type: TwoPendulumModel
-   initial state: [0.5, 0, 3.141, 0, 3.141, 0]
+   # initial state: [0.5, 0, 3.141, 0, 3.141, 0]
 
   Solver:
    type: ODEInt
