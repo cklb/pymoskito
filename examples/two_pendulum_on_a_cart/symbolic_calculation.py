@@ -64,12 +64,12 @@ phi2_d2 = g*sp.sin(phi2_d0)/l2 \
             /(l2*term0) \
           + (M2 - d2*phi2_d1)/(m2*l2**2)
 
-# x = sp.Matrix([x0_d0, x0_d1, phi1_d0, phi1_d1, phi2_d0, phi2_d1])
-x = sp.Matrix([x0_d0, phi1_d0, phi2_d0, x0_d1, phi1_d1, phi2_d1])  # only for comparison
+x = sp.Matrix([x0_d0, x0_d1, phi1_d0, phi1_d1, phi2_d0, phi2_d1])
+# x = sp.Matrix([x0_d0, phi1_d0, phi2_d0, x0_d1, phi1_d1, phi2_d1])  # only for comparison
 u = sp.Matrix([F, M1, M2])
 
-# sys = sp.Matrix([x0_d1, x0_d2, phi1_d1, phi1_d2, phi2_d1, phi2_d2])
-sys = sp.Matrix([x0_d1, phi1_d1, phi2_d1, x0_d2, phi1_d2, phi2_d2])  # only for comparison
+sys = sp.Matrix([x0_d1, x0_d2, phi1_d1, phi1_d2, phi2_d1, phi2_d2])
+# sys = sp.Matrix([x0_d1, phi1_d1, phi2_d1, x0_d2, phi1_d2, phi2_d2])  # only for comparison
 
 dict_names = {x0_d0: r'x_{0}',
               x0_d1: r'\dot{x}_{0}',
@@ -77,11 +77,13 @@ dict_names = {x0_d0: r'x_{0}',
               phi1_d1: r'\dot{\varphi}_{1}',
               phi2_d0: r'\varphi_{2}',
               phi2_d1: r'\dot{\varphi}_{2}'}
-simplification_list = [(sp.sin(phi1_d0), 0), (sp.sin(phi2_d0), 0),
-            (phi1_d1, 0), (phi2_d1, 0),
-            (sp.cos(phi1_d0)**2, 1), (sp.cos(phi2_d0)**2, 1),
-            (sp.cos(phi1_d0)**3, sp.cos(phi1_d0)),
-            (sp.cos(phi2_d0)**3, sp.cos(phi2_d0))]
+simplification_list = [(phi1_d1, 0), (phi2_d1, 0),
+                       (F, 0), (M1, 0), (M2, 0),
+                       #(sp.sin(phi1_d0), 0), (sp.sin(phi2_d0), 0),
+                       #(sp.cos(phi1_d0)**2, 1), (sp.cos(phi2_d0)**2, 1),
+                       # #(sp.cos(phi1_d0)**3, sp.cos(phi1_d0)),
+                       # #(sp.cos(phi2_d0)**3, sp.cos(phi2_d0))
+                       ]
 
 A = sys.jacobian(x)
 A = A.subs(simplification_list)
