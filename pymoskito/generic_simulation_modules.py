@@ -183,7 +183,7 @@ class HarmonicTrajectory(Trajectory):
         a = self._settings['Amplitude']
         f = self._settings['Frequency']
         off = self._settings["Offset"]
-        p = self._settings["Phase in degree"] * np.pi / 360
+        p = self._settings["Phase in degree"] * np.pi / 180
 
         for idx, val in enumerate(self.yd_sym):
             yd[0][idx] = val(t, a, f, off, p)
