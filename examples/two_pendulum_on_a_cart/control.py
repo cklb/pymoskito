@@ -16,8 +16,9 @@ class LinearStateFeedback(Controller):
                                    # ('poles', [-2+1j, -2-1j, -2, -4, -3+1.8j, -3-1.8j]),
                                    # ('poles', [-8+7j, -8-7j, -3.5, -3, -1.7+1j, -1.7-1j]),
                                    # ('poles', [-1+4.5j, -1-4.5j, -5, -7, -4, -3.5]),
-                                   ('poles', [-8+7j, -8-7j, -3+3j, -3-3j, -1.7+2j, -1.7-2j]),
+                                   # ('poles', [-8+7j, -8-7j, -3+3j, -3-3j, -1.7+2j, -1.7-2j]),
                                    # ('poles', [-7.2+0.22j, -7.2-0.22j, -4.2, -3.87, -1.6, -1.27]),
+                                   ('poles', [-8+7j, -8-7j, -1.7+1j, -1.7-1j, -3.5, -3.0]),
                                    ('equilibrium', [0, 0, 180, 0, 180, 0]),
                                    # ('equilibrium', [0, 0, 0, 0, 0, 0]),
                                    ('tick divider', 1)])
@@ -40,8 +41,12 @@ class LinearStateFeedback(Controller):
         self.C = symcalc.C
         self.K = to.ackerSISO(self.A, self.B, self._settings['poles'])
         self.V = to.calc_prefilter(self.A, self.B, self.C, self.K)
+        eig = np.linalg.eig(self.A - np.dot(self.B, self.K))
+        print "eq_state: ", eq_state
+        print "poles: ", self._settings['poles']
         print "K: ", self.K
         print "V: ", self.V
+
 
     def _control(self, is_values, desired_values, t):
         # input abbreviations
