@@ -73,6 +73,33 @@
    Input A: Controller
    Input B: Feedforward
 
+- Name: p_oo
+  clear previous: !!python/bool True # decide whether previous settings should remain or not
+
+  Model:
+   type: TwoPendulumModel
+   initial state: [0, 0, 0, 0, 0, 0]
+
+  Solver:
+   type: ODEInt
+   measure rate: 500
+   step size: 0.001
+   end time: 10
+
+  Controller:
+   type: LinearStateFeedback
+   equilibrium: [0, 0, 0, 0, 0, 0]
+
+  Trajectory:
+   type: Setpoint
+   State: [0]
+   Setpoint: [0]
+
+  ModelMixer:
+   type: AdditiveMixer
+   Input A: Controller
+   Input B: Feedforward
+
 - Name: p_uu
   clear previous: !!python/bool True # decide whether previous settings should remain or not
 
