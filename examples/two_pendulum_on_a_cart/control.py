@@ -53,13 +53,8 @@ class LinearStateFeedback(Controller):
         x = is_values
         yd = desired_values
 
+        x = x - np.atleast_2d(self._settings["equilibrium"]).T
         u = - np.dot(self.K, x) + np.dot(self.V, yd[0,0])
-
-        # temp
-        if u > 60:
-            u = 60
-        if u < -60:
-            u = -60
 
 
         return u
