@@ -4,6 +4,7 @@ ready to go implementations of generic simulation modules
 """
 
 from collections import OrderedDict
+from pytrajectory import ControlSystem
 
 from scipy.integrate import ode
 import sympy as sp
@@ -16,6 +17,7 @@ from simulation_modules import Solver, \
     Trajectory, \
     TrajectoryException, \
     Controller,\
+    Feedforward,\
     SignalMixer,\
     ModelMixer,\
     ObserverMixer,\
@@ -283,6 +285,59 @@ class PIDController(Controller):
         return u
 
 
+class PyTrajectory(Feedforward):
+    """
+    this class integrate the PyTrajectory module in PyMoskito,
+    PyTrajectory is a Python library for the determination of the feed forward control
+    to achieve a transition between desired states of a nonlinear control system.
+    """
+
+    public_settings = OrderedDict([
+        ("state a", [0]),
+        ("state b", [0]),
+        ("input a", [0]),
+        ("input b", [0]),
+        ("time a", 0),
+        ("time b", 5),
+        ("tick divider", 1)
+    ])
+
+    def __init__(self, settings):
+        settings.update(input_order=0)
+        Feedforward.__init__(self, settings)
+
+        # check consistency between public_settings and the given model
+        assert (self._model._settings["state_count"] == len(self._settings["state a"]))
+        assert (self._model._settings["state_count"] == len(self._settings["state b"]))
+        assert (self._model._settings["input_count"] == len(self._settings["input a"]))
+        assert (self._model._settings["input_count"] == len(self._settings["input b"]))
+
+
+        # calculate the feedforward
+        system = ControlSystem(self._model.f,
+                               a=self._settings["time a"],
+                               b=self._settings["time b"],
+                               xa=self._settings["state a"],
+                               xb=self._settings["state b"],
+                               ua=self._settings["input a"],
+                               ub=self._settings["input b"])
+        # alter some method parameters to increase performance
+        system.set_param('su', 10)
+        system.set_param('eps', 8e-2)
+        system.solve()
+
+        self.feed_time = system.sim_data[0]
+        self.feed_u =system.sim_data[2]
+
+    def _feedforward(self, traj_values, t):
+
+
+        u_feed = 0
+
+        return u_feed
+
+
+
 class AdditiveMixer(SignalMixer):
     """
     Signal Mixer that ads up input signals
@@ -325,6 +380,7 @@ pm.register_simulation_module(Trajectory, SmoothTransition)
 pm.register_simulation_module(Trajectory, HarmonicTrajectory)
 pm.register_simulation_module(Trajectory, Setpoint)
 pm.register_simulation_module(Controller, PIDController)
+pm.register_simulation_module(Feedforward, PyTrajectory)
 pm.register_simulation_module(ModelMixer, AdditiveMixer)
 pm.register_simulation_module(ObserverMixer, AdditiveMixer)
 pm.register_simulation_module(Limiter, ModelInputLimiter)

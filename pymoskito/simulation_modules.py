@@ -57,6 +57,7 @@ class Model(SimulationModule):
         settings.update({"tick divider": 1})
         SimulationModule.__init__(self, settings)
         assert ("state_count" in settings)
+        assert ("input_count" in settings)
         assert ("initial state" in settings)
 
     @property
@@ -190,6 +191,7 @@ class Feedforward(SimulationModule):
     """
 
     def __init__(self, settings):
+        self._model = settings["modules"]["Model"]
         SimulationModule.__init__(self, settings)
         assert ("input_order" in settings)
 
@@ -198,7 +200,7 @@ class Feedforward(SimulationModule):
         return self._settings["input_order"]
 
     def calc_output(self, input_dict):
-        return self._feedforward(input_dict["Trajectory"])
+        return self._feedforward(input_dict["Trajectory"], input_dict["time"])
 
     @abstractmethod
     def _feedforward(self, traj_values):

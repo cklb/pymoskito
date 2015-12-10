@@ -26,6 +26,7 @@ class BallBeamModel(Model):
     def __init__(self, settings):
         # add specific "private" settings
         settings.update(state_count=4)
+        settings.update(input_count=1)
         Model.__init__(self, settings)
 
         # shortcuts for readability

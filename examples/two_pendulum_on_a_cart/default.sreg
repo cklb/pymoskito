@@ -6,13 +6,22 @@
 
   Model:
    type: TwoPendulumModel
-   initial state: [0, 0, 1, 0, 0, 0]
+   initial state: [0, 0, 3.141592653589793, 0, 3.141592653589793, 0]
 
   Solver:
    type: ODEInt
    measure rate: 500
    step size: 0.001
    end time: 10
+
+  Feedforward:
+   type: PyTrajectory
+   state a: [0.0, 0.0,  3.141592653589793, 0.0,  3.141592653589793, 0.0]
+   state b: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+   input a: [0.0]
+   input b: [0.0]
+   time a: 0
+   time b: 5
 
   ModelMixer:
    type: AdditiveMixer
