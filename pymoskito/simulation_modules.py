@@ -27,6 +27,7 @@ class SimulationModule(QObject):
         assert isinstance(settings, OrderedDict)
         assert ("tick divider" in settings)
         self._settings = settings
+        del self._settings["modules"]
 
     @abstractproperty
     def public_settings(self):
@@ -104,11 +105,10 @@ class Solver(SimulationModule):
 
     def __init__(self, settings):
         settings.update({"tick divider": 1})
+        assert isinstance(settings["modules"]["Model"], Model)
+        self._model = settings["modules"]["Model"]
         SimulationModule.__init__(self, settings)
-        assert ("Model" in settings)
-        assert isinstance(settings["Model"], Model)
-        self._model = settings["Model"]
-        del settings["Model"]
+
 
     def calc_output(self, input_vector):
         if "Limiter" in input_vector:
@@ -221,8 +221,14 @@ class Trajectory(SimulationModule):
 
     def __init__(self, settings):
         settings.update({"tick divider": 1})
+        control_order = 0
+        feedforward_order = 0
+        if "Controller" in settings["modules"].keys():
+            control_order = settings["modules"]["Controller"].input_order
+        if "Feedforward" in settings["modules"].keys():
+            feedforward_order = settings["modules"]["Feedforward"].input_order
+        settings.update(differential_order=max([control_order, feedforward_order]))
         SimulationModule.__init__(self, settings)
-        assert ("differential_order" in settings)
 
     def calc_output(self, input_vector):
         desired = self._desired_values(input_vector["time"])

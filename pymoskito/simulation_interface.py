@@ -259,27 +259,13 @@ class SimulatorInteractor(QtCore.QObject):
             # get public settings for module
             settings = self._get_settings(self.target_model, module_item.text())
             settings.update({"type": sub_module_name})
+            settings.update({"modules": self._sim_modules})
 
             # append special settings
             if module_name == "Solver":
-                settings.update(Model=self._sim_modules["Model"])
                 self._sim_settings = SimulationSettings(settings["start time"],
                                                         settings["end time"],
                                                         settings["measure rate"])
-            elif module_name == "Disturbance":
-                # TODO
-                pass
-            elif module_name == "Sensor":
-                # TODO
-                pass
-            elif module_name == "Trajectory":
-                control_order = 0
-                feedforward_order = 0
-                if "Controller" in self._sim_modules.keys():
-                    control_order = self._sim_modules["Controller"].input_order
-                if "Feedforward" in self._sim_modules.keys():
-                    feedforward_order = self._sim_modules["Feedforward"].input_order
-                settings.update(differential_order=max([control_order, feedforward_order]))
 
             # build object
             slot = sub_module_cls(settings)
