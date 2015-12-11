@@ -298,7 +298,7 @@ class PyTrajectory(Feedforward):
         ("input a", [0]),
         ("input b", [0]),
         ("time a", 0),
-        ("time b", 5),
+        ("time b", 2),
         ("tick divider", 1)
     ])
 
@@ -312,22 +312,22 @@ class PyTrajectory(Feedforward):
         assert (self._model._settings["input_count"] == len(self._settings["input a"]))
         assert (self._model._settings["input_count"] == len(self._settings["input b"]))
 
-
-        # calculate the feedforward
-        system = ControlSystem(self._model.f,
-                               a=self._settings["time a"],
-                               b=self._settings["time b"],
-                               xa=self._settings["state a"],
-                               xb=self._settings["state b"],
-                               ua=self._settings["input a"],
-                               ub=self._settings["input b"])
-        # alter some method parameters to increase performance
-        system.set_param('su', 10)
-        system.set_param('eps', 8e-2)
-        system.solve()
-
-        self.feed_time = system.sim_data[0]
-        self.feed_u =system.sim_data[2]
+        # TODO integration of PyTrajectory is not ready
+        # # calculate the feedforward
+        # system = ControlSystem(self._model.f,
+        #                        a=self._settings["time a"],
+        #                        b=self._settings["time b"],
+        #                        xa=self._settings["state a"],
+        #                        xb=self._settings["state b"],
+        #                        ua=self._settings["input a"],
+        #                        ub=self._settings["input b"])
+        # # alter some method parameters to increase performance
+        # system.set_param('su', 10)
+        # system.set_param('eps', 8e-2)
+        # system.solve()
+        #
+        # self.feed_time = system.sim_data[0]
+        # self.feed_u =system.sim_data[2]
 
     def _feedforward(self, traj_values, t):
 
