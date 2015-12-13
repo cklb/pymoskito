@@ -4,7 +4,7 @@ ready to go implementations of generic simulation modules
 """
 
 from collections import OrderedDict
-from pytrajectory import ControlSystem
+# from pytrajectory import ControlSystem
 
 from scipy.integrate import ode
 import sympy as sp
