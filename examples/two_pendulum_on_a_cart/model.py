@@ -66,15 +66,15 @@ class TwoPendulumModel(Model):
         M2_star = 0
 
         # transformation of the input
-        M = self.m0 + self.m1*(np.sin(x3))**2 + self.m2*(np.sin(x5))**2
-        F1 = self.m1*np.sin(x3)*(self.g*np.cos(x3) - self.l1*x4**2)
-        F2 = self.m2*np.sin(x5)*(self.g*np.cos(x5) - self.l2*x6**2)
-        u = (F1
-             + F2
-             + (F_star - self.d0*x2)
-             + (M1_star - self.d1*x4)*np.cos(x3)/self.l1
-             + (M2_star - self.d2*x6)*np.cos(x5)/self.l2)/M
-
+        # M = self.m0 + self.m1*(np.sin(x3))**2 + self.m2*(np.sin(x5))**2
+        # F1 = self.m1*np.sin(x3)*(self.g*np.cos(x3) - self.l1*x4**2)
+        # F2 = self.m2*np.sin(x5)*(self.g*np.cos(x5) - self.l2*x6**2)
+        # u = (F1
+        #      + F2
+        #      + (F_star - self.d0*x2)
+        #      + (M1_star - self.d1*x4)*np.cos(x3)/self.l1
+        #      + (M2_star - self.d2*x6)*np.cos(x5)/self.l2)/M
+        u = args[0]
         dx1 = x2
         dx2 = u
         dx3 = x4

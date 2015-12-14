@@ -59,4 +59,31 @@ class LinearStateFeedback(Controller):
 
         return u
 
+class LjapunovController(Controller):
+
+    public_settings = OrderedDict([
+        ("k", 8),
+        ("tick divider", 1)])
+
+    def __init__(self, settings):
+        settings.update(input_order=0)
+        settings.update(output_order=1)
+        settings.update(input_type="system_state")
+        Controller.__init__(self, settings)
+
+        self.w = st.m1*st.l1/(st.m2*st.l2)
+
+    def _control(self, is_values, desired_values, t):
+        x1, x2, x3, x4, x5, x6 = is_values
+
+        E1 = 0.5*st.J1_real*x4**2 + st.m1*st.g*st.l1*(np.cos(x3) - 1)
+        E2 = 0.5*st.J2_real*x6**2 + st.m2*st.g*st.l2*(np.cos(x5) - 1)
+
+        G = st.m1*st.l1*x4*np.cos(x3)*E1 + st.m2*st.l2*x6*np.cos(x5)*E2*self.w**2
+
+        u = -self._settings["k"]*G # + (st.d1*E1*x4**2 + st.d2*E2*x6**2)/G
+
+        return u
+
 pm.register_simulation_module(Controller, LinearStateFeedback)
+pm.register_simulation_module(Controller, LjapunovController)

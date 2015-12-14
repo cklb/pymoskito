@@ -19,32 +19,6 @@
    Input A: Controller
    Input B: Feedforward
 
-- Name: LinearStateFeedback
-  clear previous: !!python/bool True # decide whether previous settings should remain or not
-
-  Model:
-   type: TwoPendulumModel
-   # initial state: [0.5, 0, 3.141, 0, 3.141, 0]
-
-  Solver:
-   type: ODEInt
-   measure rate: 500
-   step size: 0.001
-   end time: 10
-
-  Controller:
-   type: LinearStateFeedback
-
-  Trajectory:
-   type: Setpoint
-   State: [0]
-   Setpoint: [0]
-
-  ModelMixer:
-   type: AdditiveMixer
-   Input A: Controller
-   Input B: Feedforward
-
 - Name: p_oo_init_x0_0.5_setpoint_-0.5
   clear previous: !!python/bool True # decide whether previous settings should remain or not
 
@@ -146,6 +120,35 @@
    type: LinearStateFeedback
    poles: [-8+7j, -8-7j, -5+3j, -5-3j, -5+2j, -5-2j]
    equilibrium: [0, 0, 0, 0, 180, 0]
+
+  Trajectory:
+   type: Setpoint
+   State: [0]
+   Setpoint: [0]
+
+  ModelMixer:
+   type: AdditiveMixer
+   Input A: Controller
+   Input B: Feedforward
+
+- Name: ljapunov_oo
+  clear previous: !!python/bool True # decide whether previous settings should remain or not
+
+  Model:
+   type: TwoPendulumModel
+   initial state: [0, 0, 3.141, 0, 3.299, 0]
+   d0: 0
+   d1: 0
+   d2: 0
+
+  Solver:
+   type: ODEInt
+   measure rate: 500
+   step size: 0.001
+   end time: 10
+
+  Controller:
+   type: LjapunovController
 
   Trajectory:
    type: Setpoint
