@@ -312,7 +312,7 @@ class PyTrajectory(Feedforward):
         assert (self._model._settings["input_count"] == len(self._settings["input a"]))
         assert (self._model._settings["input_count"] == len(self._settings["input b"]))
 
-        # TODO integration of PyTrajectory is not ready
+        # TODO integration of PyTrajectory is not ready to use
         # # calculate the feedforward
         # system = ControlSystem(self._model.f,
         #                        a=self._settings["time a"],

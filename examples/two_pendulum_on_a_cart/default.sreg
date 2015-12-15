@@ -131,7 +131,7 @@
    Input A: Controller
    Input B: Feedforward
 
-- Name: ljapunov_oo
+- Name: ljapunov
   clear previous: !!python/bool True # decide whether previous settings should remain or not
 
   Model:
