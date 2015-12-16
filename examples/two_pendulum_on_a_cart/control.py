@@ -45,12 +45,15 @@ class LinearStateFeedback(Controller):
         print "V: ", self.V
 
 
-    def _control(self, is_values, desired_values, t):
+    def _control(self, is_values, desired_values, t, eq=None):
         # input abbreviations
         x = is_values
         yd = desired_values
 
-        x = x - np.atleast_2d(self._settings["equilibrium"]).T
+        if eq is None:
+            eq = self._settings["equilibrium"]
+        x = x - np.atleast_2d(eq).T
+
         u = - np.dot(self.K, x) + np.dot(self.V, yd[0,0])
 
 
@@ -120,12 +123,12 @@ class SwingUpController(Controller):
         settings["type"] = "LjapunovController"
         self.ljapunov = LjapunovController(settings)
 
-        eq_state = np.zeros(6)
+        self.eq_state = np.zeros(6)
         if settings["long pendulum"] == "u":
-            eq_state[2] = np.pi
+            self.eq_state[2] = np.pi
         elif settings["short pendulum"] == "u":
-            eq_state[4] = np.pi
-        settings.update({"equilibrium": eq_state})
+            self.eq_state[4] = np.pi
+        settings.update({"equilibrium": self.eq_state})
         settings.update(self.module_settings)
         settings["type"] = "LinearStateFeedback"
         self.linear_state_feedback = LinearStateFeedback(settings)
@@ -136,14 +139,16 @@ class SwingUpController(Controller):
         x1, x2, x3, x4, x5, x6 = is_values
 
         # consider the multiple pendulum states, because of the continuously angle
-        # n = int(x3/(2*np.pi))
-        # if x3%(2*np.pi) > np.pi:
-        #     n += 1
-        # m = int(x5/(2*np.pi))
-        # if x5%(2*np.pi) > np.pi:
-        #     m += 1
-        n = 0
-        m = 0
+        n = int(x3/(2*np.pi))
+        if x3%(2*np.pi) > np.pi and n > 0:
+            n += 1
+        if x3%(2*np.pi) < np.pi and n < 0:
+            n -= 1
+        m = int(x5/(2*np.pi))
+        if x5%(2*np.pi) > np.pi and m > 0:
+            m += 1
+        if x5%(2*np.pi) < np.pi and m < 0:
+           m -= 1
 
         # we have to check several conditions
         #          phi1                  phi1_d
@@ -161,19 +166,23 @@ class SwingUpController(Controller):
 
         if self._settings["long pendulum"] == "o":
             Rou = True
+            self.eq_state[2] = 2*n*np.pi
         if self._settings["short pendulum"] == "o":
             Ruo = True
+            self.eq_state[4] = 2*m*np.pi
 
         if Rou and Ruo:
             Roo = True
             Rou = False
             Ruo = False
+            self.eq_state[2] = 2*n*np.pi
+            self.eq_state[4] = 2*m*np.pi
 
         if (Roo and a and b)or (Roo and c and d) or (Rou and a) or (Rou and c) or (Ruo and b) or (Ruo and d):
             self.switch = True
 
         if self.switch:
-            u = self.linear_state_feedback._control(is_values, desired_values, t)
+            u = self.linear_state_feedback._control(is_values, desired_values, t, eq=self.eq_state)
         else:
             u = self.ljapunov._control(is_values, desired_values, t)
 

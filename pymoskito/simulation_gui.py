@@ -635,6 +635,8 @@ class SimulationGui(QtGui.QMainWindow):
         tmp = name.split(".")
         if len(tmp) == 1:
             data = self.currentDataset['results'][tmp[0]]
+            # if the dataset contains 1d array, we have to convert it to float
+            data = [float(x) for x in data]
         elif len(tmp) == 2:
             if len(self.currentDataset['results'][tmp[0]].shape) == 2:
                 data = self.currentDataset['results'][tmp[0]][:, tmp[1]]
