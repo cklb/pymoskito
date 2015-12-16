@@ -94,9 +94,19 @@ class LjapunovController(Controller):
 
         G = st.m1*st.l1*x4*np.cos(x3)*E1 + st.m2*st.l2*x6*np.cos(x5)*E2*self.w**2 +st.m0*x2*E0
 
-        u = -self._settings["k"]*G # + (st.d1*E1*x4**2 + st.d2*E2*x6**2)/G
+        u_lja = -self._settings["k"]*G # + (st.d1*E1*x4**2 + st.d2*E2*x6**2)/G
 
-        # linear_state_feedback = LinearStateFeedback()
+        # the u of the ljapunov method is a acceleration and the model require a force
+        d0 = 0
+        d1 = 0
+        d2 = 0
+        M1_star = 0
+        M2_star = 0
+
+        M = st.m0 + st.m1*(np.sin(x3))**2 + st.m2*(np.sin(x5))**2
+        F1 = st.m1*np.sin(x3)*(st.g*np.cos(x3) - st.l1*x4**2)
+        F2 = st.m2*np.sin(x5)*(st.g*np.cos(x5) - st.l2*x6**2)
+        u = - F1 - F2 + u_lja*M + d0*x2 - (M1_star - d1*x4)*np.cos(x3)/st.l1 - (M2_star - d2*x6)*np.cos(x5)/st.l2
 
         return u
 

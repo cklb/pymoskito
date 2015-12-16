@@ -34,7 +34,7 @@
 
   Controller:
    type: LinearStateFeedback
-   poles: [-7.2+0.22j,-7.2-0.22j,-4.2,-3.87,-1.6,-1.27]
+   poles: [-9, -7, -4, -2, -3, -2]
    equilibrium: [0, 0, 0, 0, 0, 0]
 
   Trajectory:
@@ -52,7 +52,7 @@
 
   Model:
    type: TwoPendulumModel
-   initial state: [0, 0, 0, 0, 0, 0]
+   initial state: [0, 0, 0.2, 0, 0, 0]
 
   Solver:
    type: ODEInt
@@ -62,6 +62,7 @@
 
   Controller:
    type: LinearStateFeedback
+   poles: [-9, -7, -4, -2, -3, -2]
    equilibrium: [0, 0, 0, 0, 0, 0]
 
   Trajectory:
@@ -79,7 +80,7 @@
 
   Model:
    type: TwoPendulumModel
-   initial state: [0, 0, 3.141592653589793, 0, 3.141592653589793, 0]
+   initial state: [0, 0, 3.6, 0, 3.141592653589793, 0]
 
   Solver:
    type: ODEInt
@@ -89,9 +90,8 @@
 
   Controller:
    type: LinearStateFeedback
-   # poles: [-7.2+0.22j,-7.2-0.22j,-4.2,-3.87,-1.6,-1.27]
-   # ['-8+7j', '-8-7j', '-5+3j', '-5-3j', '-5+2j', '-5-2j']
-   equilibrium: [0, 0, 180, 0, 180, 0]
+   poles: [-9, -7, -4, -2, -3, -2]
+   equilibrium: [0, 0, 3.141592653589793, 0, 3.141592653589793, 0]
 
   Trajectory:
    type: Setpoint
@@ -108,7 +108,7 @@
 
   Model:
    type: TwoPendulumModel
-   initial state: [0, 0, 0, 0, 3.141592653589793, 0]
+   initial state: [0, 0, 0.2, 0, 3.141592653589793, 0]
 
   Solver:
    type: ODEInt
@@ -118,8 +118,8 @@
 
   Controller:
    type: LinearStateFeedback
-   poles: [-8+7j, -8-7j, -5+3j, -5-3j, -5+2j, -5-2j]
-   equilibrium: [0, 0, 0, 0, 180, 0]
+   poles: [-9, -7, -4, -2, -3, -2]
+   equilibrium: [0, 0, 0, 0, 3.141592653589793, 0]
 
   Trajectory:
    type: Setpoint
@@ -212,7 +212,7 @@
    k: 8
    long pendulum: u
    short pendulum: o
-   poles: [-10.1, -8.2, -6.9, -5, -2.5, -1.5]
+   poles: [-9, -7, -4, -2, -3, -2]
 
   Trajectory:
    type: Setpoint
@@ -249,7 +249,7 @@
    k: 7
    long pendulum: o
    short pendulum: u
-   poles: [-10.1, -8.2, -6.9, -5, -2.5, -1.5]
+   poles: [-9, -7, -4, -2, -3, -2]
 
   Trajectory:
    type: Setpoint
@@ -279,14 +279,14 @@
    type: ODEInt
    measure rate: 500
    step size: 0.001
-   end time: 25
+   end time: 30
 
   Controller:
    type: SwingUpController
    k: 6
    long pendulum: o
    short pendulum: o
-   poles: [-10.1, -8.2, -6.9, -5, -2.5, -1.5]
+   poles: [-9, -7, -4, -2, -3, -2]
 
   Trajectory:
    type: Setpoint
