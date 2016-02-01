@@ -6,7 +6,7 @@
 
   Model:
    type: TwoPendulumModel
-   initial state: [0, 0, 0.1, 0, 0, 0]
+   initial state: [0, 0, 1.5707963267948966, 0, 3.141592653589793, 0]
 
   Solver:
    type: ODEInt
@@ -120,6 +120,34 @@
    type: LinearStateFeedback
    poles: [-9, -7, -4, -2, -3, -2]
    equilibrium: [0, 0, 0, 0, 3.141592653589793, 0]
+
+  Trajectory:
+   type: Setpoint
+   State: [0]
+   Setpoint: [0]
+
+  ModelMixer:
+   type: AdditiveMixer
+   Input A: Controller
+   Input B: Feedforward
+
+- Name: p_uo
+  clear previous: !!python/bool True # decide whether previous settings should remain or not
+
+  Model:
+   type: TwoPendulumModel
+   initial state: [0, 0, 3.141592653589793, 0, 0.2, 0]
+
+  Solver:
+   type: ODEInt
+   measure rate: 500
+   step size: 0.001
+   end time: 10
+
+  Controller:
+   type: LinearStateFeedback
+   poles: [-9, -7, -4, -2, -3, -2]
+   equilibrium: [0, 0, 3.141592653589793, 0, 0, 0]
 
   Trajectory:
    type: Setpoint

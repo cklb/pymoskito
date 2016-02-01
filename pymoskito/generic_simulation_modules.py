@@ -351,8 +351,8 @@ class AdditiveMixer(SignalMixer):
         SignalMixer.__init__(self, settings)
 
     def _mix(self, signal_values):
-        vals = np.array(signal_values)
-        return np.sum(vals, 0)
+
+        return np.array([[np.sum(signal_values)]], dtype=float)
 
 
 class ModelInputLimiter(Limiter):

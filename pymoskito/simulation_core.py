@@ -134,6 +134,13 @@ class Simulator(QObject):
         # integrate model
         self._calc_module("Solver")
 
+        # calculate system state changes
+        self._current_outputs["State_Changes"] = \
+            self._simulation_modules["Model"]\
+                .state_function(self._current_outputs["time"],
+                                self._current_outputs["Solver"],
+                                self._current_outputs["ModelMixer"])
+
         return
 
     def _store_values(self):

@@ -600,7 +600,7 @@ class SimulationGui(QtGui.QMainWindow):
                 for col in range(results.shape[1]):
                     self.dataList.insertItem(0, "{0}.{1}".format(module, col))
             elif len(results.shape) == 3:
-                for col in range(results.shape[2]):
+                for col in range(results.shape[1]):
                     self.dataList.insertItem(0, "{0}.{1}".format(module, col))
 
 
@@ -609,6 +609,8 @@ class SimulationGui(QtGui.QMainWindow):
         creates a plot widget corresponding to the ListItem
         :param item:
         """
+
+        print item
         title = str(item.text())
         data = self._get_data_by_name(title)
         t = self.currentDataset['results']['time']
@@ -640,8 +642,8 @@ class SimulationGui(QtGui.QMainWindow):
         elif len(tmp) == 2:
             if len(self.currentDataset['results'][tmp[0]].shape) == 2:
                 data = self.currentDataset['results'][tmp[0]][:, tmp[1]]
-            if len(self.currentDataset['results'][tmp[0]].shape) == 3:
-                data = self.currentDataset['results'][tmp[0]][:,:,tmp[1]][..., 0]  # nice indexing :)
+            if len(self.currentDataset['results'][tmp[0]].shape) == 3:  # Dataset has the structure [ [[1]], [[2]] ]
+                data = self.currentDataset["results"][tmp[0]][..., tmp[1], 0]
 
         return data
 

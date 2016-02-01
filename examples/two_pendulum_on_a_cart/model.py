@@ -61,7 +61,7 @@ class TwoPendulumModel(Model):
         x4 = x[3]
         x5 = x[4]
         x6 = x[5]
-        F_star = args[0]
+        F_star = args[0][0]
         M1_star = 0
         M2_star = 0
 
