@@ -368,9 +368,9 @@ class ModelInputLimiter(Limiter):
 
     def _limit(self, value):
         if value < self._settings["Limits"][0]:
-            value = self._settings["Limits"][0]
+            value = np.array([[self._settings["Limits"][0]]])  # convert number into numpy (1,1) array
         if value > self._settings["Limits"][1]:
-            value = self._settings["Limits"][1]
+            value = np.array([[self._settings["Limits"][1]]])  # convert number into numpy (1,1) array
 
         return value
 
