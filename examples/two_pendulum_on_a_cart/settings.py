@@ -12,7 +12,7 @@ step_size = 0.0005
 measure_rate = 1000
 
 # initial minimal state vector (n, dn, x, dx) default values (used if none is given)
-initial_state = [0, 0, np.pi, 0, np.pi, 0]
+initial_state = [0, 0, 180, 0, 180, 0]
 int_mode = 'vode'
 int_method = 'adams'
 int_rtol = 1e-6

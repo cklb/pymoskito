@@ -8,19 +8,15 @@ import settings as st
 import symbolic_calculation as symcalc
 import pymoskito.tools as to
 
+# this package enable the inclusion of c-code
+import ctypes as ct
+
 
 class LinearStateFeedback(Controller):
 
-    public_settings = OrderedDict([#('poles', [-1,-1,-1,-1,-1,-1]),
-                                   ('poles', [-10.1,-8.2,-6.9,-5,-2.5,-1.5]),
-                                   # ('poles', [-2+1j, -2-1j, -2, -4, -3+1.8j, -3-1.8j]),
-                                   # ('poles', [-8+7j, -8-7j, -3.5, -3, -1.7+1j, -1.7-1j]),
-                                   # ('poles', [-1+4.5j, -1-4.5j, -5, -7, -4, -3.5]),
-                                   # ('poles', [-8+7j, -8-7j, -3+3j, -3-3j, -1.7+2j, -1.7-2j]),
-                                   # ('poles', [-7.2+0.22j, -7.2-0.22j, -4.2, -3.87, -1.6, -1.27]),
-                                   # ('poles', [-8+7j, -8-7j, -1.7+1j, -1.7-1j, -3.5, -3.0]),
-                                   ('equilibrium', [0, 0, 3.141592653589793, 0, 3.141592653589793, 0]),
-                                   # ('equilibrium', [0, 0, 0, 0, 0, 0]),
+    public_settings = OrderedDict([('poles', [-10.1, -8.2, -6.9, -5, -2.5, -1.5]),
+                                   ("long pendulum", "u"),
+                                   ("short pendulum", "o"),
                                    ('tick divider', 1)])
 
     def __init__(self, settings):
@@ -31,19 +27,19 @@ class LinearStateFeedback(Controller):
 
         Controller.__init__(self, settings)
 
+        eq_state = calc_equilibrium(settings)
         # pole placement
         parameter = [st.m0, st.m1, st.m2, st.l1, st.l2, st.g, st.d0, st.d1, st.d2]
-        self.A = symcalc.A_func(list(self._settings["equilibrium"]), parameter)
-        self.B = symcalc.B_func(list(self._settings["equilibrium"]), parameter)
+        self.A = symcalc.A_func(list(eq_state), parameter)
+        self.B = symcalc.B_func(list(eq_state), parameter)
         self.C = symcalc.C
         self.K = to.ackerSISO(self.A, self.B, self._settings['poles'])
         self.V = to.calc_prefilter(self.A, self.B, self.C, self.K)
         eig = np.linalg.eig(self.A - np.dot(self.B, self.K))
-        print "equilibrium: ", self._settings["equilibrium"]
+        print "equilibrium: ", eq_state
         print "poles: ", self._settings['poles']
         print "K: ", self.K
         print "V: ", self.V
-
 
     def _control(self, is_values, desired_values, t, eq=None):
         # input abbreviations
@@ -51,13 +47,78 @@ class LinearStateFeedback(Controller):
         yd = desired_values
 
         if eq is None:
-            eq = self._settings["equilibrium"]
+            eq = calc_equilibrium(self._settings)
         x = x - np.atleast_2d(eq).T
 
-        u = - np.dot(self.K, x) + np.dot(self.V, yd[0,0])
-
+        u = - np.dot(self.K, x) + np.dot(self.V, yd[0, 0])
 
         return u
+
+
+class CLinearStateFeedback(Controller):
+
+    public_settings = OrderedDict([('equilibrium', 4),
+                                   ('tick divider', 1)])
+
+    def __init__(self, settings):
+        # add specific private settings
+        settings.update(input_order=0)
+        settings.update(ouput_dim=1)
+        settings.update(input_type='system_state')
+
+        Controller.__init__(self, settings)
+
+        # load dll, the calling convention is cdecl
+        self.lib = ct.cdll.TestLib
+        print self.lib
+
+        # create c compatible variables
+        self.c_time = ct.c_float(0)
+        self.c_pos_arr = (ct.c_float*3)()
+        self.c_long_arr = (ct.c_float*3)()
+        self.c_short_arr = (ct.c_float*3)()
+        self.c_motor_voltage = ct.c_float(0)
+        self.c_u_ret = ct.c_float(0)
+        self.c_k = (ct.c_float*6)()
+        for idx, val in enumerate([0]*6):
+            self.c_k[idx] = val
+        self.c_equilibrium = ct.c_uint8(self._settings["equilibrium"])
+        self.c_debug1 = ct.c_float(0)
+        self.c_debug2 = ct.c_float(0)
+        self.c_debug_arr = (ct.c_float*6)()
+        for idx, val in enumerate([0]*6):
+            self.c_debug_arr[idx] = val
+
+    def _control(self, is_values, desired_values, t, eq=None):
+        # input abbreviations
+        x = is_values
+        yd = desired_values
+        self.c_time = ct.c_float(t)
+        self.c_pos_arr[0] = x[0, 0]
+        self.c_pos_arr[1] = x[1, 0]
+        self.c_pos_arr[2] = 0
+        self.c_long_arr[0] = x[2, 0]*(180/np.pi)
+        self.c_long_arr[1] = x[3, 0]*(180/np.pi)
+        self.c_long_arr[2] = 0
+        self.c_short_arr[0] = x[4, 0]*(180/np.pi)
+        self.c_short_arr[1] = x[5, 0]*(180/np.pi)
+        self.c_short_arr[2] = 0
+
+        err = self.lib.control_loop(self.c_time,
+                                    ct.byref(self.c_pos_arr),
+                                    ct.byref(self.c_long_arr),
+                                    ct.byref(self.c_short_arr),
+                                    self.c_motor_voltage,
+                                    ct.byref(self.c_u_ret),
+                                    ct.byref(self.c_k),
+                                    self.c_equilibrium,
+                                    ct.byref(self.c_debug1),
+                                    ct.byref(self.c_debug2),
+                                    ct.byref(self.c_debug_arr))
+
+        u = np.array([[self.c_u_ret.value]])
+        return u
+
 
 class LjapunovController(Controller):
 
@@ -199,5 +260,19 @@ class SwingUpController(Controller):
         return u
 
 pm.register_simulation_module(Controller, LinearStateFeedback)
+pm.register_simulation_module(Controller, CLinearStateFeedback)
 pm.register_simulation_module(Controller, LjapunovController)
 pm.register_simulation_module(Controller, SwingUpController)
+
+
+def calc_equilibrium(settings):
+    equilibrium = np.zeros(6)
+    if settings["long pendulum"] == "u":
+        equilibrium[2] = np.pi
+    if settings["short pendulum"] == "u":
+        equilibrium[4] = np.pi
+
+    return equilibrium
+
+def calc_eq_state(state):
+

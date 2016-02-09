@@ -6,7 +6,7 @@
 
   Model:
    type: TwoPendulumModel
-   initial state: [0, 0, 1.5707963267948966, 0, 3.141592653589793, 0]
+   initial state: [0, 0, 90, 0, 180, 0]
 
   Solver:
    type: ODEInt
@@ -47,12 +47,12 @@
    Input A: Controller
    Input B: Feedforward
 
-- Name: p_oo
+- Name: R_oo
   clear previous: !!python/bool True # decide whether previous settings should remain or not
 
   Model:
    type: TwoPendulumModel
-   initial state: [0, 0, 0.2, 0, 0, 0]
+   initial state: [0, 0, 5, 0, 0, 0]
 
   Solver:
    type: ODEInt
@@ -63,7 +63,8 @@
   Controller:
    type: LinearStateFeedback
    poles: [-9, -7, -4, -2, -3, -2]
-   equilibrium: [0, 0, 0, 0, 0, 0]
+   long pendulum: o
+   short pendulum: o
 
   Trajectory:
    type: Setpoint
@@ -80,7 +81,7 @@
 
   Model:
    type: TwoPendulumModel
-   initial state: [0, 0, 3.6, 0, 3.141592653589793, 0]
+   initial state: [0, 0, 190, 0, 180, 0]
 
   Solver:
    type: ODEInt
@@ -108,7 +109,7 @@
 
   Model:
    type: TwoPendulumModel
-   initial state: [0, 0, 0.2, 0, 3.141592653589793, 0]
+   initial state: [0, 0, 10, 0, 180, 0]
 
   Solver:
    type: ODEInt
@@ -136,7 +137,7 @@
 
   Model:
    type: TwoPendulumModel
-   initial state: [0, 0, 3.141592653589793, 0, 0.2, 0]
+   initial state: [0, 0, 180, 0, 10, 0]
 
   Solver:
    type: ODEInt
@@ -164,7 +165,7 @@
 
   Model:
    type: TwoPendulumModel
-   initial state: [0, 0, 3.141, 0, 3.299, 0]
+   initial state: [0, 0, 180, 0, 190, 0]
    d0: 0
    d1: 0
    d2: 0
@@ -193,7 +194,7 @@
 
   Model:
    type: TwoPendulumModel
-   initial state: [0.5, 0, 3.141592653589793, 0, 3.141592653589793, 0]
+   initial state: [0.5, 0, 180, 0, 180, 0]
 
   Solver:
    type: ODEInt
@@ -224,7 +225,7 @@
 
   Model:
    type: TwoPendulumModel
-   initial state: [0, 0, 3.141592653589793, 0, 3.2986722862692828, 0]
+   initial state: [0, 0, 180, 0, 190, 0]
    d0: 0
    d1: 0
    d2: 0
@@ -261,7 +262,7 @@
 
   Model:
    type: TwoPendulumModel
-   initial state: [0, 0, 3.2986722862692828, 0, 3.141592653589793, 0]
+   initial state: [0, 0, 190, 0, 180, 0]
    d0: 0
    d1: 0
    d2: 0
@@ -298,7 +299,7 @@
 
   Model:
    type: TwoPendulumModel
-   initial state: [0, 0, 3.2986722862692828, 0, 3.2986722862692828, 0]
+   initial state: [0, 0, 190, 0, 190, 0]
    d0: 0
    d1: 0
    d2: 0
