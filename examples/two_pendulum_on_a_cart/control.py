@@ -14,7 +14,7 @@ import ctypes as ct
 
 class LinearStateFeedback(Controller):
 
-    public_settings = OrderedDict([('poles', [-10.1, -8.2, -6.9, -5, -2.5, -1.5]),
+    public_settings = OrderedDict([('poles', [-9, -7, -4, -2, -3, -2]),
                                    ("long pendulum", "u"),
                                    ("short pendulum", "o"),
                                    ('tick divider', 1)])
@@ -35,7 +35,7 @@ class LinearStateFeedback(Controller):
         self.C = symcalc.C
         self.K = to.ackerSISO(self.A, self.B, self._settings['poles'])
         self.V = to.calc_prefilter(self.A, self.B, self.C, self.K)
-        eig = np.linalg.eig(self.A - np.dot(self.B, self.K))
+        # eig = np.linalg.eig(self.A - np.dot(self.B, self.K))
         print "equilibrium: ", eq_state
         print "poles: ", self._settings['poles']
         print "K: ", self.K
@@ -46,6 +46,17 @@ class LinearStateFeedback(Controller):
         x = is_values
         yd = desired_values
 
+        # if eq is None:
+        #     eq = calc_closest_eq_state(self._settings, is_values)
+        # x = x - np.atleast_2d(eq).T
+
+        # this is a second version, here the controller get only a
+        # angle signal from 0 to 2*PI, but it does not work correct,
+        # because it ignores the closest equilibrium
+        # if x[2, 0] != 0:
+        #     x[2, 0] %= (2 * np.pi * np.sign(x[2, 0]))
+        # if x[4, 0] != 0:
+        #     x[4, 0] %= (2 * np.pi * np.sign(x[4, 0]))
         if eq is None:
             eq = calc_equilibrium(self._settings)
         x = x - np.atleast_2d(eq).T
@@ -155,7 +166,7 @@ class LjapunovController(Controller):
 
         G = st.m1*st.l1*x4*np.cos(x3)*E1 + st.m2*st.l2*x6*np.cos(x5)*E2*self.w**2 +st.m0*x2*E0
 
-        u_lja = -self._settings["k"]*G # + (st.d1*E1*x4**2 + st.d2*E2*x6**2)/G
+        u_lja = -self._settings["k"]*G  # + (st.d1*E1*x4**2 + st.d2*E2*x6**2)/G
 
         # the u of the ljapunov method is a acceleration and the model require a force
         d0 = 0
@@ -178,7 +189,7 @@ class SwingUpController(Controller):
         ("k", 8),
         ("long pendulum", "u"),
         ("short pendulum", "o"),
-        ("poles", [-10.1,-8.2,-6.9,-5,-2.5,-1.5]),
+        ("poles", [-10.1, -8.2, -6.9, -5, -2.5, -1.5]),
         ("tick divider", 1)
     ])
 
@@ -259,10 +270,97 @@ class SwingUpController(Controller):
 
         return u
 
+class SwingUpController2(Controller):
+    """
+    This class realise the swing up for equilibria with a arbitrary
+    amount of turns of the pendulums
+
+    The swing up of both pendulums require a adjustment of the
+    integrator settings to
+    rTol: 1e-09
+    aTol: 1e-11
+    """
+
+    public_settings = OrderedDict([
+        ("k", 10),
+        ("long pendulum", "u"),
+        ("short pendulum", "o"),
+        ("poles", [-9, -7, -4, -2, -3, -2]),
+        ("tick divider", 1)
+    ])
+
+    def __init__(self, settings):
+        settings.update(input_order=0)
+        settings.update(output_order=1)
+        settings.update(input_type="system_state")
+        self.module_settings = {"modules": settings["modules"]}
+        Controller.__init__(self, settings)
+
+        # add dict with module information, because it was deleted in the base class
+        settings.update(self.module_settings)
+        settings["type"] = "LjapunovController"
+        self.ljapunov = LjapunovController(settings)
+
+        settings.update({"equilibrium": calc_equilibrium(settings)})
+        settings.update(self.module_settings)
+        settings["type"] = "LinearStateFeedback"
+        self.linear_state_feedback = LinearStateFeedback(settings)
+
+        self.switch = False
+
+    def _control(self, is_values, desired_values, t):
+        x1, x2, x3, x4, x5, x6 = is_values
+
+        # looking for the closest equilibrium
+        eq_state = calc_closest_eq_state(self._settings, is_values)
+
+        # we have to check several conditions
+        #          phi1                  phi1_d
+        a = (-0.2 + eq_state[2] <= x3 <= 0 + eq_state[2]) and (-0.2 <= x4 <= 0.5)
+        #           phi2                 phi2_d
+        b = (-0.2 + eq_state[4] <= x5 <= 0 + eq_state[4]) and (-0.2 <= x6 <= 0.5)
+        #        phi1                  phi1_d
+        c = (0 + eq_state[2] <= x3 <= 0.2 + eq_state[2]) and (-0.5 <= x4 <= 0.2)
+        #          phi2                   phi2_d
+        d = (0 + eq_state[4] <= x5 <= 0.2 + eq_state[4]) and (-0.5 <= x6 <= 0.2)
+
+        eq_oo = False
+        eq_ou = False
+        eq_uo = False
+
+        if self._settings["long pendulum"] == "o":
+            eq_ou = True
+        if self._settings["short pendulum"] == "o":
+            eq_uo = True
+
+        if eq_ou and eq_uo:
+            eq_oo = True
+            eq_ou = False
+            eq_uo = False
+
+        if (eq_oo and a and b)or (eq_oo and c and d) or (eq_ou and a) or (eq_ou and c) or (eq_uo and b) or (eq_uo and d):
+            self.switch = True
+        else:
+            # this adjustment is only gut feeling
+            e = (-0.3 + eq_state[2] <= x3 <= 0.3 + eq_state[2])
+            f = (-0.3 + eq_state[4] <= x5 <= 0.3 + eq_state[4])
+            if not (e and f):
+                self.switch = False
+
+        print "t: ", t, "Switch: ", self.switch
+
+        if self.switch:
+            u = self.linear_state_feedback._control(is_values, desired_values, t, eq=eq_state)
+        else:
+            u = self.ljapunov._control(is_values, desired_values, t)
+
+        return u
+
 pm.register_simulation_module(Controller, LinearStateFeedback)
 pm.register_simulation_module(Controller, CLinearStateFeedback)
 pm.register_simulation_module(Controller, LjapunovController)
 pm.register_simulation_module(Controller, SwingUpController)
+pm.register_simulation_module(Controller, SwingUpController2)
 
 
 def calc_equilibrium(settings):
@@ -274,5 +372,45 @@ def calc_equilibrium(settings):
 
     return equilibrium
 
-def calc_eq_state(state):
+
+def calc_closest_eq_state(settings, state):
+    # looking for the closest equilibrium for the two pendulums
+    phi1 = float(state[2])
+    phi2 = float(state[4])
+
+    # consider the multiple pendulum states, because of the continuously angle
+    # pendulum is on top: phi_eq = 2*PI*k
+    # pendulum is at the bottom: phi_eq = (2*k + 1)*PI
+
+    # pendulum 1 (long) is on top
+    k1o = int(phi1/(2*np.pi))
+    if (abs(phi1) % (2*np.pi)) > np.pi:
+        k1o = k1o + np.sign(phi1)
+
+    # pendulum 1 (long) is at the bottom
+    k1u = int((phi1-np.pi)/(2*np.pi))
+    if (abs(phi1 - np.pi) % (2*np.pi)) > np.pi:
+        k1u = k1u + np.sign(phi1)
+
+    # pendulum 2 (short) is on top
+    k2o = int(phi2/(2*np.pi))
+    if (abs(phi2) % (2*np.pi)) > np.pi:
+        k2o = k2o + np.sign(phi2)
+
+    # pendulum 2 (short) is at the bottom
+    k2u = int((phi2 - np.pi)/(2*np.pi))
+    if (abs(phi2 - np.pi) % (2*np.pi)) > np.pi:
+        k2u = k2u + np.sign(phi2)
+
+    eq_state = np.zeros(6)
+    if settings["long pendulum"] == "o":
+        eq_state[2] = 2*np.pi*k1o
+    if settings["long pendulum"] == "u":
+        eq_state[2] = (2*k1u + 1)*np.pi
+    if settings["short pendulum"] == "o":
+        eq_state[4] = 2*np.pi*k2o
+    if settings["short pendulum"] == "u":
+        eq_state[4] = (2*k2u + 1)*np.pi
+
+    return eq_state
 

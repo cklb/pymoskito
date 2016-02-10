@@ -610,7 +610,6 @@ class SimulationGui(QtGui.QMainWindow):
         :param item:
         """
 
-        print item
         title = str(item.text())
         data = self._get_data_by_name(title)
         t = self.currentDataset['results']['time']
