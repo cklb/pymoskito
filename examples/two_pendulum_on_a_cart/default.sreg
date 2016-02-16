@@ -52,7 +52,7 @@
 
   Model:
    type: TwoPendulumModel
-   initial state: [0, 0, 5, 0, 0, 0]
+   initial state: [0, 0, 2, 0, 2, 0]
 
   Solver:
    type: ODEInt
@@ -65,6 +65,37 @@
    poles: [-9, -7, -4, -2, -3, -2]
    long pendulum: o
    short pendulum: o
+
+  Trajectory:
+   type: Setpoint
+   State: [0]
+   Setpoint: [0]
+
+  Limiter:
+   type: ModelInputLimiter
+   Limits: [-6, 6]
+
+  ModelMixer:
+   type: AdditiveMixer
+   Input A: Controller
+   Input B: Feedforward
+
+- Name: R_oo_c-code
+  clear previous: !!python/bool True # decide whether previous settings should remain or not
+
+  Model:
+   type: TwoPendulumModel
+   initial state: [0, 0, 2, 0, 2, 0]
+
+  Solver:
+   type: ODEInt
+   measure rate: 500
+   step size: 0.001
+   end time: 10
+
+  Controller:
+   type: CLinearStateFeedback
+   equilibrium: 1
 
   Trajectory:
    type: Setpoint
@@ -100,6 +131,37 @@
    State: [0]
    Setpoint: [0]
 
+  Limiter:
+   type: ModelInputLimiter
+   Limits: [-6, 6]
+
+  ModelMixer:
+   type: AdditiveMixer
+   Input A: Controller
+   Input B: Feedforward
+
+- Name: R_uu_c-code
+  clear previous: !!python/bool True # decide whether previous settings should remain or not
+
+  Model:
+   type: TwoPendulumModel
+   initial state: [0, 0, 190, 0, 180, 0]
+
+  Solver:
+   type: ODEInt
+   measure rate: 500
+   step size: 0.001
+   end time: 10
+
+  Controller:
+   type: CLinearStateFeedback
+   equilibrium: 4
+
+  Trajectory:
+   type: Setpoint
+   State: [0]
+   Setpoint: [0]
+
   ModelMixer:
    type: AdditiveMixer
    Input A: Controller
@@ -110,7 +172,7 @@
 
   Model:
    type: TwoPendulumModel
-   initial state: [0, 0, 10, 0, 180, 0]
+   initial state: [0, 0, 4, 0, 180, 0]
 
   Solver:
    type: ODEInt
@@ -129,6 +191,38 @@
    State: [0]
    Setpoint: [0]
 
+  Limiter:
+   type: ModelInputLimiter
+   Limits: [-6, 6]
+
+  ModelMixer:
+   type: AdditiveMixer
+   Input A: Controller
+   Input B: Feedforward
+
+
+- Name: R_ou_c-code
+  clear previous: !!python/bool True # decide whether previous settings should remain or not
+
+  Model:
+   type: TwoPendulumModel
+   initial state: [0, 0, 4, 0, 180, 0]
+
+  Solver:
+   type: ODEInt
+   measure rate: 500
+   step size: 0.001
+   end time: 10
+
+  Controller:
+   type: CLinearStateFeedback
+   equilibrium: 2
+
+  Trajectory:
+   type: Setpoint
+   State: [0]
+   Setpoint: [0]
+
   ModelMixer:
    type: AdditiveMixer
    Input A: Controller
@@ -139,7 +233,7 @@
 
   Model:
    type: TwoPendulumModel
-   initial state: [0, 0, 180, 0, 10, 0]
+   initial state: [0, 0, 180, 0, 5, 0]
 
   Solver:
    type: ODEInt
@@ -158,10 +252,43 @@
    State: [0]
    Setpoint: [0]
 
+  Limiter:
+   type: ModelInputLimiter
+   Limits: [-6, 6]
+
   ModelMixer:
    type: AdditiveMixer
    Input A: Controller
    Input B: Feedforward
+
+
+- Name: R_uo_c-code
+  clear previous: !!python/bool True # decide whether previous settings should remain or not
+
+  Model:
+   type: TwoPendulumModel
+   initial state: [0, 0, 180, 0, 5, 0]
+
+  Solver:
+   type: ODEInt
+   measure rate: 500
+   step size: 0.001
+   end time: 10
+
+  Controller:
+   type: CLinearStateFeedback
+   equilibrium: 3
+
+  Trajectory:
+   type: Setpoint
+   State: [0]
+   Setpoint: [0]
+
+  ModelMixer:
+   type: AdditiveMixer
+   Input A: Controller
+   Input B: Feedforward
+
 
 - Name: ljapunov
   clear previous: !!python/bool True # decide whether previous settings should remain or not
