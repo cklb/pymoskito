@@ -46,20 +46,12 @@ class LinearStateFeedback(Controller):
         x = is_values
         yd = desired_values
 
-        # if eq is None:
-        #     eq = calc_closest_eq_state(self._settings, is_values)
-        # x = x - np.atleast_2d(eq).T
-
-        # this is a second version, here the controller get only a
-        # angle signal from 0 to 2*PI, but it does not work correct,
-        # because it ignores the closest equilibrium
-        # if x[2, 0] != 0:
-        #     x[2, 0] %= (2 * np.pi * np.sign(x[2, 0]))
-        # if x[4, 0] != 0:
-        #     x[4, 0] %= (2 * np.pi * np.sign(x[4, 0]))
         if eq is None:
-            eq = calc_equilibrium(self._settings)
+            eq = calc_closest_eq_state(self._settings, is_values)
         x = x - np.atleast_2d(eq).T
+
+        # this is a second version
+        # x = calc_small_signal_state(self._settings, is_values)
 
         u = - np.dot(self.K, x) + np.dot(self.V, yd[0, 0])
 
@@ -69,6 +61,7 @@ class LinearStateFeedback(Controller):
 class CLinearStateFeedback(Controller):
 
     public_settings = OrderedDict([('equilibrium', 4),
+                                   ('debug1', 8),
                                    ('tick divider', 1)])
 
     def __init__(self, settings):
@@ -94,7 +87,7 @@ class CLinearStateFeedback(Controller):
         for idx, val in enumerate([0]*6):
             self.c_k[idx] = val
         self.c_equilibrium = ct.c_uint8(self._settings["equilibrium"])
-        self.c_debug1 = ct.c_float(0)
+        self.c_debug1 = ct.c_float(self._settings["debug1"])
         self.c_debug2 = ct.c_float(0)
         self.c_debug_arr = (ct.c_float*6)()
         for idx, val in enumerate([0]*6):
@@ -155,14 +148,14 @@ class LjapunovController(Controller):
         E2 = 0
 
         if self._settings["long pendulum"] == "u":
-            E1 = 0.5*st.J1_real*x4**2 + st.m1*st.g*st.l1*(np.cos(x3) + 1)
+            E1 = 0.5*st.J_DP1*x4**2 + st.m1*st.g*st.l1*(np.cos(x3) + 1)
         elif self._settings["long pendulum"] == "o":
-            E1 = 0.5*st.J1_real*x4**2 + st.m1*st.g*st.l1*(np.cos(x3) - 1)
+            E1 = 0.5*st.J_DP1*x4**2 + st.m1*st.g*st.l1*(np.cos(x3) - 1)
 
         if self._settings["short pendulum"] == "u":
-            E2 = 0.5*st.J2_real*x6**2 + st.m2*st.g*st.l2*(np.cos(x5) + 1)
+            E2 = 0.5*st.J_DP2*x6**2 + st.m2*st.g*st.l2*(np.cos(x5) + 1)
         elif self._settings["short pendulum"] == "o":
-            E2 = 0.5*st.J2_real*x6**2 + st.m2*st.g*st.l2*(np.cos(x5) - 1)
+            E2 = 0.5*st.J_DP2*x6**2 + st.m2*st.g*st.l2*(np.cos(x5) - 1)
 
         G = st.m1*st.l1*x4*np.cos(x3)*E1 + st.m2*st.l2*x6*np.cos(x5)*E2*self.w**2 +st.m0*x2*E0
 
@@ -270,6 +263,7 @@ class SwingUpController(Controller):
 
         return u
 
+
 class SwingUpController2(Controller):
     """
     This class realise the swing up for equilibria with a arbitrary
@@ -356,11 +350,80 @@ class SwingUpController2(Controller):
 
         return u
 
+
+class CSwingUpController2(Controller):
+
+    public_settings = OrderedDict([('equilibrium', 4),
+                                   ('gain', 8),
+                                   ('tick divider', 1)])
+
+    def __init__(self, settings):
+        # add specific private settings
+        settings.update(input_order=0)
+        settings.update(ouput_dim=1)
+        settings.update(input_type='system_state')
+
+        Controller.__init__(self, settings)
+
+        # load dll, the calling convention is cdecl
+        self.lib = ct.cdll.TestLib
+        print self.lib
+
+        # create c compatible variables
+        self.c_time = ct.c_float(0)
+        self.c_pos_arr = (ct.c_float*3)()
+        self.c_long_arr = (ct.c_float*3)()
+        self.c_short_arr = (ct.c_float*3)()
+        self.c_motor_voltage = ct.c_float(0)
+        self.c_u_ret = ct.c_float(0)
+        self.c_k = (ct.c_float*6)()
+        for idx, val in enumerate([0]*6):
+            self.c_k[idx] = val
+        self.c_equilibrium = ct.c_uint8(self._settings["equilibrium"])
+        self.c_debug1 = ct.c_float(0)
+        self.c_debug2 = ct.c_float(0)
+        self.c_debug_arr = (ct.c_float*6)()
+        self.c_gain = ct.c_float(self._settings["gain"])
+        for idx, val in enumerate([0]*6):
+            self.c_debug_arr[idx] = val
+
+    def _control(self, is_values, desired_values, t, eq=None):
+        # input abbreviations
+        x = is_values
+        yd = desired_values
+        self.c_time = ct.c_float(t)
+        self.c_pos_arr[0] = x[0, 0]
+        self.c_pos_arr[1] = x[1, 0]
+        self.c_pos_arr[2] = 0
+        self.c_long_arr[0] = x[2, 0]*(180/np.pi)
+        self.c_long_arr[1] = x[3, 0]*(180/np.pi)
+        self.c_long_arr[2] = 0
+        self.c_short_arr[0] = x[4, 0]*(180/np.pi)
+        self.c_short_arr[1] = x[5, 0]*(180/np.pi)
+        self.c_short_arr[2] = 0
+
+        err = self.lib.control_loop(self.c_time,
+                                    ct.byref(self.c_pos_arr),
+                                    ct.byref(self.c_long_arr),
+                                    ct.byref(self.c_short_arr),
+                                    self.c_motor_voltage,
+                                    ct.byref(self.c_u_ret),
+                                    ct.byref(self.c_k),
+                                    self.c_equilibrium,
+                                    ct.byref(self.c_debug1),
+                                    ct.byref(self.c_debug2),
+                                    ct.byref(self.c_debug_arr),
+                                    ct.byref(self.c_gain))
+
+        u = np.array([[self.c_u_ret.value]])
+        return u
+
 pm.register_simulation_module(Controller, LinearStateFeedback)
 pm.register_simulation_module(Controller, CLinearStateFeedback)
 pm.register_simulation_module(Controller, LjapunovController)
 pm.register_simulation_module(Controller, SwingUpController)
 pm.register_simulation_module(Controller, SwingUpController2)
+pm.register_simulation_module(Controller, CSwingUpController2)
 
 
 def calc_equilibrium(settings):
@@ -413,4 +476,51 @@ def calc_closest_eq_state(settings, state):
         eq_state[4] = (2*k2u + 1)*np.pi
 
     return eq_state
+
+
+def calc_small_signal_state(settings, state):
+
+    phi1 = (abs(state[2][0]) % (2*np.pi))*np.sign(state[2][0])
+    phi2 = (abs(state[4][0]) % (2*np.pi))*np.sign(state[4][0])
+
+    # transform the angle of the pendulums into an interval from -pi to +pi
+    # pendulum 1 (long) is on top
+    phi1_o = phi1
+    if abs(phi1_o) > np.pi:
+        phi1_o -= np.sign(state[2][0])*2*np.pi
+
+    # pendulum 2 (short) is on top
+    phi2_o = phi2
+    if abs(phi2_o) > np.pi:
+        phi2_o -= np.sign(state[4][0])*2*np.pi
+
+    # transform the angle of the pendulums into an interval from 0 to 2pi
+    # pendulum 1 (long) is at the bottom
+    phi1_u = phi1
+    if phi1_u < 0:
+        phi1_u -= np.sign(state[2][0])*2*np.pi
+
+    # pendulum 2 (short) is at the bottom
+    phi2_u = phi2
+    if phi2_u < 0:
+        phi2_u -= np.sign(state[4][0])*2*np.pi
+
+    # calc small signal state
+    small_signal_state = np.zeros((6, 1))
+    for idx, val in enumerate(state):
+        small_signal_state[idx, 0] = val[0]
+
+    if settings["long pendulum"] == "o":
+        small_signal_state[2][0] = phi1_o - 0
+    if settings["long pendulum"] == "u":
+        small_signal_state[2][0] = phi1_u - np.pi
+    if settings["short pendulum"] == "o":
+        small_signal_state[4][0] = phi2_o - 0
+    if settings["short pendulum"] == "u":
+        small_signal_state[4][0] = phi2_u - np.pi
+
+    return small_signal_state
+
+
+
 

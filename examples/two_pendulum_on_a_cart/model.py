@@ -13,15 +13,15 @@ class TwoPendulumModel(Model):
     Implementation of the two pendulum on a cart system
     """
     public_settings = OrderedDict([('initial state', st.initial_state),
-                                   ("m0", st.m0_real),
+                                   ("m0*", st.m0_star),
                                    ("d0", st.d0),
-                                   ("m1", st.m1_real),
-                                   ("a1", st.a1),
-                                   ("J1", st.J1_real),
+                                   ("m1*", st.m1_star),
+                                   ("l1*", st.l1_star),
+                                   ("J_DP1", st.J_DP1),
                                    ("d1", st.d1),
-                                   ("m2", st.m2_real),
-                                   ("a2", st.a2),
-                                   ("J2", st.J2_real),
+                                   ("m2*", st.m2_star),
+                                   ("l2*", st.l2_star),
+                                   ("J_DP2", st.J_DP2),
                                    ("d2", st.d2),
                                    ("g", st.g),
                                    ])
@@ -40,13 +40,13 @@ class TwoPendulumModel(Model):
         self.d2 = self._settings['d2']
         self.g = self._settings['g']
 
-        self.l1 = self._settings['J1']/(self._settings['m1']*self._settings['a1'])
-        self.l2 = self._settings['J2']/(self._settings['m2']*self._settings['a2'])
+        self.l1 = self._settings['J_DP1']/(self._settings['m1*']*self._settings['l1*'])
+        self.l2 = self._settings['J_DP2']/(self._settings['m2*']*self._settings['l2*'])
 
-        self.m1 = (self._settings['m1']*self._settings['a1'])**2/self._settings['J1']
-        self.m2 = (self._settings['m2']*self._settings['a2'])**2/self._settings['J2']
+        self.m1 = (self._settings['m1*']*self._settings['l1*'])**2/self._settings['J_DP1']
+        self.m2 = (self._settings['m2*']*self._settings['l2*'])**2/self._settings['J_DP2']
 
-        self.m0 = self._settings['m0'] + (self._settings['m1'] - self.m1) + (self._settings['m2'] - self.m2)
+        self.m0 = self._settings['m0*'] + (self._settings['m1*'] - self.m1) + (self._settings['m2*'] - self.m2)
 
     def state_function(self, t, x, args):
         """
@@ -109,59 +109,59 @@ class TwoPendulumModel(Model):
         """
         return np.array([input[0]], dtype=float)
 
-    def f(self, x, u):
-        from sympy import cos, sin
-        # definitional
-        x1 = x[0]
-        x2 = x[1]
-        x3 = x[2]
-        x4 = x[3]
-        x5 = x[4]
-        x6 = x[5]
-        u, = u
-        M1_star = 0
-        M2_star = 0
-
-        # transformation of the input
-        M = self.m0 + self.m1*(sin(x3))**2 + self.m2*(sin(x5))**2
-        F1 = self.m1*sin(x3)*(self.g*cos(x3) - self.l1*x4**2)
-        F2 = self.m2*sin(x5)*(self.g*cos(x5) - self.l2*x6**2)
-        uu = (F1
-             + F2
-             + (u - self.d0*x2)
-             + (M1_star - self.d1*x4)*cos(x3)/self.l1
-             + (M2_star - self.d2*x6)*cos(x5)/self.l2)/M
-
-        dx1 = x2
-        dx2 = uu
-        dx3 = x4
-        dx4 = self.g*sin(x3)/self.l1 + uu*cos(x3)/self.l1 + (M1_star - self.d1*x4)/(self.m1*self.l1**2)
-        dx5 = x6
-        dx6 = self.g*sin(x5)/self.l2 + uu*cos(x5)/self.l2 + (M2_star - self.d2*x6)/(self.m2*self.l2**2)
-
-        ff = np.array([dx1,
-                       dx2,
-                       dx3,
-                       dx4,
-                       dx5,
-                       dx6])
-        return ff
+    # def f(self, x, u):
+    #     from sympy import cos, sin
+    #     # definitional
+    #     x1 = x[0]
+    #     x2 = x[1]
+    #     x3 = x[2]
+    #     x4 = x[3]
+    #     x5 = x[4]
+    #     x6 = x[5]
+    #     u, = u
+    #     M1_star = 0
+    #     M2_star = 0
+    #
+    #     # transformation of the input
+    #     M = self.m0 + self.m1*(sin(x3))**2 + self.m2*(sin(x5))**2
+    #     F1 = self.m1*sin(x3)*(self.g*cos(x3) - self.l1*x4**2)
+    #     F2 = self.m2*sin(x5)*(self.g*cos(x5) - self.l2*x6**2)
+    #     uu = (F1
+    #          + F2
+    #          + (u - self.d0*x2)
+    #          + (M1_star - self.d1*x4)*cos(x3)/self.l1
+    #          + (M2_star - self.d2*x6)*cos(x5)/self.l2)/M
+    #
+    #     dx1 = x2
+    #     dx2 = uu
+    #     dx3 = x4
+    #     dx4 = self.g*sin(x3)/self.l1 + uu*cos(x3)/self.l1 + (M1_star - self.d1*x4)/(self.m1*self.l1**2)
+    #     dx5 = x6
+    #     dx6 = self.g*sin(x5)/self.l2 + uu*cos(x5)/self.l2 + (M2_star - self.d2*x6)/(self.m2*self.l2**2)
+    #
+    #     ff = np.array([dx1,
+    #                    dx2,
+    #                    dx3,
+    #                    dx4,
+    #                    dx5,
+    #                    dx6])
+    #     return ff
 
 
 class TwoPendulumModel2(Model):
     """
     Implementation of the two pendulum on a cart system
     """
-    public_settings = OrderedDict([('initial state', [0, 0, 0.1, 0, 0, 0]),
-                                   ("m0", st.m0_real),
+    public_settings = OrderedDict([('initial state', st.initial_state),
+                                   ("m0*", st.m0_star),
                                    ("d0", st.d0),
-                                   ("m1", st.m1_real),
-                                   ("a1", st.a1),
-                                   ("J1", st.J1_real),
+                                   ("m1*", st.m1_star),
+                                   ("l1*", st.l1_star),
+                                   ("J_DP1", st.J_DP1),
                                    ("d1", st.d1),
-                                   ("m2", st.m2_real),
-                                   ("a2", st.a2),
-                                   ("J2", st.J2_real),
+                                   ("m2*", st.m2_star),
+                                   ("l2*", st.l2_star),
+                                   ("J_DP2", st.J_DP2),
                                    ("d2", st.d2),
                                    ("g", st.g),
                                    ])
@@ -181,15 +181,15 @@ class TwoPendulumModel2(Model):
         self.d2 = self._settings['d2']
         self.g = self._settings['g']
 
-        self.a1 = self._settings['a1']
-        self.a2 = self._settings['a2']
+        self.l1_star = self._settings['l1*']
+        self.l2_star = self._settings['l2*']
 
-        self.J1 = self._settings['J1']
-        self.J2 = self._settings['J2']
+        self.J_DP1 = self._settings['J_DP1']
+        self.J_DP2 = self._settings['J_DP2']
 
-        self.m0 = st.m0_real
-        self.m1 = st.m1_real
-        self.m2 = st.m2_real
+        self.m0_star = self._settings['m0*']
+        self.m1_star = self._settings['m1*']
+        self.m2_star = self._settings['m2*']
 
     def state_function(self, t, x, args):
         """
@@ -211,18 +211,18 @@ class TwoPendulumModel2(Model):
         M2 = 0
 
         # transformation of the input
-        term1 = self.m0 + self.m1 + self.m2 - self.m1**2*self.a1**2*(np.cos(x3))**2/self.J1 \
-                - self.m2**2*self.a2**2*(np.cos(x5))**2/self.J2
-        term2 = self.m1*self.a1*(np.cos(x3))*(M1 - self.d1*x4 + self.m1*self.a1*self.g*np.sin(x3))/self.J1
-        term3 = self.m2*self.a2*(np.cos(x5))*(M2 - self.d2*x6 + self.m2*self.a2*self.g*np.sin(x5))/self.J2
-        term4 = F - self.d0*x2 - self.m1*self.a1*x4**2*np.sin(x3) - self.m2*self.a2*x6**2*np.sin(x5)
+        term1 = self.m0_star + self.m1_star + self.m2_star - self.m1_star**2*self.l1_star**2*(np.cos(x3))**2/self.J_DP1 \
+                - self.m2_star**2*self.l2_star**2*(np.cos(x5))**2/self.J_DP2
+        term2 = self.m1_star*self.l1_star*(np.cos(x3))*(M1 - self.d1*x4 + self.m1_star*self.l1_star*self.g*np.sin(x3))/self.J_DP1
+        term3 = self.m2_star*self.l2_star*(np.cos(x5))*(M2 - self.d2*x6 + self.m2_star*self.l2_star*self.g*np.sin(x5))/self.J_DP2
+        term4 = F - self.d0*x2 - self.m1_star*self.l1_star*x4**2*np.sin(x3) - self.m2_star*self.l2_star*x6**2*np.sin(x5)
 
         dx1 = x2
         dx2 = (term2 + term3 + term4)/term1
         dx3 = x4
-        dx4 = (self.m1*self.a1*np.cos(x3)*dx2 + M1 - self.d1*x4 + self.m1*self.a1*self.g*np.sin(x3))/self.J1
+        dx4 = (self.m1_star*self.l1_star*np.cos(x3)*dx2 + M1 - self.d1*x4 + self.m1_star*self.l1_star*self.g*np.sin(x3))/self.J_DP1
         dx5 = x6
-        dx6 = (self.m2*self.a2*np.cos(x5)*dx2 + M2 - self.d2*x6 + self.m2*self.a2*self.g*np.sin(x5))/self.J2
+        dx6 = (self.m2_star*self.l2_star*np.cos(x5)*dx2 + M2 - self.d2*x6 + self.m2_star*self.l2_star*self.g*np.sin(x5))/self.J_DP2
 
         dx = np.array([[dx1],
                        [dx2],
