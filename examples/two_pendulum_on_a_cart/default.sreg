@@ -290,7 +290,36 @@
    Input B: Feedforward
 
 
-- Name: ljapunov
+- Name: ljapunov_uo
+  clear previous: !!python/bool True # decide whether previous settings should remain or not
+
+  Model:
+   type: TwoPendulumModel
+   initial state: [0, 0, 180, 0, 190, 0]
+
+  Solver:
+   type: ODEInt
+   measure rate: 500
+   step size: 0.001
+   end time: 10
+
+  Controller:
+   type: LjapunovController
+   k: 8
+   long pendulum: u
+   short pendulum: o
+
+  Trajectory:
+   type: Setpoint
+   State: [0]
+   Setpoint: [0]
+
+  ModelMixer:
+   type: AdditiveMixer
+   Input A: Controller
+   Input B: Feedforward
+
+- Name: Cljapunov_uo
   clear previous: !!python/bool True # decide whether previous settings should remain or not
 
   Model:
@@ -308,6 +337,8 @@
 
   Controller:
    type: LjapunovController
+   k: 8
+   equilibrium: 3
 
   Trajectory:
    type: Setpoint

@@ -53,6 +53,7 @@ class LinearStateFeedback(Controller):
         # this is a second version
         # x = calc_small_signal_state(self._settings, is_values)
 
+        # u corresponds to a force [kg*m/s**2] = [N]
         u = - np.dot(self.K, x) + np.dot(self.V, yd[0, 0])
 
         return u
@@ -173,6 +174,72 @@ class LjapunovController(Controller):
         F2 = st.m2*np.sin(x5)*(st.g*np.cos(x5) - st.l2*x6**2)
         u = - F1 - F2 + u_lja*M + d0*x2 - (M1_star - d1*x4)*np.cos(x3)/st.l1 - (M2_star - d2*x6)*np.cos(x5)/st.l2
 
+        return u
+
+class CLjapunovController(Controller):
+
+    public_settings = OrderedDict([('equilibrium', 3),
+                                   ('k', 8),
+                                   ('tick divider', 1)])
+
+    def __init__(self, settings):
+        # add specific private settings
+        settings.update(input_order=0)
+        settings.update(ouput_dim=1)
+        settings.update(input_type='system_state')
+
+        Controller.__init__(self, settings)
+
+        # load dll, the calling convention is cdecl
+        self.lib = ct.cdll.TestLib
+
+        # create c compatible variables
+        self.c_time = ct.c_float(0)
+        self.c_pos_arr = (ct.c_float*3)()
+        self.c_long_arr = (ct.c_float*3)()
+        self.c_short_arr = (ct.c_float*3)()
+        self.c_motor_voltage = ct.c_float(0)
+        self.c_u_ret = ct.c_float(0)
+        self.c_k = (ct.c_float*6)()
+        for idx, val in enumerate([0]*6):
+            self.c_k[idx] = val
+        self.c_equilibrium = ct.c_uint8(self._settings["equilibrium"])
+        self.c_debug1 = ct.c_float(0)
+        self.c_debug2 = ct.c_float(0)
+        self.c_debug_arr = (ct.c_float*6)()
+        for idx, val in enumerate([0]*6):
+            self.c_debug_arr[idx] = val
+        self.c_gain = ct.c_float(self._settings["k"])
+
+    def _control(self, is_values, desired_values, t, eq=None):
+        # input abbreviations
+        x = is_values
+        yd = desired_values
+        self.c_time = ct.c_float(t)
+        self.c_pos_arr[0] = x[0, 0]
+        self.c_pos_arr[1] = x[1, 0]
+        self.c_pos_arr[2] = 0
+        self.c_long_arr[0] = x[2, 0]*(180/np.pi)
+        self.c_long_arr[1] = x[3, 0]*(180/np.pi)
+        self.c_long_arr[2] = 0
+        self.c_short_arr[0] = x[4, 0]*(180/np.pi)
+        self.c_short_arr[1] = x[5, 0]*(180/np.pi)
+        self.c_short_arr[2] = 0
+
+        err = self.lib.control_loop(self.c_time,
+                                    ct.byref(self.c_pos_arr),
+                                    ct.byref(self.c_long_arr),
+                                    ct.byref(self.c_short_arr),
+                                    self.c_motor_voltage,
+                                    ct.byref(self.c_u_ret),
+                                    ct.byref(self.c_k),
+                                    self.c_equilibrium,
+                                    ct.byref(self.c_debug1),
+                                    ct.byref(self.c_debug2),
+                                    ct.byref(self.c_debug_arr),
+                                    ct.byref(self.c_gain))
+
+        u = np.array([[self.c_u_ret.value]])
         return u
 
 
@@ -421,6 +488,7 @@ class CSwingUpController2(Controller):
 pm.register_simulation_module(Controller, LinearStateFeedback)
 pm.register_simulation_module(Controller, CLinearStateFeedback)
 pm.register_simulation_module(Controller, LjapunovController)
+pm.register_simulation_module(Controller, CLjapunovController)
 pm.register_simulation_module(Controller, SwingUpController)
 pm.register_simulation_module(Controller, SwingUpController2)
 pm.register_simulation_module(Controller, CSwingUpController2)
