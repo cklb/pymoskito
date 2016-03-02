@@ -3,8 +3,35 @@ from __future__ import division
 import numpy as np
 import matplotlib as mpl
 mpl.use("Qt4Agg")
-# mpl.rcParams['text.usetex'] = True
-mpl.rcParams['text.latex.unicode'] = True
+
+# mpl.use('pgf')
+# settings for latex
+latex_settings = {  # setup matplotlib to use latex for output
+                    "pgf.texsystem": "pdflatex",  # change this if using xetex or lautex
+                    "text.usetex": True,  # use LaTeX to write all text
+                    "font.family": "serif",
+                    "font.serif": [],  # blank entries should cause plots to inherit fonts from the document
+                    "font.sans-serif": [],
+                    "font.monospace": [],
+                    # "text.fontsize": 11,
+                    "legend.fontsize": 9,  # Make the legend/label fonts a little smaller
+                    "xtick.labelsize": 9,
+                    "ytick.labelsize": 9,
+                    "lines.linewidth": 0.5,
+                    "axes.labelsize": 11,  # LaTeX default is 10pt font.
+                    "axes.linewidth": 0.5,
+                    "axes.unicode_minus": False,
+                    "figure.subplot.left": 0.1,  # the left side of the subplots of the figure
+                    "figure.subplot.right": 0.95,  # the right side of the subplots of the figure
+                    "figure.subplot.bottom": 0.125,  # the bottom of the subplots of the figure
+                    "figure.subplot.top": 0.95,  # the top of the subplots of the figure
+                    "figure.subplot.wspace": 0.4,  # the amount of width reserved for blank space between subplots
+                    "figure.subplot.hspace": 0.4,  # the amount of height reserved for white space between subplots
+                    "patch.linewidth": 0.5,
+                    # Patches are graphical objects that fill 2D space, like polygons or circles
+                    }
+mpl.rcParams.update(latex_settings)
+
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 from matplotlib.lines import Line2D as Line
@@ -13,7 +40,7 @@ import pymoskito as pm
 from processing_core import PostProcessingModule, MetaProcessingModule
 from tools import sort_tree, get_sub_value
 
-__author__ = 'stefan'
+__author__ = 'stefan, christoph'
 
 
 class StepResponse(PostProcessingModule):
@@ -134,7 +161,7 @@ class StepResponse(PostProcessingModule):
 
         self.write_output_files(data['regime name'], fig, results)
 
-        return {'name': '_'.join([data['regime name'], self.name]), "figure": canvas}
+        return [{'name': '_'.join([data['regime name'], self.name]), "figure": canvas}]
 
     def create_time_line(self, axes, t, y, time_value, label):
         if time_value != t[-1]:
@@ -178,6 +205,176 @@ class StepResponse(PostProcessingModule):
         return metric_values
 
 
+class PlotAll(PostProcessingModule):
+    """
+    plot diagrams of all system quantities
+    """
+    def __init__(self):
+        PostProcessingModule.__init__(self)
+        return
+
+    def run(self, data):
+
+        # dict for calculated values
+        output = {}
+        return_list = []
+
+        t = data["results"]["time"]
+        val = t  # default
+
+        for module_name in data["results"].keys():
+            # ignore keys time and finished
+            if not(module_name == "time" or module_name == "finished"):
+                module_data = data["results"][module_name]
+                module_shape = module_data.shape
+                # module_shape is a tuple like this (1000, 6, 1)
+                # 1000 vectors with dimension: 6 rows, 1 column
+
+                for idx in range(module_shape[1]):
+                    if len(module_shape) == 3:
+                        val = module_data[:, idx, 0]
+                    if len(module_shape) == 2:
+                        val = module_data[:, idx]
+
+                    plot_name = '_'.join([data['regime name'], self.name, module_name, str(idx)])
+                    fig = Figure()
+                    axes = fig.add_subplot(111)
+                    axes.set_title(r'\textbf{%s %s}' % (module_name.replace('_', ' '), str(idx)))
+                    axes.plot(t, val, c='k')
+                    axes.set_xlim(left=0, right=t[-1])
+                    axes.set_xlabel(r'Zeit [s]')
+                    axes.set_ylabel(r'%s %s' % (module_name.replace('_', ' '), str(idx)))
+                    canvas = FigureCanvas(fig)
+
+                    return_list.append({'name': plot_name, 'figure': canvas})
+
+        # check for sim success
+        if not data["results"]["finished"]:
+            for key in output.keys():
+                output[key] = None
+
+        # add settings and metrics to dictionary results
+        results = {}
+        results.update({'metrics': output})
+        results.update({'modules': data['modules']})
+
+        # self.write_output_files(data['regime name'], fig, results)
+
+        return return_list
+
+
+class TwoPendulum(PostProcessingModule):
+    """
+    plot diagrams of all system quantities
+    """
+    def __init__(self):
+        PostProcessingModule.__init__(self)
+        return
+
+    def run(self, data):
+
+        # dict for calculated values
+        output = {}
+        return_list = []
+
+        t = data["results"]["time"]
+        x0 = data["results"]["Solver"][:, 0]
+        x0_vel = data["results"]["Solver"][:, 1]
+        phi1 = data["results"]["Solver"][:, 2]*(180.0/np.pi)
+        phi1_vel = data["results"]["Solver"][:, 3]*(180.0/np.pi)
+        phi2 = data["results"]["Solver"][:, 4]*(180.0/np.pi)
+        phi2_vel = data["results"]["Solver"][:, 5]*(180.0/np.pi)
+
+        val_list = [x0, x0_vel, phi1, phi1_vel, phi2, phi2_vel]
+
+        title_list = ["Wagenposition",
+                      "Wagengeschwindigkeit",
+                      "Winkel gro\ss{}es Pendel",
+                      "Winkelgeschwindigkeit gro\ss{}es Pendel",
+                      "Winkel kleines Pendel",
+                      "Winkelgeschwindigkeit kleines Pendel"]
+        x_label_list = [r"$x_{0}$ in m",
+                        r"$\dot{x}_{0}$ in m/s",
+                        r"$\varphi_{1}$ in Grad",
+                        r"$\dot{\varphi}_{1}$ in Grad/s",
+                        r"$\varphi_{2}$ in Grad",
+                        r"$\dot{\varphi}_{2}$ in Grad/s"]
+        filename_list = ["x0",
+                         "x0_vel",
+                         "phi1",
+                         "phi1_vel",
+                         "phi2",
+                         "phi2_vel"]
+        if 0:
+            for idx, val in enumerate(val_list):
+                fig = Figure()
+                axes = fig.add_subplot(111)
+                axes.set_title(r'\textbf{%s}' % title_list[idx])
+                axes.plot(t, val, c='k')
+                axes.set_xlim(left=0, right=t[-1])
+                axes.set_xlabel(r'Zeit in s')
+                axes.set_ylabel(r'%s' % x_label_list[idx])
+                axes.grid(True)
+                canvas = FigureCanvas(fig)
+
+                plot_name = '_'.join([data['regime name'], self.name, filename_list[idx]])
+                return_list.append({'name': plot_name, 'figure': canvas})
+
+                # check for sim success
+                if not data["results"]["finished"]:
+                    for key in output.keys():
+                        output[key] = None
+
+                # add settings and metrics to dictionary results
+                results = {}
+                results.update({'metrics': output})
+                results.update({'modules': data['modules']})
+
+                # save file
+                self.write_output_files('_'.join([data['regime name'], filename_list[idx]]), fig, results)
+
+        # this section is for combined plots
+        # plot both angle of the pendulums in one plot
+        if 1:
+            fig = Figure()
+            axes = fig.add_subplot(111)
+            axes.plot(t, phi1, c='k', label=r'$\varphi_{1}$')
+            axes.plot(t, phi2, c='b', label=r'$\varphi_{2}$')
+            axes.set_xlim(left=t[0], right=t[-1])
+            axes.set_xlabel(r'Zeit in s')
+            axes.set_ylabel(r'Winkel in $^{\circ}$')
+
+            start, end = axes.get_ylim()
+            # axes.set_yticks(np.arange(int(start/180)*180, int(end/180)*180, 180), minor=True)
+            axes.set_yticks(np.arange(int(start/180)*180, int(end/180)*180 + 180, 180), minor=False)
+            # axes.set_yticks([-720, -540, -360, -180, 0, 180, 360, 540, 720], minor=False)
+            axes.grid(True)
+            axes.legend()
+            axes.legend(loc=0)
+            canvas = FigureCanvas(fig)
+
+            plot_name = '_'.join([data['regime name'], self.name, "phi1_und_phi2"])
+            return_list.append({'name': plot_name, 'figure': canvas})
+
+            # check for sim success
+            if not data["results"]["finished"]:
+                for key in output.keys():
+                    output[key] = None
+
+            # add settings and metrics to dictionary results
+            results = {}
+            results.update({'metrics': output})
+            results.update({'modules': data['modules']})
+
+            # save file
+            self.write_output_files('_'.join([data['regime name'], "phi1_und_phi2"]), fig, results)
+            fig.savefig('{}.pgf'.format('_'.join([data['regime name'], "phi1_und_phi2"])))
+
+
+
+        return return_list
+
+
 class XYMetaProcessor(MetaProcessingModule):
     """
     create XY-diagrams for the given key to be compared
@@ -217,3 +414,5 @@ class XYMetaProcessor(MetaProcessingModule):
 
 
 pm.register_processing_module(PostProcessingModule, StepResponse)
+pm.register_processing_module(PostProcessingModule, PlotAll)
+pm.register_processing_module(PostProcessingModule, TwoPendulum)

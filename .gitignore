@@ -21,4 +21,5 @@
 *.gls
 *.slg
 *.syi
+examples/results/processing*
 

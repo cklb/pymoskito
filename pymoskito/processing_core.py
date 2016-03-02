@@ -12,8 +12,10 @@ Base Classes for modules in the result-processing environment
 """
 __author__ = 'stefan'
 
+
 class ProcessingModuleMeta(ABCMeta, pyqtWrapperType):
     pass
+
 
 class ProcessingModule(QObject):
     """
@@ -101,7 +103,7 @@ class ProcessingModule(QObject):
 
     def write_output_files(self, result_name, figure, output=None):
         """
-        this function exports the created diagram and saves calculation results  a POF
+        this function exports the created diagram and saves calculation results in a POF
         (processing output file) File.
         :param result_name:
         :param figure:
@@ -141,7 +143,7 @@ class PostProcessingModule(ProcessingModule):
         output = []
         for res in files:
             print("processing data set: {0}".format(res["regime name"]))
-            output.append(self.run(res))
+            output.extend(self.run(res))
 
         return output
 
@@ -257,7 +259,7 @@ class MetaProcessingModule(ProcessingModule):
                 # correction for the position of the bar
                 x_list[:] = [k + width * counter for k in x_list]
 
-                self.axes.bar(x_list, y_list, width, label=member) #, color=st.color_cycle[controller])
+                self.axes.bar(x_list, y_list, width, label=member)  #, color=st.color_cycle[controller])
                 counter += 1
 
         if (typ == 'bar') and (len(x_all) > 1):
