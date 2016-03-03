@@ -121,7 +121,8 @@ class ProcessingModule(QObject):
 
         if figure:
             for export_format in self._export_formats:
-                figure.savefig(file_name + export_format)
+                figure.savefig(file_name + export_format, bbox_inches='tight')
+                # setting bbox_inches='tight' remove the white space around a saved image
 
 
 class PostProcessingModule(ProcessingModule):

@@ -4,8 +4,18 @@ import numpy as np
 import matplotlib as mpl
 mpl.use("Qt4Agg")
 
-# mpl.use('pgf')
+
 # settings for latex
+# calculate optimal figsize with the golden ratio
+def figsize(scale):
+    fig_width_pt = 448.13095  # Get this from LaTeX using \the\textwidth
+    inches_per_pt = 1.0 / 72.27  # Convert pt to inch
+    golden_ratio = (np.sqrt(5.0) - 1.0) / 2.0  # Aesthetic ratio (you could change this)
+    fig_width = fig_width_pt * inches_per_pt * scale  # width in inches
+    fig_height = fig_width * golden_ratio  # height in inches
+    fig_size = [fig_width, fig_height]
+    return fig_size
+
 latex_settings = {  # setup matplotlib to use latex for output
                     "pgf.texsystem": "pdflatex",  # change this if using xetex or lautex
                     "text.usetex": True,  # use LaTeX to write all text
@@ -17,6 +27,7 @@ latex_settings = {  # setup matplotlib to use latex for output
                     "legend.fontsize": 9,  # Make the legend/label fonts a little smaller
                     "xtick.labelsize": 9,
                     "ytick.labelsize": 9,
+                    "figure.figsize": figsize(1),  # default fig size of 1.0 textwidth
                     "lines.linewidth": 0.5,
                     "axes.labelsize": 11,  # LaTeX default is 10pt font.
                     "axes.linewidth": 0.5,
@@ -272,18 +283,20 @@ class TwoPendulum(PostProcessingModule):
         return
 
     def run(self, data):
-
-        # dict for calculated values
-        output = {}
         return_list = []
 
         t = data["results"]["time"]
         x0 = data["results"]["Solver"][:, 0]
         x0_vel = data["results"]["Solver"][:, 1]
-        phi1 = data["results"]["Solver"][:, 2]*(180.0/np.pi)
-        phi1_vel = data["results"]["Solver"][:, 3]*(180.0/np.pi)
-        phi2 = data["results"]["Solver"][:, 4]*(180.0/np.pi)
-        phi2_vel = data["results"]["Solver"][:, 5]*(180.0/np.pi)
+        phi1 = data["results"]["Solver"][:, 2]
+        phi1_vel = data["results"]["Solver"][:, 3]
+        phi2 = data["results"]["Solver"][:, 4]
+        phi2_vel = data["results"]["Solver"][:, 5]
+        if 'Simulator' in data["modules"]:  # convert radiant to degree if it is a simulation setup
+            phi1 *= (180.0/np.pi)
+            phi1_vel *= (180.0/np.pi)
+            phi2 *= (180.0/np.pi)
+            phi2_vel *= (180.0/np.pi)
 
         val_list = [x0, x0_vel, phi1, phi1_vel, phi2, phi2_vel]
 
@@ -320,22 +333,43 @@ class TwoPendulum(PostProcessingModule):
                 plot_name = '_'.join([data['regime name'], self.name, filename_list[idx]])
                 return_list.append({'name': plot_name, 'figure': canvas})
 
-                # check for sim success
-                if not data["results"]["finished"]:
-                    for key in output.keys():
-                        output[key] = None
-
-                # add settings and metrics to dictionary results
-                results = {}
-                results.update({'metrics': output})
-                results.update({'modules': data['modules']})
-
                 # save file
-                self.write_output_files('_'.join([data['regime name'], filename_list[idx]]), fig, results)
+                self.write_output_files(result_name='_'.join([data['regime name'], filename_list[idx]]),
+                                        figure=fig,
+                                        output=construct_result_dict(data, output={}))
 
-        # this section is for combined plots
+        #################################################
+        # this section is for combined and custom plots
         # plot both angle of the pendulums in one plot
-        if 1:
+        plot_selection = {'x0_x0_vel': False,
+                          'phi1_phi2': False,
+                          'V_V_dot': True}
+
+        if plot_selection['x0_x0_vel']:
+            print 'create x0_x0_vel plot'
+            fig = Figure()
+            axes = fig.add_subplot(111)
+            axes.plot(t, x0, c='b', label=r'$x_{0}$ in m')
+            axes.plot(t, x0_vel, c='r', label=r'$\dot{x}_{0}$ in $\frac{\mathrm{m}}{\mathrm{s}}$')
+            axes.set_xlim(left=t[0], right=t[-1])
+            axes.set_xlabel(r'Zeit in s')
+            axes.set_ylabel(r'keine Ahnung')
+
+            axes.grid(True)
+            axes.legend()
+            axes.legend(loc=0)
+            canvas = FigureCanvas(fig)
+
+            plot_name = '_'.join([data['regime name'], self.name, "x0_x0_vel"])
+            return_list.append({'name': plot_name, 'figure': canvas})
+
+            # save file
+            self.write_output_files(result_name='_'.join([data['regime name'], "x0_x0_vel"]),
+                                    figure=fig,
+                                    output=construct_result_dict(data, output={}))
+
+        if plot_selection['phi1_phi2']:
+            print 'create phi1_phi2 plot'
             fig = Figure()
             axes = fig.add_subplot(111)
             axes.plot(t, phi1, c='k', label=r'$\varphi_{1}$')
@@ -345,34 +379,108 @@ class TwoPendulum(PostProcessingModule):
             axes.set_ylabel(r'Winkel in $^{\circ}$')
 
             start, end = axes.get_ylim()
-            # axes.set_yticks(np.arange(int(start/180)*180, int(end/180)*180, 180), minor=True)
+            # fine segmentation
+            # axes.set_yticks(np.arange(int(start/30)*30, int(end/30)*30 + 30, 30), minor=True)
+            # axes.set_yticks(np.arange(int(start/90)*90, int(end/90)*90 + 90, 90), minor=False)
+            # rough segmentation
+            axes.set_yticks(np.arange(int(start/90)*90, int(end/90)*90 + 90, 90), minor=True)
             axes.set_yticks(np.arange(int(start/180)*180, int(end/180)*180 + 180, 180), minor=False)
-            # axes.set_yticks([-720, -540, -360, -180, 0, 180, 360, 540, 720], minor=False)
+            axes.grid(which='both')
+            axes.grid(which='minor', alpha=0.2)
+            axes.grid(which='major', alpha=0.5)
+            axes.legend()
+            axes.legend(loc=0)
+            canvas = FigureCanvas(fig)
+
+            plot_name = '_'.join([data['regime name'], self.name, "phi1_phi2"])
+            return_list.append({'name': plot_name, 'figure': canvas})
+
+            # save file
+            self.write_output_files(result_name='_'.join([data['regime name'], "phi1_phi2"]),
+                                    figure=fig,
+                                    output=construct_result_dict(data, output={}))
+
+        if plot_selection['V_V_dot']:
+            print 'create V_V_dot plot'
+            V , V_dot = self.calc_v_and_v_dot(data, val_list)
+
+            fig = Figure()
+            axes = fig.add_subplot(111)
+            axes.plot(t, V, c='k', label=r'$V$ in $\frac{\mathrm{kg}^{2}\mathrm{m}^{4}}{\mathrm{s}^{4}}$')
+            # axes.plot(t, V_dot, c='b', label=r'$\dot{V}$ in $\frac{\mathrm{kg}^{2}\mathrm{m}^{4}}{\mathrm{s}^{5}}$')
+            axes.set_xlim(left=t[0], right=t[-1])
+            axes.set_xlabel(r'Zeit in s')
+            axes.set_ylabel(r'keine Ahnung')
+
             axes.grid(True)
             axes.legend()
             axes.legend(loc=0)
             canvas = FigureCanvas(fig)
 
-            plot_name = '_'.join([data['regime name'], self.name, "phi1_und_phi2"])
+            plot_name = '_'.join([data['regime name'], self.name, "V_V_dot"])
             return_list.append({'name': plot_name, 'figure': canvas})
 
-            # check for sim success
-            if not data["results"]["finished"]:
-                for key in output.keys():
-                    output[key] = None
-
-            # add settings and metrics to dictionary results
-            results = {}
-            results.update({'metrics': output})
-            results.update({'modules': data['modules']})
-
             # save file
-            self.write_output_files('_'.join([data['regime name'], "phi1_und_phi2"]), fig, results)
-            fig.savefig('{}.pgf'.format('_'.join([data['regime name'], "phi1_und_phi2"])))
-
-
+            self.write_output_files(result_name='_'.join([data['regime name'], "V_V_dot"]),
+                                    figure=fig,
+                                    output=construct_result_dict(data, output={}))
 
         return return_list
+
+    def calc_v_and_v_dot(self, data, val_list):
+        if 'long pendulum' in data['modules']['Controller'] and 'short pendulum' in data['modules']['Controller']:
+
+            # extract parameter to simplify the calculation of V and V_dot
+            m0_star = data['modules']['Model']['m0*']
+            m1_star = data['modules']['Model']['m1*']
+            m2_star = data['modules']['Model']['m2*']
+            l1_star = data['modules']['Model']['l1*']
+            l2_star = data['modules']['Model']['l2*']
+            d0 = data['modules']['Model']['d0']
+            d1 = data['modules']['Model']['d1']
+            d2 = data['modules']['Model']['d2']
+            J_DP1 = data['modules']['Model']['J_DP1']
+            J_DP2 = data['modules']['Model']['J_DP2']
+            g = data['modules']['Model']['g']
+            k = data['modules']['Controller']['k']
+
+            # calculate point mass model parameter
+            l1 = J_DP1/(m1_star*l1_star)
+            l2 = J_DP2/(m2_star*l2_star)
+
+            m1 = (m1_star*l1_star)**2/J_DP1
+            m2 = (m2_star*l2_star)**2/J_DP2
+            m0 = m0_star + (m1_star - m1) + (m2_star - m2)
+
+            w = m1*l1/(m2*l2)
+
+            # extract state from val_list
+            x0, x0_vel, phi1, phi1_vel, phi2, phi2_vel = val_list
+            E0 = 0.5*m0*x0**2
+            E1 = 0
+            E2 = 0
+
+            if data['modules']['Controller']['long pendulum'] == 'u':
+                E1 = 0.5*m1*l1**2*phi1_vel**2 + m1*g*l1*(np.cos(phi1) + 1)
+            elif data['modules']['Controller']['long pendulum'] == 'o':
+                E1 = 0.5*m1*l1**2*phi1_vel**2 + m1*g*l1*(np.cos(phi1) - 1)
+
+            if data['modules']['Controller']['short pendulum'] == 'u':
+                E2 = 0.5*m2*l2**2*phi2_vel**2 + m2*g*l2*(np.cos(phi2) + 1)
+            elif data['modules']['Controller']['short pendulum'] == 'o':
+                E2 = 0.5*m2*l2**2*phi2_vel**2 + m2*g*l2*(np.cos(phi2) - 1)
+
+            G = m0*x0_vel*E0 + m1*l1*phi1_vel*np.cos(phi1)*E1 + m2*l2*phi2_vel*np.cos(phi2)*E2*w**2
+
+            V = 0.5*E0**2 + 0.5*E1**2 + 0.5*E2**2
+
+            V_dot = -k*G**2 - d1*phi1_vel**2*E1 - d2*phi2_vel**2*E2
+
+        else:
+            V = np.zeros(len(val_list[0]))
+            V_dot = np.zeros(len(val_list[0]))
+
+        return [V, V_dot]
 
 
 class XYMetaProcessor(MetaProcessingModule):
@@ -412,6 +520,19 @@ class XYMetaProcessor(MetaProcessingModule):
 
         return [{'figure': canvas, 'name': self.name}]
 
+
+def construct_result_dict(data, output):
+    # check for sim success
+    if not data["results"]["finished"]:
+        for key in output.keys():
+            output[key] = None
+
+    # add settings and metrics to dictionary results
+    results = {}
+    results.update({'metrics': output})
+    results.update({'modules': data['modules']})
+
+    return results
 
 pm.register_processing_module(PostProcessingModule, StepResponse)
 pm.register_processing_module(PostProcessingModule, PlotAll)

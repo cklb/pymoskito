@@ -158,7 +158,7 @@ class LjapunovController(Controller):
         elif self._settings["short pendulum"] == "o":
             E2 = 0.5*st.m2*st.l2**2*x6**2 + st.m2*st.g*st.l2*(np.cos(x5) - 1)
 
-        G = st.m1*st.l1*x4*np.cos(x3)*E1 + st.m2*st.l2*x6*np.cos(x5)*E2*self.w**2 + st.m0*x2*E0
+        G = st.m0*x2*E0 + st.m1*st.l1*x4*np.cos(x3)*E1 + st.m2*st.l2*x6*np.cos(x5)*E2*self.w**2
 
         u_lja = -self._settings["k"]*G  # + (st.d1*E1*x4**2 + st.d2*E2*x6**2)/G
 
@@ -408,7 +408,7 @@ class SwingUpController2(Controller):
             if not (e and f):
                 self.switch = False
 
-        print "t: ", t, "Switch: ", self.switch
+        # print "t: ", t, "Switch: ", self.switch
 
         if self.switch:
             u = self.linear_state_feedback._control(is_values, desired_values, t, eq=eq_state)
