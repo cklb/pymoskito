@@ -19,6 +19,42 @@
    Input A: Controller
    Input B: Feedforward
 
+- Name: Rou_par_lin
+  clear previous: !!python/bool True # decide whether previous settings should remain or not
+
+  Model:
+   type: TwoPendulumModelParLin
+   initial state: [0, 0, 5, 0, 180, 0]
+
+  Solver:
+   type: ODEInt
+   measure rate: 500
+   step size: 0.01
+   rTol: 1e-09
+   aTol: 1e-11
+   end time: 10
+
+  Controller:
+   type: LinearStateFeedbackParLin
+   long pendulum: o
+   short pendulum: u
+   poles: [-3+1j, -3-1j, -6, -4, -2, -2]
+
+  Trajectory:
+   type: Setpoint
+   State: [0]
+   Setpoint: [0]
+
+  Limiter:
+   type: ModelInputLimiter
+   Limits: [-6, 6]
+
+  ModelMixer:
+   type: AdditiveMixer
+   Input A: Controller
+   Input B: Feedforward
+
+
 - Name: p_oo_init_x0_0.5_setpoint_-0.5
   clear previous: !!python/bool True # decide whether previous settings should remain or not
 

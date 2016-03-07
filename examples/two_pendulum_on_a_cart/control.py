@@ -38,7 +38,7 @@ class LinearStateFeedback(Controller):
         # eig = np.linalg.eig(self.A - np.dot(self.B, self.K))
         print "equilibrium: ", eq_state
         print "poles: ", self._settings['poles']
-        print "K: ", self.K
+        print "K: ", self.K.tolist()[0]
         print "V: ", self.V
 
     def _control(self, is_values, desired_values, t, eq=None):
@@ -54,6 +54,53 @@ class LinearStateFeedback(Controller):
         # x = calc_small_signal_state(self._settings, is_values)
 
         # u corresponds to a force [kg*m/s**2] = [N]
+        u = - np.dot(self.K, x) + np.dot(self.V, yd[0, 0])
+
+        return u
+
+
+class LinearStateFeedbackParLin(Controller):
+
+    public_settings = OrderedDict([('poles', [-9, -7, -4, -2, -3, -2]),
+                                   ("long pendulum", "u"),
+                                   ("short pendulum", "o"),
+                                   ('tick divider', 1)])
+
+    def __init__(self, settings):
+        # add specific private settings
+        settings.update(input_order=0)
+        settings.update(ouput_dim=1)
+        settings.update(input_type='system_state')
+
+        Controller.__init__(self, settings)
+
+        eq_state = calc_equilibrium(settings)
+        # pole placement
+        parameter = [st.m0, st.m1, st.m2, st.l1, st.l2, st.g, st.d0, st.d1, st.d2]
+        self.A = symcalc.A_func_par_lin(list(eq_state), parameter)
+        self.B = symcalc.B_func_par_lin(list(eq_state), parameter)
+        self.C = symcalc.C_par_lin
+        self.K = to.ackerSISO(self.A, self.B, self._settings['poles'])
+        self.V = to.calc_prefilter(self.A, self.B, self.C, self.K)
+        # eig = np.linalg.eig(self.A - np.dot(self.B, self.K))
+        print "equilibrium: ", eq_state
+        print "poles: ", self._settings['poles']
+        print "K: ", self.K
+        print "V: ", self.V
+
+    def _control(self, is_values, desired_values, t, eq=None):
+        # input abbreviations
+        x = is_values
+        yd = desired_values
+
+        if eq is None:
+            eq = calc_closest_eq_state(self._settings, is_values)
+        x = x - np.atleast_2d(eq).T
+
+        # this is a second version
+        # x = calc_small_signal_state(self._settings, is_values)
+
+        # u corresponds to a acceleration [m/s**2]
         u = - np.dot(self.K, x) + np.dot(self.V, yd[0, 0])
 
         return u
@@ -486,6 +533,7 @@ class CSwingUpController2(Controller):
         return u
 
 pm.register_simulation_module(Controller, LinearStateFeedback)
+pm.register_simulation_module(Controller, LinearStateFeedbackParLin)
 pm.register_simulation_module(Controller, CLinearStateFeedback)
 pm.register_simulation_module(Controller, LjapunovController)
 pm.register_simulation_module(Controller, CLjapunovController)

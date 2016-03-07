@@ -22,18 +22,21 @@ end_time = 20
 # system values and parameters fo the two pendulum system
 g = 9.81                # m/s**2
 # cart:
-m0_star = 4.2774        # kg
+m0_star = 4.0262        # kg
 d0 = 10                # Ns/m
 # long pendulum:
-m1_star = 0.3211        # kg
-l1_star = 0.3533             # m
-J_DP1 = 0.072         # kgm**2
+m1_star = 0.3239       # kg
+l1_star = 0.442698054955             # m
 d1 = 0.023             # Ns
 # short pendulum
-m2_star = 0.2355        # kg
-l2_star = 0.0963             # m
-J_DP2 = 0.0044         # kgm**2
+m2_star = 0.2357        # kg
+l2_star = 0.0952587218277             # m
 d2 = 0.00145           # Ns
+
+J_MP1 = m1_star*l1_star**2
+J_MP2 = m2_star*l2_star**2
+J_DP1 = J_MP1 + m1_star*l1_star**2
+J_DP2 = J_MP2 + m2_star*l2_star**2
 
 # transform the mass and length of the original system in to a
 # mass and length of a point-mass-system
@@ -45,6 +48,9 @@ m2 = (m2_star*l2_star)**2/J_DP2
 
 m0 = m0_star + (m1_star - m1) + (m2_star - m2)
 
+# print m0_star, m0, d0
+# print m1_star, m1, l1_star, l1, J_DP1, d1
+# print m2_star, m2, l2_star, l2, J_DP2, d2
 
 # information in mm
 
