@@ -25,9 +25,10 @@
 
 \section*{PyMoskito}
 
-PyMoskito steht für \textbf{Py}thon based \textbf{Mo}dular \textbf{S}imulation \& Postprocessing \textbf{Ki}ckass \textbf{To}olbox und kann als universelles Werkzeug zur Simulation von typischen Problemen in der Regelungstechnik und anderen Bereichen eingesetzt werden. Die stärken liegen bei der Simulation von vielen Konfigurationen mit diversen Variationen in der Struktur oder in den Parametern.\\
+PyMoskito steht für \textbf{Py}thon based \textbf{Mo}dular \textbf{S}imulation \& Postprocessing \textbf{Ki}ckass \textbf{To}olbox und kann als universelles Werkzeug zur Simulation von typischen Problemen in der Regelungstechnik und anderen Bereichen eingesetzt werden. Die stärken liegen bei der Simulation von vielen Konfigurationen mit diversen Variationen in der Struktur oder in den Parametern.
 
-Der Grundstein für PyMoskito wurde im Wintersemester 2014/2015 in Form eines Oberseminars zum Thema "`Untersuchung der Ball and Beam Problematik"' gelegt. Dieses Oberseminar beinhaltete unter anderem die Aufgabe das System mit Python zu simulieren. Daraus entwickelte sich Stück für Stück die hier vorliegende Toolbox.\\
+
+Der Grundstein für PyMoskito wurde im Wintersemester 2014/2015 in Form eines Oberseminars zum Thema "`Untersuchung der Ball and Beam Problematik"' gelegt. Dieses Oberseminar beinhaltete unter anderem die Aufgabe das System mit Python zu simulieren. Daraus entwickelte sich Stück für Stück die hier vorliegende Toolbox.
 
 % aufheben für Getting Started
 % Python 2.7
@@ -47,18 +48,14 @@ Zur Übersicht und einfachen Bedienung der Simulation enthält PyMoskito eine Benu
 	\item Simulation einer eingestellten Regelkreisstruktur
 	\item Laden von gespeicherten Simulationskonfigurationen
 	\item automatische Simulation von Simulationssätzen
-	\item Speichern von Simulationsergebnisse zur späteren Bearbeitung
+	\item Speichern von Simulationsergebnissen zur späteren Bearbeitung
 	\item Schnittstelle zur 3D-Visualisierung des physikalischen Systems mit Hilfe von VTK
-	%	\item Abspielen, Stoppen, Zurücksetzen und anpassen der Abspielgeschwindigkeit der visuellen Darstellung
-	\item Abspielfunktionen für die 3D-Visualisierung
-	\item Darstellen der Simulationsergebnisse durch Graphen
-	\item Möglichkeit zur individuellen Weiterbearbeitung von Simulationsergebnissen im Postprocessing-Fenster
-	\item Verschiebbarkeit und Skalierung der einzelnen Fenster
+	\item Playback Funktion für die 3D-Visualisierung
+	\item Darstellung _aller_ Simulationsergebnisse direkt und ohne Umwege
+	\item Möglichkeit zur individuellen Weiterbearbeitung von Simulationsergebnissen durch Postprozessoren
 \end{itemize}
 
-PyMoskito bietet einen Simulationskern zur Ausführung der in Abbildung \ref{abb:schema_des_systemmodells} dargestellten Regelkreisstruktur und eine Nachbearbeitung von Simulationsergebnissen an. Die Module dieses Regelkreises sind hierbei
-einzeln konfigurierbar und bieten so die Möglichkeit verschiedenste Szenarien gleichzeitig
-abzudecken. Sie unterteilen sich dabei in zwei verschiedene Gruppen:
+PyMoskito bietet einen Simulationskern zur Ausführung der in Abbildung \ref{abb:schema_des_systemmodells} dargestellten Regelkreisstruktur und eine Nachbearbeitung von Simulationsergebnissen an. Die Module dieses Regelkreises sind hierbei einzeln konfigurierbar und bieten so die Möglichkeit verschiedenste Szenarien gleichzeitig abzudecken. Sie unterteilen sich dabei in zwei verschiedene Gruppen:
 \begin{enumerate}[I.]
 	\item generische, daher vom konkreten System unabhängige Blöcke die damit auch für
 	andere Systeme Verwendung finden können und
@@ -110,6 +107,7 @@ abzudecken. Sie unterteilen sich dabei in zwei verschiedene Gruppen:
 		\label{abb:schema_des_systemmodells}
 	\end{center}
 \end{figure}
+
 Das System ist Modular aufgebaut, sodass Blöcke ausgetauscht oder weggelassen werden können. Neben dem eigentlichen Simulationssteuerung werden generische Klassen zur Verfügung gestellt, welche häufig benutzte Simulationselemente enthalten. Dazu zählen:
 \begin{itemize}
 	\item ODEInt, ein Integrator zur Lösung von Differentialgleichungssystemen 1. Ordnung
@@ -117,13 +115,17 @@ Das System ist Modular aufgebaut, sodass Blöcke ausgetauscht oder weggelassen we
 	\item HarmonicTrajectory, ein Trajektoriengenerator zur Erzeugung von harmonischen Sollwerten mit gegebener Frequenz und Amplitude
 	\item PIDController, ein Standard Regler in der Regelungstechnik
 	% später eventuell Implementierung als Basisklasse um dann von dieser abzuleiten (in Konflikt mit blauer Box)
-	\item Limitierung (noch zu implementieren)
-	\item Sensor (noch zu implementieren)
+%	\item Limitierung (noch zu implementieren)
+%	\item Sensor (noch zu implementieren)
 \end{itemize}
 
-In PyMoskito gibt es zur Orientierung und als Hilfe bei der Implementierung einer eigenen Problemstellung, ein Beispiel. Es handelt sich um das in der Regelungstechnik beliebte "`Ball and Beam"' System. Bei der "`Ball and Beam"' Problematik geht es darum, einen Ball auf einem in der Mitte drehbar gelagerten Balken auf eine bestimmte Position zu regeln. Aus diesem Beispiel ist auch ersichtlich, welche Module bzw. Dateien bei einer neuen Problemstellung zu erstellen sind. Dazu gibt es in PyMoskito verschiedene Basisklassen, die überladen werden müssen. Dies stellt sicher das alle für die Simulation benötigten Bestandteile implementiert werden. Die folgende Aufstellung zeigt, die selber zu entwerfenden Elemente:
+PyMoskito kommt mit einer Vielzahl von bekannten Beispielen aus der Regelunsgtechnik die als Anleitung und Hilfe bei der Implementierung eigener Problemstellung dienen. Ein Beispiel:
+
+Es handelt sich um das in der Regelungstechnik beliebte "`Ball and Beam"' System. Bei der "`Ball and Beam"' Problematik geht es darum, einen Ball auf einem in der Mitte drehbar gelagerten Balken auf eine bestimmte Position zu regeln. Aus diesem Beispiel ist auch ersichtlich, welche Module bzw. Dateien bei einer neuen Problemstellung zu erstellen sind. Hierfür existieren in PyMoskito verschiedene Basisklassen, auf die aufgebaut werden kann. 
+% Dies stellt sicher das alle für die Simulation benötigten Bestandteile implementiert werden. 
+Die folgende Aufstellung zeigt was konkret zu tun ist:
 \begin{itemize}
-	\item Zustandsraummodell ist entsprechenden dem Beispiel als right hand side zu hinterlegen
+	\item Implementierung der Systemdynamik als Zustandsraummodell (right hand side)
 	\item in der auszuführenden Datei muss die Benutzeroberfläche erstellt und initialisiert werden
 	\item Regelgesetze zur Stabilisierung des Regelkreises
 	\item Entwurf einer Standardsimulationskonfiguration
