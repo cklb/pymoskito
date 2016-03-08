@@ -38,7 +38,7 @@ class LinearStateFeedback(Controller):
         # eig = np.linalg.eig(self.A - np.dot(self.B, self.K))
         print "equilibrium: ", eq_state
         print "poles: ", self._settings['poles']
-        print "K: ", self.K
+        print "K: ", self.K.tolist()[0]
         print "V: ", self.V
 
     def _control(self, is_values, desired_values, t, eq=None):
@@ -54,6 +54,53 @@ class LinearStateFeedback(Controller):
         # x = calc_small_signal_state(self._settings, is_values)
 
         # u corresponds to a force [kg*m/s**2] = [N]
+        u = - np.dot(self.K, x) + np.dot(self.V, yd[0, 0])
+
+        return u
+
+
+class LinearStateFeedbackParLin(Controller):
+
+    public_settings = OrderedDict([('poles', [-9, -7, -4, -2, -3, -2]),
+                                   ("long pendulum", "u"),
+                                   ("short pendulum", "o"),
+                                   ('tick divider', 1)])
+
+    def __init__(self, settings):
+        # add specific private settings
+        settings.update(input_order=0)
+        settings.update(ouput_dim=1)
+        settings.update(input_type='system_state')
+
+        Controller.__init__(self, settings)
+
+        eq_state = calc_equilibrium(settings)
+        # pole placement
+        parameter = [st.m0, st.m1, st.m2, st.l1, st.l2, st.g, st.d0, st.d1, st.d2]
+        self.A = symcalc.A_func_par_lin(list(eq_state), parameter)
+        self.B = symcalc.B_func_par_lin(list(eq_state), parameter)
+        self.C = symcalc.C_par_lin
+        self.K = to.ackerSISO(self.A, self.B, self._settings['poles'])
+        self.V = to.calc_prefilter(self.A, self.B, self.C, self.K)
+        # eig = np.linalg.eig(self.A - np.dot(self.B, self.K))
+        print "equilibrium: ", eq_state
+        print "poles: ", self._settings['poles']
+        print "K: ", self.K
+        print "V: ", self.V
+
+    def _control(self, is_values, desired_values, t, eq=None):
+        # input abbreviations
+        x = is_values
+        yd = desired_values
+
+        if eq is None:
+            eq = calc_closest_eq_state(self._settings, is_values)
+        x = x - np.atleast_2d(eq).T
+
+        # this is a second version
+        # x = calc_small_signal_state(self._settings, is_values)
+
+        # u corresponds to a acceleration [m/s**2]
         u = - np.dot(self.K, x) + np.dot(self.V, yd[0, 0])
 
         return u
@@ -149,16 +196,16 @@ class LjapunovController(Controller):
         E2 = 0
 
         if self._settings["long pendulum"] == "u":
-            E1 = 0.5*st.J_DP1*x4**2 + st.m1*st.g*st.l1*(np.cos(x3) + 1)
+            E1 = 0.5*st.m1*st.l1**2*x4**2 + st.m1*st.g*st.l1*(np.cos(x3) + 1)
         elif self._settings["long pendulum"] == "o":
-            E1 = 0.5*st.J_DP1*x4**2 + st.m1*st.g*st.l1*(np.cos(x3) - 1)
+            E1 = 0.5*st.m1*st.l1**2*x4**2 + st.m1*st.g*st.l1*(np.cos(x3) - 1)
 
         if self._settings["short pendulum"] == "u":
-            E2 = 0.5*st.J_DP2*x6**2 + st.m2*st.g*st.l2*(np.cos(x5) + 1)
+            E2 = 0.5*st.m2*st.l2**2*x6**2 + st.m2*st.g*st.l2*(np.cos(x5) + 1)
         elif self._settings["short pendulum"] == "o":
-            E2 = 0.5*st.J_DP2*x6**2 + st.m2*st.g*st.l2*(np.cos(x5) - 1)
+            E2 = 0.5*st.m2*st.l2**2*x6**2 + st.m2*st.g*st.l2*(np.cos(x5) - 1)
 
-        G = st.m1*st.l1*x4*np.cos(x3)*E1 + st.m2*st.l2*x6*np.cos(x5)*E2*self.w**2 +st.m0*x2*E0
+        G = st.m0*x2*E0 + st.m1*st.l1*x4*np.cos(x3)*E1 + st.m2*st.l2*x6*np.cos(x5)*E2*self.w**2
 
         u_lja = -self._settings["k"]*G  # + (st.d1*E1*x4**2 + st.d2*E2*x6**2)/G
 
@@ -408,7 +455,7 @@ class SwingUpController2(Controller):
             if not (e and f):
                 self.switch = False
 
-        print "t: ", t, "Switch: ", self.switch
+        # print "t: ", t, "Switch: ", self.switch
 
         if self.switch:
             u = self.linear_state_feedback._control(is_values, desired_values, t, eq=eq_state)
@@ -486,6 +533,7 @@ class CSwingUpController2(Controller):
         return u
 
 pm.register_simulation_module(Controller, LinearStateFeedback)
+pm.register_simulation_module(Controller, LinearStateFeedbackParLin)
 pm.register_simulation_module(Controller, CLinearStateFeedback)
 pm.register_simulation_module(Controller, LjapunovController)
 pm.register_simulation_module(Controller, CLjapunovController)
