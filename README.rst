@@ -21,7 +21,7 @@ On top PyMoskito also contains a GUI which let's you easily fine-tune the parame
 Documentation can be found at https://pymoskito.readthedocs.org.
 
 Pictures of the GUI:
---------
+--------------------
 The main application simulating the **Ball and Beam** system:
 
 .. image:: ./docs/pictures/pm_2.png
@@ -39,7 +39,7 @@ with custom prostprocessors:
 .. image:: ./docs/pictures/pm_5.png
 
 Still here? So PyMoskito features:
---------
+----------------------------------
 * quick setup due to lightweight dependencies
 * modular control loop structure allowing easy configuration
 * easy integration of own system models through open interface
