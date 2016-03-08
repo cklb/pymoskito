@@ -24,19 +24,19 @@ Pictures of the GUI:
 --------
 The main application simulating the **Ball and Beam** system:
 
-.. image:: ./pictures/pm_2.png
+.. image:: ./docs/pictures/pm_2.png
 
 The postprocessing application:
 
-.. image:: ./pictures/pm_3.png
+.. image:: ./docs/pictures/pm_3.png
 
 Another example a **Double Pendulum**:
 
-.. image:: ./pictures/pm_4.png
+.. image:: ./docs/pictures/pm_4.png
 
 with custom prostprocessors:
 
-.. image:: ./pictures/pm_5.png
+.. image:: ./docs/pictures/pm_5.png
 
 Still here? So PyMoskito features:
 --------
