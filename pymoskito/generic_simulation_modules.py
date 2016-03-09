@@ -10,8 +10,7 @@ from scipy.integrate import ode
 import sympy as sp
 import numpy as np
 
-import pymoskito as pm
-
+from registry import register_simulation_module
 from simulation_modules import Solver, \
     SolverException, \
     Trajectory, \
@@ -287,7 +286,8 @@ class PIDController(Controller):
 
 class PyTrajectory(Feedforward):
     """
-    this class integrate the PyTrajectory module in PyMoskito,
+    this class is WIP!
+    integration  of the PyTrajectory pakcage,
     PyTrajectory is a Python library for the determination of the feed forward control
     to achieve a transition between desired states of a nonlinear control system.
     """
@@ -307,12 +307,13 @@ class PyTrajectory(Feedforward):
         Feedforward.__init__(self, settings)
 
         # check consistency between public_settings and the given model
+        # TODO don't do this!
         assert (self._model._settings["state_count"] == len(self._settings["state a"]))
         assert (self._model._settings["state_count"] == len(self._settings["state b"]))
         assert (self._model._settings["input_count"] == len(self._settings["input a"]))
         assert (self._model._settings["input_count"] == len(self._settings["input b"]))
 
-        # TODO integration of PyTrajectory is not ready to use
+        # TODO get integration of PyTrajectory going
         # # calculate the feedforward
         # system = ControlSystem(self._model.f,
         #                        a=self._settings["time a"],
@@ -330,12 +331,9 @@ class PyTrajectory(Feedforward):
         # self.feed_u =system.sim_data[2]
 
     def _feedforward(self, traj_values, t):
-
-
+        # TODO get rid of this extra parameter
         u_feed = 0
-
         return u_feed
-
 
 
 class AdditiveMixer(SignalMixer):
@@ -351,7 +349,6 @@ class AdditiveMixer(SignalMixer):
         SignalMixer.__init__(self, settings)
 
     def _mix(self, signal_values):
-
         return np.array([[np.sum(signal_values)]], dtype=float)
 
 
@@ -375,12 +372,12 @@ class ModelInputLimiter(Limiter):
         return value
 
 # register all generic modules
-pm.register_simulation_module(Solver, ODEInt)
-pm.register_simulation_module(Trajectory, SmoothTransition)
-pm.register_simulation_module(Trajectory, HarmonicTrajectory)
-pm.register_simulation_module(Trajectory, Setpoint)
-pm.register_simulation_module(Controller, PIDController)
-pm.register_simulation_module(Feedforward, PyTrajectory)
-pm.register_simulation_module(ModelMixer, AdditiveMixer)
-pm.register_simulation_module(ObserverMixer, AdditiveMixer)
-pm.register_simulation_module(Limiter, ModelInputLimiter)
+register_simulation_module(Solver, ODEInt)
+register_simulation_module(Trajectory, SmoothTransition)
+register_simulation_module(Trajectory, HarmonicTrajectory)
+register_simulation_module(Trajectory, Setpoint)
+register_simulation_module(Controller, PIDController)
+register_simulation_module(Feedforward, PyTrajectory)
+register_simulation_module(ModelMixer, AdditiveMixer)
+register_simulation_module(ObserverMixer, AdditiveMixer)
+register_simulation_module(Limiter, ModelInputLimiter)

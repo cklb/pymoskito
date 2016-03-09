@@ -2,15 +2,20 @@
 # -*- coding: utf-8 -*-
 
 """
-test_pymoskito
+test_registry
 ----------------------------------
 
-Tests for `pymoskito` module.
+Tests for `registry` module.
 """
 
 import unittest
 
-from pymoskito import pymoskito as pm
+# nice top level import for this guys
+from pymoskito import get_registered_simulation_modules, get_registered_processing_modules
+
+# normal import since those should not be used so often
+from pymoskito.registry import get_registered_modules
+
 from pymoskito.simulation_modules import SimulationModule, ModelMixer, Controller, Trajectory
 import pymoskito.generic_simulation_modules as sim_modules
 
@@ -18,32 +23,33 @@ from pymoskito.processing_core import PostProcessingModule, MetaProcessingModule
 import pymoskito.generic_processing_modules as post_modules
 
 
-class TestPymoskito(unittest.TestCase):
+class TestRegistration(unittest.TestCase):
+    # remember automatic registration in Module Definition is done by importing
 
     def setUp(self):
         pass
 
-    def test_registration(self):
-        # remember automatic registration in Module Definition is done by importing
-
+    def test_general(self):
         # general call
         self.assertEqual([(sim_modules.AdditiveMixer, "AdditiveMixer")],
-                         pm.get_registered_modules(SimulationModule, ModelMixer))
+                         get_registered_modules(SimulationModule, ModelMixer))
 
+    def test_special(self):
         # special calls
         self.assertEqual([(sim_modules.PIDController, "PIDController")],
-                         pm.get_registered_simulation_modules(Controller))
+                         get_registered_simulation_modules(Controller))
         self.assertEqual([(sim_modules.HarmonicTrajectory, "HarmonicTrajectory"),
                           (sim_modules.SmoothTransition, "SmoothTransition")],
-                         pm.get_registered_simulation_modules(Trajectory))
+                         get_registered_simulation_modules(Trajectory))
         self.assertEqual([(post_modules.StepResponse, "StepResponse")],
-                         pm.get_registered_processing_modules(PostProcessingModule))
+                         get_registered_processing_modules(PostProcessingModule))
 
+    def test_string(self):
         # should also work with names instead of class objects
         self.assertEqual([(sim_modules.PIDController, "PIDController")],
-                         pm.get_registered_modules("SimulationModule", "Controller"))
+                         get_registered_modules("SimulationModule", "Controller"))
         self.assertEqual([(sim_modules.PIDController, "PIDController")],
-                         pm.get_registered_simulation_modules("Controller"))
+                         get_registered_simulation_modules("Controller"))
 
     def tearDown(self):
         pass

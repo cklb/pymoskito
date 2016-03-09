@@ -47,7 +47,7 @@ from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 from matplotlib.lines import Line2D as Line
 
-import pymoskito as pm
+from registry import register_processing_module
 from processing_core import PostProcessingModule, MetaProcessingModule
 from tools import sort_tree, get_sub_value
 
@@ -191,7 +191,7 @@ class StepResponse(PostProcessingModule):
         :param output:
         :param data:
         """
-        # TODO check those they produce crap see output
+        # TODO check those they produce crap -> see output
         l1_norm_itae = self.calc_l1_norm_itae(*self.get_metric_values(data))
         l1_norm_abs = self.calc_l1_norm_abs(*self.get_metric_values(data))
 
@@ -534,6 +534,6 @@ def construct_result_dict(data, output):
 
     return results
 
-pm.register_processing_module(PostProcessingModule, StepResponse)
-pm.register_processing_module(PostProcessingModule, PlotAll)
-pm.register_processing_module(PostProcessingModule, TwoPendulum)
+register_processing_module(PostProcessingModule, StepResponse)
+register_processing_module(PostProcessingModule, PlotAll)
+register_processing_module(PostProcessingModule, TwoPendulum)

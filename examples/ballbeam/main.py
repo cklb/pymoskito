@@ -19,7 +19,7 @@ gui.set_visualizer(vis)
 # load default config
 gui.load_regimes_from_file("default.sreg")
 gui.apply_regime_by_name("test-nonlinear")
-# gui.start_simulation()
+gui.start_simulation()
 
 if __name__ == '__main__':
     import sys

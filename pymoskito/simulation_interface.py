@@ -3,16 +3,16 @@
     provides functions to manipulate settings of the simulator and
     to inspect its current state.
 """
-import inspect
+import sys
 import copy
-import string
-
 from PyQt4 import QtCore, QtGui
 from PyQt4.QtGui import QStandardItemModel, QStandardItem, QItemDelegate, QComboBox
 
+from registry import get_registered_simulation_modules, get_simulation_module_class_by_name
 import simulation_modules
 from generic_simulation_modules import *
 from simulation_core import Simulator, SimulationSettings, SimulationStateChange
+
 
 class SimulatorModel(QStandardItemModel):
     def __init__(self, parent=None):
@@ -94,7 +94,7 @@ class ComboDelegate(QItemDelegate):
         idx = index.model().index(index.row(), 0, QtCore.QModelIndex())
         sim_module_name = str(index.model().itemFromIndex(idx).text())
         sim_module = getattr(simulation_modules, sim_module_name)
-        sub_modules = pm.get_registered_simulation_modules(sim_module)
+        sub_modules = get_registered_simulation_modules(sim_module)
         for sub_module in sub_modules:
             entries.append(sub_module[1])
 
@@ -154,8 +154,10 @@ class SimulatorInteractor(QtCore.QObject):
         """
 
         # build initialisation list
-        # TODO complete sorting therefore add observer, sensor and so on again
         setup_list = Simulator.module_list
+
+        # TODO remove the next lines
+        # complete sorting therefore add observer, sensor and so on again
         setup_list.append("Trajectory")
         setup_list.remove("Trajectory")
 
@@ -189,7 +191,7 @@ class SimulatorInteractor(QtCore.QObject):
         reads the public settings from a simulation module
         """
         module_cls = getattr(simulation_modules, module_name)
-        sub_module_cls = pm.get_module_class_by_name("SimulationModule", module_cls, sub_module_name)
+        sub_module_cls = get_simulation_module_class_by_name(module_cls, sub_module_name)
         return sub_module_cls.public_settings
 
     def item_changed(self, item):
@@ -254,7 +256,7 @@ class SimulatorInteractor(QtCore.QObject):
 
             # get class
             module_cls = getattr(simulation_modules, module_name)
-            sub_module_cls = pm.get_simulation_module_class_by_name(module_cls, sub_module_name)
+            sub_module_cls = get_simulation_module_class_by_name(module_cls, sub_module_name)
 
             # get public settings for module
             settings = self._get_settings(self.target_model, module_item.text())
@@ -314,7 +316,7 @@ class SimulatorInteractor(QtCore.QObject):
             module_type = value["type"]
 
             # sanity check
-            sub_module_cls = pm.get_module_class_by_name("SimulationModule", module_cls, module_type)
+            sub_module_cls = get_simulation_module_class_by_name(module_cls, module_type)
 
             if not sub_module_cls:
                 raise AttributeError("_apply_regime(): No sub-module called {0}".format(module_type))
@@ -373,11 +375,13 @@ class SimulatorInteractor(QtCore.QObject):
     def simulation_state_changed(self, state_change):
         """
         slot for simulation state changes
+
+        :param state_change: see :cls:SimulationStateChange
         """
         if state_change.type == "start":
             self._sim_state = "running"
         elif state_change.type == "time":
-            # TODO print progress bar on terminal
+            # TODO print progress to logfile
             # print("Simulation time changed: {0}".format(state_change.t))
             progress = int(state_change.t / self._sim_settings.end_time * 100)
             if progress != self.last_progress:
@@ -386,13 +390,9 @@ class SimulatorInteractor(QtCore.QObject):
         elif state_change.type == "abort":
             self._sim_state = "aborted"
             self._sim_data.update({'results': copy.deepcopy(state_change.data)})
-            # TODO change this because its ugly (one single place should hold all data)
-            self._sim_data["modules"].update({"Simulator": copy.copy(self._sim.settings)})
         elif state_change.type == "finish":
             self._sim_state = "finished"
             self._sim_data.update({'results': copy.deepcopy(state_change.data)})
-            # TODO change this because its ugly (one single place should hold all data)
-            self._sim_data["modules"].update({"Simulator": copy.copy(self._sim.settings)})
         else:
             print("simulation_state_changed(): ERROR Unknown state {0}".format(state_change.type))
 
@@ -402,9 +402,8 @@ class SimulatorInteractor(QtCore.QObject):
             del module
         self._sim_modules = {}
 
-        # they do not work when running in debug_mode
-        if 1:
-            # disconnect signals
+        # don't disconnect signals in debug-mode
+        if sys.gettrace() is None:
             self.simThread.started.disconnect(self._sim.run)
             self._sim.state_changed.disconnect(self.simulation_state_changed)
             self._sim.finished.disconnect(self.simThread.quit)

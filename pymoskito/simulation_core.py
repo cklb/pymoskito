@@ -29,6 +29,13 @@ class SimulationSettings(object):
         self.end_time = end_time
         self.measure_rate = measure_rate
 
+    def to_dict(self):
+        return {
+            "start time": self.start_time,
+            "end time": self.end_time,
+            "measure rate": self.measure_rate,
+        }
+
 
 class Simulator(QObject):
     """ Simulation Wrapper
@@ -175,7 +182,6 @@ class Simulator(QObject):
         self.state_changed.emit(SimulationStateChange(type="start"))
         end_state = None
 
-        # TODO make sure that results contain end_time/measure_rate entries
         # TODO store values for timestamp t=0, store initial states for model and observer
 
         solver = self._simulation_modules["Solver"]
@@ -221,8 +227,9 @@ class Simulator(QObject):
                 entry = np.array(results)
             out.update({module: entry})
 
+        out.update({"Simulation": self._settings.to_dict()})
         return out
 
     @property
     def settings(self):
-        return self._settings
+        return self._settings.to_dict()

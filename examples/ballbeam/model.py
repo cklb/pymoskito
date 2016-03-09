@@ -2,7 +2,7 @@ __author__ = 'stefan'
 
 from collections import OrderedDict
 import numpy as np
-import pymoskito.pymoskito as pm
+import pymoskito.registry as pm
 from pymoskito.simulation_modules import Model, ModelException
 
 import settings as st

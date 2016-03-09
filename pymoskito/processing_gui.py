@@ -5,7 +5,7 @@ import traceback
 from PyQt4 import QtCore, QtGui
 from PyQt4.QtCore import pyqtSignal
 
-import pymoskito as pm
+import registry as pm
 from processing_core import ProcessingModule, PostProcessingModule, MetaProcessingModule
 import generic_processing_modules
 # import generic_metaprocessing_modules

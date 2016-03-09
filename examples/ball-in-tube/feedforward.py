@@ -1,7 +1,7 @@
 __author__ = 'christoph'
 
 from collections import OrderedDict
-import pymoskito.pymoskito as pm
+import pymoskito.registry as pm
 from pymoskito.simulation_modules import Feedforward
 import numpy as np
 import settings as st

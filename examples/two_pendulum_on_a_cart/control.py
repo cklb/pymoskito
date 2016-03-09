@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import numpy as np
 from collections import OrderedDict
-import pymoskito.pymoskito as pm
+import pymoskito.registry as pm
 from pymoskito.simulation_modules import Controller
 
 import settings as st

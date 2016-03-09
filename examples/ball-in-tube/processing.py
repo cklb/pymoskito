@@ -1,6 +1,6 @@
 from __future__ import division
 
-import pymoskito.pymoskito as pm
+import pymoskito.registry as pm
 from pymoskito.processing_core import MetaProcessingModule
 from pymoskito.generic_processing_modules import XYMetaProcessor
 

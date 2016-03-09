@@ -110,7 +110,6 @@ class Solver(SimulationModule):
         self._model = settings["modules"]["Model"]
         SimulationModule.__init__(self, settings)
 
-
     def calc_output(self, input_vector):
         if "Limiter" in input_vector:
             self.set_input(input_vector["Limiter"])
@@ -281,11 +280,10 @@ class Limiter(SimulationModule):
     def calc_output(self, input_dict):
         return self._limit(input_dict[self._settings["input signal"]])
 
-    @abstractmethod
     def _limit(self, value):
         """
         placeholder for limiter calculation
         :param value: values to limit
         :return: limiter output
         """
-        pass
+        return value

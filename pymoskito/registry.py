@@ -5,7 +5,6 @@ from processing_core import ProcessingModule
 """
 wrapper for easy user interaction
 """
-# TODO rename to registry
 
 _registry = {}
 

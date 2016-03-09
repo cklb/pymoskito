@@ -48,7 +48,8 @@ class SimulationGui(QtGui.QMainWindow):
         QtGui.QMainWindow.__init__(self)
 
         # Create Simulation Backend
-        self.simProgress = None
+        self.guiProgress = None
+        self.cmdProgress = None
         self.sim = SimulatorInteractor(self)
         self.runSimulation.connect(self.sim.run_simulation)
         self.sim.simulation_finished.connect(self.simulation_finished)
@@ -195,7 +196,6 @@ class SimulationGui(QtGui.QMainWindow):
         self.act_reset_camera.setDisabled(False)
         self.act_reset_camera.triggered.connect(self.reset_camera_clicked)
 
-
         # toolbar for control
         self.toolbarSim = QtGui.QToolBar('Simulation')
         self.toolbarSim.setIconSize(QtCore.QSize(32, 32))
@@ -321,9 +321,9 @@ class SimulationGui(QtGui.QMainWindow):
 
         self.actSimulate.setDisabled(True)
         self.actExecuteRegimes.setDisabled(True)
-        self.simProgress = QtGui.QProgressBar(self)
-        self.sim.simulationProgressChanged.connect(self.simProgress.setValue)
-        self.statusBar().addWidget(self.simProgress)
+        self.guiProgress = QtGui.QProgressBar(self)
+        self.sim.simulationProgressChanged.connect(self.guiProgress.setValue)
+        self.statusBar().addWidget(self.guiProgress)
         self.runSimulation.emit()
 
     def save_data(self, name=None):
@@ -460,6 +460,9 @@ class SimulationGui(QtGui.QMainWindow):
         integration finished, enable play button and update plots
         :param data:
         """
+        print 'simulation finished.'
+        self.statusLabel.setText('simulation finished.')
+
         self.actSimulate.setDisabled(False)
         self.actPlayPause.setDisabled(False)
         self.shortPlayPause.setEnabled(True)
@@ -468,10 +471,9 @@ class SimulationGui(QtGui.QMainWindow):
         self.actSave.setDisabled(False)
         self.speedDial.setDisabled(False)
         self.timeSlider.setDisabled(False)
-        self.statusBar().removeWidget(self.simProgress)
-        self.statusLabel.setText('simulation finished.')
-        self.sim.simulationProgressChanged.disconnect(self.simProgress.setValue)
-        del self.simProgress
+
+        self.sim.simulationProgressChanged.disconnect(self.guiProgress.setValue)
+        self.statusBar().removeWidget(self.guiProgress)
 
         self.timeSlider.triggerAction(QtGui.QAbstractSlider.SliderToMinimum)
 
@@ -500,8 +502,10 @@ class SimulationGui(QtGui.QMainWindow):
         self.simulation_finished(data)
 
     def _read_results(self):
-        self.currentStepSize = 1.0/self.currentDataset['modules']['Solver']['measure rate']
-        self.currentEndTime = self.currentDataset["modules"]["Simulator"].end_time
+        self.currentStepSize = 1.0/self.currentDataset["results"]["Simulation"]['measure rate']
+        self.currentEndTime = self.currentDataset["results"]["Simulation"]["end time"]
+        # self.currentStepSize = 1.0/self.currentDataset['modules']['Simulator']['measure rate']
+        # self.currentEndTime = self.currentDataset["modules"]["Simulator"]["end time"]
         self.validData = True
 
     def add_plot_to_dock(self, plot_widget):
@@ -604,7 +608,6 @@ class SimulationGui(QtGui.QMainWindow):
             elif len(results.shape) == 3:
                 for col in range(results.shape[1]):
                     self.dataList.insertItem(0, "{0}.{1}".format(module, col))
-
 
     def create_plot(self, item):
         """

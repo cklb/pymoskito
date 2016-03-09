@@ -11,7 +11,7 @@ Tests for `processing` module.
 import unittest
 from PyQt4.QtGui import QApplication
 
-from pymoskito import pymoskito as pm
+from pymoskito import registry as pm
 import pymoskito.generic_processing_modules as post_modules
 from pymoskito.processing_gui import PostProcessor
 
