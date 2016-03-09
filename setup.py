@@ -14,44 +14,37 @@ with open('README.rst') as readme_file:
 with open('HISTORY.rst') as history_file:
     history = history_file.read().replace('.. :changelog:', '')
 
-requirements = [
-    # TODO: put package requirements here
-]
+with open('requirements.txt') as requirements_file:
+    requirements = requirements_file.read()
 
 test_requirements = [
-    # TODO: put package test requirements here
+    'unittest'
 ]
 
 setup(
     name='pymoskito',
     version='0.1.0',
-    description="Python based MOdular SImulation & Postprocessing KIckass TOolbox",
+    description="Python based modular simulation & postprocessing kickass toolbox",
     long_description=readme + '\n\n' + history,
-    author="Stefan Ecklebe",
-    author_email='stefan.ecklebe@tu-dresden.de',
-    url='https://github.com/freddy_k/pymoskito',
-    packages=[
-        'pymoskito',
-    ],
-    package_dir={'pymoskito':
-                 'pymoskito'},
-    include_package_data=True,
-    install_requires=requirements,
-    license="BSD",
-    zip_safe=False,
-    keywords='pymoskito',
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',
         'Intended Audience :: Developers',
-        'License :: OSI Approved :: BSD License',
+        'License :: OSI Approved :: GPLv3',
         'Natural Language :: English',
-        "Programming Language :: Python :: 2",
-        'Programming Language :: Python :: 2.6',
         'Programming Language :: Python :: 2.7',
-        'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.3',
-        'Programming Language :: Python :: 3.4',
+        # 'Programming Language :: Python :: 3.5',
     ],
+    keywords='pymoskito control simulation feedback feedforward',
+    url='https://github.com/cklb/pymoskito',
+    author="Stefan Ecklebe",
+    author_email='stefan.ecklebe@tu-dresden.de',
+    license='GPLv3',
+    packages=['pymoskito'],
+    package_dir={'pymoskito':
+                 'pymoskito'},
+    install_requires=requirements,
+    include_package_data=True,
     test_suite='tests',
-    tests_require=test_requirements
+    tests_require=test_requirements,
+    zip_safe=False
 )

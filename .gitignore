@@ -1,14 +1,14 @@
-*.pyc
-*.py~
-*.py.swp
-*.gz
-*.idea
+# Documentation
+/docs/_build/*
+
+# Latex
 *.acn
 *.acr
 *.alg
 *.aux
 *.bbl
 *.blg
+*.dvi
 *.glg
 *.ist
 *.log
@@ -21,5 +21,24 @@
 *.gls
 *.slg
 *.syi
+
+# testsuite output
 examples/results/processing*
 
+# editor settings
+*.gz
+*.idea
+
+# Compiled python modules.
+*.pyc
+
+# Swap and backup files
+*.swp
+*~
+
+# Setuptools distribution folder.
+/dist/
+
+# Python egg metadata, regenerated from source files by setuptools.
+/*.egg-info
+/*.egg

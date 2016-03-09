@@ -17,6 +17,7 @@ import pymoskito.generic_simulation_modules as sim_modules
 from pymoskito.processing_core import PostProcessingModule, MetaProcessingModule
 import pymoskito.generic_processing_modules as post_modules
 
+
 class TestPymoskito(unittest.TestCase):
 
     def setUp(self):

@@ -15,14 +15,16 @@ def sort_lists(a, b):
     return a, b
 
 
-def get_resource(res_name):
+def get_resource(res_name, res_type="icons"):
     """
-    find path to specified resource
+    build absolute path to specified resource within the package
+
     :param res_name: resource
+    :param res_type: subdir
     :return: path to resource
     """
     own_path = os.path.dirname(__file__)
-    resource_path = os.path.abspath(os.path.join(own_path, "data"))
+    resource_path = os.path.abspath(os.path.join(own_path, os.pardir, "resources", res_type))
     return os.path.join(resource_path, res_name)
 
 
@@ -31,6 +33,9 @@ def sort_tree(data_list, sort_key_path):
     helper method for data sorting.
 
     takes a list of simulation results and sorts them into a tree whose index is given by the sort_key_path
+
+    :param data_list:
+    :param sort_key_path:
     """
     result = {}
     for elem in data_list:

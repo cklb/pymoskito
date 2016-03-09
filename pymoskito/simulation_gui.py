@@ -71,7 +71,9 @@ class SimulationGui(QtGui.QMainWindow):
         self.setCentralWidget(self.area)
         self.resize(1000, 700)
         self.setWindowTitle("PyMoskito")
-        self.setWindowIcon(QtGui.QIcon(get_resource("mosquito.png")))
+        res_path = get_resource("mosquito.png")
+        icon = QtGui.QIcon(res_path)
+        self.setWindowIcon(icon)
 
         # create docks
         self.propertyDock = pg.dockarea.Dock('Properties')
