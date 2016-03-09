@@ -3,7 +3,7 @@
 from __future__ import division
 
 # system
-import collections
+import logging
 import time
 import os
 import yaml
@@ -46,6 +46,8 @@ class SimulationGui(QtGui.QMainWindow):
     def __init__(self):
         # constructor of the base class
         QtGui.QMainWindow.__init__(self)
+
+        self._logger = logging.getLogger(self.__class__.__name__)
 
         # Create Simulation Backend
         self.guiProgress = None
@@ -263,6 +265,8 @@ class SimulationGui(QtGui.QMainWindow):
         self.shortPlayPause.activated.connect(self.play_animation)
         self.shortPlayPause.setEnabled(False)
 
+        self._logger.info("Simulation GUI is up and running.")
+
     def set_visualizer(self, vis):
         assert isinstance(vis, Visualizer)
         self.visualizer = vis
@@ -317,7 +321,7 @@ class SimulationGui(QtGui.QMainWindow):
         """
         regime_name = str(self.regime_list.item(self.currentRegimeIndex).text())
         self.statusLabel.setText('simulating ' + regime_name + ':')
-        print 'Simulating: ', regime_name
+        self._logger.info("Simulating: {}".format(regime_name))
 
         self.actSimulate.setDisabled(True)
         self.actExecuteRegimes.setDisabled(True)

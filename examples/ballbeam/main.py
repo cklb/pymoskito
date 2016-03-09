@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 __author__ = 'stefan'
 
 from PyQt4 import QtGui, QtCore

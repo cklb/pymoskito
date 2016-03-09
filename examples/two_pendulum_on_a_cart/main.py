@@ -1,33 +1,29 @@
-__author__ = 'christoph'
+# -*- coding: utf-8 -*-
+from PyQt4.QtGui import QApplication
+from pymoskito import Simulator, PostProcessor
 
-from PyQt4 import QtGui, QtCore
-from pymoskito.simulation_gui import SimulationGui
-from pymoskito.processing_gui import PostProcessor
-
-# import self defined simulation modules
+# import custom simulation modules
 import model
 import control
 from visualization import TwoPendulumVisualizer
 
-# create gui
-app = QtGui.QApplication([])
-if 0:
-    gui = PostProcessor()
-    gui.show()
-else:
-    gui = SimulationGui()
-    gui.show()
-
-    # add self defined visualizer
-    vis = TwoPendulumVisualizer(gui.vtk_renderer)
-    gui.set_visualizer(vis)
-
-    # load default config
-    gui.load_regimes_from_file("default.sreg")
-    gui.apply_regime_by_name("test")
-    # gui.start_simulation()
+__author__ = 'christoph'
 
 if __name__ == '__main__':
-    import sys
-    if (sys.flags.interactive != 1) or not hasattr(QtCore, 'PYQT_VERSION'):
-        QtGui.QApplication.instance().exec_()
+    # create an Application instance (needed)
+    app = QApplication([])
+
+    # create Simulator
+    sim = Simulator()
+
+    # add self defined visualizer
+    vis = TwoPendulumVisualizer(sim.vtk_renderer)
+    sim.set_visualizer(vis)
+
+    # load default config
+    sim.load_regimes_from_file("default.sreg")
+    sim.apply_regime_by_name("test")
+    # sim.start_simulation()
+
+    sim.show()
+    app.exec_()
