@@ -31,6 +31,20 @@ from processing_gui import PostProcessor
 from tools import get_resource
 
 
+class QPlainTextEditLogger(logging.Handler):
+    """
+    logging handler that displays logdata in the gui
+    """
+    def __init__(self, parent):
+        logging.Handler.__init__(self)
+        self.widget = QtGui.QPlainTextEdit(parent)
+        self.widget.setReadOnly(True)
+
+    def emit(self, record):
+        msg = self.format(record)
+        self.widget.appendPlainText(msg)
+
+
 class SimulationGui(QtGui.QMainWindow):
     """
     class for the graphical user interface
@@ -80,12 +94,13 @@ class SimulationGui(QtGui.QMainWindow):
         self.setWindowIcon(icon)
 
         # create docks
-        self.propertyDock = pg.dockarea.Dock('Properties')
-        self.vtkDock = pg.dockarea.Dock('Simulation')
-        self.regimeDock = pg.dockarea.Dock('Regimes')
-        self.dataDock = pg.dockarea.Dock('Data')
+        self.propertyDock = pg.dockarea.Dock("Properties")
+        self.vtkDock = pg.dockarea.Dock("Simulation")
+        self.regimeDock = pg.dockarea.Dock("Regimes")
+        self.dataDock = pg.dockarea.Dock("Data")
+        self.logDock = pg.dockarea.Dock("Log")
         self.plotDocks = []
-        self.plotDocks.append(pg.dockarea.Dock('Placeholder'))
+        self.plotDocks.append(pg.dockarea.Dock("Placeholder"))
         self.plotWidgets = []
         self.timeLines = []
 
@@ -95,6 +110,7 @@ class SimulationGui(QtGui.QMainWindow):
         self.area.addDock(self.propertyDock, 'bottom', self.regimeDock)
         self.area.addDock(self.dataDock, 'bottom', self.propertyDock)
         self.area.addDock(self.plotDocks[-1], 'bottom', self.vtkDock)
+        self.area.addDock(self.logDock, 'bottom', self.dataDock)
 
         # add widgets to the docks
         self.propertyDock.addWidget(self.targetView)
@@ -233,6 +249,15 @@ class SimulationGui(QtGui.QMainWindow):
 
         self.regimeFinished.connect(self.run_next_regime)
         self.finishedRegimeBatch.connect(self.regime_batch_finished)
+
+        # log dock
+        self.logBox = QPlainTextEditLogger(self)
+        self.logBox.setLevel(logging.INFO)
+        formatter = logging.Formatter(fmt="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+                                      datefmt="%H:%M:%S")
+        self.logBox.setFormatter(formatter)
+        logging.getLogger().addHandler(self.logBox)
+        self.logDock.addWidget(self.logBox.widget)
 
         # status bar
         self.status = QtGui.QStatusBar(self)

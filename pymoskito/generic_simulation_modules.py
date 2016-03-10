@@ -371,7 +371,7 @@ class ModelInputLimiter(Limiter):
         if value > self._settings["Limits"][1]:
             value = np.array([[self._settings["Limits"][1]]])  # convert number into numpy (1,1) array
 
-        # TODO resturcture to something like this:
+        # TODO restructure to something like this:
         # value = np.max(value, self._settings["Limits"][0])
         # value = np.min(value, self._settings["Limits"][1])
 

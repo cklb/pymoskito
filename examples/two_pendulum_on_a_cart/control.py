@@ -462,6 +462,7 @@ class SwingUpController2(Controller):
         else:
             u = self.ljapunov._control(is_values, desired_values, t)
 
+        self._logger.info("Exciting result: {}".format(u))
         return u
 
 

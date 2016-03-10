@@ -11,6 +11,8 @@ root:
   handlers: [logfile, console]
 
 loggers:
+  #SimGUI_window is created on startup
+
   SimGUI_file:
     level: !!python/name:logging.WARN
     handlers: [logfile]
@@ -36,6 +38,7 @@ handlers:
     level: !!python/name:logging.NOTSET
 
 formatters:
+
     simpleFormatter:
       class: !!python/name:logging.Formatter
       format: '%(asctime)s - %(name)s - %(levelname)s - %(message)s'

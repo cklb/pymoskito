@@ -166,7 +166,7 @@ class PostProcessor(QtGui.QMainWindow):
         """
         loads a result file
         """
-        with open(file_name, 'rb') as f:
+        with open(file_name, "r") as f:
             self.results.append(cPickle.load(f))
 
         self.sim_results_changed.emit()
