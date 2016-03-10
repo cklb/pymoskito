@@ -1,8 +1,11 @@
-__author__ = 'stefan'
-
+from __future__ import division
 from abc import ABCMeta, abstractmethod, abstractproperty
+import logging
 from collections import OrderedDict
 from PyQt4.QtCore import QObject, pyqtWrapperType
+
+
+__author__ = 'stefan'
 
 
 class SimulationModuleMeta(ABCMeta, pyqtWrapperType):
@@ -24,6 +27,8 @@ class SimulationModule(QObject):
 
     def __init__(self, settings):
         QObject.__init__(self, None)
+        self._logger = logging.getLogger(self.__class__.__name__)
+
         assert isinstance(settings, OrderedDict)
         assert ("tick divider" in settings)
         self._settings = settings
@@ -287,3 +292,52 @@ class Limiter(SimulationModule):
         :return: limiter output
         """
         return value
+
+
+class Sensor(SimulationModule):
+    """
+    Base class for all sensor variants
+    """
+
+    def __init__(self, settings):
+        assert "input signal" in settings
+        settings.update({"tick divider": 1})
+        SimulationModule.__init__(self, settings)
+
+    def calc_output(self, input_dict):
+        return self._measure(input_dict[self._settings["input signal"]])
+
+    def _measure(self, value):
+        """
+        placeholder for measurement calculation
+        in here you can select which state elements you want to measure or add measurement delays
+
+        :param value: values to measure
+        :return: sensor output
+        """
+        return value
+
+
+class Disturbance(SimulationModule):
+    """
+    Base class for all disturbance variants
+    """
+
+    def __init__(self, settings):
+        assert "input signal" in settings
+        settings.update({"tick divider": 1})
+        SimulationModule.__init__(self, settings)
+
+    def calc_output(self, input_dict):
+        return self._disturb(input_dict[self._settings["input signal"]])
+
+    @abstractmethod
+    def _disturb(self, value):
+        """
+        placeholder for disturbance calculation
+        if the noise shall be dependent on the measured signal use it to create noise
+
+        :param value: values that was measured
+        :return: noise that is to be added to the signal later on
+        """
+        pass

@@ -4,6 +4,7 @@ from __future__ import division
 import numpy as np
 import vtk
 
+from pymoskito import register_visualizer
 from pymoskito.visualization import Visualizer
 
 import settings as st
@@ -111,3 +112,4 @@ class BallBeamVisualizer(Visualizer):
         self.set_body_state(self.beamActor, r_beam, t_beam)
         self.set_body_state(self.ballActor, r_ball, t_ball)
 
+register_visualizer(BallBeamVisualizer)

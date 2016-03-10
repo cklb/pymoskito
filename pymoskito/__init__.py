@@ -2,7 +2,7 @@
 from simulation_gui import SimulationGui as Simulator
 from processing_gui import PostProcessor as PostProcessor
 from registry import register_simulation_module, register_processing_module, get_registered_simulation_modules, \
-    get_registered_processing_modules
+    get_registered_processing_modules, register_visualizer
 
 import logging.config
 from tools import get_resource

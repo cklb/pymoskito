@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
+import logging
 import cPickle
 import traceback
 from PyQt4 import QtCore, QtGui
@@ -21,6 +22,8 @@ class PostProcessor(QtGui.QMainWindow):
 
     def __init__(self, parent=None):
         QtGui.QMainWindow.__init__(self, parent)
+        self._logger = logging.getLogger(self.__class__.__name__)
+
         self.setWindowTitle("Processing")
         self.setWindowIcon(QtGui.QIcon(get_resource("processing.png")))
         self.mainFrame = QtGui.QWidget(self)
@@ -246,7 +249,7 @@ class PostProcessor(QtGui.QMainWindow):
             raise ValueError("unknown processor type {0}".format(processor_type))
 
         if not result_files:
-            print 'run_processor() Error: no result file loaded!'
+            self._logger.warning("run_processor() Error: no result file loaded!")
             return
 
         processor_cls = pm.get_processing_module_class_by_name(base_cls, name)
@@ -254,14 +257,13 @@ class PostProcessor(QtGui.QMainWindow):
 
         figs = []
         try:
-            print(">>> Processor() running: {0}".format(name))
+            self._logger.info("executing processor '{0}'".format(name))
             figs = processor.process(self.results)
         except Exception, err:
-            print "Error in processor!"
-            print traceback.format_exc()
+            self._logger.exception("Error in processor")
 
         self.figures_changed.emit(figs, processor_type)
-        print '>>> finished.'
+        self._logger.info("finished postprocessing")
 
     def update_figure_lists(self, figures, target_type):
         # remove no longer needed elements

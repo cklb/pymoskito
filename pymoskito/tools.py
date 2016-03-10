@@ -3,10 +3,13 @@
 Tools, functions and other funny things
 """
 import os
+import logging
 import sympy as sp
 import numpy as np
 import copy
 import warnings
+
+logger = logging.getLogger(__name__)
 
 
 def sort_lists(a, b):
@@ -188,11 +191,12 @@ def rotation_matrix_xyz(axis, angle, angle_dim):
 
     s = np.sin(a)
     c = np.cos(a)
-    rotation_matrix = np.array([[c + x**2*(1 - c), x*y*(1 - c) - z*s, x*z*(1 - c) + y*s],
-                                [y*x*(1 - c) + z*s, c + y**2*(1 - c), y*z*(1 - c) - x*s],
-                                [z*x*(1 - c) - y*s, z*y*(1 - c) + x*s, c + z**2*(1 - c)]])
+    rotation_matrix = np.array([[c + x ** 2 * (1 - c), x * y * (1 - c) - z * s, x * z * (1 - c) + y * s],
+                                [y * x * (1 - c) + z * s, c + y ** 2 * (1 - c), y * z * (1 - c) - x * s],
+                                [z * x * (1 - c) - y * s, z * y * (1 - c) + x * s, c + z ** 2 * (1 - c)]])
 
     return rotation_matrix
+
 
 def controlability_matrix(A, B):
     """
@@ -211,7 +215,7 @@ def controlability_matrix(A, B):
 
     # calculate controlability matrix
     Qc = B
-    for x in range(1,n):
+    for x in range(1, n):
         Qc = np.concatenate((Qc, np.dot(np.linalg.matrix_power(A, x), B)), axis=1)
 
     # check controlability of the system
@@ -233,7 +237,7 @@ def ackerSISO(A, B, poles):
     :return:
     """
 
-    #check consistency
+    # check consistency
     if A.shape[0] != A.shape[1]:
         raise ValueError('A is not square')
     n = A.shape[0]
@@ -277,7 +281,7 @@ def calc_prefilter(A, B, C, K=None):
         try:
             V = - np.linalg.inv(np.dot(np.dot(C, np.linalg.inv(A - np.dot(B, K))), B))
         except np.linalg.linalg.LinAlgError:
-            print 'Can not calculate V, because of a Singular Matrix'
+            logger.error("can't calculate V, due to singular matrix")
             V = np.array([[1]])
     else:
         V = np.array([[1]])

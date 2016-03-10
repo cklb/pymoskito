@@ -2,6 +2,8 @@
 from __future__ import division
 from simulation_modules import SimulationModule, SignalMixer
 from processing_core import ProcessingModule
+from visualization import Visualizer
+
 """
 wrapper for easy user interaction
 """
@@ -12,10 +14,10 @@ _registry = {}
 def register_module(module_cls, module_type, cls, type_check=True):
     """
     main hook to register a class in the pymoskito framework
-    :param type_check:
     :param module_type:
     :param module_cls:
     :param cls: class to be registered
+    :param type_check: performtype checking
     :return: None
     """
     if type_check:
@@ -110,3 +112,26 @@ def get_registered_processing_modules(module_type):
 
 def get_processing_module_class_by_name(module_type, module_name):
     return get_module_class_by_name(ProcessingModule, module_type, module_name)
+
+
+def register_visualizer(vis_cls):
+    """
+    hook to register a visualizer for the simulation GUI
+
+    :param vis_cls: class to be registered
+    """
+    if not issubclass(vis_cls, Visualizer):
+        raise TypeError("Module must match type to be registered for! {0} <> {1}".format(vis_cls, Visualizer))
+
+    cls_entry = _registry.get(Visualizer, [])
+    cls_entry.append((vis_cls, vis_cls.__name__))
+    _registry[Visualizer] = cls_entry
+    _registry[Visualizer.__name__] = cls_entry
+
+
+def get_registered_visualizers():
+    """
+    hook to retrieve registered visualizers
+    :return: visualizer class
+    """
+    return _registry.get(Visualizer, [])

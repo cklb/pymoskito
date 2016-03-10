@@ -195,9 +195,8 @@ class StepResponse(PostProcessingModule):
         l1_norm_itae = self.calc_l1_norm_itae(*self.get_metric_values(data))
         l1_norm_abs = self.calc_l1_norm_abs(*self.get_metric_values(data))
 
-        print 'L1NormITAE: ', l1_norm_itae
-        print 'L1NormAbs: ', l1_norm_abs
-        print '\n'
+        self._logger.info("calculated L1NormITAE: {}".format(l1_norm_itae))
+        self._logger.info("calculated L1NormAbs: {}".format(l1_norm_abs))
 
         output.update({'L1NormITAE': l1_norm_itae, 'L1NormAbs': l1_norm_abs})
 
@@ -346,7 +345,8 @@ class TwoPendulum(PostProcessingModule):
                           'V_V_dot': True}
 
         if plot_selection['x0_x0_vel']:
-            print 'create x0_x0_vel plot'
+            self._logger.debug("creating x0_x0_vel plot")
+
             fig = Figure()
             axes = fig.add_subplot(111)
             axes.plot(t, x0, c='b', label=r'$x_{0}$ in m')
@@ -369,7 +369,8 @@ class TwoPendulum(PostProcessingModule):
                                     output=construct_result_dict(data, output={}))
 
         if plot_selection['phi1_phi2']:
-            print 'create phi1_phi2 plot'
+            self._logger.debug("creating phi1_phi2 plot")
+
             fig = Figure()
             axes = fig.add_subplot(111)
             axes.plot(t, phi1, c='k', label=r'$\varphi_{1}$')
@@ -401,7 +402,8 @@ class TwoPendulum(PostProcessingModule):
                                     output=construct_result_dict(data, output={}))
 
         if plot_selection['V_V_dot']:
-            print 'create V_V_dot plot'
+            self._logger.debug("creating V_V_dot plot")
+
             V , V_dot = self.calc_v_and_v_dot(data, val_list)
 
             fig = Figure()

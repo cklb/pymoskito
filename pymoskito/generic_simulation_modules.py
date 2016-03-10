@@ -1,26 +1,28 @@
-__author__ = 'stefan'
-"""
-ready to go implementations of generic simulation modules
-"""
-
 from collections import OrderedDict
-# from pytrajectory import ControlSystem
-
 from scipy.integrate import ode
 import sympy as sp
 import numpy as np
+
+# from pytrajectory import ControlSystem
 
 from registry import register_simulation_module
 from simulation_modules import Solver, \
     SolverException, \
     Trajectory, \
     TrajectoryException, \
-    Controller,\
-    Feedforward,\
-    SignalMixer,\
-    ModelMixer,\
-    ObserverMixer,\
-    Limiter
+    Controller, \
+    Feedforward, \
+    SignalMixer, \
+    ModelMixer, \
+    ObserverMixer, \
+    Limiter, \
+    Sensor, \
+    Disturbance
+
+__author__ = 'stefan'
+"""
+ready to go implementations of simulation modules
+"""
 
 
 class ODEInt(Solver):
@@ -215,6 +217,7 @@ class Setpoint(Trajectory):
 
         return yd
 
+
 class PIDController(Controller):
     """
     PID Controller
@@ -227,7 +230,6 @@ class PIDController(Controller):
                                    ("tick divider", 1)])
     last_time = 0
 
-
     def __init__(self, settings):
         # add specific "private" settings
         settings.update(input_order=0)
@@ -236,10 +238,10 @@ class PIDController(Controller):
         Controller.__init__(self, settings)
 
         # define variables for data saving in the right dimension
-        self.e_old = np.zeros((len(self._settings["input_state"]), 1))          # column vector
-        self.integral_old = np.zeros((len(self._settings["input_state"]), 1))   # column vector
-        self.last_u = np.zeros((len(self._settings["input_state"]), 1))         # column vector
-        self.output = np.zeros((len(self._settings["input_state"]), 1))         # column vector
+        self.e_old = np.zeros((len(self._settings["input_state"]), 1))  # column vector
+        self.integral_old = np.zeros((len(self._settings["input_state"]), 1))  # column vector
+        self.last_u = np.zeros((len(self._settings["input_state"]), 1))  # column vector
+        self.output = np.zeros((len(self._settings["input_state"]), 1))  # column vector
 
     def _control(self, is_values, desired_values, t):
         # input abbreviations
@@ -287,7 +289,7 @@ class PIDController(Controller):
 class PyTrajectory(Feedforward):
     """
     this class is WIP!
-    integration  of the PyTrajectory pakcage,
+    integration  of the PyTrajectory package,
     PyTrajectory is a Python library for the determination of the feed forward control
     to achieve a transition between desired states of a nonlinear control system.
     """
@@ -364,12 +366,59 @@ class ModelInputLimiter(Limiter):
         Limiter.__init__(self, settings)
 
     def _limit(self, value):
-        if value < self._settings["Limits"][0]:
-            value = np.array([[self._settings["Limits"][0]]])  # convert number into numpy (1,1) array
-        if value > self._settings["Limits"][1]:
-            value = np.array([[self._settings["Limits"][1]]])  # convert number into numpy (1,1) array
+        value = np.max(value, self._settings["Limits"][0])
+        value = np.min(value, self._settings["Limits"][1])
+
+        # if value < self._settings["Limits"][0]:
+        #     value = np.array([[self._settings["Limits"][0]]])  # convert number into numpy (1,1) array
+        # if value > self._settings["Limits"][1]:
+        #     value = np.array([[self._settings["Limits"][1]]])  # convert number into numpy (1,1) array
 
         return value
+
+
+class DeadTimeSensor(Sensor):
+    """
+    Sensor that adds a measurement delay
+    """
+
+    public_settings = OrderedDict([("output", [True, True, True, True]),
+                                   ("delay", 1)])
+
+    def __init__(self, settings):
+        settings.update([("input signal", "Solver")])
+        Sensor.__init__(self, settings)
+        self._storage = None
+
+    def _measure(self, value):
+        if self._storage is None:
+            self._storage = [np.zeros_like(value)] * self._settings["delay"]
+
+        # add new measurement
+        meas = value[self._settings["output"]]
+        self._storage.append(meas)
+
+        # return delayed one
+        return self._storage.pop(0)
+
+
+class GaussianNoise(Disturbance):
+    """
+    Noise generator for gaussian noise
+    """
+
+    public_settings = OrderedDict([("sigma", 1),
+                                   ("mean", 0)])
+
+    def __init__(self, settings):
+        settings.update([("input signal", "Sensor")])
+        Disturbance.__init__(self, settings)
+
+    def _disturb(self, value):
+        return np.random.normal(self._settings['mean'],
+                                self._settings['sigma'],
+                                value.output_dim)
+
 
 # register all generic modules
 register_simulation_module(Solver, ODEInt)
@@ -381,3 +430,5 @@ register_simulation_module(Feedforward, PyTrajectory)
 register_simulation_module(ModelMixer, AdditiveMixer)
 register_simulation_module(ObserverMixer, AdditiveMixer)
 register_simulation_module(Limiter, ModelInputLimiter)
+register_simulation_module(Sensor, DeadTimeSensor)
+register_simulation_module(Disturbance, GaussianNoise)

@@ -23,6 +23,7 @@ import vtk
 from vtk.qt4.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 
 # pymoskito
+from registry import get_registered_visualizers
 from simulation_interface import SimulatorInteractor, SimulatorView
 from visualization import Visualizer
 from processing_gui import PostProcessor
@@ -107,7 +108,16 @@ class SimulationGui(QtGui.QMainWindow):
         self.vtkDock.addWidget(self.frame)
         self.vtk_renderer = vtk.vtkRenderer()
         self.vtkWidget.GetRenderWindow().AddRenderer(self.vtk_renderer)
-        self.visualizer = None
+        # check if there is a registered visualizer
+        available_vis = get_registered_visualizers()
+        self._logger.info("found visualizers: {}".format([name for cls, name in available_vis]))
+        if available_vis:
+                # instantiate the first one
+                self._logger.info("loading visualizer '{}'".format(available_vis[0][1]))
+                self.visualizer = available_vis[0][0](self.vtk_renderer)
+                self.vtkWidget.Initialize()
+        else:
+            self.visualizer = None
 
         # regime window
         self.regime_list = QtGui.QListWidget(self)
@@ -195,7 +205,7 @@ class SimulationGui(QtGui.QMainWindow):
         self.act_reset_camera = QtGui.QAction(self)
         self.act_reset_camera.setText('reset camera')
         self.act_reset_camera.setIcon(QtGui.QIcon(get_resource("reset_camera.png")))
-        self.act_reset_camera.setDisabled(False)
+        self.act_reset_camera.setDisabled(not self.visualizer.can_reset_view)
         self.act_reset_camera.triggered.connect(self.reset_camera_clicked)
 
         # toolbar for control
@@ -268,7 +278,6 @@ class SimulationGui(QtGui.QMainWindow):
         self._logger.info("Simulation GUI is up and running.")
 
     def set_visualizer(self, vis):
-        assert isinstance(vis, Visualizer)
         self.visualizer = vis
         self.vtkWidget.Initialize()
 
@@ -376,7 +385,7 @@ class SimulationGui(QtGui.QMainWindow):
         :param file_name:
         """
         self.regime_file_name = os.path.split(file_name)[-1][:-5]
-        print("loading regime file: {0}".format(self.regime_file_name))
+        self._logger.info("loading regime file: {0}".format(self.regime_file_name))
         with open(file_name, 'r') as f:
             self._regimes += yaml.load(f)
 
@@ -385,13 +394,15 @@ class SimulationGui(QtGui.QMainWindow):
         if self._regimes:
             self.actExecuteRegimes.setDisabled(False)
 
-        self.statusBar().showMessage('loaded ' + str(len(self._regimes)) + ' regimes.', 1000)
+        self._logger.info("loaded {} regimes".format(len(self._regimes)))
+        self.statusBar().showMessage("loaded " + str(len(self._regimes)) + " regimes.", 1000)
         return
 
     def _update_regime_list(self):
         self.regime_list.clear()
         for reg in self._regimes:
-            self.regime_list.addItem(reg['Name'])
+            self._logger.debug("adding '{}' to regime list".format(reg["Name"]))
+            self.regime_list.addItem(reg["Name"])
 
     def remove_regime_items(self):
         if self.regime_list.currentRow() >= 0:
@@ -416,16 +427,17 @@ class SimulationGui(QtGui.QMainWindow):
         # get regime obj
         regime = next((reg for reg in self._regimes if reg['Name'] == regime_name), None)
         if regime is None:
-            print("apply_regime_by_name(): Error no regime called {0}".format(regime_name))
+            self._logger.info("apply_regime_by_name(): Error no regime called {0}".format(regime_name))
             return
 
         # apply
-        self.statusBar().showMessage('applying regime: ' + regime_name, 1000)
+        self._logger.info("applying regime '{}'".format(regime_name))
+        self.statusBar().showMessage("applying regime: " + regime_name, 1000)
         self.sim.set_regime(regime)
 
     def _apply_regime_by_idx(self, index=0):
         if index >= len(self._regimes):
-            print 'applyRegime(): index error!'
+            self._logger.error("applyRegime: index error! ({})".format(index))
             return
 
         self.sim.set_regime(self._regimes[index])
@@ -464,7 +476,7 @@ class SimulationGui(QtGui.QMainWindow):
         integration finished, enable play button and update plots
         :param data:
         """
-        print 'simulation finished.'
+        self._logger.info("simulation finished")
         self.statusLabel.setText('simulation finished.')
 
         self.actSimulate.setDisabled(False)
@@ -587,7 +599,7 @@ class SimulationGui(QtGui.QMainWindow):
                     if val >= self.playbackTime), None)
 
         if idx is None:
-            print("interpolate(): Error no entry found for t={0}".format(self.playbackTime))
+            self._logger.info("interpolate(): Error no entry found for t={0}".format(self.playbackTime))
             return None
         else:
             if len(data.shape) == 1:
@@ -595,7 +607,7 @@ class SimulationGui(QtGui.QMainWindow):
             elif len(data.shape) == 2:
                 return data[idx, :]
             else:
-                print("interpolate(): Error Dimension {0} not understood.".format(data.shape))
+                self._logger.info("interpolate(): Error Dimension {0} not understood.".format(data.shape))
                 return None
 
     def _update_data_list(self):
@@ -690,7 +702,10 @@ class SimulationGui(QtGui.QMainWindow):
         """
         starts the post- and metaprocessing application
         """
-        self.statusBar().showMessage('launching postprocessor', 1000)
+        self._logger.info("launching postprocessor")
+        self.statusBar().showMessage("launching postprocessor", 1000)
+
+        # TODO change behaviour here
         if hasattr(self, "postprocessor"):
             self.postprocessor = PostProcessor(self)
         self.postprocessor.show()

@@ -1,5 +1,6 @@
 from __future__ import division
-import cPickle as cp
+import logging
+from cPickle import dump
 import os
 from abc import ABCMeta, abstractmethod
 
@@ -45,6 +46,7 @@ class ProcessingModule(QObject):
     def __init__(self, parent=None):
         QObject.__init__(self, parent)
         self.name = self.__class__.__name__
+        self._logger = logging.getLogger(self.name)
         return
 
     @abstractmethod
@@ -117,7 +119,7 @@ class ProcessingModule(QObject):
         file_name = os.path.join(file_path, result_name)
         if output:
             with open(file_name + '.pof', 'w') as f:
-                cp.dump(output, f)
+                dump(output, f)
 
         if figure:
             for export_format in self._export_formats:
@@ -143,7 +145,7 @@ class PostProcessingModule(ProcessingModule):
         """
         output = []
         for res in files:
-            print("processing data set: {0}".format(res["regime name"]))
+            self._logger.info("processing data set: {0}".format(res["regime name"]))
             output.extend(self.run(res))
 
         return output

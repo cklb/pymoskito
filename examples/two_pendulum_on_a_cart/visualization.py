@@ -4,6 +4,7 @@ from __future__ import division
 import numpy as np
 import vtk
 
+from pymoskito import register_visualizer
 from pymoskito.visualization import Visualizer
 
 import settings as st
@@ -14,6 +15,7 @@ class TwoPendulumVisualizer(Visualizer):
 
     def __init__(self, renderer):
         Visualizer.__init__(self)
+
 
         assert isinstance(renderer, vtk.vtkRenderer)
         self.ren = renderer
@@ -306,6 +308,8 @@ class TwoPendulumVisualizer(Visualizer):
         self.ren.GetActiveCamera().Zoom(1.45)
         self.ren.GetActiveCamera().SetFocalPoint(0, 0, 0)
 
+        # add camera reset functionality
+        self.can_reset_view = True
         self.position = self.ren.GetActiveCamera().GetPosition()
         self.focal_point = self.ren.GetActiveCamera().GetFocalPoint()
         self.view_up = self.ren.GetActiveCamera().GetViewUp()
@@ -390,3 +394,5 @@ class TwoPendulumVisualizer(Visualizer):
         update the body states
         """
         self.set_body_state(self.calc_positions(x))
+
+register_visualizer(TwoPendulumVisualizer)

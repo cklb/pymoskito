@@ -1,5 +1,6 @@
 ﻿# -*- coding: utf-8 -*-
 from __future__ import division
+import logging
 import numpy as np
 from PyQt4.QtCore import QObject, pyqtSignal, pyqtSlot
 
@@ -70,6 +71,8 @@ class Simulator(QObject):
 
     def __init__(self, settings, modules):
         QObject.__init__(self, None)
+        self._logger = logging.getLogger(self.__class__.__name__)
+
         assert isinstance(settings, SimulationSettings)
         self._settings = settings
         assert isinstance(modules, dict)
@@ -194,7 +197,8 @@ class Simulator(QObject):
                     dt = solver.t - t
 
                 except SimulationException as e:
-                    print("Simulator.run()>> {0}: {1}".format(type(e).__name__, e.args[0]))
+                    self._loggger.error("run()>> {0}: {1}".format(type(e).__name__, e.args[0]))
+
                     # overwrite end time with reached time
                     self._settings.end_time = self._current_outputs["time"]
                     self._storage.update(finished=False)

@@ -16,13 +16,13 @@ if __name__ == '__main__':
     # create Simulator
     sim = Simulator()
 
-    # add self defined visualizer
-    vis = TwoPendulumVisualizer(sim.vtk_renderer)
-    sim.set_visualizer(vis)
-
     # load default config
     sim.load_regimes_from_file("default.sreg")
+
+    # apply a regime
     sim.apply_regime_by_name("test")
+
+    # remote start a simulation
     # sim.start_simulation()
 
     sim.show()

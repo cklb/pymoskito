@@ -5,6 +5,8 @@
 """
 import sys
 import copy
+import logging
+
 from PyQt4 import QtCore, QtGui
 from PyQt4.QtGui import QStandardItemModel, QStandardItem, QItemDelegate, QComboBox
 
@@ -126,6 +128,8 @@ class SimulatorInteractor(QtCore.QObject):
 
     def __init__(self, parent=None):
         QtCore.QObject.__init__(self, parent)
+        self._logger = logging.getLogger(self.__class__.__name__)
+
         self.last_progress = 0
         self.end_time = 0
         self._setup_model()
@@ -282,7 +286,7 @@ class SimulatorInteractor(QtCore.QObject):
         if reg is None:
             return
         if isinstance(reg, list):
-            print 'setRegime(): only one allowed!'
+            self._logger.error("setRegime(): only scalar input allowed!")
             return
 
         self._apply_regime(reg)
@@ -340,7 +344,7 @@ class SimulatorInteractor(QtCore.QObject):
                         break
 
                 if not found:
-                    print("_applyRegime(): setting {0} not available for {1}".format(key, module_type))
+                    self._logger.error("_applyRegime(): setting {0} not available for {1}".format(key, module_type))
                     continue
 
     def run_simulation(self):
@@ -378,13 +382,15 @@ class SimulatorInteractor(QtCore.QObject):
 
         :param state_change: see :cls:SimulationStateChange
         """
+        self._logger.debug("simulation state change '{}'".format(state_change.type))
+
         if state_change.type == "start":
             self._sim_state = "running"
         elif state_change.type == "time":
-            # TODO print progress to logfile
-            # print("Simulation time changed: {0}".format(state_change.t))
+            self._logger.debug("reached simulation time {0}".format(state_change.t))
             progress = int(state_change.t / self._sim_settings.end_time * 100)
             if progress != self.last_progress:
+                self._logger.info("simulation reached {0}%".format(progress))
                 self.simulationProgressChanged.emit(progress)
                 self.last_progress = progress
         elif state_change.type == "abort":
@@ -394,7 +400,7 @@ class SimulatorInteractor(QtCore.QObject):
             self._sim_state = "finished"
             self._sim_data.update({'results': copy.deepcopy(state_change.data)})
         else:
-            print("simulation_state_changed(): ERROR Unknown state {0}".format(state_change.type))
+            self._logger.error("simulation_state_changed(): ERROR Unknown state {0}".format(state_change.type))
 
     def _sim_aftercare(self):
         # delete modules
