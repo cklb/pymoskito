@@ -366,13 +366,14 @@ class ModelInputLimiter(Limiter):
         Limiter.__init__(self, settings)
 
     def _limit(self, value):
-        value = np.max(value, self._settings["Limits"][0])
-        value = np.min(value, self._settings["Limits"][1])
+        if value < self._settings["Limits"][0]:
+            value = np.array([[self._settings["Limits"][0]]])  # convert number into numpy (1,1) array
+        if value > self._settings["Limits"][1]:
+            value = np.array([[self._settings["Limits"][1]]])  # convert number into numpy (1,1) array
 
-        # if value < self._settings["Limits"][0]:
-        #     value = np.array([[self._settings["Limits"][0]]])  # convert number into numpy (1,1) array
-        # if value > self._settings["Limits"][1]:
-        #     value = np.array([[self._settings["Limits"][1]]])  # convert number into numpy (1,1) array
+        # TODO resturcture to something like this:
+        # value = np.max(value, self._settings["Limits"][0])
+        # value = np.min(value, self._settings["Limits"][1])
 
         return value
 
