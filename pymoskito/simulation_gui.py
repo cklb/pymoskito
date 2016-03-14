@@ -6,6 +6,7 @@ from __future__ import division
 import logging
 import time
 import os
+from operator import itemgetter
 import yaml
 import cPickle
 import numpy as np
@@ -244,7 +245,7 @@ class SimulationGui(QtGui.QMainWindow):
 
         # regime management
         self.runningBatch = False
-        self.currentRegimeIndex = 0
+        self._current_regime_index = 0
         self._regimes = []
 
         self.regimeFinished.connect(self.run_next_regime)
@@ -353,8 +354,8 @@ class SimulationGui(QtGui.QMainWindow):
         """
         start the simulation and disable start button
         """
-        regime_name = str(self.regime_list.item(self.currentRegimeIndex).text())
-        self.statusLabel.setText('simulating ' + regime_name + ':')
+        regime_name = str(self.regime_list.item(self._current_regime_index).text())
+        self.statusLabel.setText("simulating {}".format(regime_name))
         self._logger.info("Simulating: {}".format(regime_name))
 
         self.actSimulate.setDisabled(True)
@@ -449,22 +450,26 @@ class SimulationGui(QtGui.QMainWindow):
         :param regime_name:
         :return:
         """
-        # get regime obj
-        regime = next((reg for reg in self._regimes if reg['Name'] == regime_name), None)
-        if regime is None:
+        # get regime idx
+        try:
+            idx = map(itemgetter("Name"), self._regimes).index(regime_name)
+        except ValueError as e:
             self._logger.info("apply_regime_by_name(): Error no regime called {0}".format(regime_name))
             return
 
         # apply
-        self._logger.info("applying regime '{}'".format(regime_name))
-        self.statusBar().showMessage("applying regime: " + regime_name, 1000)
-        self.sim.set_regime(regime)
+        self._apply_regime_by_idx(idx)
 
     def _apply_regime_by_idx(self, index=0):
         if index >= len(self._regimes):
             self._logger.error("applyRegime: index error! ({})".format(index))
             return
 
+        reg_name = self._regimes[index]["Name"]
+        self.statusBar().showMessage("regime {} applied.".format(reg_name), 1000)
+        self._logger.info("applying regime '{}'".format(reg_name))
+
+        self._current_regime_index = index
         self.sim.set_regime(self._regimes[index])
 
     def execute_regimes_clicked(self):
@@ -472,26 +477,25 @@ class SimulationGui(QtGui.QMainWindow):
         execute all regimes in the current list
         """
         self.runningBatch = True
-        self.currentRegimeIndex = -1
+        self._current_regime_index = -1
         self.regimeFinished.emit()
 
     def run_next_regime(self):
         """
         executes the next regime
         """
-        self.currentRegimeIndex += 1
         # are we finished?
-        if self.currentRegimeIndex >= len(self._regimes):
+        if self._current_regime_index == len(self._regimes)-1:
             self.finishedRegimeBatch.emit()
             return
 
-        self._apply_regime_by_idx(self.currentRegimeIndex)
+        self._apply_regime_by_idx(self._current_regime_index + 1)
         self.start_simulation()
 
     def regime_batch_finished(self):
         self.runningBatch = False
         self.actExecuteRegimes.setDisabled(False)
-        self.currentRegimeIndex = 0
+        # self._current_regime_index = 0
         self.statusLabel.setText('All regimes have been simulated!')
         self.actSave.setDisabled(True)
 
@@ -527,7 +531,7 @@ class SimulationGui(QtGui.QMainWindow):
         # self.playAnimation()
 
         if self.runningBatch:
-            regime_name = self._regimes[self.currentRegimeIndex]['name']
+            regime_name = self._regimes[self._current_regime_index]['Name']
             self.save_data(regime_name)
             self.regimeFinished.emit()
         else:
@@ -545,8 +549,6 @@ class SimulationGui(QtGui.QMainWindow):
     def _read_results(self):
         self.currentStepSize = 1.0/self.currentDataset["results"]["Simulation"]['measure rate']
         self.currentEndTime = self.currentDataset["results"]["Simulation"]["end time"]
-        # self.currentStepSize = 1.0/self.currentDataset['modules']['Simulator']['measure rate']
-        # self.currentEndTime = self.currentDataset["modules"]["Simulator"]["end time"]
         self.validData = True
 
     def add_plot_to_dock(self, plot_widget):
