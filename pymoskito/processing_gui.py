@@ -24,30 +24,30 @@ class PostProcessor(QtGui.QMainWindow):
         QtGui.QMainWindow.__init__(self, parent)
         self._logger = logging.getLogger(self.__class__.__name__)
 
-        self.setWindowTitle("Processing")
+        self.setWindowTitle(u"Processing")
         self.setWindowIcon(QtGui.QIcon(get_resource("processing.png")))
         self.mainFrame = QtGui.QWidget(self)
         self.resize(1000, 600)
 
         # toolbar
-        self.toolBar = QtGui.QToolBar("file control")
+        self.toolBar = QtGui.QToolBar(u"file control")
         self.toolBar.setIconSize(QtCore.QSize(24, 24))
         self.addToolBar(self.toolBar)
 
         self.actLoad = QtGui.QAction(self)
-        self.actLoad.setText("load result file")
+        self.actLoad.setText(u"load result file")
         self.actLoad.setIcon(QtGui.QIcon(get_resource("load.png")))
         self.actLoad.setDisabled(False)
         self.actLoad.triggered.connect(self.load_result_files)
         
         self.actPostLoad = QtGui.QAction(self)
-        self.actPostLoad.setText("load post-result file")
+        self.actPostLoad.setText(u"load post-result file")
         self.actPostLoad.setIcon(QtGui.QIcon(get_resource("load.png")))
         self.actPostLoad.setDisabled(False)
         self.actPostLoad.triggered.connect(self.load_post_result_files)
 
         self.actSwitch = QtGui.QAction(self)
-        self.actSwitch.setText("switch display mode")
+        self.actSwitch.setText(u"switch display mode")
         self.actSwitch.setIcon(QtGui.QIcon(get_resource("left_mode.png")))
         self.actSwitch.setDisabled(False)
         self.actSwitch.triggered.connect(self.switch_sides)
@@ -59,13 +59,13 @@ class PostProcessor(QtGui.QMainWindow):
         self.spacer2.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
 
         self.actReloadMethods = QtGui.QAction(self)
-        self.actReloadMethods.setText("reload methods")
+        self.actReloadMethods.setText(u"reload methods")
         self.actReloadMethods.setIcon(QtGui.QIcon(get_resource("reload.png")))
         self.actReloadMethods.setDisabled(False)
         self.actReloadMethods.triggered.connect(self.update_post_method_list)
 
         self.actReloadMetaMethods = QtGui.QAction(self)
-        self.actReloadMetaMethods.setText("reload meta methods")
+        self.actReloadMetaMethods.setText(u"reload meta methods")
         self.actReloadMetaMethods.setIcon(QtGui.QIcon(get_resource("reload.png")))
         self.actReloadMetaMethods.setDisabled(False)
         self.actReloadMetaMethods.triggered.connect(self.update_meta_method_list)
@@ -118,24 +118,24 @@ class PostProcessor(QtGui.QMainWindow):
         self.delShortPost = QtGui.QShortcut(QtGui.QKeySequence(QtCore.Qt.Key_Backspace), self.post_result_list)
         self.delShortPost.activated.connect(self.remove_post_result_item)
 
-        self.grid.addWidget(QtGui.QLabel("result files:"), 0, 0)
+        self.grid.addWidget(QtGui.QLabel(u"result files:"), 0, 0)
         self.grid.addWidget(self.sim_result_list, 1, 0)
-        self.grid.addWidget(QtGui.QLabel("Postprocessors:"), 2, 0)
+        self.grid.addWidget(QtGui.QLabel(u"Postprocessors:"), 2, 0)
         self.grid.addWidget(self.methodList, 3, 0)
-        self.grid.addWidget(QtGui.QLabel("figures:"), 4, 0)
+        self.grid.addWidget(QtGui.QLabel(u"figures:"), 4, 0)
         self.grid.addWidget(self.post_figure_list, 5, 0)
-        self.grid.addWidget(QtGui.QLabel("selected figure:"), 0, 1)
-        self.grid.addWidget(QtGui.QLabel("postprocessor files:"), 0, 2)
+        self.grid.addWidget(QtGui.QLabel(u"selected figure:"), 0, 1)
+        self.grid.addWidget(QtGui.QLabel(u"postprocessor files:"), 0, 2)
         self.grid.addWidget(self.post_result_list, 1, 2)
-        self.grid.addWidget(QtGui.QLabel("Metaprocessors:"), 2, 2)
+        self.grid.addWidget(QtGui.QLabel(u"Metaprocessors:"), 2, 2)
         self.grid.addWidget(self.metaMethodList, 3, 2)
-        self.grid.addWidget(QtGui.QLabel("figures:"), 4, 2)
+        self.grid.addWidget(QtGui.QLabel(u"figures:"), 4, 2)
         self.grid.addWidget(self.meta_figure_list, 5, 2)
 
         self.mainFrame.setLayout(self.grid)
         self.setCentralWidget(self.mainFrame)
 
-        # statusbar
+        # status bar
         self.statusBar = QtGui.QStatusBar(self)
         self.setStatusBar(self.statusBar)
 
@@ -160,14 +160,14 @@ class PostProcessor(QtGui.QMainWindow):
 
         if files:
             for single_file in files:
-                self._load_result_file(unicode(single_file))
+                self._load_result_file(unicode(single_file.toUtf8(), encoding="utf-8"))
 
     def _load_result_file(self, file_name):
         """
         loads a result file
         """
-        self._logger.info("loading result file {}".format(file_name.encode("utf-8")))
-        with open(file_name, "rb") as f:
+        self._logger.info(u"loading result file {}".format(file_name))
+        with open(file_name.encode("utf-8"), "rb") as f:
             self.results.append(cPickle.load(f))
 
         self.sim_results_changed.emit()
@@ -175,7 +175,7 @@ class PostProcessor(QtGui.QMainWindow):
     def update_result_list(self):
         self.sim_result_list.clear()
         for res in self.results:
-            name = res['regime name']
+            name = res["regime name"]
             self.sim_result_list.addItem(name)
 
     def remove_result_item(self):
@@ -196,7 +196,7 @@ class PostProcessor(QtGui.QMainWindow):
 
         if files:
             for selectedFile in files:
-                self._load_post_result_file(str(selectedFile))
+                self._load_post_result_file(unicode(selectedFile.toUtf8(), encoding="utf-8"))
 
     def _load_post_result_file(self, file_name):
         """
@@ -205,7 +205,7 @@ class PostProcessor(QtGui.QMainWindow):
         name = os.path.split(file_name)[-1][:-4]
         with open(file_name, "r") as f:
             results = cPickle.load(f)
-            results.update({'name': name})
+            results.update({"name": name})
             self.post_results.append(results)
 
         self.post_results_changed.emit()
@@ -213,7 +213,7 @@ class PostProcessor(QtGui.QMainWindow):
     def update_post_result_list(self):
         self.post_result_list.clear()
         for res in self.post_results:
-            name = res['name']
+            name = res["name"]
             self.post_result_list.addItem(name)
 
     def remove_post_result_item(self):
@@ -247,6 +247,7 @@ class PostProcessor(QtGui.QMainWindow):
             result_files = self.post_results
             base_cls = MetaProcessingModule
         else:
+            self._logger.error(u"unknown processor type {0}".format(processor_type))
             raise ValueError("unknown processor type {0}".format(processor_type))
 
         if not result_files:

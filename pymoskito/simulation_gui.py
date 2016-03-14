@@ -517,7 +517,8 @@ class SimulationGui(QtGui.QMainWindow):
         """
         main.py hook to be called by the simulation interface if integration is finished
         integration finished, enable play button and update plots
-        :param data:
+
+        :param data: dict with simulation data
         """
         self._logger.info(u"simulation finished")
         self.statusLabel.setText(u"simulation finished.")
@@ -554,9 +555,9 @@ class SimulationGui(QtGui.QMainWindow):
     def simulation_failed(self, data):
         """
         integration failed, enable play button and update plots
+
         :param data:
         """
-        #TODO show warning window
         self.statusLabel.setText(u"simulation failed!")
         self.simulation_finished(data)
 
@@ -596,6 +597,7 @@ class SimulationGui(QtGui.QMainWindow):
     def update_playback_gain(self, val):
         """
         adjust playback time to slider value
+
         :param val:
         """
         self.playbackGain = 10**(5.0*(val - self.speedDial.maximum()/2)/self.speedDial.maximum())
@@ -669,7 +671,8 @@ class SimulationGui(QtGui.QMainWindow):
     def create_plot(self, item):
         """
         creates a plot widget corresponding to the ListItem
-        :param item:
+
+        :param item: ListItem
         """
 
         title = str(item.text())
@@ -697,7 +700,7 @@ class SimulationGui(QtGui.QMainWindow):
     def _get_data_by_name(self, name):
         tmp = name.split(".")
         if len(tmp) == 1:
-            data = self.currentDataset['results'][tmp[0]]
+            data = self.currentDataset["results"][tmp[0]]
             # if the data-set contains 1d array -> convert to float
             data = [float(x) for x in data]
         elif len(tmp) == 2:
@@ -741,7 +744,7 @@ class SimulationGui(QtGui.QMainWindow):
         self._logger.info(u"launching postprocessor")
         self.statusBar().showMessage(u"launching postprocessor", 1000)
 
-        # TODO change behaviour here
+        # TODO launch new process from here
         if hasattr(self, "postprocessor"):
             self.postprocessor = PostProcessor(self)
         self.postprocessor.show()
