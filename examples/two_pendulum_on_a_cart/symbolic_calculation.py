@@ -1,5 +1,7 @@
 import numpy as np
 import sympy as sp
+import matplotlib as mpl
+mpl.use("Qt4Agg")
 import matplotlib.pyplot as plt
 from matplotlib import rcParams
 rcParams['text.usetex'] = True

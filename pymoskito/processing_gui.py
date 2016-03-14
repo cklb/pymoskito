@@ -1,15 +1,16 @@
 # -*- coding: utf-8 -*-
-import os
-import logging
 import cPickle
-import traceback
+import logging
+import os
+
 from PyQt4 import QtCore, QtGui
 from PyQt4.QtCore import pyqtSignal
 
 import registry as pm
-from processing_core import ProcessingModule, PostProcessingModule, MetaProcessingModule
-import generic_processing_modules
+from processing_core import PostProcessingModule, MetaProcessingModule
+
 # import generic_metaprocessing_modules
+from pymoskito.tools import PostFilter
 from tools import get_resource, QPlainTextEditLogger
 
 
@@ -123,7 +124,8 @@ class PostProcessor(QtGui.QMainWindow):
         self.log_list.setLevel(logging.INFO)
         formatter = logging.Formatter(fmt="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
                                       datefmt="%H:%M:%S")
-        # TODO filter out all Simulator related stuff
+        self.filter = PostFilter()
+        self.log_list.addFilter(self.filter)
         self.log_list.setFormatter(formatter)
         logging.getLogger().addHandler(self.log_list)
 
@@ -148,6 +150,7 @@ class PostProcessor(QtGui.QMainWindow):
         # status bar
         self.statusBar = QtGui.QStatusBar(self)
         self.setStatusBar(self.statusBar)
+        # self.statusBar.addPermanentWidget(self.log_list.widget)
 
         # load test results
         # filePath = os.path.join(os.pardir, 'results', 'simulation', 'default', 'example.pmr')

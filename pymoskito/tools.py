@@ -4,13 +4,14 @@ Tools, functions and other funny things
 """
 import os
 import logging
+import re
+
 import sympy as sp
 import numpy as np
 import copy
 import warnings
 
 from PyQt4 import QtGui
-
 logger = logging.getLogger(__name__)
 
 
@@ -299,7 +300,27 @@ class QPlainTextEditLogger(logging.Handler):
         logging.Handler.__init__(self)
         self.widget = QtGui.QPlainTextEdit(parent)
         self.widget.setReadOnly(True)
+        # self.widget.setStyleSheet(
+        #     """ QLineEdit { background-color: grey} """
+        # )
 
     def emit(self, record):
         msg = self.format(record)
         self.widget.appendPlainText(msg)
+
+
+class PostFilter(logging.Filter):
+    """
+    Filter to sort out all not PostProcessing related log information
+    """
+    def __init__(self, invert=False):
+        logging.Filter.__init__(self)
+        self._invert = invert
+        self.exp = re.compile(r"Post|Meta|Process")
+
+    def filter(self, record):
+        m = self.exp.match(record.name)
+        if self._invert:
+            return not bool(m)
+        else:
+            return bool(m)

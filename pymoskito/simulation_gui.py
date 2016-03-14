@@ -29,7 +29,7 @@ from registry import get_registered_visualizers
 from simulation_interface import SimulatorInteractor, SimulatorView
 from processing_gui import PostProcessor
 
-from tools import get_resource
+from tools import get_resource, PostFilter
 
 
 class SimulationGui(QtGui.QMainWindow):
@@ -240,10 +240,14 @@ class SimulationGui(QtGui.QMainWindow):
         # log dock
         self.logBox = QPlainTextEditLogger(self)
         self.logBox.setLevel(logging.INFO)
+
         formatter = logging.Formatter(fmt="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
                                       datefmt="%H:%M:%S")
         self.logBox.setFormatter(formatter)
-        # TODO filter out all Postprocessor related stuff
+
+        self.log_filter = PostFilter(invert=True)
+        self.logBox.addFilter(self.log_filter)
+
         logging.getLogger().addHandler(self.logBox)
         self.logDock.addWidget(self.logBox.widget)
 
