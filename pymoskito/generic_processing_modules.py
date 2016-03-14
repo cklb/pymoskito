@@ -232,43 +232,28 @@ class PlotAll(PostProcessingModule):
         t = data["results"]["time"]
         val = t  # default
 
-        for module_name in data["results"].keys():
-            # ignore keys time and finished
-            if not(module_name == "time" or module_name == "finished"):
-                module_data = data["results"][module_name]
-                module_shape = module_data.shape
-                # module_shape is a tuple like this (1000, 6, 1)
-                # 1000 vectors with dimension: 6 rows, 1 column
+        for module_name, module_data in data["results"].iteritems():
+            if module_name in ["time", "finished", "Simulation"]:
+                continue
 
-                for idx in range(module_shape[1]):
-                    if len(module_shape) == 3:
-                        val = module_data[:, idx, 0]
-                    if len(module_shape) == 2:
-                        val = module_data[:, idx]
+            module_shape = module_data.shape
+            for idx in range(module_shape[1]):
+                if len(module_shape) == 3:
+                    val = module_data[:, idx, 0]
+                if len(module_shape) == 2:
+                    val = module_data[:, idx]
 
-                    plot_name = '_'.join([data['regime name'], self.name, module_name, str(idx)])
-                    fig = Figure()
-                    axes = fig.add_subplot(111)
-                    axes.set_title(r'\textbf{%s %s}' % (module_name.replace('_', ' '), str(idx)))
-                    axes.plot(t, val, c='k')
-                    axes.set_xlim(left=0, right=t[-1])
-                    axes.set_xlabel(r'Zeit [s]')
-                    axes.set_ylabel(r'%s %s' % (module_name.replace('_', ' '), str(idx)))
-                    canvas = FigureCanvas(fig)
+                plot_name = '_'.join({data["regime name"], self.name, module_name, str(idx)})
+                fig = Figure()
+                axes = fig.add_subplot(111)
+                axes.set_title(r"\textbf{%s %d}" % (module_name.replace("_", " "), idx))
+                axes.plot(t, val, c='k')
+                axes.set_xlim(left=0, right=t[-1])
+                axes.set_xlabel(r"Zeit [s]")
+                axes.set_ylabel(r"%s %s" % (module_name.replace("_", " "), str(idx)))
+                canvas = FigureCanvas(fig)
 
-                    return_list.append({'name': plot_name, 'figure': canvas})
-
-        # check for sim success
-        if not data["results"]["finished"]:
-            for key in output.keys():
-                output[key] = None
-
-        # add settings and metrics to dictionary results
-        results = {}
-        results.update({'metrics': output})
-        results.update({'modules': data['modules']})
-
-        # self.write_output_files(data['regime name'], fig, results)
+                return_list.append({"name": plot_name, "figure": canvas})
 
         return return_list
 

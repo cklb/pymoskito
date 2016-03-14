@@ -13,7 +13,7 @@ if __name__ == '__main__':
     # create an Application instance (needed)
     app = QApplication([])
 
-    if 1:
+    if 0:
         # create Simulator
         sim = Simulator()
 
