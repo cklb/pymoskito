@@ -10,7 +10,7 @@ import registry as pm
 from processing_core import ProcessingModule, PostProcessingModule, MetaProcessingModule
 import generic_processing_modules
 # import generic_metaprocessing_modules
-from tools import get_resource
+from tools import get_resource, QPlainTextEditLogger
 
 
 class PostProcessor(QtGui.QMainWindow):
@@ -118,6 +118,15 @@ class PostProcessor(QtGui.QMainWindow):
         self.delShortPost = QtGui.QShortcut(QtGui.QKeySequence(QtCore.Qt.Key_Backspace), self.post_result_list)
         self.delShortPost.activated.connect(self.remove_post_result_item)
 
+        # log window
+        self.log_list = QPlainTextEditLogger(self)
+        self.log_list.setLevel(logging.INFO)
+        formatter = logging.Formatter(fmt="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+                                      datefmt="%H:%M:%S")
+        # TODO filter out all Simulator related stuff
+        self.log_list.setFormatter(formatter)
+        logging.getLogger().addHandler(self.log_list)
+
         self.grid.addWidget(QtGui.QLabel(u"result files:"), 0, 0)
         self.grid.addWidget(self.sim_result_list, 1, 0)
         self.grid.addWidget(QtGui.QLabel(u"Postprocessors:"), 2, 0)
@@ -131,6 +140,7 @@ class PostProcessor(QtGui.QMainWindow):
         self.grid.addWidget(self.metaMethodList, 3, 2)
         self.grid.addWidget(QtGui.QLabel(u"figures:"), 4, 2)
         self.grid.addWidget(self.meta_figure_list, 5, 2)
+        self.grid.addWidget(self.log_list.widget, 6, 0, 1, 3)
 
         self.mainFrame.setLayout(self.grid)
         self.setCentralWidget(self.mainFrame)

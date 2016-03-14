@@ -24,26 +24,12 @@ import vtk
 from vtk.qt4.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 
 # pymoskito
+from pymoskito.tools import QPlainTextEditLogger
 from registry import get_registered_visualizers
 from simulation_interface import SimulatorInteractor, SimulatorView
-from visualization import Visualizer
 from processing_gui import PostProcessor
 
 from tools import get_resource
-
-
-class QPlainTextEditLogger(logging.Handler):
-    """
-    logging handler that displays logdata in the gui
-    """
-    def __init__(self, parent):
-        logging.Handler.__init__(self)
-        self.widget = QtGui.QPlainTextEdit(parent)
-        self.widget.setReadOnly(True)
-
-    def emit(self, record):
-        msg = self.format(record)
-        self.widget.appendPlainText(msg)
 
 
 class SimulationGui(QtGui.QMainWindow):
@@ -257,6 +243,7 @@ class SimulationGui(QtGui.QMainWindow):
         formatter = logging.Formatter(fmt="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
                                       datefmt="%H:%M:%S")
         self.logBox.setFormatter(formatter)
+        # TODO filter out all Postprocessor related stuff
         logging.getLogger().addHandler(self.logBox)
         self.logDock.addWidget(self.logBox.widget)
 
@@ -301,6 +288,7 @@ class SimulationGui(QtGui.QMainWindow):
         self.shortPlayPause.activated.connect(self.play_animation)
         self.shortPlayPause.setEnabled(False)
 
+        self.postprocessor = None
         self._logger.info("Simulation GUI is up and running.")
 
     def set_visualizer(self, vis):
@@ -743,10 +731,9 @@ class SimulationGui(QtGui.QMainWindow):
         """
         self._logger.info(u"launching postprocessor")
         self.statusBar().showMessage(u"launching postprocessor", 1000)
+        if self.postprocessor is None:
+            self.postprocessor = PostProcessor()
 
-        # TODO launch new process from here
-        if hasattr(self, "postprocessor"):
-            self.postprocessor = PostProcessor(self)
         self.postprocessor.show()
 
     def reset_camera_clicked(self):

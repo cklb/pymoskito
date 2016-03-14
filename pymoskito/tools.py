@@ -9,6 +9,8 @@ import numpy as np
 import copy
 import warnings
 
+from PyQt4 import QtGui
+
 logger = logging.getLogger(__name__)
 
 
@@ -287,3 +289,17 @@ def calc_prefilter(A, B, C, K=None):
         V = np.array([[1]])
 
     return V
+
+
+class QPlainTextEditLogger(logging.Handler):
+    """
+    logging handler that displays log-data in the gui
+    """
+    def __init__(self, parent):
+        logging.Handler.__init__(self)
+        self.widget = QtGui.QPlainTextEdit(parent)
+        self.widget.setReadOnly(True)
+
+    def emit(self, record):
+        msg = self.format(record)
+        self.widget.appendPlainText(msg)
