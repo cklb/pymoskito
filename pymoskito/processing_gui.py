@@ -159,14 +159,15 @@ class PostProcessor(QtGui.QMainWindow):
             files = dialog.selectedFiles()
 
         if files:
-            for selectedFile in files:
-                self._load_result_file(selectedFile)
+            for single_file in files:
+                self._load_result_file(unicode(single_file))
 
     def _load_result_file(self, file_name):
         """
         loads a result file
         """
-        with open(file_name, "r") as f:
+        self._logger.info("loading result file {}".format(file_name.encode("utf-8")))
+        with open(file_name, "rb") as f:
             self.results.append(cPickle.load(f))
 
         self.sim_results_changed.emit()
@@ -202,7 +203,7 @@ class PostProcessor(QtGui.QMainWindow):
         loads a post-result file (.pof)
         """
         name = os.path.split(file_name)[-1][:-4]
-        with open(file_name, 'r') as f:
+        with open(file_name, "r") as f:
             results = cPickle.load(f)
             results.update({'name': name})
             self.post_results.append(results)
