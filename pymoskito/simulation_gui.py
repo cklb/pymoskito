@@ -508,7 +508,7 @@ class SimulationGui(QtGui.QMainWindow):
 
     def simulation_finished(self, data):
         """
-        main.py hook to be called by the simulation interface if integration is finished
+        main hook to be called by the simulation interface if integration is finished
         integration finished, enable play button and update plots
 
         :param data: dict with simulation data

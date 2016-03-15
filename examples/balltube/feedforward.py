@@ -41,5 +41,3 @@ class BallInTubeFeedforward(Feedforward):
             + x1_flat/st.k_s)*(255/12)
 
         return np.array([u])
-
-pm.register_simulation_module(Feedforward, BallInTubeFeedforward)

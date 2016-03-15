@@ -12,5 +12,3 @@ class ErrorProcessor(XYMetaProcessor):
         XYMetaProcessor.__init__(self, ["modules", "Controller"], ["modules", "Solver", "end time"],
                                  ["metrics", "L1NormITAE"])
 
-
-pm.register_processing_module(MetaProcessingModule, ErrorProcessor)

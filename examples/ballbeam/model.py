@@ -90,6 +90,3 @@ class BallBeamModel(Model):
         :return: ball position
         """
         return np.array([input_vector[0]], dtype=float)
-
-
-pm.register_simulation_module(Model, BallBeamModel)

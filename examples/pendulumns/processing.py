@@ -175,9 +175,9 @@ class TwoPendulum(PostProcessingModule):
             d1 = data['modules']['Model']['d1']
             d2 = data['modules']['Model']['d2']
             J_DP1 = data['modules']['Model']['J_DP1']
-            J_DP2 = data['modules']['Model']['J_DP2']
-            g = data['modules']['Model']['g']
-            k = data['modules']['Controller']['k']
+            J_DP2 = data["modules"]["Model"]["J_DP2"]
+            g = data["modules"]["Model"]["g"]
+            k = data["modules"]["Controller"]["k"]
 
             # calculate point mass model parameter
             l1 = J_DP1/(m1_star*l1_star)

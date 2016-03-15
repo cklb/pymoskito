@@ -372,5 +372,3 @@ class FController(Controller):
 # #        u = np.dot(-self.K,np.transpose(x))[0,0]\
 # #            + self.settings['K_I']*(yd[0]-x[0,0]) + yd[0]*self.V
 #         return u
-
-pm.register_simulation_module(Controller, FController)

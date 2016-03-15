@@ -339,7 +339,3 @@ class TwoPendulumModelParLin(Model):
         :return: cart position
         """
         return np.array([input[0]], dtype=float)
-
-pm.register_simulation_module(Model, TwoPendulumModel)
-pm.register_simulation_module(Model, TwoPendulumModel2)
-pm.register_simulation_module(Model, TwoPendulumModelParLin)

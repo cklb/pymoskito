@@ -27,26 +27,40 @@ from examples.ballbeam.model import BallBeamModel
 from examples.ballbeam.control import FController
 from examples.ballbeam.postprocessing import EvalA1
 from examples.ballbeam.visualization import BallBeamVisualizer
+from examples.balltube.visualization import BallInTubeVisualizer
 
 
 class TestRegisterCalls(unittest.TestCase):
     def setUp(self):
-        # automatic registration of generic modules is done on importing so we register some from the examples
-
-        # register a visualizer for testing
-        register_visualizer(BallBeamVisualizer)
+        pass
 
     def test_generic_calls(self):
         """
         check whether all generic simulation and postprocessing modules are registered using the general getter call
         """
+        # register in wrong module category
+        self.assertRaises(TypeError, register_simulation_module, PostProcessingModule, EvalA1)
+        self.assertRaises(TypeError, register_processing_module, MetaProcessingModule, EvalA1)
+        register_processing_module(PostProcessingModule, EvalA1)
+
+        # check registration
+        self.assertEqual([(EvalA1, "EvalA1")],
+                         get_registered_processing_modules(PostProcessingModule)[-1:])
+
+        # test for automatic duplicate recognition
+        self.assertRaises(ValueError, register_processing_module, PostProcessingModule, EvalA1)
+
+    def test_visualizer(self):
+        self.assertRaises(TypeError, register_visualizer, EvalA1)
+        register_visualizer(BallInTubeVisualizer)
+        self.assertIn((BallInTubeVisualizer, "BallInTubeVisualizer"),
+                      get_registered_visualizers())
+
 
 class TestGetterCalls(unittest.TestCase):
     def setUp(self):
-        # automatic registration of generic modules is done on importing
-
-        # register a visualizer for testing
-        register_visualizer(BallBeamVisualizer)
+        # registration of generic modules is done in __init__.py
+        pass
 
     def test_generic_calls(self):
         """
@@ -101,14 +115,9 @@ class TestGetterCalls(unittest.TestCase):
                           ],
                          get_registered_modules(ProcessingModule, PostProcessingModule))
 
-        # meta-processors
-        self.assertEqual([(XYMetaProcessor, "XYMetaProcessor")],
-                         get_registered_modules(ProcessingModule, MetaProcessingModule))
-
-        # ----------------------
-        # visualization
-        self.assertEqual([(BallBeamVisualizer, "BallBeamVisualizer")],
-                         get_registered_visualizers())
+        # # meta-processors
+        # self.assertEqual([(XYMetaProcessor, "XYMetaProcessor")],
+        #                  get_registered_modules(ProcessingModule, MetaProcessingModule))
 
     def test_special_call(self):
         """
@@ -128,8 +137,11 @@ class TestGetterCalls(unittest.TestCase):
         # ----------------------
         # processing
 
-        self.assertEqual([(XYMetaProcessor, "XYMetaProcessor")],
-                         get_registered_processing_modules(MetaProcessingModule))
+        self.assertEqual([(StepResponse, "StepResponse"),
+                          (PlotAll, "PlotAll")],
+                         get_registered_processing_modules(PostProcessingModule))
+        # self.assertEqual([(XYMetaProcessor, "XYMetaProcessor")],
+        #                  get_registered_processing_modules(MetaProcessingModule))
 
     def test_string_call(self):
         """
@@ -146,6 +158,9 @@ class TestGetterCalls(unittest.TestCase):
         """
         test interface for visualizer
         """
+        # register a visualizer for testing
+        register_visualizer(BallBeamVisualizer)
+
         self.assertEqual([(BallBeamVisualizer, "BallBeamVisualizer")],
                          get_registered_visualizers())
 

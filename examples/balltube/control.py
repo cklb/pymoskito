@@ -81,6 +81,3 @@ class OpenLoop(Controller):
 
         u = self._settings["pwm"]
         return u
-
-pm.register_simulation_module(Controller, ExactInputOutputLinearisation)
-pm.register_simulation_module(Controller, OpenLoop)

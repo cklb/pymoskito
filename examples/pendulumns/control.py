@@ -533,15 +533,6 @@ class CSwingUpController2(Controller):
         u = np.array([[self.c_u_ret.value]])
         return u
 
-pm.register_simulation_module(Controller, LinearStateFeedback)
-pm.register_simulation_module(Controller, LinearStateFeedbackParLin)
-pm.register_simulation_module(Controller, CLinearStateFeedback)
-pm.register_simulation_module(Controller, LjapunovController)
-pm.register_simulation_module(Controller, CLjapunovController)
-pm.register_simulation_module(Controller, SwingUpController)
-pm.register_simulation_module(Controller, SwingUpController2)
-pm.register_simulation_module(Controller, CSwingUpController2)
-
 
 def calc_equilibrium(settings):
     equilibrium = np.zeros(6)

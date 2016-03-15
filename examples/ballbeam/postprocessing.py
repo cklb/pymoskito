@@ -9,22 +9,8 @@ from matplotlib.lines import Line2D
 
 from pymoskito import PostProcessingModule
 
+# TODO get those working again
 
-
-
-def calcMetrics(self, data, output):
-    """
-    calculate metrics for comaprism
-    """
-
-    L1NormITAE = self.calcL1NormITAE(data)
-    L1NormAbs = self.calcL1NormAbs(data)
-    #
-    #        print 'ITAE score: ', errorIntegral
-    print 'L1NormITAE: ', L1NormITAE
-    print 'L1NormAbs: ', L1NormAbs
-    print '\n'
-    output.update({'L1NormITAE': L1NormITAE, 'L1NormAbs': L1NormAbs})
 
 class EvalA1(PostProcessingModule):
     """
@@ -41,7 +27,21 @@ class EvalA1(PostProcessingModule):
 
     def __init__(self):
         PostProcessingModule.__init__(self)
-        return
+        self.label_positions = None
+
+    def calc_metrics(self, data, output):
+        """
+        calculate metrics for comaprism
+        """
+
+        L1NormITAE = self.calcL1NormITAE(data)
+        L1NormAbs = self.calcL1NormAbs(data)
+        #
+        #        print 'ITAE score: ', errorIntegral
+        print 'L1NormITAE: ', L1NormITAE
+        print 'L1NormAbs: ', L1NormAbs
+        print '\n'
+        output.update({'L1NormITAE': L1NormITAE, 'L1NormAbs': L1NormAbs})
 
     def create_time_line(self, axes, t, y, time_value, label):
         """
@@ -60,23 +60,22 @@ class EvalA1(PostProcessingModule):
 
         # create timeLine
         time_line = Line2D([time_value, time_value],
-                          [np.min(y), y[t.index(time_value)]],
-                          ls=self.line_style,
-                          c=self.line_color)
+                           [np.min(y), y[t.index(time_value)]],
+                           ls=self.line_style,
+                           c=self.line_color)
         axes.add_line(time_line)
         axes.text(time_value + self.spacing, self.label_posistions[self.label_counter], label, size=self.font_size)
 
     def run(self, data):
-        # reset counter
-        self.label_counter= 0
+        self.label_counter = 0
 
         # map data-sets
-        t = data['results']['simTime']
-        y = data['results']['model_output.0']
-        yd = data['results']['trajectory_output.0'][-1]
+        t = data["results"]["time"]
+        y = data["results"]["Solver"][:, 0]
+        yd = data["results"]["Trajectory"][-1, 0, 0]
 
         # evenly distribute labels
-        self.label_posistions = np.arange(np.min(y) + 0.1 * yd, yd, (yd - np.min(y)) / 4)
+        self.label_positions = np.arange(np.min(y) + 0.1 * yd, yd, (yd - np.min(y)) / 4)
 
         # create plot
         self.axes.set_title(r"\textbf{Sprungantwort}")
@@ -89,6 +88,8 @@ class EvalA1(PostProcessingModule):
         # create desired line
         desired_line = Line2D([0, t[-1]], [yd, yd], lw=1, ls=self.line_style, c='k')
         self.axes.add_line(desired_line)
+
+        return
 
         # calc rise-time (Anstiegszeit)
         try:
@@ -127,7 +128,9 @@ class EvalA1(PostProcessingModule):
         # calc damping-time (Beruhigungszeit)
         try:
             #            eps = self.epsPercent*yd/100
-            eps = st.R
+            # TODO relocate settings
+            # eps = st.R
+            eps = .1
             enter_idx = -1
             for idx, val in enumerate(y):
                 if enter_idx == -1:
@@ -138,7 +141,7 @@ class EvalA1(PostProcessingModule):
                         enter_idx = -1
             teps = t[enter_idx]
             # create and add line
-            self.create_time_line(axes, t, y, teps, r'$T_{\epsilon}$')
+            self.create_time_line(self.axes, t, y, teps, r'$T_{\epsilon}$')
             self.results.update({'teps': teps})
         except IndexError:
             # print 'DampingLine is not defined'
@@ -156,9 +159,9 @@ class EvalA1(PostProcessingModule):
 
 
 class eval_A1_steps_in_one_plot(PostProcessingModule):
-    '''
+    """
     create several step respond in one plot
-    '''
+    """
 
     line_color = '#aaaaaa'
     line_style = '-'
@@ -1165,8 +1168,8 @@ class EvalC2(PostProcessingModule):
             canvas = FigureCanvas(fig)
 
             # create output files because run is not called
-            data-sets = [dataSet for dataSet in dataList if cName in dataSet['regime name']]
-            for data in data-sets:
+            data_sets = [dataSet for dataSet in dataList if cName in dataSet['regime name']]
+            for data in data_sets:
                 results = {}
                 results.update({'metrics': {}})
                 self.calcMetrics(data, results['metrics'])

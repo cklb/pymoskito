@@ -80,9 +80,9 @@ class StepResponse(PostProcessingModule):
         self.counter = 0
 
         # calculate data sets
-        t = data['results']['time']
-        y = data['results']['Model']
-        yd = data['results']['Trajectory'][-1][0]
+        t = data["results"]["time"]
+        y = data["results"]["Model"]
+        yd = data["results"]["Trajectory"][-1][0]
 
         self.pos_label = np.arange(np.min(y) + 0.1*yd, yd, (yd-np.min(y))/4)
 
@@ -311,8 +311,3 @@ def construct_result_dict(data, output):
     results.update({'modules': data['modules']})
 
     return results
-
-register_processing_module(PostProcessingModule, StepResponse)
-register_processing_module(PostProcessingModule, PlotAll)
-
-register_processing_module(MetaProcessingModule, XYMetaProcessor)

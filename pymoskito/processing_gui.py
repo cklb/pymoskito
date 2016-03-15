@@ -81,7 +81,7 @@ class PostProcessor(QtGui.QMainWindow):
         self.toolBar.addAction(self.actReloadMetaMethods)
         self.toolBar.addAction(self.actPostLoad)
 
-        # main.py window
+        # main window
         self.grid = QtGui.QGridLayout(self.mainFrame)
         self.grid.setColumnMinimumWidth(0, 70)
         self.grid.setColumnStretch(0, 0)

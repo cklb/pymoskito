@@ -1,34 +1,41 @@
 # -*- coding: utf-8 -*-
-from PyQt4.QtGui import QApplication
-from pymoskito import Simulator, PostProcessor
+import sys
+from PyQt4 import QtGui, QtCore
 
-# import custom simulation modules
-import model
-import control
-import visualization
+from pymoskito import Simulator, PostProcessor,\
+    register_simulation_module, register_processing_module, register_visualizer, \
+    PostProcessingModule, \
+    Model, Controller
+
+from model import BallBeamModel
+from control import FController
+from visualization import BallBeamVisualizer
+from postprocessing import EvalA1
 
 __author__ = 'stefan'
 
 if __name__ == '__main__':
-    # create an Application instance (needed)
-    app = QApplication([])
+    # register own modules
+    register_simulation_module(Model, BallBeamModel)
+    register_simulation_module(Controller, FController)
+    register_processing_module(PostProcessingModule, EvalA1)
+    register_visualizer(BallBeamVisualizer)
 
-    if 1:
+    app = QtGui.QApplication([])
+
+    if 0:
         # create simulator
         sim = Simulator()
 
         # load default config
         sim.load_regimes_from_file("default.sreg")
-
-        # apply a regime
         sim.apply_regime_by_name("test-nonlinear")
-
-        # remote start a simulation
-        # sim.start_simulation()
+        sim.start_simulation()
 
         sim.show()
+        QtGui.QApplication.instance().exec_()
+
     else:
         post = PostProcessor()
         post.show()
-
-    app.exec_()
+        QtGui.QApplication.instance().exec_()

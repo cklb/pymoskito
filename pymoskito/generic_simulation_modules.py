@@ -419,17 +419,3 @@ class GaussianNoise(Disturbance):
         return np.random.normal(self._settings['mean'],
                                 self._settings['sigma'],
                                 value.output_dim)
-
-
-# register all generic modules
-register_simulation_module(Solver, ODEInt)
-register_simulation_module(Trajectory, SmoothTransition)
-register_simulation_module(Trajectory, HarmonicTrajectory)
-register_simulation_module(Trajectory, Setpoint)
-register_simulation_module(Controller, PIDController)
-register_simulation_module(Feedforward, PyTrajectory)
-register_simulation_module(ModelMixer, AdditiveMixer)
-register_simulation_module(ObserverMixer, AdditiveMixer)
-register_simulation_module(Limiter, ModelInputLimiter)
-register_simulation_module(Sensor, DeadTimeSensor)
-register_simulation_module(Disturbance, GaussianNoise)

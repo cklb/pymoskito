@@ -13,12 +13,13 @@ _registry = {}
 
 def register_module(module_cls, module_type, cls, type_check=True):
     """
-    main hook to register a class in the pymoskito framework
+    main hook to register a class in the pymoskito framework, if cls is not a subclass of module_type a TypeError
+    will be raised. If cls is already registered for module_type, ValueError will be raised.
+
     :param module_type:
     :param module_cls:
     :param cls: class to be registered
-    :param type_check: performtype checking
-    :return: None
+    :param type_check: perform type checking
     """
     if type_check:
         if not issubclass(cls, module_type):
@@ -26,9 +27,11 @@ def register_module(module_cls, module_type, cls, type_check=True):
 
     cls_entry = _registry.get(module_cls, {})
     entry = cls_entry.get(module_type, [])
-    # TODO check for duplicates here
+    increment = (cls, cls.__name__)
+    if increment in entry:
+        raise ValueError("class {} already registered for module {}!".format(cls, module_cls))
 
-    entry.append((cls, cls.__name__))
+    entry.append(increment)
 
     cls_entry[module_type] = entry
     _registry[module_cls] = cls_entry
@@ -124,7 +127,11 @@ def register_visualizer(vis_cls):
         raise TypeError("Module must match type to be registered for! {0} <> {1}".format(vis_cls, Visualizer))
 
     cls_entry = _registry.get(Visualizer, [])
-    cls_entry.append((vis_cls, vis_cls.__name__))
+    increment = (vis_cls, vis_cls.__name__)
+    if increment in cls_entry:
+        raise ValueError("class {0} already registered as visualizer!".format(vis_cls))
+
+    cls_entry.append(increment)
     _registry[Visualizer] = cls_entry
     _registry[Visualizer.__name__] = cls_entry
 

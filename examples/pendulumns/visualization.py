@@ -395,4 +395,3 @@ class TwoPendulumVisualizer(Visualizer):
         """
         self.set_body_state(self.calc_positions(x))
 
-register_visualizer(TwoPendulumVisualizer)

@@ -155,27 +155,8 @@ class PostProcessingModule(ProcessingModule):
         result_list = []
         for data in files:
             self._logger.info("processing data set: {0}".format(data["regime name"]))
+            result_list.extend(self.run(data))
 
-            self.figure = Figure()
-            self.axes = self.figure.add_subplot(111)
-
-            self.run(data)
-
-            self.results["metrics"].update(self.calc_metrics(data))
-
-            # remove results if simulation failed
-            if not data["results"]["finished"]:
-                for key in self.results.keys():
-                    self.results[key] = None
-
-            # add settings
-            self.results.update({'modules': data['modules']})
-
-            # create canvas for user-view
-            canvas = FigureCanvas(self.figure)
-            self.writeOutputFiles(self.name, data["regime name"], self.figure, self.results)
-            result_list.extend(dict(name="_".join({data["regime name"], self.name}),
-                                    figure=canvas))
         return result_list
 
     @abstractmethod
@@ -185,17 +166,10 @@ class PostProcessingModule(ProcessingModule):
         this function will be called from process() and will be provided with the simulation results from one file
 
         :param data: simulation results from a pymoskito simulation result file
+        :returns dict consisting of a figure Canvas an a name
         """
-        # shorthand for data-sets
-        t = data['results']['time']
-        y = data['results']['model_output.0']
-
-        # draw the model output
-        self.axes.set_title(r"\textbf{model output}")
-        self.axes.plot(t, y, c='k')
-        self.axes.set_xlim(left=0, right=t[-1])
-        self.axes.set_xlabel(r"\textit{time [s]}")
-        self.axes.set_ylabel(r"\textit{model output}")
+        self._logger.warning("placeholder routine called!")
+        return {"name": "* placeholder *", "figure": None}
 
     @staticmethod
     def calc_label_pos(values):
