@@ -58,7 +58,16 @@ __author__ = 'stefan, christoph'
 
 class StepResponse(PostProcessingModule):
     """
-    create diagrams of step responses
+    Postprocessor that creates diagrams for step response experiments.
+
+    Various measures are taken, displayed in a diagram and saved to result files. The following list contains the
+    measured/calculated entries and their explanations:
+        - rise time (t_rise): time needed until the output reaches 90% of its desired value
+        - correction time (t_corr): time needed until the output reaches the desired value for the first time
+        - overshoot time (t_over): time of the greatest overshot
+        - overshot: maximum error between is and desired while approaching the desired value
+        - damping time (t_damp): time needed for the output to enter and remain in an epsilon region around
+        the desired value
     """
     line_color = '#aaaaaa'
     line_style = '-'
@@ -69,6 +78,7 @@ class StepResponse(PostProcessingModule):
 
     def __init__(self):
         PostProcessingModule.__init__(self)
+        self.label_positions = None
         return
 
     def run(self, data):
@@ -81,19 +91,19 @@ class StepResponse(PostProcessingModule):
 
         # calculate data sets
         t = data["results"]["time"]
-        y = data["results"]["Model"]
+        y = data["results"]["Model"][:, 0]
         yd = data["results"]["Trajectory"][-1][0]
 
-        self.pos_label = np.arange(np.min(y) + 0.1*yd, yd, (yd-np.min(y))/4)
+        self.label_positions = np.arange(np.min(y) + 0.1 * yd, yd, (yd - np.min(y)) / 4)
 
         # create plot
         fig = Figure()
         axes = fig.add_subplot(111)
-        axes.set_title(r'\textbf{Sprungantwort}')
+        axes.set_title(r"\textbf{Sprungantwort}")
         axes.plot(t, y, c='k')
         axes.set_xlim(left=0, right=t[-1])
-        axes.set_xlabel(r'\textit{Zeit [s]}')
-        axes.set_ylabel(r'\textit{Systemausgang [m]}')
+        axes.set_xlabel(r"\textit{Zeit [s]}")
+        axes.set_ylabel(r"\textit{Systemausgang [m]}")
 
         # create desired line
         desired_line = Line([0, t[-1]], [yd, yd], lw=1, ls=self.line_style, c='k')
@@ -101,35 +111,35 @@ class StepResponse(PostProcessingModule):
 
         # calc rise-time (Anstiegszeit)
         try:
-            tr = t[np.where(y > 0.9*yd)][0]
-            self.create_time_line(axes, t, y, tr, r'$T_r$')
-            output.update({'tr': tr})
+            t_rise = t[np.where(y > 0.9*yd)][0]
+            self.create_time_line(axes, t, y, t_rise, r"$T_r$")
+            output.update({"t_rise": t_rise})
         except IndexError:
-            output.update({'tr': None})
+            output.update({"t_rise": None})
 
         # calc correction-time (Anregelzeit)
         try:
-            correction_time = t[np.where(y > yd)][0]
-            self.create_time_line(axes, t, y, correction_time, r'$T_{anr}$')
-            output.update({'tanr': correction_time})
+            t_corr = t[np.where(y > yd)][0]
+            self.create_time_line(axes, t, y, t_corr, r"$T_{anr}$")
+            output.update({"t_corr": t_corr})
         except IndexError:
-            output.update({'tanr': None})
+            output.update({"t_corr": None})
 
         # calc overshoot-time and overshoot in percent (Überschwingzeit und Überschwingen)
-        if output['tanr']:
+        if output["t_corr"]:
             if yd > 0:
-                y_max = np.max(y[np.where(t > correction_time)])
+                y_max = np.max(y[np.where(t > output["t_corr"])])
             else:
-                y_max = np.min(y[np.where(t > correction_time)])
+                y_max = np.min(y[np.where(t > output["t_corr"])])
 
-            overshoot_time = t[np.where(y == y_max)][0]
-            do = y_max - yd
-            doPercent = do/yd * 100
+            t_over = t[np.where(y == y_max)][0]
+            overshoot = y_max - yd
+            overshoot_per = overshoot/yd * 100
 
-            self.create_time_line(axes, t, y, overshoot_time, r'$T_o$')
-            output.update({'to': overshoot_time, 'do': do, 'doPercent': doPercent})
+            self.create_time_line(axes, t, y, t_over, r"$T_o$")
+            output.update(dict(t_over=t_over, overshoot=overshoot, overshoot_percent=overshoot_per))
         else:
-            output.update({'to': None, 'do': None, 'doPercent': None})
+            output.update(dict(t_over=None, overshoot=None, overshoot_percent=None))
 
         # calc damping-time (Beruhigungszeit)
         try:
@@ -142,21 +152,21 @@ class StepResponse(PostProcessingModule):
                     if abs(val - yd) >= self.eps:
                         enter_idx = -1
 
-            damping_time = t[enter_idx]
-            self.create_time_line(axes, t, y, damping_time, r'$T_{\epsilon}$')
-            output.update({'teps': damping_time})
+            t_damp = t[enter_idx]
+            self.create_time_line(axes, t, y, t_damp, r"$T_{\epsilon}$")
+            output.update({"t_damp": t_damp})
         except IndexError:
-            output.update({'teps': None})
+            output.update({"t_damp": None})
 
         # create epsilon tube
-        upper_bound_line = Line([0, t[-1]], [yd + self.eps, yd + self.eps], ls='--', c=self.line_color)
+        upper_bound_line = Line([0, t[-1]], [yd + self.eps, yd + self.eps], ls="--", c=self.line_color)
         axes.add_line(upper_bound_line)
-        lower_bound_line = Line([0, t[-1]], [yd - self.eps, yd - self.eps], ls='--', c=self.line_color)
+        lower_bound_line = Line([0, t[-1]], [yd - self.eps, yd - self.eps], ls="--", c=self.line_color)
         axes.add_line(lower_bound_line)
 
-        # calc control deviation
+        # calc stationary control deviation
         control_deviation = y[-1] - yd
-        output.update({'control_deviation': control_deviation})
+        output.update({"stationary_error": control_deviation})
 
         self.calc_metrics(data, output)
 
@@ -167,14 +177,14 @@ class StepResponse(PostProcessingModule):
 
         # add settings and metrics to dictionary results
         results = {}
-        results.update({'metrics': output})
-        results.update({'modules': data['modules']})
+        results.update({"metrics": output})
+        results.update({"modules": data["modules"]})
 
         canvas = FigureCanvas(fig)
 
-        self.write_output_files(data['regime name'], fig, results)
+        self.write_output_files(data["regime name"], fig, results)
 
-        return [{'name': '_'.join([data['regime name'], self.name]), "figure": canvas}]
+        return [dict(name='_'.join([data["regime name"], self.name]), figure=canvas)]
 
     def create_time_line(self, axes, t, y, time_value, label):
         if time_value != t[-1]:
@@ -183,7 +193,7 @@ class StepResponse(PostProcessingModule):
                              ls=self.line_style,
                              c=self.line_color)
             axes.add_line(time_line)
-            axes.text(time_value + self.spacing, self.pos_label[self.counter],
+            axes.text(time_value + self.spacing, self.label_positions[self.counter],
                       label, size=self.font_size)
             self.counter += 1
 
