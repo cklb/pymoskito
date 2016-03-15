@@ -24,12 +24,10 @@ import vtk
 from vtk.qt4.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 
 # pymoskito
-from tools import QPlainTextEditLogger
 from registry import get_registered_visualizers
 from simulation_interface import SimulatorInteractor, SimulatorView
 from processing_gui import PostProcessor
-
-from tools import get_resource, PostFilter
+from tools import get_resource, PostFilter, QPlainTextEditLogger
 
 
 class SimulationGui(QtGui.QMainWindow):

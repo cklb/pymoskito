@@ -13,7 +13,6 @@ from control import LinearStateFeedback, LinearStateFeedbackParLin, CLinearState
 from visualization import TwoPendulumVisualizer
 from processing import TwoPendulum
 
-__author__ = 'christoph'
 
 if __name__ == '__main__':
     # register own modules

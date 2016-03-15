@@ -21,6 +21,7 @@ if __name__ == '__main__':
     register_processing_module(PostProcessingModule, EvalA1)
     register_visualizer(BallBeamVisualizer)
 
+    # create an Application instance (needed)
     app = QtGui.QApplication([])
 
     if 0:
@@ -38,4 +39,5 @@ if __name__ == '__main__':
     else:
         post = PostProcessor()
         post.show()
-        QtGui.QApplication.instance().exec_()
+
+    app.exec_()

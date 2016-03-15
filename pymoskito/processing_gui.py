@@ -9,9 +9,7 @@ from PyQt4.QtCore import pyqtSignal
 import registry as pm
 from processing_core import PostProcessingModule, MetaProcessingModule
 
-# import generic_metaprocessing_modules
-from tools import PostFilter
-from tools import get_resource, QPlainTextEditLogger
+from tools import get_resource, QPlainTextEditLogger, PostFilter
 
 
 class PostProcessor(QtGui.QMainWindow):

@@ -1,8 +1,8 @@
 import sys
 from PyQt4 import QtGui, QtCore
-from pymoskito import Simulator, \
+from pymoskito import Simulator, PostProcessor, \
     register_simulation_module, register_processing_module, register_visualizer, \
-    Model, Controller, Feedforward
+    Model, Controller, Feedforward, PostProcessingModule
 
 # import self defined simulation modules
 from model import BallInTubeModel, BallInTubeSpringModel
@@ -12,7 +12,6 @@ from visualization import BallInTubeVisualizer
 
 from processing import ErrorProcessor
 
-__author__ = "christoph"
 
 if __name__ == "__main__":
     # register Modules
@@ -23,16 +22,23 @@ if __name__ == "__main__":
     register_simulation_module(Feedforward, BallInTubeFeedforward)
     register_visualizer(BallInTubeVisualizer)
 
+    register_processing_module(PostProcessingModule, ErrorProcessor)
+
+    # create an Application instance (needed)
     app = QtGui.QApplication([])
 
-    # create gui
-    sim = Simulator()
+    if 1:
+        # create gui
+        sim = Simulator()
 
-    # load default config
-    sim.load_regimes_from_file("default.sreg")
-    sim.apply_regime_by_name("test")
-    # gui.start_simulation()
+        # load default config
+        sim.load_regimes_from_file("default.sreg")
+        sim.apply_regime_by_name("test")
+        # gui.start_simulation()
 
-    if (sys.flags.interactive != 1) or not hasattr(QtCore, "PYQT_VERSION"):
         sim.show()
-        QtGui.QApplication.instance().exec_()
+    else:
+        post = PostProcessor()
+        post.show()
+
+    app.exec_()
