@@ -24,7 +24,7 @@ import vtk
 from vtk.qt4.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 
 # pymoskito
-from pymoskito.tools import QPlainTextEditLogger
+from tools import QPlainTextEditLogger
 from registry import get_registered_visualizers
 from simulation_interface import SimulatorInteractor, SimulatorView
 from processing_gui import PostProcessor
@@ -351,6 +351,8 @@ class SimulationGui(QtGui.QMainWindow):
         self._logger.info(u"Simulating: {}".format(regime_name))
 
         self.actSimulate.setDisabled(True)
+        self.shortRunSimulation.setEnabled(False)
+        self.shortRunRegimeBatch.setEnabled(False)
         self.actExecuteRegimes.setDisabled(True)
         self.guiProgress = QtGui.QProgressBar(self)
         self.sim.simulationProgressChanged.connect(self.guiProgress.setValue)
@@ -404,8 +406,7 @@ class SimulationGui(QtGui.QMainWindow):
                                                               "Open Regime File",
                                                               regime_path,
                                                               "Simulation Regime files (*.sreg)").toUtf8(),
-                            encoding="utf-8"
-                            )
+                            encoding="utf-8")
         if not file_name:
             return
 
@@ -516,6 +517,8 @@ class SimulationGui(QtGui.QMainWindow):
         self.statusLabel.setText(u"simulation finished.")
 
         self.actSimulate.setDisabled(False)
+        self.shortRunSimulation.setEnabled(True)
+        self.shortRunRegimeBatch.setEnabled(True)
         self.actPlayPause.setDisabled(False)
         self.shortPlayPause.setEnabled(True)
         self.shortSaveResult.setEnabled(True)

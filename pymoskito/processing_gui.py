@@ -10,7 +10,7 @@ import registry as pm
 from processing_core import PostProcessingModule, MetaProcessingModule
 
 # import generic_metaprocessing_modules
-from pymoskito.tools import PostFilter
+from tools import PostFilter
 from tools import get_resource, QPlainTextEditLogger
 
 

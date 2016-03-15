@@ -1,8 +1,8 @@
-import sys
-from PyQt4 import QtGui, QtCore
-from pymoskito import Simulator
+# -*- coding: utf-8 -*-
+from PyQt4.QtGui import QApplication
+from pymoskito import Simulator, PostProcessor
 
-# import self defined simulation modules
+# import custom simulation modules
 import model
 import control
 import feedforward
@@ -12,16 +12,26 @@ from visualization import BallInTubeVisualizer
 __author__ = 'christoph'
 
 if __name__ == '__main__':
-    app = QtGui.QApplication([])
+    # create an Application instance (needed)
+    app = QApplication([])
 
-    # create gui
-    sim = Simulator()
+    if 1:
+        # create gui
+        sim = Simulator()
 
-    # load default config
-    sim.load_regimes_from_file("default.sreg")
-    sim.apply_regime_by_name("test")
-    # gui.start_simulation()
+        # load default config
+        sim.load_regimes_from_file("default.sreg")
 
-    if (sys.flags.interactive != 1) or not hasattr(QtCore, 'PYQT_VERSION'):
+        # apply a regime
+        sim.apply_regime_by_name("test")
+
+        # remote start a simulation
+        # sim.start_simulation()
+
         sim.show()
-        QtGui.QApplication.instance().exec_()
+    else:
+        post = PostProcessor()
+        post.show()
+
+    app.exec_()
+

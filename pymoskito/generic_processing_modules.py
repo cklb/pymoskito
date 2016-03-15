@@ -251,6 +251,7 @@ class PlotAll(PostProcessingModule):
                 axes.set_xlim(left=0, right=t[-1])
                 axes.set_xlabel(r"Zeit [s]")
                 axes.set_ylabel(r"%s %s" % (module_name.replace("_", " "), str(idx)))
+                axes.grid(True)
                 canvas = FigureCanvas(fig)
 
                 return_list.append({"name": plot_name, "figure": canvas})
