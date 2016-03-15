@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 from simulation_gui import SimulationGui as Simulator
 from processing_gui import PostProcessor as PostProcessor
-from registry import register_simulation_module, register_processing_module, get_registered_simulation_modules, \
-    get_registered_processing_modules, register_visualizer
+from simulation_modules import Model, Controller, Feedforward
+from processing_core import PostProcessingModule, MetaProcessingModule
+from registry import register_simulation_module, register_processing_module, register_visualizer,\
+    get_registered_simulation_modules, get_registered_processing_modules
 
 import yaml
 import logging.config

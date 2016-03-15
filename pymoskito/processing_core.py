@@ -1,10 +1,15 @@
 from __future__ import division
+import os
 import logging
 from cPickle import dump
-import os
 from abc import ABCMeta, abstractmethod
-
+import numpy as np
 from PyQt4.QtCore import QObject, pyqtWrapperType
+import matplotlib as mpl
+mpl.use("Qt4Agg")
+from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.figure import Figure
+from matplotlib.lines import Line2D
 
 from tools import get_sub_value
 
@@ -134,7 +139,11 @@ class PostProcessingModule(ProcessingModule):
 
     def __init__(self):
         ProcessingModule.__init__(self)
-        return
+
+        self.figure = None
+        self.axes = None
+        self.label_counter = 0
+        self.results = {}
 
     def process(self, files):
         """
@@ -143,16 +152,56 @@ class PostProcessingModule(ProcessingModule):
         Overload for more sophisticated implementations
         :param files:
         """
-        output = []
-        for res in files:
-            self._logger.info("processing data set: {0}".format(res["regime name"]))
-            output.extend(self.run(res))
+        result_list = []
+        for data in files:
+            self._logger.info("processing data set: {0}".format(data["regime name"]))
 
-        return output
+            self.figure = Figure()
+            self.axes = self.figure.add_subplot(111)
+
+            self.run(data)
+
+            self.results["metrics"].update(self.calc_metrics(data))
+
+            # remove results if simulation failed
+            if not data["results"]["finished"]:
+                for key in self.results.keys():
+                    self.results[key] = None
+
+            # add settings
+            self.results.update({'modules': data['modules']})
+
+            # create canvas for user-view
+            canvas = FigureCanvas(self.figure)
+            self.writeOutputFiles(self.name, data["regime name"], self.figure, self.results)
+            result_list.extend(dict(name="_".join({data["regime name"], self.name}),
+                                    figure=canvas))
+        return result_list
 
     @abstractmethod
     def run(self, data):
-        pass
+        """
+        function to overwrite for implementing your own PostProcessor.
+        this function will be called from process() and will be provided with the simulation results from one file
+
+        :param data: simulation results from a pymoskito simulation result file
+        """
+        # shorthand for data-sets
+        t = data['results']['time']
+        y = data['results']['model_output.0']
+
+        # draw the model output
+        self.axes.set_title(r"\textbf{model output}")
+        self.axes.plot(t, y, c='k')
+        self.axes.set_xlim(left=0, right=t[-1])
+        self.axes.set_xlabel(r"\textit{time [s]}")
+        self.axes.set_ylabel(r"\textit{model output}")
+
+    @staticmethod
+    def calc_label_pos(values):
+        return np.arange(np.min(values[0]) + 0.1 * values[1],
+                         values[1],
+                         (values[1] - np.min(values[1])) / 4)
 
     @staticmethod
     def calc_l1_norm_itae(is_values, desired_values, step_width):
