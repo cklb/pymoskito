@@ -217,6 +217,7 @@ class StepResponse(PostProcessingModule):
         """
         helper function to extract data needed to calculate metrics for this postprocessor
         overload to fit custom model
+
         :param data: simulation data
         :return: tuple of (is_values, desired_values, step_width)
         """

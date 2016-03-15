@@ -8,7 +8,11 @@ import time
 import os
 from operator import itemgetter
 import yaml
-import cPickle
+try:
+    import cPickle as pickle
+except:
+    import pickle
+
 import numpy as np
 
 # Qt
