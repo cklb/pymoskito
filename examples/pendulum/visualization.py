@@ -4,7 +4,6 @@ from __future__ import division
 import numpy as np
 import vtk
 
-from pymoskito import register_visualizer
 from pymoskito.visualization import Visualizer
 
 import settings as st

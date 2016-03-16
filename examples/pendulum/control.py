@@ -1,15 +1,12 @@
 # -*- coding: utf-8 -*-
+
 import numpy as np
 from collections import OrderedDict
-import pymoskito.registry as pm
 from pymoskito.simulation_modules import Controller
 
 import settings as st
 import symbolic_calculation as symcalc
 import pymoskito.tools as to
-
-# this package enable the inclusion of c-code
-import ctypes as ct
 
 
 class LinearStateFeedback(Controller):
@@ -36,10 +33,11 @@ class LinearStateFeedback(Controller):
         self.K = to.ackerSISO(self.A, self.B, self._settings['poles'])
         self.V = to.calc_prefilter(self.A, self.B, self.C, self.K)
         # eig = np.linalg.eig(self.A - np.dot(self.B, self.K))
-        print "equilibrium: ", eq_state
-        print "poles: ", self._settings['poles']
-        print "K: ", self.K.tolist()[0]
-        print "V: ", self.V
+
+        self._logger.info("Equilibrium: {}".format(eq_state.tolist()))
+        self._logger.info("Poles: {}".format(self._settings["poles"].tolist()))
+        self._logger.info("K: {}".format(self.K.tolist()[0]))
+        self._logger.info("V: {}".format(self.V[0]))
 
     def _control(self, is_values, desired_values, t, eq=None):
         # input abbreviations
@@ -83,10 +81,11 @@ class LinearStateFeedbackParLin(Controller):
         self.K = to.ackerSISO(self.A, self.B, self._settings['poles'])
         self.V = to.calc_prefilter(self.A, self.B, self.C, self.K)
         # eig = np.linalg.eig(self.A - np.dot(self.B, self.K))
-        print "equilibrium: ", eq_state
-        print "poles: ", self._settings['poles']
-        print "K: ", self.K
-        print "V: ", self.V
+
+        self._logger.info("Equilibrium: {}".format(eq_state.tolist()))
+        self._logger.info("Poles: {}".format(self._settings["poles"].tolist()))
+        self._logger.info("K: {}".format(self.K.tolist()[0]))
+        self._logger.info("V: {}".format(self.V[0]))
 
     def _control(self, is_values, desired_values, t, eq=None):
         # input abbreviations
@@ -159,94 +158,6 @@ class LjapunovController(Controller):
 
 
 class SwingUpController(Controller):
-
-    public_settings = OrderedDict([
-        ("k", 8),
-        ("long pendulum", "u"),
-        ("short pendulum", "o"),
-        ("poles", [-10.1, -8.2, -6.9, -5, -2.5, -1.5]),
-        ("tick divider", 1)
-    ])
-
-    def __init__(self, settings):
-        settings.update(input_order=0)
-        settings.update(output_order=1)
-        settings.update(input_type="system_state")
-        self.module_settings = {"modules": settings["modules"]}
-        Controller.__init__(self, settings)
-
-        # add dict with module information, because it was deleted in the base class
-        settings.update(self.module_settings)
-        settings["type"] = "LjapunovController"
-        self.ljapunov = LjapunovController(settings)
-
-        self.eq_state = np.zeros(6)
-        if settings["long pendulum"] == "u":
-            self.eq_state[2] = np.pi
-        elif settings["short pendulum"] == "u":
-            self.eq_state[4] = np.pi
-        settings.update({"equilibrium": self.eq_state})
-        settings.update(self.module_settings)
-        settings["type"] = "LinearStateFeedback"
-        self.linear_state_feedback = LinearStateFeedback(settings)
-
-        self.switch = False
-
-    def _control(self, is_values, desired_values, t):
-        x1, x2, x3, x4, x5, x6 = is_values
-
-        # consider the multiple pendulum states, because of the continuously angle
-        n = int(x3/(2*np.pi))
-        if x3%(2*np.pi) > np.pi and n > 0:
-            n += 1
-        if x3%(2*np.pi) < np.pi and n < 0:
-            n -= 1
-        m = int(x5/(2*np.pi))
-        if x5%(2*np.pi) > np.pi and m > 0:
-            m += 1
-        if x5%(2*np.pi) < np.pi and m < 0:
-           m -= 1
-
-        # we have to check several conditions
-        #          phi1                  phi1_d
-        a = (-0.2 + 2*n*np.pi <= x3 <= 0 + 2*n*np.pi) and (-0.2 <= x4 <= 0.5)
-        #           phi2                 phi2_d
-        b = (-0.2 + 2*m*np.pi <= x5 <= 0 + 2*m*np.pi) and (-0.2 <= x6 <= 0.5)
-        #        phi1                  phi1_d
-        c = (0 + 2*n*np.pi <= x3 <= 0.2 + 2*n*np.pi) and (-0.5 <= x4 <= 0.2)
-        #          phi2                   phi2_d
-        d = (0 + 2*m*np.pi <= x5 <= 0.2 + 2*m*np.pi) and (-0.5 <= x6 <= 0.2)
-
-        Roo = False
-        Rou = False
-        Ruo = False
-
-        if self._settings["long pendulum"] == "o":
-            Rou = True
-            self.eq_state[2] = 2*n*np.pi
-        if self._settings["short pendulum"] == "o":
-            Ruo = True
-            self.eq_state[4] = 2*m*np.pi
-
-        if Rou and Ruo:
-            Roo = True
-            Rou = False
-            Ruo = False
-            self.eq_state[2] = 2*n*np.pi
-            self.eq_state[4] = 2*m*np.pi
-
-        if (Roo and a and b)or (Roo and c and d) or (Rou and a) or (Rou and c) or (Ruo and b) or (Ruo and d):
-            self.switch = True
-
-        if self.switch:
-            u = self.linear_state_feedback._control(is_values, desired_values, t, eq=self.eq_state)
-        else:
-            u = self.ljapunov._control(is_values, desired_values, t)
-
-        return u
-
-
-class SwingUpController2(Controller):
     """
     This class realise the swing up for equilibria with a arbitrary
     amount of turns of the pendulums
@@ -330,6 +241,7 @@ class SwingUpController2(Controller):
         else:
             u = self.ljapunov._control(is_values, desired_values, t)
 
+        # TODO fix bug with logging results
         self._logger.info("Exciting result: {}".format(u))
         return u
 

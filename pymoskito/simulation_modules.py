@@ -169,13 +169,13 @@ class Controller(SimulationModule):
     def input_order(self):
         return self._settings["input_order"]
 
-    def calc_output(self, input_dict):
-        input_values = next((input_dict[src] for src in self.input_sources
+    def calc_output(self, input_vector):
+        input_values = next((input_vector[src] for src in self.input_sources
                              if src == self._settings["input_type"]), None)
         if input_values is None:
             raise ControllerException("Selected Input not available")
-        desired_values = input_dict["Trajectory"]
-        return self._control(input_values, desired_values, input_dict["time"])
+        desired_values = input_vector["Trajectory"]
+        return self._control(input_values, desired_values, input_vector["time"])
 
     @abstractmethod
     def _control(self, is_values, desired_values, t):

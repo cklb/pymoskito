@@ -7,9 +7,8 @@ from pymoskito import Simulator, PostProcessor,\
     Model, Controller
 
 # import custom simulation modules
-from model import TwoPendulumModel, TwoPendulumModel2, TwoPendulumModelParLin
-from control import LinearStateFeedback, LinearStateFeedbackParLin, CLinearStateFeedback, LjapunovController,\
-    CLjapunovController, SwingUpController, SwingUpController2, CSwingUpController2
+from model import TwoPendulumModel, TwoPendulumRigidBodyModel, TwoPendulumModelParLin
+from control import LinearStateFeedback, LinearStateFeedbackParLin, LjapunovController, SwingUpController
 from visualization import TwoPendulumVisualizer
 from processing import TwoPendulum
 
@@ -17,17 +16,13 @@ from processing import TwoPendulum
 if __name__ == '__main__':
     # register own modules
     register_simulation_module(Model, TwoPendulumModel)
-    register_simulation_module(Model, TwoPendulumModel2)
+    register_simulation_module(Model, TwoPendulumRigidBodyModel)
     register_simulation_module(Model, TwoPendulumModelParLin)
 
     register_simulation_module(Controller, LinearStateFeedback)
     register_simulation_module(Controller, LinearStateFeedbackParLin)
-    register_simulation_module(Controller, CLinearStateFeedback)
     register_simulation_module(Controller, LjapunovController)
-    register_simulation_module(Controller, CLjapunovController)
     register_simulation_module(Controller, SwingUpController)
-    register_simulation_module(Controller, SwingUpController2)
-    register_simulation_module(Controller, CSwingUpController2)
 
     register_visualizer(TwoPendulumVisualizer)
 
