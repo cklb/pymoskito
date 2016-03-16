@@ -116,32 +116,6 @@
    Input A: Controller
    Input B: Feedforward
 
-- Name: R_oo_c-code
-  clear previous: !!python/bool True # decide whether previous settings should remain or not
-
-  Model:
-   type: TwoPendulumModel
-   initial state: [0, 0, 2, 0, 2, 0]
-
-  Solver:
-   type: ODEInt
-   measure rate: 500
-   step size: 0.001
-   end time: 10
-
-  Controller:
-   type: CLinearStateFeedback
-   equilibrium: 1
-
-  Trajectory:
-   type: Setpoint
-   State: [0]
-   Setpoint: [0]
-
-  ModelMixer:
-   type: AdditiveMixer
-   Input A: Controller
-   Input B: Feedforward
 
 - Name: R_uu
   clear previous: !!python/bool True # decide whether previous settings should remain or not
@@ -176,32 +150,6 @@
    Input A: Controller
    Input B: Feedforward
 
-- Name: R_uu_c-code
-  clear previous: !!python/bool True # decide whether previous settings should remain or not
-
-  Model:
-   type: TwoPendulumModel
-   initial state: [0, 0, 190, 0, 180, 0]
-
-  Solver:
-   type: ODEInt
-   measure rate: 500
-   step size: 0.001
-   end time: 10
-
-  Controller:
-   type: CLinearStateFeedback
-   equilibrium: 4
-
-  Trajectory:
-   type: Setpoint
-   State: [0]
-   Setpoint: [0]
-
-  ModelMixer:
-   type: AdditiveMixer
-   Input A: Controller
-   Input B: Feedforward
 
 - Name: R_ou
   clear previous: !!python/bool True # decide whether previous settings should remain or not
@@ -237,33 +185,6 @@
    Input B: Feedforward
 
 
-- Name: R_ou_c-code
-  clear previous: !!python/bool True # decide whether previous settings should remain or not
-
-  Model:
-   type: TwoPendulumModel
-   initial state: [0, 0, 4, 0, 180, 0]
-
-  Solver:
-   type: ODEInt
-   measure rate: 500
-   step size: 0.001
-   end time: 10
-
-  Controller:
-   type: CLinearStateFeedback
-   equilibrium: 2
-
-  Trajectory:
-   type: Setpoint
-   State: [0]
-   Setpoint: [0]
-
-  ModelMixer:
-   type: AdditiveMixer
-   Input A: Controller
-   Input B: Feedforward
-
 - Name: R_uo
   clear previous: !!python/bool True # decide whether previous settings should remain or not
 
@@ -291,34 +212,6 @@
   Limiter:
    type: ModelInputLimiter
    Limits: [-6, 6]
-
-  ModelMixer:
-   type: AdditiveMixer
-   Input A: Controller
-   Input B: Feedforward
-
-
-- Name: R_uo_c-code
-  clear previous: !!python/bool True # decide whether previous settings should remain or not
-
-  Model:
-   type: TwoPendulumModel
-   initial state: [0, 0, 180, 0, 5, 0]
-
-  Solver:
-   type: ODEInt
-   measure rate: 500
-   step size: 0.001
-   end time: 10
-
-  Controller:
-   type: CLinearStateFeedback
-   equilibrium: 3
-
-  Trajectory:
-   type: Setpoint
-   State: [0]
-   Setpoint: [0]
 
   ModelMixer:
    type: AdditiveMixer
@@ -355,36 +248,6 @@
    Input A: Controller
    Input B: Feedforward
 
-- Name: Cljapunov_uo
-  clear previous: !!python/bool True # decide whether previous settings should remain or not
-
-  Model:
-   type: TwoPendulumModel
-   initial state: [0, 0, 180, 0, 190, 0]
-   d0: 0
-   d1: 0
-   d2: 0
-
-  Solver:
-   type: ODEInt
-   measure rate: 500
-   step size: 0.001
-   end time: 10
-
-  Controller:
-   type: LjapunovController
-   k: 8
-   equilibrium: 3
-
-  Trajectory:
-   type: Setpoint
-   State: [0]
-   Setpoint: [0]
-
-  ModelMixer:
-   type: AdditiveMixer
-   Input A: Controller
-   Input B: Feedforward
 
 - Name: PID
   clear previous: !!python/bool True # decide whether previous settings should remain or not
@@ -416,6 +279,7 @@
    type: AdditiveMixer
    Input A: Controller
    Input B: Feedforward
+
 
 - Name: SwingUp_uo
   clear previous: !!python/bool True # decide whether previous settings should remain or not
@@ -454,6 +318,7 @@
    Input A: Controller
    Input B: Feedforward
 
+
 - Name: SwingUp_ou
   clear previous: !!python/bool True # decide whether previous settings should remain or not
 
@@ -490,6 +355,7 @@
    type: AdditiveMixer
    Input A: Controller
    Input B: Feedforward
+
 
 - Name: SwingUp_oo
   clear previous: !!python/bool True # decide whether previous settings should remain or not
@@ -528,6 +394,7 @@
    Input A: Controller
    Input B: Feedforward
 
+
 - Name: SwingUp2_uo
   clear previous: !!python/bool True # decide whether previous settings should remain or not
 
@@ -565,6 +432,7 @@
    Input A: Controller
    Input B: Feedforward
 
+
 - Name: SwingUp2_ou
   clear previous: !!python/bool True # decide whether previous settings should remain or not
 
@@ -601,6 +469,7 @@
    type: AdditiveMixer
    Input A: Controller
    Input B: Feedforward
+
 
 - Name: SwingUp2_oo
   clear previous: !!python/bool True # decide whether previous settings should remain or not
