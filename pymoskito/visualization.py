@@ -1,4 +1,5 @@
 from abc import ABCMeta, abstractmethod
+from PyQt4.QtGui import QMessageBox
 
 
 class Visualizer:
@@ -34,3 +35,19 @@ class Visualizer:
             camera.SetParallelScale(self.parallel_scale)
             camera.SetClippingRange(self.clipping_range)
 
+
+class MplVisualizer(Visualizer):
+
+    def __init__(self):
+        Visualizer.__init__(self)
+
+    def on_pick(self, event):
+        # The event received here is of the type
+        # matplotlib.backend_bases.PickEvent
+        #
+        # It carries lots of information, of which we're using
+        # only a small amount here.
+        box_points = event.artist.get_bbox().get_points()
+        msg = "You've clicked on a bar with coords:\n %s" % box_points
+
+        QMessageBox.information(self, "Click!", msg)
