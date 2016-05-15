@@ -28,6 +28,8 @@ examples/results/processing*
 # editor settings
 *.gz
 *.idea
+.project
+.pydevproject
 
 # Compiled python modules.
 *.pyc

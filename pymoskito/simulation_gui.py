@@ -29,7 +29,7 @@ import vtk
 from vtk.qt4.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 
 # pymoskito
-from visualization import MplVisualizer
+from visualization import MplVisualizer, VtkVisualizer
 from registry import get_registered_visualizers
 from simulation_interface import SimulatorInteractor, SimulatorView
 from processing_gui import PostProcessor
@@ -108,29 +108,31 @@ class SimulationGui(QtGui.QMainWindow):
 
 
         available_vis = get_registered_visualizers()
-
-        if issubclass(available_vis[0][0], MplVisualizer):
-            self.animationWidget = QWidget()
-            self.animationLayout = QtGui.QVBoxLayout()
-            self.visualizer = available_vis[0][0](self.animationWidget, self.animationLayout)
-            self.animationWidget.setLayout(self.animationLayout)
-            self.animationDock.addWidget(self.animationWidget)
-        elif available_vis:
-            # vtk window
-            self.vtkLayout = QtGui.QVBoxLayout()
-            self.frame = QtGui.QFrame()
-            self.vtkWidget = QVTKRenderWindowInteractor(self.frame)
-            self.vtkLayout.addWidget(self.vtkWidget)
-            self.frame.setLayout(self.vtkLayout)
-            self.animationDock.addWidget(self.frame)
-            self.vtk_renderer = vtk.vtkRenderer()
-            self.vtkWidget.GetRenderWindow().AddRenderer(self.vtk_renderer)
+        if available_vis:
             # check if there is a registered visualizer
             self._logger.info("found visualizers: {}".format([name for cls, name in available_vis]))
             # instantiate the first one
             self._logger.info("loading visualizer '{}'".format(available_vis[0][1]))
+
+        # instantiate the first visualizer
+        self.animationLayout = QtGui.QVBoxLayout()
+        if issubclass(available_vis[0][0], MplVisualizer):
+            self.animationWidget = QWidget()
+            self.visualizer = available_vis[0][0](self.animationWidget, self.animationLayout)
+            self.animationDock.addWidget(self.animationWidget)
+        elif issubclass(available_vis[0][0], VtkVisualizer):
+            # vtk window
+            self.animationFrame = QtGui.QFrame()
+            self.vtkWidget = QVTKRenderWindowInteractor(self.animationFrame)
+            self.animationLayout.addWidget(self.vtkWidget)
+            self.animationFrame.setLayout(self.animationLayout)
+            self.animationDock.addWidget(self.animationFrame)
+            self.vtk_renderer = vtk.vtkRenderer()
+            self.vtkWidget.GetRenderWindow().AddRenderer(self.vtk_renderer)
             self.visualizer = available_vis[0][0](self.vtk_renderer)
             self.vtkWidget.Initialize()
+        elif available_vis:
+            raise NotImplementedError
         else:
             self.visualizer = None
 
@@ -408,7 +410,7 @@ class SimulationGui(QtGui.QMainWindow):
         # pmr - PyMoskito Result
         file_name = os.path.join(path, time.strftime("%Y%m%d-%H%M%S") + "_" + name + ".pmr")
         with open(file_name.encode("utf-8"), "wb") as f:
-            cPickle.dump(self.currentDataset, f, protocol=2)
+            pickle.dump(self.currentDataset, f, protocol=2)
 
         self.statusLabel.setText(u"results saved to {}".format(file_name))
         self._logger.info(u"results saved to {}".format(file_name))
@@ -639,7 +641,7 @@ class SimulationGui(QtGui.QMainWindow):
             self.visualizer.update_scene(state)
             if isinstance(self.visualizer, MplVisualizer):
                 pass
-            else:
+            elif isinstance(self.visualizer, VtkVisualizer):
                 self.vtkWidget.GetRenderWindow().Render()
 
     def interpolate(self, data):
