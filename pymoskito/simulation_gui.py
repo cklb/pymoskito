@@ -18,6 +18,7 @@ import numpy as np
 # Qt
 from PyQt4 import QtCore, QtGui
 from PyQt4.QtCore import QTimer, pyqtSignal
+from PyQt4.QtGui import QWidget
 
 # pyqtgraph
 import pyqtgraph as pg
@@ -28,6 +29,7 @@ import vtk
 from vtk.qt4.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 
 # pymoskito
+from visualization import MplVisualizer, VtkVisualizer
 from registry import get_registered_visualizers
 from simulation_interface import SimulatorInteractor, SimulatorView
 from processing_gui import PostProcessor
@@ -84,7 +86,7 @@ class SimulationGui(QtGui.QMainWindow):
 
         # create docks
         self.propertyDock = pg.dockarea.Dock("Properties")
-        self.vtkDock = pg.dockarea.Dock("Simulation")
+        self.animationDock = pg.dockarea.Dock("Animation")
         self.regimeDock = pg.dockarea.Dock("Regimes")
         self.dataDock = pg.dockarea.Dock("Data")
         self.logDock = pg.dockarea.Dock("Log")
@@ -94,33 +96,43 @@ class SimulationGui(QtGui.QMainWindow):
         self.timeLines = []
 
         # arrange docks
-        self.area.addDock(self.vtkDock, "right")
-        self.area.addDock(self.regimeDock, "left", self.vtkDock)
+        self.area.addDock(self.animationDock, "right")
+        self.area.addDock(self.regimeDock, "left", self.animationDock)
         self.area.addDock(self.propertyDock, "bottom", self.regimeDock)
         self.area.addDock(self.dataDock, "bottom", self.propertyDock)
-        self.area.addDock(self.plotDocks[-1], "bottom", self.vtkDock)
+        self.area.addDock(self.plotDocks[-1], "bottom", self.animationDock)
         self.area.addDock(self.logDock, "bottom", self.dataDock)
 
         # add widgets to the docks
         self.propertyDock.addWidget(self.targetView)
 
-        # vtk window
-        self.vtkLayout = QtGui.QVBoxLayout()
-        self.frame = QtGui.QFrame()
-        self.vtkWidget = QVTKRenderWindowInteractor(self.frame)
-        self.vtkLayout.addWidget(self.vtkWidget)
-        self.frame.setLayout(self.vtkLayout)
-        self.vtkDock.addWidget(self.frame)
-        self.vtk_renderer = vtk.vtkRenderer()
-        self.vtkWidget.GetRenderWindow().AddRenderer(self.vtk_renderer)
-        # check if there is a registered visualizer
+
         available_vis = get_registered_visualizers()
-        self._logger.info("found visualizers: {}".format([name for cls, name in available_vis]))
         if available_vis:
-                # instantiate the first one
-                self._logger.info("loading visualizer '{}'".format(available_vis[0][1]))
-                self.visualizer = available_vis[0][0](self.vtk_renderer)
-                self.vtkWidget.Initialize()
+            # check if there is a registered visualizer
+            self._logger.info("found visualizers: {}".format([name for cls, name in available_vis]))
+            # instantiate the first one
+            self._logger.info("loading visualizer '{}'".format(available_vis[0][1]))
+
+        # instantiate the first visualizer
+        self.animationLayout = QtGui.QVBoxLayout()
+        if issubclass(available_vis[0][0], MplVisualizer):
+            self.animationWidget = QWidget()
+            self.visualizer = available_vis[0][0](self.animationWidget, self.animationLayout)
+            self.animationDock.addWidget(self.animationWidget)
+        elif issubclass(available_vis[0][0], VtkVisualizer):
+            # vtk window
+            self.animationFrame = QtGui.QFrame()
+            self.vtkWidget = QVTKRenderWindowInteractor(self.animationFrame)
+            self.animationLayout.addWidget(self.vtkWidget)
+            self.animationFrame.setLayout(self.animationLayout)
+            self.animationDock.addWidget(self.animationFrame)
+            self.vtk_renderer = vtk.vtkRenderer()
+            self.vtkWidget.GetRenderWindow().AddRenderer(self.vtk_renderer)
+            self.visualizer = available_vis[0][0](self.vtk_renderer)
+            self.vtkWidget.Initialize()
+        elif available_vis:
+            raise NotImplementedError
         else:
             self.visualizer = None
 
@@ -210,7 +222,8 @@ class SimulationGui(QtGui.QMainWindow):
         self.act_reset_camera = QtGui.QAction(self)
         self.act_reset_camera.setText("reset camera")
         self.act_reset_camera.setIcon(QtGui.QIcon(get_resource("reset_camera.png")))
-        self.act_reset_camera.setDisabled(not self.visualizer.can_reset_view)
+        if available_vis:
+            self.act_reset_camera.setDisabled(not self.visualizer.can_reset_view)
         self.act_reset_camera.triggered.connect(self.reset_camera_clicked)
 
         # toolbar for control
@@ -397,7 +410,7 @@ class SimulationGui(QtGui.QMainWindow):
         # pmr - PyMoskito Result
         file_name = os.path.join(path, time.strftime("%Y%m%d-%H%M%S") + "_" + name + ".pmr")
         with open(file_name.encode("utf-8"), "wb") as f:
-            cPickle.dump(self.currentDataset, f, protocol=2)
+            pickle.dump(self.currentDataset, f, protocol=2)
 
         self.statusLabel.setText(u"results saved to {}".format(file_name))
         self._logger.info(u"results saved to {}".format(file_name))
@@ -626,7 +639,10 @@ class SimulationGui(QtGui.QMainWindow):
         if self.visualizer:
             state = self.interpolate(self.currentDataset["results"]["Solver"])
             self.visualizer.update_scene(state)
-            self.vtkWidget.GetRenderWindow().Render()
+            if isinstance(self.visualizer, MplVisualizer):
+                pass
+            elif isinstance(self.visualizer, VtkVisualizer):
+                self.vtkWidget.GetRenderWindow().Render()
 
     def interpolate(self, data):
         """

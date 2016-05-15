@@ -4,16 +4,16 @@ from __future__ import division
 import numpy as np
 import vtk
 
-from pymoskito.visualization import Visualizer
+from pymoskito.visualization import VtkVisualizer
 
 import settings as st
 import pymoskito.tools as to
 
 
-class TwoPendulumVisualizer(Visualizer):
+class TwoPendulumVisualizer(VtkVisualizer):
 
     def __init__(self, renderer):
-        Visualizer.__init__(self)
+        VtkVisualizer.__init__(self)
 
 
         assert isinstance(renderer, vtk.vtkRenderer)
