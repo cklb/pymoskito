@@ -1,8 +1,10 @@
 ﻿# -*- coding: utf-8 -*-
 from __future__ import division
+
 import logging
+
 import numpy as np
-from PyQt4.QtCore import QObject, pyqtSignal, pyqtSlot
+from PyQt5.QtCore import QObject, pyqtSignal, pyqtSlot
 
 from simulation_modules import SimulationException
 

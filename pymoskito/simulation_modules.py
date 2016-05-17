@@ -1,9 +1,10 @@
 from __future__ import division
-from abc import ABCMeta, abstractmethod, abstractproperty
-import logging
-from collections import OrderedDict
-from PyQt4.QtCore import QObject, pyqtWrapperType
 
+import logging
+from abc import ABCMeta, abstractmethod, abstractproperty
+from collections import OrderedDict
+
+from PyQt5.QtCore import QObject, pyqtWrapperType
 
 __author__ = 'stefan'
 

@@ -1,15 +1,17 @@
 from __future__ import division
-import os
+
 import logging
-from cPickle import dump
+import os
 from abc import ABCMeta, abstractmethod
+from cPickle import dump
+
 import numpy as np
-from PyQt4.QtCore import QObject, pyqtWrapperType
-import matplotlib as mpl
-mpl.use("Qt4Agg")
-from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
-from matplotlib.figure import Figure
-from matplotlib.lines import Line2D
+from PyQt5.QtCore import QObject, pyqtWrapperType
+
+# import matplotlib as mpl
+# from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
+# from matplotlib.figure import Figure
+# from matplotlib.lines import Line2D
 
 from tools import get_sub_value
 

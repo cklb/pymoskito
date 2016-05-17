@@ -1,13 +1,12 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import division
+
 import numpy as np
 import vtk
 
-from pymoskito import register_visualizer
-from pymoskito.visualization import VtkVisualizer
-
 import settings as st
+from pymoskito.visualization import VtkVisualizer
 
 
 class BallInTubeVisualizer(VtkVisualizer):

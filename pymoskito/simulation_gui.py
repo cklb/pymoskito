@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 from __future__ import division
 
 # system
@@ -16,17 +15,26 @@ except:
 import numpy as np
 
 # Qt
-from PyQt4 import QtCore, QtGui
-from PyQt4.QtCore import QTimer, pyqtSignal
-from PyQt4.QtGui import QWidget
+from PyQt5.QtCore import Qt, QTimer, pyqtSignal, QSize
+from PyQt5.QtGui import QIcon, QKeySequence
+from PyQt5.QtWidgets import (QWidget, QAction, QSlider, QDial, QMainWindow, QTreeView, QListWidget,
+                             QAbstractItemView, QToolBar, QStatusBar, QProgressBar, QLabel, QShortcut,
+                             QLineEdit, QFileDialog, QInputDialog, QAbstractSlider, QFrame, QVBoxLayout)
 
 # pyqtgraph
 import pyqtgraph as pg
-import pyqtgraph.dockarea
+from pyqtgraph.dockarea import DockArea
 
 # vtk
-import vtk
-from vtk.qt4.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
+vtk_error_msg = ""
+try:
+    import vtk
+    from vtk.qt5.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
+
+    vtk_available = True
+except ImportError as e:
+    vtk_available = False
+    vtk_error_msg = e.message
 
 # pymoskito
 from visualization import MplVisualizer, VtkVisualizer
@@ -36,7 +44,7 @@ from processing_gui import PostProcessor
 from tools import get_resource, PostFilter, QPlainTextEditLogger
 
 
-class SimulationGui(QtGui.QMainWindow):
+class SimulationGui(QMainWindow):
     """
     class for the graphical user interface
     """
@@ -51,7 +59,7 @@ class SimulationGui(QtGui.QMainWindow):
 
     def __init__(self):
         # constructor of the base class
-        QtGui.QMainWindow.__init__(self)
+        QMainWindow.__init__(self)
 
         self._logger = logging.getLogger(self.__class__.__name__)
 
@@ -71,7 +79,7 @@ class SimulationGui(QtGui.QMainWindow):
         self.targetView.collapsed.connect(self.target_view_changed)
 
         # sim results viewer
-        self.result_view = QtGui.QTreeView()
+        self.result_view = QTreeView()
 
         # the docking area allows to rearrange the user interface at runtime
         self.area = pg.dockarea.DockArea()
@@ -81,7 +89,7 @@ class SimulationGui(QtGui.QMainWindow):
         self.resize(1000, 700)
         self.setWindowTitle("PyMoskito")
         res_path = get_resource("mosquito.png")
-        icon = QtGui.QIcon(res_path)
+        icon = QIcon(res_path)
         self.setWindowIcon(icon)
 
         # create docks
@@ -106,69 +114,71 @@ class SimulationGui(QtGui.QMainWindow):
         # add widgets to the docks
         self.propertyDock.addWidget(self.targetView)
 
-
+        # check if there is a registered visualizer
         available_vis = get_registered_visualizers()
+        self._logger.info("found visualizers: {}".format([name for cls, name in available_vis]))
         if available_vis:
-            # check if there is a registered visualizer
-            self._logger.info("found visualizers: {}".format([name for cls, name in available_vis]))
-            # instantiate the first one
+            # instantiate the first visualizer
             self._logger.info("loading visualizer '{}'".format(available_vis[0][1]))
+            self.animationLayout = QVBoxLayout()
 
-        # instantiate the first visualizer
-        self.animationLayout = QtGui.QVBoxLayout()
-        if issubclass(available_vis[0][0], MplVisualizer):
-            self.animationWidget = QWidget()
-            self.visualizer = available_vis[0][0](self.animationWidget, self.animationLayout)
-            self.animationDock.addWidget(self.animationWidget)
-        elif issubclass(available_vis[0][0], VtkVisualizer):
-            # vtk window
-            self.animationFrame = QtGui.QFrame()
-            self.vtkWidget = QVTKRenderWindowInteractor(self.animationFrame)
-            self.animationLayout.addWidget(self.vtkWidget)
-            self.animationFrame.setLayout(self.animationLayout)
-            self.animationDock.addWidget(self.animationFrame)
-            self.vtk_renderer = vtk.vtkRenderer()
-            self.vtkWidget.GetRenderWindow().AddRenderer(self.vtk_renderer)
-            self.visualizer = available_vis[0][0](self.vtk_renderer)
-            self.vtkWidget.Initialize()
-        elif available_vis:
-            raise NotImplementedError
+            if issubclass(available_vis[0][0], MplVisualizer):
+                self.animationWidget = QWidget()
+                self.visualizer = available_vis[0][0](self.animationWidget, self.animationLayout)
+                self.animationDock.addWidget(self.animationWidget)
+            elif issubclass(available_vis[0][0], VtkVisualizer):
+                if vtk_available:
+                    # vtk window
+                    self.animationFrame = QFrame()
+                    self.vtkWidget = QVTKRenderWindowInteractor(self.animationFrame)
+                    self.animationLayout.addWidget(self.vtkWidget)
+                    self.animationFrame.setLayout(self.animationLayout)
+                    self.animationDock.addWidget(self.animationFrame)
+                    self.vtk_renderer = vtk.vtkRenderer()
+                    self.vtkWidget.GetRenderWindow().AddRenderer(self.vtk_renderer)
+                    self.visualizer = available_vis[0][0](self.vtk_renderer)
+                    self.vtkWidget.Initialize()
+                else:
+                    self._logger.error("loading vtk failed with:{}".format(vtk_error_msg))
+                    self._logger.warn("visualizer depends on vtk which is not available on this system!")
+            elif available_vis:
+                raise NotImplementedError
         else:
             self.visualizer = None
 
         # regime window
-        self.regime_list = QtGui.QListWidget(self)
-        self.regime_list.setSelectionMode(QtGui.QAbstractItemView.ExtendedSelection)
+        self.regime_list = QListWidget(self)
+        self.regime_list.setSelectionMode(QAbstractItemView.ExtendedSelection)
         self.regimeDock.addWidget(self.regime_list)
         self.regime_list.itemDoubleClicked.connect(self.regime_dclicked)
         self._regimes = []
         self.regime_file_name = ""
 
         # data window
-        self.dataList = QtGui.QListWidget(self)
+        self.dataList = QListWidget(self)
         self.dataDock.addWidget(self.dataList)
         self.dataList.itemDoubleClicked.connect(self.create_plot)
 
         # actions for simulation control
-        self.actSimulate = QtGui.QAction(self)
+        self.actSimulate = QAction(self)
         self.actSimulate.setText("Simulate")
-        self.actSimulate.setIcon(QtGui.QIcon(get_resource("simulate.png")))
+        self.actSimulate.setIcon(QIcon(get_resource("simulate.png")))
         self.actSimulate.triggered.connect(self.start_simulation)
 
         # actions for animation control
-        self.actPlayPause = QtGui.QAction(self)
+        self.actPlayPause = QAction(self)
         self.actPlayPause.setText("Play")
-        self.actPlayPause.setIcon(QtGui.QIcon(get_resource("play.png")))
+        self.actPlayPause.setIcon(QIcon(get_resource("play.png")))
         self.actPlayPause.setDisabled(True)
         self.actPlayPause.triggered.connect(self.play_animation)
 
-        self.actStop = QtGui.QAction(self)
+        self.actStop = QAction(self)
         self.actStop.setText("Stop")
-        self.actStop.setIcon(QtGui.QIcon(get_resource("stop.png")))
+        self.actStop.setIcon(QIcon(get_resource("stop.png")))
         self.actStop.setDisabled(True)
         self.actStop.triggered.connect(self.stop_animation)
 
-        self.speedDial = QtGui.QDial()
+        self.speedDial = QDial()
         self.speedDial.setDisabled(True)
         self.speedDial.setMinimum(0)
         self.speedDial.setMaximum(100)
@@ -177,7 +187,7 @@ class SimulationGui(QtGui.QMainWindow):
         self.speedDial.resize(24, 24)
         self.speedDial.valueChanged.connect(self.update_playback_gain)
 
-        self.timeSlider = QtGui.QSlider(QtCore.Qt.Horizontal, self)
+        self.timeSlider = QSlider(Qt.Horizontal, self)
         self.timeSlider.setMinimum(0)
         self.timeSliderRange = 1000
         self.timeSlider.setMaximum(self.timeSliderRange)
@@ -195,40 +205,40 @@ class SimulationGui(QtGui.QMainWindow):
         self.playbackTimeChanged.connect(self.update_gui)
         self.playbackTimeout = 33  # in [ms] -> 30 fps
 
-        self.actSave = QtGui.QAction(self)
+        self.actSave = QAction(self)
         self.actSave.setText('Save')
-        self.actSave.setIcon(QtGui.QIcon(get_resource("save.png")))
+        self.actSave.setIcon(QIcon(get_resource("save.png")))
         self.actSave.setDisabled(True)
         self.actSave.triggered.connect(self.export_simulation_data)
 
-        self.actLoadRegimes = QtGui.QAction(self)
+        self.actLoadRegimes = QAction(self)
         self.actLoadRegimes.setText("load regimes")
-        self.actLoadRegimes.setIcon(QtGui.QIcon(get_resource("load.png")))
+        self.actLoadRegimes.setIcon(QIcon(get_resource("load.png")))
         self.actLoadRegimes.setDisabled(False)
         self.actLoadRegimes.triggered.connect(self.load_regime_dialog)
 
-        self.actExecuteRegimes = QtGui.QAction(self)
+        self.actExecuteRegimes = QAction(self)
         self.actExecuteRegimes.setText("execute all regimes")
-        self.actExecuteRegimes.setIcon(QtGui.QIcon(get_resource("execute_regimes.png")))
+        self.actExecuteRegimes.setIcon(QIcon(get_resource("execute_regimes.png")))
         self.actExecuteRegimes.setDisabled(True)
         self.actExecuteRegimes.triggered.connect(self.execute_regimes_clicked)
 
-        self.actPostprocessing = QtGui.QAction(self)
+        self.actPostprocessing = QAction(self)
         self.actPostprocessing.setText("launch postprocessor")
-        self.actPostprocessing.setIcon(QtGui.QIcon(get_resource("processing.png")))
+        self.actPostprocessing.setIcon(QIcon(get_resource("processing.png")))
         self.actPostprocessing.setDisabled(False)
         self.actPostprocessing.triggered.connect(self.postprocessing_clicked)
 
-        self.act_reset_camera = QtGui.QAction(self)
+        self.act_reset_camera = QAction(self)
         self.act_reset_camera.setText("reset camera")
-        self.act_reset_camera.setIcon(QtGui.QIcon(get_resource("reset_camera.png")))
+        self.act_reset_camera.setIcon(QIcon(get_resource("reset_camera.png")))
         if available_vis:
             self.act_reset_camera.setDisabled(not self.visualizer.can_reset_view)
         self.act_reset_camera.triggered.connect(self.reset_camera_clicked)
 
         # toolbar for control
-        self.toolbarSim = QtGui.QToolBar("Simulation")
-        self.toolbarSim.setIconSize(QtCore.QSize(32, 32))
+        self.toolbarSim = QToolBar("Simulation")
+        self.toolbarSim.setIconSize(QSize(32, 32))
         self.addToolBar(self.toolbarSim)
         self.toolbarSim.addAction(self.actLoadRegimes)
         self.toolbarSim.addAction(self.actSave)
@@ -267,43 +277,43 @@ class SimulationGui(QtGui.QMainWindow):
         self.logDock.addWidget(self.logBox.widget)
 
         # status bar
-        self.status = QtGui.QStatusBar(self)
+        self.status = QStatusBar(self)
         self.setStatusBar(self.status)
-        self.statusLabel = QtGui.QLabel("Ready.")
+        self.statusLabel = QLabel("Ready.")
         self.statusBar().addPermanentWidget(self.statusLabel)
-        self.timeLabel = QtGui.QLabel("current time: 0.0")
+        self.timeLabel = QLabel("current time: 0.0")
         self.statusBar().addPermanentWidget(self.timeLabel)
 
         # shortcuts
-        self.delShort = QtGui.QShortcut(QtGui.QKeySequence(QtCore.Qt.Key_Delete), self.regime_list)
+        self.delShort = QShortcut(QKeySequence(Qt.Key_Delete), self.regime_list)
         self.delShort.activated.connect(self.remove_regime_items)
 
-        self.shortOpenRegime = QtGui.QShortcut(QtGui.QKeySequence.Open, self)
+        self.shortOpenRegime = QShortcut(QKeySequence.Open, self)
         self.shortOpenRegime.activated.connect(self.load_regime_dialog)
 
-        self.shortSaveResult = QtGui.QShortcut(QtGui.QKeySequence.Save, self)
+        self.shortSaveResult = QShortcut(QKeySequence.Save, self)
         self.shortSaveResult.activated.connect(self.export_simulation_data)
         self.shortSaveResult.setEnabled(False)
 
-        self.shortSpeedUp = QtGui.QShortcut(QtGui.QKeySequence.ZoomIn, self)
+        self.shortSpeedUp = QShortcut(QKeySequence.ZoomIn, self)
         self.shortSpeedUp.activated.connect(self.increment_playback_speed)
 
-        self.shortSpeedDown = QtGui.QShortcut(QtGui.QKeySequence.ZoomOut, self)
+        self.shortSpeedDown = QShortcut(QKeySequence.ZoomOut, self)
         self.shortSpeedDown.activated.connect(self.decrement_playback_speed)
 
-        self.shortSpeedReset = QtGui.QShortcut(QtGui.QKeySequence(QtCore.Qt.CTRL + QtCore.Qt.Key_0), self)
+        self.shortSpeedReset = QShortcut(QKeySequence(Qt.CTRL + Qt.Key_0), self)
         self.shortSpeedReset.activated.connect(self.reset_playback_speed)
 
-        self.shortRunSimulation = QtGui.QShortcut(QtGui.QKeySequence('F5'), self)
+        self.shortRunSimulation = QShortcut(QKeySequence('F5'), self)
         self.shortRunSimulation.activated.connect(self.start_simulation)
 
-        self.shortRunRegimeBatch = QtGui.QShortcut(QtGui.QKeySequence('F6'), self)
+        self.shortRunRegimeBatch = QShortcut(QKeySequence('F6'), self)
         self.shortRunRegimeBatch.activated.connect(self.execute_regimes_clicked)
 
-        self.shortRunPostprocessing = QtGui.QShortcut(QtGui.QKeySequence('F7'), self)
+        self.shortRunPostprocessing = QShortcut(QKeySequence('F7'), self)
         self.shortRunPostprocessing.activated.connect(self.postprocessing_clicked)
 
-        self.shortPlayPause = QtGui.QShortcut(QtGui.QKeySequence(QtCore.Qt.Key_Space), self)
+        self.shortPlayPause = QShortcut(QKeySequence(Qt.Key_Space), self)
         self.shortPlayPause.activated.connect(self.play_animation)
         self.shortPlayPause.setEnabled(False)
 
@@ -320,7 +330,7 @@ class SimulationGui(QtGui.QMainWindow):
         """
         # self.statusLabel.setText('playing animation')
         self.actPlayPause.setText("Pause")
-        self.actPlayPause.setIcon(QtGui.QIcon(get_resource("pause.png")))
+        self.actPlayPause.setIcon(QIcon(get_resource("pause.png")))
         self.actPlayPause.triggered.disconnect(self.play_animation)
         self.actPlayPause.triggered.connect(self.pause_animation)
         self.shortPlayPause.activated.disconnect(self.play_animation)
@@ -334,7 +344,7 @@ class SimulationGui(QtGui.QMainWindow):
         # self.statusLabel.setText('pausing animation')
         self.playbackTimer.stop()
         self.actPlayPause.setText("Play")
-        self.actPlayPause.setIcon(QtGui.QIcon(get_resource("play.png")))
+        self.actPlayPause.setIcon(QIcon(get_resource("play.png")))
         self.actPlayPause.triggered.disconnect(self.pause_animation)
         self.actPlayPause.triggered.connect(self.play_animation)
         self.shortPlayPause.activated.disconnect(self.pause_animation)
@@ -349,7 +359,7 @@ class SimulationGui(QtGui.QMainWindow):
             # animation is playing -> stop it
             self.playbackTimer.stop()
             self.actPlayPause.setText("Play")
-            self.actPlayPause.setIcon(QtGui.QIcon(get_resource("play.png")))
+            self.actPlayPause.setIcon(QIcon(get_resource("play.png")))
             self.actPlayPause.triggered.disconnect(self.pause_animation)
             self.actPlayPause.triggered.connect(self.play_animation)
             self.shortPlayPause.activated.disconnect(self.pause_animation)
@@ -369,7 +379,7 @@ class SimulationGui(QtGui.QMainWindow):
         self.shortRunSimulation.setEnabled(False)
         self.shortRunRegimeBatch.setEnabled(False)
         self.actExecuteRegimes.setDisabled(True)
-        self.guiProgress = QtGui.QProgressBar(self)
+        self.guiProgress = QProgressBar(self)
         self.sim.simulationProgressChanged.connect(self.guiProgress.setValue)
         self.statusBar().addWidget(self.guiProgress)
         self.runSimulation.emit()
@@ -380,11 +390,11 @@ class SimulationGui(QtGui.QMainWindow):
 
         :param ok: unused parameter from QAction.triggered() Signal
         """
-        res, ok = QtGui.QInputDialog.getText(self,
+        res, ok = QInputDialog.getText(self,
                                              u"PyMoskito",
                                              u"Please specify regime a name",
-                                             QtGui.QLineEdit.Normal,
-                                             self._regimes[self._current_regime_index]["Name"])
+                                       QLineEdit.Normal,
+                                       self._regimes[self._current_regime_index]["Name"])
         if not ok:
             return
 
@@ -417,9 +427,9 @@ class SimulationGui(QtGui.QMainWindow):
 
     def load_regime_dialog(self):
         regime_path = os.path.join("../regimes/")
-        file_name = unicode(QtGui.QFileDialog.getOpenFileName(self,
+        file_name = unicode(QFileDialog.getOpenFileName(self,
                                                               "Open Regime File",
-                                                              regime_path,
+                                                        regime_path,
                                                               "Simulation Regime files (*.sreg)").toUtf8(),
                             encoding="utf-8")
         if not file_name:
@@ -545,7 +555,7 @@ class SimulationGui(QtGui.QMainWindow):
         self.sim.simulationProgressChanged.disconnect(self.guiProgress.setValue)
         self.statusBar().removeWidget(self.guiProgress)
 
-        self.timeSlider.triggerAction(QtGui.QAbstractSlider.SliderToMinimum)
+        self.timeSlider.triggerAction(QAbstractSlider.SliderToMinimum)
 
         self.currentDataset = data
         self._read_results()
@@ -737,7 +747,7 @@ class SimulationGui(QtGui.QMainWindow):
         """
         for dock in self.plotDocks:
             for widget in dock.widgets:
-                if not self.dataList.findItems(dock.name(), QtCore.Qt.MatchExactly):
+                if not self.dataList.findItems(dock.name(), Qt.MatchExactly):
                     # no data for this plot -> reset it
                     widget.getPlotItem().clear()
                     # TODO remove tab from dock and del instance

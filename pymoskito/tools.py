@@ -2,16 +2,16 @@
 """
 Tools, functions and other funny things
 """
-import os
-import logging
-import re
-
-import sympy as sp
-import numpy as np
 import copy
+import logging
+import os
+import re
 import warnings
 
-from PyQt4 import QtGui
+import numpy as np
+import sympy as sp
+from PyQt5.QtWidgets import QPlainTextEdit
+
 logger = logging.getLogger(__name__)
 
 
@@ -298,7 +298,7 @@ class QPlainTextEditLogger(logging.Handler):
     """
     def __init__(self, parent):
         logging.Handler.__init__(self)
-        self.widget = QtGui.QPlainTextEdit(parent)
+        self.widget = QPlainTextEdit(parent)
         self.widget.setReadOnly(True)
         # self.widget.setStyleSheet(
         #     """ QLineEdit { background-color: grey} """

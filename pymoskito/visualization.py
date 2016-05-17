@@ -1,8 +1,8 @@
 from abc import ABCMeta, abstractmethod
 
-from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
-from matplotlib.backends.backend_qt4agg import NavigationToolbar2QT
+from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT, FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
+
 
 class Visualizer:
     """

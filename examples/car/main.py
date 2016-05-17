@@ -1,12 +1,9 @@
 # -*- coding: utf-8 -*-
-from PyQt4.QtGui import QApplication
-
-from pymoskito import Simulator, PostProcessor, \
-    register_simulation_module, register_processing_module, register_visualizer, \
-    PostProcessingModule, \
-    Model, Controller
+from PyQt5.QtWidgets import QApplication
 
 from model import CarModel
+from pymoskito import Simulator, register_simulation_module, register_visualizer, \
+    Model
 from visualization import CarVisualizer
 
 
