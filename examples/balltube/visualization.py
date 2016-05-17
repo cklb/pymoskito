@@ -1,19 +1,18 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import division
+
 import numpy as np
 import vtk
 
-from pymoskito import register_visualizer
-from pymoskito.visualization import Visualizer
-
 import settings as st
+from pymoskito.visualization import VtkVisualizer
 
 
-class BallInTubeVisualizer(Visualizer):
+class BallInTubeVisualizer(VtkVisualizer):
 
     def __init__(self, renderer):
-        Visualizer.__init__(self)
+        VtkVisualizer.__init__(self)
 
         assert isinstance(renderer, vtk.vtkRenderer)
         self.ren = renderer

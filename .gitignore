@@ -28,6 +28,8 @@ examples/results/processing*
 # editor settings
 *.gz
 *.idea
+.project
+.pydevproject
 
 # Compiled python modules.
 *.pyc
@@ -38,6 +40,7 @@ examples/results/processing*
 
 # Setuptools distribution folder.
 /dist/
+/build/
 
 # Python egg metadata, regenerated from source files by setuptools.
 /*.egg-info

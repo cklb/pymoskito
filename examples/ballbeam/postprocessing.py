@@ -1,13 +1,14 @@
 # -*- coding: utf-8 -*-
 import os
-import numpy as np
+
 import matplotlib as mpl
-mpl.use("Qt4Agg")
-from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
+import numpy as np
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 from matplotlib.lines import Line2D
 
 from pymoskito import PostProcessingModule
+
 
 # TODO get those working again
 
@@ -212,7 +213,7 @@ class eval_A1_steps_in_one_plot(PostProcessingModule):
             y = data['results']['model_output.0']
             yd = data['results']['trajectory_output.0'][-1]
             controllerName.append(data['modules']['controller']['type'])
-            axes.plot(t, y, label=r'$r_{0} = ' + str(data['modules']['controller']['r0']) + '$', \
+            axes.plot(t, y, label=r'$r_{0} = ' + str(data['modules']['controller']['r0']) + '$',
                       c=mpl.rcParams['axes.color_cycle'][counter])
             counter += 1
 
@@ -255,7 +256,7 @@ class eval_A1_steps_in_one_plot(PostProcessingModule):
 
         self.writeOutputFiles(self.name, 'steps_in_one_plot', fig, results)
 
-        return [{'name': '_'.join([controllerName[0], self.name]), \
+        return [{'name': '_'.join([controllerName[0], self.name]),
                  'figure': canvas}]
 
     def calcMetrics(self, data, output):
@@ -305,13 +306,13 @@ class EvalA2(PostProcessingModule):
         fig.subplots_adjust(wspace=0.3, hspace=0.25)
         fig.suptitle(r'' + data['modules']['controller']['type'] + ' ' + \
                      '$A_d$ =' + str(data['modules']['trajectory']['Amplitude']) + ' ' + \
-                     '$f_d$ =' + str(data['modules']['trajectory']['Frequency']), \
+                     '$f_d$ =' + str(data['modules']['trajectory']['Frequency']),
                      size=st.title_size)
 
         axes1 = fig.add_subplot(2, 1, 1)
         # axes2.set_title(r'\textbf{Beam Angle}')
         axes1.plot(t, traj, c='k', ls='-', label='yd(t)')
-        axes1.plot(t, y[0], c=st.color_cycle[data['modules']['controller']['type']], \
+        axes1.plot(t, y[0], c=st.color_cycle[data['modules']['controller']['type']],
                    ls='-', label='y(t)')
         axes1.set_xlim(left=0, right=t[-1])
         axes1.set_xlabel(r'$t [s]$', size=st.label_size)
@@ -351,7 +352,7 @@ class EvalA2(PostProcessingModule):
 
         self.writeOutputFiles(self.name, data['regime name'], fig, results)
 
-        return {'name': '_'.join([data['regime name'], self.name]), \
+        return {'name': '_'.join([data['regime name'], self.name]),
                 'figure': canvas}
 
     def calcMetrics(self, data, output):
@@ -422,7 +423,7 @@ class eval_A2_epsilon(PostProcessingModule):
 
         self.writeOutputFiles(self.name, data['regime name'], fig, results)
 
-        return {'name': '_'.join([data['regime name'], self.name]), \
+        return {'name': '_'.join([data['regime name'], self.name]),
                 'figure': canvas}
 
 

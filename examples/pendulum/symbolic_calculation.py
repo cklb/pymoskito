@@ -1,14 +1,12 @@
+# -*- coding: utf-8 -*-
+
+import matplotlib.pyplot as plt
 import numpy as np
 import sympy as sp
-import matplotlib as mpl
-mpl.use("Qt4Agg")
-import matplotlib.pyplot as plt
-from matplotlib import rcParams
-rcParams['text.usetex'] = True
-# rcParams['text.latex.unicode'] = True
 
-import settings as st
-import pymoskito.tools as to
+
+# rcParams['text.usetex'] = True
+# rcParams['text.latex.unicode'] = True
 
 
 def preview(expr, **kwargs):

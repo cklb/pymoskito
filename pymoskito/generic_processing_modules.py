@@ -3,13 +3,20 @@ from __future__ import division
 
 import matplotlib as mpl
 import numpy as np
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.figure import Figure
+from matplotlib.lines import Line2D as Line
 
-mpl.use("Qt4Agg")
+from processing_core import PostProcessingModule, MetaProcessingModule
+from tools import sort_tree
 
 
-# settings for latex
-# calculate optimal figsize with the golden ratio
-def figsize(scale):
+def get_figure_size(scale):
+    """
+    calculate optimal figure size with the golden ratio
+    :param scale:
+    :return:
+    """
     fig_width_pt = 448.13095  # Get this from LaTeX using \the\textwidth
     inches_per_pt = 1.0 / 72.27  # Convert pt to inch
     golden_ratio = (np.sqrt(5.0) - 1.0) / 2.0  # Aesthetic ratio (you could change this)
@@ -29,7 +36,7 @@ latex_settings = {  # setup matplotlib to use latex for output
                     "legend.fontsize": 9,  # Make the legend/label fonts a little smaller
                     "xtick.labelsize": 9,
                     "ytick.labelsize": 9,
-                    "figure.figsize": figsize(1),  # default fig size of 1.0 textwidth
+    "figure.figsize": get_figure_size(1),  # default fig size of 1.0 textwidth
                     "lines.linewidth": 0.5,
                     "axes.labelsize": 11,  # LaTeX default is 10pt font.
                     "axes.linewidth": 0.5,
@@ -44,16 +51,6 @@ latex_settings = {  # setup matplotlib to use latex for output
                     # Patches are graphical objects that fill 2D space, like polygons or circles
                     }
 mpl.rcParams.update(latex_settings)
-
-from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
-from matplotlib.figure import Figure
-from matplotlib.lines import Line2D as Line
-
-from registry import register_processing_module
-from processing_core import PostProcessingModule, MetaProcessingModule
-from tools import sort_tree
-
-__author__ = 'stefan, christoph'
 
 
 class StepResponse(PostProcessingModule):

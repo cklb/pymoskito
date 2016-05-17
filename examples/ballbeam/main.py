@@ -1,16 +1,14 @@
 # -*- coding: utf-8 -*-
-import sys
-from PyQt4 import QtGui, QtCore
+from PyQt5.QtWidgets import QApplication
 
+from control import FController
+from model import BallBeamModel
+from postprocessing import EvalA1
 from pymoskito import Simulator, PostProcessor,\
     register_simulation_module, register_processing_module, register_visualizer, \
     PostProcessingModule, \
     Model, Controller
-
-from model import BallBeamModel
-from control import FController
 from visualization import BallBeamVisualizer
-from postprocessing import EvalA1
 
 __author__ = 'stefan'
 
@@ -22,7 +20,7 @@ if __name__ == '__main__':
     register_visualizer(BallBeamVisualizer)
 
     # create an Application instance (needed)
-    app = QtGui.QApplication([])
+    app = QApplication([])
 
     if 0:
         # create simulator
@@ -34,7 +32,7 @@ if __name__ == '__main__':
         sim.start_simulation()
 
         sim.show()
-        QtGui.QApplication.instance().exec_()
+        QApplication.instance().exec_()
 
     else:
         post = PostProcessor()

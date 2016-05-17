@@ -1,17 +1,13 @@
 # -*- coding: utf-8 -*-
-import numpy as np
-import scipy as sp
 import os
 
-import matplotlib as mpl
-mpl.use("Qt4Agg")
-#mpl.rcParams['text.usetex']=True
-#mpl.rcParams['text.latex.unicode']=True
-from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
+# mpl.rcParams['text.usetex'] = True
+# mpl.rcParams['text.latex.unicode']=True
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
-from matplotlib.lines import Line2D as line
 
 from processing_gui import MetaProcessingModule
+
 
 class eval_itae(MetaProcessingModule):
     '''
@@ -24,36 +20,36 @@ class eval_itae(MetaProcessingModule):
     epsPercent = 2.5
     spacing = 0.01
     counter = 0
-    
+
     def __init__(self):
         MetaProcessingModule.__init__(self)
         return
 
     def run(self, postResults):
-        #aquire data
+        # aquire data
         errors = [elem['error_L1Norm'] for elem in postResults]
         poles = [elem['modules']['observer']['poles'][0] for elem in postResults]
 
-        #create plot
+        # create plot
         fig = Figure()
         axes = fig.add_subplot(111)
         axes.set_title(r'\textbf{L1 Kriterium}')
         axes.plot(poles, errors, c='k')
-        #axes.set_xlim(left=0, right=t[-1])
-        #axes.set_xlabel(r'\textit{Zeit [s]}')
-        #axes.set_ylabel(r'\textit{Ballposition r(t) [m]}')
-        
-        #write results
+        # axes.set_xlim(left=0, right=t[-1])
+        # axes.set_xlabel(r'\textit{Zeit [s]}')
+        # axes.set_ylabel(r'\textit{Ballposition r(t) [m]}')
+
+        # write results
         filePath = os.path.join(os.path.pardir, 'results', 'metaprocessing', 'C')
         if not os.path.isdir(filePath):
             os.makedirs(filePath)
-        
+
         fileName = os.path.join(filePath, 'L1_observer-plot')
         canvas = FigureCanvas(fig)
-        fig.savefig(fileName+'.svg')
-        fig.savefig(fileName+'.png')
+        fig.savefig(fileName + '.svg')
+        fig.savefig(fileName + '.png')
 
-        results = [{'figure': canvas, 'name': 'L1_observer-plot'},\
-                ]
+        results = [{'figure': canvas, 'name': 'L1_observer-plot'}, \
+                   ]
 
         return results

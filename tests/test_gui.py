@@ -9,7 +9,9 @@ Tests for `simulation_gui` module.
 """
 
 import unittest
-from PyQt4.QtGui import QApplication
+
+from PyQt5.QtWidgets import QApplication
+
 import pymoskito as pm
 
 

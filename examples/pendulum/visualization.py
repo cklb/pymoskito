@@ -1,22 +1,19 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import division
+
 import numpy as np
 import vtk
 
-from pymoskito import register_visualizer
-from pymoskito.visualization import Visualizer
-
-import settings as st
 import pymoskito.tools as to
+import settings as st
+from pymoskito.visualization import VtkVisualizer
 
 
-class TwoPendulumVisualizer(Visualizer):
+class TwoPendulumVisualizer(VtkVisualizer):
 
     def __init__(self, renderer):
-        Visualizer.__init__(self)
-
-
+        VtkVisualizer.__init__(self)
         assert isinstance(renderer, vtk.vtkRenderer)
         self.ren = renderer
 

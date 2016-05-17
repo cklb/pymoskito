@@ -5,15 +5,15 @@ import numpy as np
 import vtk
 
 from pymoskito import register_visualizer
-from pymoskito.visualization import Visualizer
+from pymoskito.visualization import VtkVisualizer
 
 import settings as st
 
 
-class BallBeamVisualizer(Visualizer):
+class BallBeamVisualizer(VtkVisualizer):
 
     def __init__(self, renderer):
-        Visualizer.__init__(self)
+        VtkVisualizer.__init__(self)
 
         assert isinstance(renderer, vtk.vtkRenderer)
         self.ren = renderer

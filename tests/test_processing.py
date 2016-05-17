@@ -9,11 +9,11 @@ Tests for `processing` module.
 """
 
 import unittest
-from PyQt4.QtGui import QApplication
 
-from pymoskito import registry as pm
-import pymoskito.generic_processing_modules as post_modules
+from PyQt5.QtWidgets import QApplication
+
 from pymoskito.processing_gui import PostProcessor
+
 
 class TestProcessing(unittest.TestCase):
 
@@ -25,7 +25,7 @@ class TestProcessing(unittest.TestCase):
         self.post._load_result_file("data/step_response.pmr")
 
     def test_postprocessor(self):
-        self.post.run_processor("StepResponse")
+        self.post.run_processor("StepResponse", processor_type="post")
 
     def tearDown(self):
         del self.post

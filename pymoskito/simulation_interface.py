@@ -3,16 +3,17 @@
     provides functions to manipulate settings of the simulator and
     to inspect its current state.
 """
-import sys
 import copy
 import logging
+import sys
 
-from PyQt4 import QtCore, QtGui
-from PyQt4.QtGui import QStandardItemModel, QStandardItem, QItemDelegate, QComboBox
+from PyQt5.QtCore import Qt, QObject, pyqtSignal, pyqtSlot, QModelIndex, QSize, QThread
+from PyQt5.QtGui import QStandardItemModel, QStandardItem
+from PyQt5.QtWidgets import QItemDelegate, QComboBox, QTreeView
 
-from registry import get_registered_simulation_modules, get_simulation_module_class_by_name
 import simulation_modules
 from generic_simulation_modules import *
+from registry import get_registered_simulation_modules, get_simulation_module_class_by_name
 from simulation_core import Simulator, SimulationSettings, SimulationStateChange
 
 
@@ -22,9 +23,9 @@ class SimulatorModel(QStandardItemModel):
 
     def flags(self, index):
         if index.column() == 1:
-            return QtCore.Qt.ItemIsEditable | QtCore.Qt.ItemIsEnabled
+            return Qt.ItemIsEditable | Qt.ItemIsEnabled
         else:
-            return QtCore.Qt.ItemIsEnabled
+            return Qt.ItemIsEnabled
 
 
 class PropertyDelegate(QItemDelegate):
@@ -93,7 +94,7 @@ class ComboDelegate(QItemDelegate):
         extract all possible choices for the selected SimulationModule
         """
         entries = ['None']
-        idx = index.model().index(index.row(), 0, QtCore.QModelIndex())
+        idx = index.model().index(index.row(), 0, QModelIndex())
         sim_module_name = str(index.model().itemFromIndex(idx).text())
         sim_module = getattr(simulation_modules, sim_module_name)
         sub_modules = get_registered_simulation_modules(sim_module)
@@ -103,31 +104,31 @@ class ComboDelegate(QItemDelegate):
         return entries
 
 
-class SimulatorView(QtGui.QTreeView):
+class SimulatorView(QTreeView):
     def __init__(self, parent=None):
-        QtGui.QTreeView.__init__(self, parent)
+        QTreeView.__init__(self, parent)
         self.setItemDelegateForColumn(1, PropertyDelegate(self))
 
     def sizeHint(self):
-        return QtCore.QSize(300, 150)
+        return QSize(300, 150)
 
     def minimumSizeHint(self):
         return self.sizeHint()
 
 
-class SimulatorInteractor(QtCore.QObject):
+class SimulatorInteractor(QObject):
     """
     Class that interacts between the gui which controls the programs execution
     and the Simulator which handles the time step simulation
     """
 
     # signals
-    simulation_finished = QtCore.pyqtSignal(dict)
-    simulation_failed = QtCore.pyqtSignal(dict)
-    simulationProgressChanged = QtCore.pyqtSignal(int)
+    simulation_finished = pyqtSignal(dict)
+    simulation_failed = pyqtSignal(dict)
+    simulationProgressChanged = pyqtSignal(int)
 
     def __init__(self, parent=None):
-        QtCore.QObject.__init__(self, parent)
+        QObject.__init__(self, parent)
         self._logger = logging.getLogger(self.__class__.__name__)
 
         self.last_progress = 0
@@ -136,7 +137,7 @@ class SimulatorInteractor(QtCore.QObject):
 
         self._sim = None
         self._sim_settings = None
-        self.simThread = QtCore.QThread()
+        self.simThread = QThread()
         self._sim_modules = {}
         self._sim_data = {'modules': {}}
         self._sim_state = None
@@ -375,7 +376,7 @@ class SimulatorInteractor(QtCore.QObject):
         # run
         self.simThread.start()
 
-    @QtCore.pyqtSlot(SimulationStateChange)
+    @pyqtSlot(SimulationStateChange)
     def simulation_state_changed(self, state_change):
         """
         slot for simulation state changes
