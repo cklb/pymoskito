@@ -2,8 +2,7 @@
 from PyQt5.QtWidgets import QApplication
 
 from model import CarModel
-from pymoskito import Simulator, register_simulation_module, register_visualizer, \
-    Model
+from pymoskito import (Simulator, register_simulation_module, register_visualizer, Model)
 from visualization import CarVisualizer
 
 

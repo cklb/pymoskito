@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 
 from collections import OrderedDict
+
 import numpy as np
 
-from pymoskito.simulation_modules import Model, ModelException
 import settings as st
+from pymoskito.simulation_modules import Model
 
 
 class CarModel(Model):
@@ -41,13 +42,15 @@ class CarModel(Model):
         x1, x2, x3, x4, x5 = x
         v, w = 1, 1
 
-        return np.array([   v*np.cos(x3),
-                            v*np.sin(x3),
-                            w,
-                            v/self.l2*np.sin(x3 - x4) - self.d1/self.l2*w*np.cos(x3 - x4),
-                            v*(1/self.l3*np.sin(x3 - x5) - (self.d2+self.l2)/(self.l2*self.l3)*np.sin(x3 - x4)*np.cos(x4-x5)) \
-                            +  w*(-self.d1/self.l3*np.cos(x3-x5)+(self.d1*(self.l2+self.d2))/(self.l2*self.l3)*np.cos(x3-x4)*np.cos(x4-x5))
-                            ])
+        return np.array([v * np.cos(x3),
+                         v * np.sin(x3),
+                         w,
+                         v / self.l2 * np.sin(x3 - x4) - self.d1 / self.l2 * w * np.cos(x3 - x4),
+                         v * (1 / self.l3 * np.sin(x3 - x5) - (self.d2 + self.l2) / (self.l2 * self.l3) * np.sin(
+                             x3 - x4) * np.cos(x4 - x5)) \
+                         + w * (-self.d1 / self.l3 * np.cos(x3 - x5) + (self.d1 * (self.l2 + self.d2)) / (
+                             self.l2 * self.l3) * np.cos(x3 - x4) * np.cos(x4 - x5))
+                         ])
 
     def root_function(self, x):
         return [False]
@@ -57,4 +60,3 @@ class CarModel(Model):
 
     def calc_output(self, input):
         return np.array([input], dtype=float)
-
