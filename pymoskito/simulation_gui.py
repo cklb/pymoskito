@@ -28,13 +28,17 @@ from pyqtgraph.dockarea import DockArea
 # vtk
 vtk_error_msg = ""
 try:
-    import vtk
-    from vtk.qt5.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
+    from vtk import vtkRenderer
+    from vtk import qt
 
+    vtk.qt.PyQtImpl = "PyQt5"
+    from vtk.qt.QVTKRenderWindowInteractor import *
     vtk_available = True
 except ImportError as e:
     vtk_available = False
     vtk_error_msg = e.message
+    vtkRenderer = None
+    QVTKRenderWindowInteractor = None
 
 # pymoskito
 from visualization import MplVisualizer, VtkVisualizer
@@ -114,6 +118,9 @@ class SimulationGui(QMainWindow):
         # add widgets to the docks
         self.propertyDock.addWidget(self.targetView)
 
+        if not vtk_available:
+            self._logger.error("loading vtk failed with:{}".format(vtk_error_msg))
+
         # check if there is a registered visualizer
         available_vis = get_registered_visualizers()
         self._logger.info("found visualizers: {}".format([name for cls, name in available_vis]))
@@ -134,12 +141,11 @@ class SimulationGui(QMainWindow):
                     self.animationLayout.addWidget(self.vtkWidget)
                     self.animationFrame.setLayout(self.animationLayout)
                     self.animationDock.addWidget(self.animationFrame)
-                    self.vtk_renderer = vtk.vtkRenderer()
+                    self.vtk_renderer = vtkRenderer()
                     self.vtkWidget.GetRenderWindow().AddRenderer(self.vtk_renderer)
                     self.visualizer = available_vis[0][0](self.vtk_renderer)
                     self.vtkWidget.Initialize()
                 else:
-                    self._logger.error("loading vtk failed with:{}".format(vtk_error_msg))
                     self._logger.warn("visualizer depends on vtk which is not available on this system!")
             elif available_vis:
                 raise NotImplementedError

@@ -8,11 +8,6 @@ from cPickle import dump
 import numpy as np
 from PyQt5.QtCore import QObject, pyqtWrapperType
 
-# import matplotlib as mpl
-# from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
-# from matplotlib.figure import Figure
-# from matplotlib.lines import Line2D
-
 from tools import get_sub_value
 
 """
@@ -278,7 +273,7 @@ class MetaProcessingModule(ProcessingModule):
                     x_all.append(val)
 
             if typ == 'line':
-                self.axes.plot(x_list, y_list, 'o-', label=member) #, color=st.color_cycle[member])
+                self.axes.plot(x_list, y_list, 'o-', label=member)  # , color=st.color_cycle[member])
             elif typ == 'bar':
                 # remove all None from yList
                 x_list[:] = [x for x, y in zip(x_list, y_list) if y]
@@ -287,7 +282,7 @@ class MetaProcessingModule(ProcessingModule):
                 # correction for the position of the bar
                 x_list[:] = [k + width * counter for k in x_list]
 
-                self.axes.bar(x_list, y_list, width, label=member)  #, color=st.color_cycle[controller])
+                self.axes.bar(x_list, y_list, width, label=member)  # , color=st.color_cycle[controller])
                 counter += 1
 
         if (typ == 'bar') and (len(x_all) > 1):

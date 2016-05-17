@@ -1,9 +1,8 @@
-import sys
-from PyQt4 import QtGui, QtCore
+from PyQt5.QtWidgets import QApplication
+
 from pymoskito import Simulator, PostProcessor, \
     register_simulation_module, register_processing_module, register_visualizer, \
     Model, Controller, Feedforward, PostProcessingModule
-
 # import self defined simulation modules
 from model import BallInTubeModel, BallInTubeSpringModel
 from control import ExactInputOutputLinearisation, OpenLoop
@@ -25,7 +24,7 @@ if __name__ == "__main__":
     register_processing_module(PostProcessingModule, ErrorProcessor)
 
     # create an Application instance (needed)
-    app = QtGui.QApplication([])
+    app = QApplication([])
 
     if 1:
         # create gui

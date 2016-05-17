@@ -261,7 +261,7 @@ class PostProcessor(QMainWindow):
             base_cls = MetaProcessingModule
         else:
             self._logger.error(u"unknown processor type {0}".format(processor_type))
-            raise ValueError("unknown processor type {0}".format(processor_type))
+            raise ValueError(u"unknown processor type {0}".format(processor_type))
 
         if not result_files:
             self._logger.warning("run_processor() Error: no result file loaded!")
@@ -272,7 +272,7 @@ class PostProcessor(QMainWindow):
 
         figs = []
         try:
-            self._logger.info("executing processor '{0}'".format(name))
+            self._logger.info(u"executing processor '{0}'".format(name))
             figs = processor.process(self.results)
         except Exception, err:
             self._logger.exception("Error in processor")
