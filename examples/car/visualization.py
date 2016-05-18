@@ -204,6 +204,7 @@ class CarVisualizer(MplVisualizer):
                                     [x2_trailer2 + 3. / 8. * dia * ct3, x2_trailer2 + 0.5 * dia * ct3])
 
         self.canvas.draw()
+        self.save_if_checked()
 
     def calc_positions(self, x1, x2, theta1, theta2, theta3, dia, d1, l2, d2, l3, car_wheelius, wheel, ct1, st1, ct2,
                        st2,
