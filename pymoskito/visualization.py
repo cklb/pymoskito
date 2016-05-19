@@ -76,7 +76,10 @@ class MplVisualizer(Visualizer):
         self.save_cb = QtGui.QCheckBox("&Save")
         self.save_cb.setMaximumHeight(self.max_height)
         self.save_cb.setChecked(False)
-        self.q_widget.connect(self.save_cb, QtCore.SIGNAL('stateChanged(int)'), self.save_cb_changed)
+        # qt5:
+        self.save_cb.clicked.connect(self.save_cb_changed)
+        # qt4:
+        # self.q_widget.connect(self.save_cb, QtCore.SIGNAL('stateChanged(int)'), self.save_cb_changed)
         self.time_stamps = list()
         self.frame_counter = 0
         self.file_name_counter = 0
@@ -87,25 +90,45 @@ class MplVisualizer(Visualizer):
         self.label2.setMaximumHeight(self.max_height)
         self.label3 = QtGui.QLabel('')
         self.label3.setMaximumHeight(self.max_height)
+        self.label4 = QtGui.QLabel('as')
+        self.label4.setMaximumHeight(self.max_height)
 
         self.save_each = 1
-        self.combo_box = QtGui.QComboBox()
-        self.combo_box.setMaximumHeight(self.max_height)
-        self.combo_box_content = ['frame'] + [str(num) for num in range(2, 25)+range(35, 250, 11)]
-        self.combo_box.addItems(self.combo_box_content)
-        self.q_widget.connect(self.combo_box, QtCore.SIGNAL("currentIndexChanged(const QString&)"), self.index_changed)
+        self.combo_box1 = QtGui.QComboBox()
+        self.combo_box1.setMaximumHeight(self.max_height)
+        self.combo_box1_content = ['frame'] + [str(num) for num in range(2, 25) + range(35, 250, 11)]
+        self.combo_box1.addItems(self.combo_box1_content)
+        # qt5:
+        self.combo_box1.currentTextChanged.connect(self.index_changed)
+        # qt4:
+        # self.q_widget.connect(self.combo_box1, QtCore.SIGNAL("currentIndexChanged(const QString&)"), self.index_changed)
 
-        self.push_button = QtGui.QPushButton("&Convert saved pictures to video file")
+        self.frame_format = 'png'
+        self.combo_box2 = QtGui.QComboBox()
+        self.combo_box2.setMaximumHeight(self.max_height)
+        self.combo_box2_content = ['png']
+        # self.combo_box2_content = ['png', 'pdf']
+        self.combo_box2.addItems(self.combo_box2_content)
+        # qt5:
+        self.combo_box1.currentTextChanged.connect(self.frame_format_changed)
+        # qt4:
+        # self.q_widget.connect(self.combo_box2, QtCore.SIGNAL("currentIndexChanged(const QString&)"), self.frame_format_changed)
+
+        self.push_button = QtGui.QPushButton("&Convert saved frames to video file")
         self.push_button.setMaximumHeight(self.max_height)
         self.push_button.setToolTip('To implement from user:\n'
                                     '- derive your own Visualizer (class) from MplVisualizer\n'
                                     '- write/call your script in/through self.convert_button_clicked()  (e.g. by use of FFmpeg)\n'
+                                    '- make use of self.time_stamps list, each save checkbox activation append a time stamp to the list\n'
                                     '- CURRENT picture path: '+self.picture_path+'\n'
                                     '- enable this button: self.push_button.setEnabled()\n'
                                     '- rewrite or remove this tooltip: self.push_button.setToolTip(\'My awesome script do ...\')'
                                     )
         self.push_button.setDisabled(True)
-        self.q_widget.connect(self.push_button, QtCore.SIGNAL("clicked()"), self.convert_button_clicked)
+        # qt5:
+        self.push_button.clicked.connect(self.convert_button_clicked)
+        # qt4:
+        # self.q_widget.connect(self.push_button, QtCore.SIGNAL("clicked()"), self.convert_button_clicked)
 
         # arrange objects inside the dock/widget
         hbox1 = QtGui.QHBoxLayout()
@@ -114,7 +137,7 @@ class MplVisualizer(Visualizer):
         hbox2.setAlignment(QtCore.Qt.AlignBottom)
         vbox = QtGui.QVBoxLayout()
         vbox.setAlignment(QtCore.Qt.AlignBottom)
-        for w in [self.save_cb, self.label1, self.combo_box, self.label2, self.label3]:
+        for w in [self.save_cb, self.label1, self.combo_box1, self.label2, self.label3, self.label4, self.combo_box2]:
             hbox1.addWidget(w)
             hbox1.setAlignment(w, QtCore.Qt.AlignLeft)
         vbox.addLayout(hbox1)
@@ -133,12 +156,15 @@ class MplVisualizer(Visualizer):
         raise NotImplementedError
 
     def index_changed(self):
-        current_value = self.combo_box.currentText()
-        if current_value == self.combo_box_content[0]:
+        current_value = self.combo_box1.currentText()
+        if current_value == self.combo_box1_content[0]:
             self.save_each = 1
         else:
             self.save_each = int(current_value)
         self.set_numerals()
+
+    def frame_format_changed(self):
+        self.frame_format = self.combo_box2.currentText()
 
     def save_cb_changed(self):
         self.frame_counter = 0
@@ -154,9 +180,15 @@ class MplVisualizer(Visualizer):
         """
         if self.save_cb.isChecked():
             if self.frame_counter % self.save_each == 0:
-                self.fig.savefig(self.picture_path + os.path.sep + self.time_stamp + "%04d"%self.file_name_counter,
-                                 format="png",
-                                 dpi=self.dpi)
+                file_name = self.picture_path + os.path.sep + self.time_stamp + "%04d"%self.file_name_counter + '.' + self.frame_format
+                if self.frame_format == 'pdf':
+                    raise NotImplementedError
+                    # with PdfPages(file_name) as pdf:
+                    #     pdf.savefig(self.fig, format=self.frame_format, dpi=self.dpi, figure=self.fig)
+                elif self.frame_format == 'png':
+                    self.fig.savefig(file_name, format=self.frame_format, dpi=self.dpi)
+                else:
+                    raise NotImplementedError
                 self.file_name_counter += 1
             self.frame_counter += 1
 
