@@ -175,16 +175,20 @@ class Controller(SimulationModule):
                              if src == self._settings["input_type"]), None)
         if input_values is None:
             raise ControllerException("Selected Input not available")
-        desired_values = input_vector["Trajectory"]
-        return self._control(input_values, desired_values, input_vector["time"])
+        desired_values = input_vector.get("Trajectory", None)
+        trajectory_values = input_vector.get("Feedforward", None)
+
+        return self._control(input_vector["time"], desired_values, trajectory_values, input_values)
 
     @abstractmethod
-    def _control(self, is_values, desired_values, t):
+    def _control(self, time, trajectory_values=None, feedforward_values=None, input_values=None, **kwargs):
         """
         placeholder for control law, for more sophisticated implementations
         overload calc_output.
-        :param is_values: input vector of values
-        :param desired_values: desired values
+        :param trajectory_values: desired values from trajectory generator
+        :param feedforward_values: output of feed-forward block
+        :param input_values: the input values selected by the *input_type* setting
+        :param **kwargs: placeholder for custom parameters
         :return: control output
         """
         pass

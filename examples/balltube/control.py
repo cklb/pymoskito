@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 from collections import OrderedDict
-import pymoskito.registry as pm
 from pymoskito.simulation_modules import Controller
 from pymoskito.tools import get_coefficients
 
@@ -28,10 +27,10 @@ class ExactInputOutputLinearisation(Controller):
         # run pole placement
         self.k = get_coefficients(self._settings["poles"])[0]
 
-    def _control(self, is_values, desired_values, t=None):
+    def _control(self, time, trajectory_values=None, feedforward_values=None, input_values=None, **kwargs):
         # input abbreviations
-        x = is_values
-        yd = desired_values
+        x = input_values
+        yd = trajectory_values
 
         # time constant and damping ratio depend on state x2
         if x[1] < 0:
@@ -77,7 +76,7 @@ class OpenLoop(Controller):
 
         Controller.__init__(self, settings)
 
-    def _control(self, is_values, desired_values, t=None):
+    def _control(self, time, trajectory_values=None, feedforward_values=None, input_values=None, **kwargs):
 
         u = self._settings["pwm"]
         return u

@@ -5,7 +5,6 @@ import numpy as np
 
 # from pytrajectory import ControlSystem
 
-from registry import register_simulation_module
 from simulation_modules import Solver, \
     SolverException, \
     Trajectory, \
@@ -243,18 +242,18 @@ class PIDController(Controller):
         self.last_u = np.zeros((len(self._settings["input_state"]), 1))  # column vector
         self.output = np.zeros((len(self._settings["input_state"]), 1))  # column vector
 
-    def _control(self, is_values, desired_values, t):
+    def _control(self, time, trajectory_values=None, feedforward_values=None, input_values=None, **kwargs):
         # input abbreviations
         x = np.zeros((len(self._settings["input_state"]), 1))
         for idx, state in enumerate(self._settings["input_state"]):
-            x[idx][0] = is_values[int(state)][0]
+            x[idx][0] = input_values[int(state)][0]
 
-        yd = desired_values
+        yd = trajectory_values
 
         # step size
-        dt = t - self.last_time
+        dt = time - self.last_time
         # save current time
-        self.last_time = t
+        self.last_time = time
 
         if dt != 0:
             for i in range(len(x)):

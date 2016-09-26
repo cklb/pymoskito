@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import numpy as np
 from collections import OrderedDict
-import pymoskito.registry as pm
 from pymoskito.simulation_modules import Controller
 import pymoskito.tools as to
 
@@ -56,10 +55,10 @@ class FController(Controller):
         # run pole placement
         self.K = to.get_coefficients(self._settings["poles"])
 
-    def _control(self, is_values, desired_values, t=None):
+    def _control(self, time, trajectory_values=None, feedforward_values=None, input_values=None, **kwargs):
         # input abbreviations
-        x1, x2, x3, x4 = is_values
-        yd = desired_values
+        x1, x2, x3, x4 = input_values
+        yd = trajectory_values
 
         # calculate nonlinear terms phi
         phi1 = x1

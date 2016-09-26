@@ -39,13 +39,14 @@ class LinearStateFeedback(Controller):
         self._logger.info("K: {}".format(self.K.tolist()[0]))
         self._logger.info("V: {}".format(self.V[0]))
 
-    def _control(self, is_values, desired_values, t, eq=None):
+    def _control(self, time, trajectory_values=None, feedforward_values=None, input_values=None, **kwargs):
         # input abbreviations
-        x = is_values
-        yd = desired_values
+        x = input_values
+        yd = trajectory_values
+        eq = kwargs["eq"]
 
         if eq is None:
-            eq = calc_closest_eq_state(self._settings, is_values)
+            eq = calc_closest_eq_state(self._settings, input_values)
         x = x - np.atleast_2d(eq).T
 
         # this is a second version
@@ -87,13 +88,14 @@ class LinearStateFeedbackParLin(Controller):
         self._logger.info("K: {}".format(self.K.tolist()[0]))
         self._logger.info("V: {}".format(self.V[0]))
 
-    def _control(self, is_values, desired_values, t, eq=None):
+    def _control(self, time, trajectory_values=None, feedforward_values=None, input_values=None, **kwargs):
         # input abbreviations
-        x = is_values
-        yd = desired_values
+        x = input_values
+        yd = trajectory_values
+        eq = kwargs["eq"]
 
         if eq is None:
-            eq = calc_closest_eq_state(self._settings, is_values)
+            eq = calc_closest_eq_state(self._settings, input_values)
         x = x - np.atleast_2d(eq).T
 
         # this is a second version
@@ -121,8 +123,8 @@ class LjapunovController(Controller):
 
         self.w = st.m1*st.l1/(st.m2*st.l2)
 
-    def _control(self, is_values, desired_values, t):
-        x1, x2, x3, x4, x5, x6 = is_values
+    def _control(self, time, trajectory_values=None, feedforward_values=None, input_values=None, **kwargs):
+        x1, x2, x3, x4, x5, x6 = input_values
 
         E0 = 0.5*st.m0*x2**2
         E1 = 0
@@ -195,11 +197,11 @@ class SwingUpController(Controller):
 
         self.switch = False
 
-    def _control(self, is_values, desired_values, t):
-        x1, x2, x3, x4, x5, x6 = is_values
+    def _control(self, time, trajectory_values=None, feedforward_values=None, input_values=None, **kwargs):
+        x1, x2, x3, x4, x5, x6 = input_values
 
         # looking for the closest equilibrium
-        eq_state = calc_closest_eq_state(self._settings, is_values)
+        eq_state = calc_closest_eq_state(self._settings, input_values)
 
         # we have to check several conditions
         #          phi1                  phi1_d
@@ -237,9 +239,9 @@ class SwingUpController(Controller):
         # print "t: ", t, "Switch: ", self.switch
 
         if self.switch:
-            u = self.linear_state_feedback._control(is_values, desired_values, t, eq=eq_state)
+            u = self.linear_state_feedback._control(time, trajectory_values, eq=eq_state)
         else:
-            u = self.ljapunov._control(is_values, desired_values, t)
+            u = self.ljapunov._control(time, trajectory_values, input_values=input_values)
 
         # TODO fix bug with logging results
         self._logger.info("Exciting result: {}".format(u))
