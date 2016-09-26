@@ -175,10 +175,10 @@ class Controller(SimulationModule):
                              if src == self._settings["input_type"]), None)
         if input_values is None:
             raise ControllerException("Selected Input not available")
-        desired_values = input_vector.get("Trajectory", None)
-        trajectory_values = input_vector.get("Feedforward", None)
+        trajectory_values = input_vector.get("Trajectory", None)
+        feedforward_values = input_vector.get("Feedforward", None)
 
-        return self._control(input_vector["time"], desired_values, trajectory_values, input_values)
+        return self._control(input_vector["time"], trajectory_values, feedforward_values, input_values)
 
     @abstractmethod
     def _control(self, time, trajectory_values=None, feedforward_values=None, input_values=None, **kwargs):

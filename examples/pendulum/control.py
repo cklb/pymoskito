@@ -43,7 +43,7 @@ class LinearStateFeedback(Controller):
         # input abbreviations
         x = input_values
         yd = trajectory_values
-        eq = kwargs["eq"]
+        eq = kwargs.get("eq", None)
 
         if eq is None:
             eq = calc_closest_eq_state(self._settings, input_values)
@@ -89,10 +89,19 @@ class LinearStateFeedbackParLin(Controller):
         self._logger.info("V: {}".format(self.V[0]))
 
     def _control(self, time, trajectory_values=None, feedforward_values=None, input_values=None, **kwargs):
+        """
+
+        :param time:
+        :param trajectory_values:
+        :param feedforward_values:
+        :param input_values:
+        :param kwargs:
+        :return:
+        """
         # input abbreviations
         x = input_values
         yd = trajectory_values
-        eq = kwargs["eq"]
+        eq = kwargs.get("eq", None)
 
         if eq is None:
             eq = calc_closest_eq_state(self._settings, input_values)
