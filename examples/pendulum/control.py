@@ -247,12 +247,12 @@ class SwingUpController(Controller):
         # print "t: ", t, "Switch: ", self.switch
 
         if self.switch:
-            u = self.linear_state_feedback._control(time, trajectory_values, eq=eq_state)
+            u = self.linear_state_feedback._control(time, trajectory_values,
+                                                    input_values=input_values,
+                                                    eq=eq_state)
         else:
             u = self.ljapunov._control(time, trajectory_values, input_values=input_values)
 
-        # TODO fix bug with logging results
-        self._logger.info("Exciting result: {}".format(u))
         return u
 
 

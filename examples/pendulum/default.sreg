@@ -337,13 +337,11 @@
    type: ODEInt
    measure rate: 500
    step size: 0.01
-   rTol: 1e-09
-   aTol: 1e-11
-   end time: 35
+   end time: 50
 
   Controller:
    type: SwingUpController
-   k: 16
+   k: 7
    long pendulum: o
    short pendulum: o
    poles: [-9, -7, -4, -2, -3, -2]

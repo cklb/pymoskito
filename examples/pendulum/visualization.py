@@ -372,7 +372,7 @@ class TwoPendulumVisualizer(VtkVisualizer):
 
     def set_body_state(self, pos_dict):
 
-        for x in pos_dict.itervalues():
+        for x in pos_dict.values():
             poke = vtk.vtkMatrix4x4()
             actor = x[0]
             t = x[1]
