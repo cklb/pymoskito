@@ -8,7 +8,7 @@ except ImportError as e:
 from pymoskito import register_visualizer
 from pymoskito.visualization import VtkVisualizer
 
-from . import settings as st
+import settings as st
 
 
 class BallBeamVisualizer(VtkVisualizer):

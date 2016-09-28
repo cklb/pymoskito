@@ -1,6 +1,6 @@
 import numpy as np
 from collections import OrderedDict
-import pymoskito.registry as pm
+import pymoskito.registry as reg
 from pymoskito.simulation_modules import Model, ModelException
 
 import settings as st
@@ -246,5 +246,5 @@ class BallInTubeSpringModel(Model):
         """
         return np.array([input_vector[2]], dtype=float)
 
-pm.register_simulation_module(Model, BallInTubeModel)
-pm.register_simulation_module(Model, BallInTubeSpringModel)
+reg.register_simulation_module(Model, BallInTubeModel)
+reg.register_simulation_module(Model, BallInTubeSpringModel)

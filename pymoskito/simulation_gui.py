@@ -28,7 +28,6 @@ from pyqtgraph.dockarea import DockArea
 vtk_error_msg = ""
 try:
     import vtk
-    vtk.qt.PyQtImpl = "PyQt5"
 
     from vtk import vtkRenderer
     from vtk import qt

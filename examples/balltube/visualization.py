@@ -2,6 +2,7 @@
 import numpy as np
 import vtk
 from pymoskito.visualization import VtkVisualizer
+from pymoskito import register_visualizer
 
 import settings as st
 
@@ -121,3 +122,4 @@ class BallInTubeVisualizer(VtkVisualizer):
         r_ball, t_ball = self.calc_positions(x)
         self.set_body_state(self.ballActor, r_ball, t_ball)
 
+register_visualizer(BallInTubeVisualizer)
