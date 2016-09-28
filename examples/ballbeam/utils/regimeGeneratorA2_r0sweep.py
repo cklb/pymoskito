@@ -28,8 +28,8 @@ with open(filePath, 'r') as f:
 for contr in controllerList:
     # Pole festlegen nach A1
     pol = st.poles[contr]
-    print contr
-    print 'pol:', pol
+    print(contr)
+    print('pol:', pol)
     
     if contr == 'PIFeedbackController':
         poles = [pol, pol, pol, pol, pol]

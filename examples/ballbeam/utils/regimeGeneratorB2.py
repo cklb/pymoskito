@@ -7,13 +7,13 @@ import os
 controllerList = ['FController', 'GController', 'JController',\
                 'LSSController', 'PIFeedbackController']
 
-print 'Regimefile Generator (Modification of M)'
-print 'Choose one of the following controller: (0-4)'
-print controllerList
+print('Regimefile Generator (Modification of M)')
+print('Choose one of the following controller: (0-4)')
+print(controllerList)
 number = -1
 while not(number >= 0 and number <= 4):
-    print 'Number: '
-    number = input()
+    print('Number: ')
+    number = eval(input())
 
 lines = ''
 controller = controllerList[number]

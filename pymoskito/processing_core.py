@@ -1,14 +1,14 @@
-from __future__ import division
+
 
 import logging
 import os
 from abc import ABCMeta, abstractmethod
-from cPickle import dump
+from pickle import dump
 
 import numpy as np
 from PyQt5.QtCore import QObject, pyqtWrapperType
 
-from tools import get_sub_value
+from .tools import get_sub_value
 
 """
 Base Classes for modules in the result-processing environment
@@ -20,12 +20,11 @@ class ProcessingModuleMeta(ABCMeta, pyqtWrapperType):
     pass
 
 
-class ProcessingModule(QObject):
+class ProcessingModule(QObject, metaclass=ProcessingModuleMeta):
     """
     Base Class for processing Modules.
     Each Module's run method is called with a list of results by the processing_gui
     """
-    __metaclass__ = ProcessingModuleMeta
 
     # fonts
     _base_font_size = 14

@@ -52,16 +52,16 @@ C = Matrix([[1, 0, 0, 0]])
 
 # Beobachtbarkeitsmatrix
 Qb = Matrix([C, C*A, C*A**2, C*A**3])
-print 'Qb: ',Qb
+print('Qb: ', Qb)
 QsT = Matrix([B.transpose(),\
              (A*B).transpose(),\
              (A**2*B).transpose(),\
              (A**3*B).transpose()])
 Qs = QsT.transpose()
-print 'Qs: ',Qs
-print 'A: ',A
-print 'B: ',B
-print 'C: ',C
+print('Qs: ', Qs)
+print('A: ', A)
+print('B: ', B)
+print('C: ', C)
 
 
 '''
@@ -87,9 +87,8 @@ for i in range(5):
     else:
         Qsquer = Qsquer.row_join(q)
 
-
-print '\n Steuerbarkeitsmatrix Qsquer'
-print Qsquer
+print('\n Steuerbarkeitsmatrix Qsquer')
+print(Qsquer)
 
 
 def calcFeedbackGain(A, B, poles):
@@ -120,7 +119,7 @@ def calcFeedbackGain(A, B, poles):
                  (A**2*B).transpose(),\
                  (A**3*B).transpose()])
     Qs = QsT.transpose()
-    print 'Qs: ',Qs
+    print('Qs: ', Qs)
     det_Qs = Qs.det()
 #    print det_Qs.expand()
     

@@ -4,8 +4,8 @@ from collections import OrderedDict
 from pymoskito.simulation_modules import Controller
 from pymoskito.tools import get_coefficients
 
-import settings as st
-import symcalculation as symcalc
+from . import settings as st
+from . import symcalculation as symcalc
 
 
 class ExactInputOutputLinearisation(Controller):

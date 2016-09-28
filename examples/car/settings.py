@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from __future__ import division
+
 
 # ---------------------------------------------------------------------
 # global default settings for physical simulation

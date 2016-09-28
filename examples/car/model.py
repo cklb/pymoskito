@@ -4,7 +4,7 @@ from collections import OrderedDict
 
 import numpy as np
 
-import settings as st
+from . import settings as st
 from pymoskito.simulation_modules import Model
 
 

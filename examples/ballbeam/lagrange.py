@@ -7,8 +7,6 @@ Lagrange formalism
 @author: Topher
 """
 
-from __future__ import division
-
 import sympy as sp
 from sympy import sin,cos,Function
 

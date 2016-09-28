@@ -5,7 +5,7 @@ import numpy as np
 import pymoskito.registry as pm
 from pymoskito.simulation_modules import Model, ModelException
 
-import settings as st
+from . import settings as st
 
 
 class BallBeamModel(Model):

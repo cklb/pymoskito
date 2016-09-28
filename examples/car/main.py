@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 from PyQt5.QtWidgets import QApplication
 
-from model import CarModel
+from .model import CarModel
 from pymoskito import (Simulator, register_simulation_module, register_visualizer, Model)
-from visualization import CarVisualizer
+from .visualization import CarVisualizer
 
 
 if __name__ == '__main__':

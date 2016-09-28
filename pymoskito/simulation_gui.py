@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from __future__ import division
+
 
 # system
 import logging
@@ -8,7 +8,7 @@ import os
 from operator import itemgetter
 import yaml
 try:
-    import cPickle as pickle
+    import pickle as pickle
 except:
     import pickle
 
@@ -28,10 +28,11 @@ from pyqtgraph.dockarea import DockArea
 # vtk
 vtk_error_msg = ""
 try:
+    import vtk
+    vtk.qt.PyQtImpl = "PyQt5"
+
     from vtk import vtkRenderer
     from vtk import qt
-
-    vtk.qt.PyQtImpl = "PyQt5"
     from vtk.qt.QVTKRenderWindowInteractor import *
     vtk_available = True
 except ImportError as e:
@@ -41,11 +42,11 @@ except ImportError as e:
     QVTKRenderWindowInteractor = None
 
 # pymoskito
-from visualization import MplVisualizer, VtkVisualizer
-from registry import get_registered_visualizers
-from simulation_interface import SimulatorInteractor, SimulatorView
-from processing_gui import PostProcessor
-from tools import get_resource, PostFilter, QPlainTextEditLogger
+from .visualization import MplVisualizer, VtkVisualizer
+from .registry import get_registered_visualizers
+from .simulation_interface import SimulatorInteractor, SimulatorView
+from .processing_gui import PostProcessor
+from .tools import get_resource, PostFilter, QPlainTextEditLogger
 
 
 class SimulationGui(QMainWindow):
@@ -378,8 +379,8 @@ class SimulationGui(QMainWindow):
         start the simulation and disable start button
         """
         regime_name = str(self.regime_list.item(self._current_regime_index).text())
-        self.statusLabel.setText(u"simulating {}".format(regime_name))
-        self._logger.info(u"Simulating: {}".format(regime_name))
+        self.statusLabel.setText("simulating {}".format(regime_name))
+        self._logger.info("Simulating: {}".format(regime_name))
 
         self.actSimulate.setDisabled(True)
         self.shortRunSimulation.setEnabled(False)
@@ -397,16 +398,16 @@ class SimulationGui(QMainWindow):
         :param ok: unused parameter from QAction.triggered() Signal
         """
         res, ok = QInputDialog.getText(self,
-                                             u"PyMoskito",
-                                             u"Please specify regime a name",
+                                       "PyMoskito",
+                                       "Please specify regime a name",
                                        QLineEdit.Normal,
                                        self._regimes[self._current_regime_index]["Name"])
         if not ok:
             return
 
-        name = unicode(res.toUtf8(), encoding="utf-8")
+        name = str(res.toUtf8(), encoding="utf-8")
         if not name:
-            self._logger.warning(u"empty regime name specified!")
+            self._logger.warning("empty regime name specified!")
 
         self._save_data(name)
 
@@ -428,16 +429,16 @@ class SimulationGui(QMainWindow):
         with open(file_name.encode("utf-8"), "wb") as f:
             pickle.dump(self.currentDataset, f, protocol=2)
 
-        self.statusLabel.setText(u"results saved to {}".format(file_name))
-        self._logger.info(u"results saved to {}".format(file_name))
+        self.statusLabel.setText("results saved to {}".format(file_name))
+        self._logger.info("results saved to {}".format(file_name))
 
     def load_regime_dialog(self):
         regime_path = os.path.join("../regimes/")
-        file_name = unicode(QFileDialog.getOpenFileName(self,
+        file_name = str(QFileDialog.getOpenFileName(self,
                                                               "Open Regime File",
-                                                        regime_path,
+                                                    regime_path,
                                                               "Simulation Regime files (*.sreg)").toUtf8(),
-                            encoding="utf-8")
+                        encoding="utf-8")
         if not file_name:
             return
 
@@ -449,7 +450,7 @@ class SimulationGui(QMainWindow):
         :param file_name:
         """
         self.regime_file_name = os.path.split(file_name)[-1][:-5]
-        self._logger.info(u"loading regime file: {0}".format(self.regime_file_name))
+        self._logger.info("loading regime file: {0}".format(self.regime_file_name))
         with open(file_name.encode("utf-8"), "r") as f:
             self._regimes += yaml.load(f)
 
@@ -459,7 +460,7 @@ class SimulationGui(QMainWindow):
             self.actExecuteRegimes.setDisabled(False)
 
         self._logger.info("loaded {} regimes".format(len(self._regimes)))
-        self.statusBar().showMessage(u"loaded {} regimes.".format(len(self._regimes)), 1000)
+        self.statusBar().showMessage("loaded {} regimes.".format(len(self._regimes)), 1000)
         return
 
     def _update_regime_list(self):
@@ -544,8 +545,8 @@ class SimulationGui(QMainWindow):
 
         :param data: dict with simulation data
         """
-        self._logger.info(u"simulation finished")
-        self.statusLabel.setText(u"simulation finished.")
+        self._logger.info("simulation finished")
+        self.statusLabel.setText("simulation finished.")
 
         self.actSimulate.setDisabled(False)
         self.shortRunSimulation.setEnabled(True)
@@ -584,7 +585,7 @@ class SimulationGui(QMainWindow):
 
         :param data:
         """
-        self.statusLabel.setText(u"simulation failed!")
+        self.statusLabel.setText("simulation failed!")
         self.simulation_finished(data)
 
     def _read_results(self):
@@ -646,7 +647,7 @@ class SimulationGui(QMainWindow):
         if not self.validData:
             return
 
-        self.timeLabel.setText(u"current time: %4f" % self.playbackTime)
+        self.timeLabel.setText("current time: %4f" % self.playbackTime)
 
         # update time cursor in plots
         self._update_time_cursor()
@@ -671,7 +672,7 @@ class SimulationGui(QMainWindow):
                     if val >= self.playbackTime), None)
 
         if idx is None:
-            self._logger.info(u"interpolate(): Error no entry found for t={0}".format(self.playbackTime))
+            self._logger.info("interpolate(): Error no entry found for t={0}".format(self.playbackTime))
             return None
         else:
             if len(data.shape) == 1:
@@ -679,12 +680,12 @@ class SimulationGui(QMainWindow):
             elif len(data.shape) == 2:
                 return data[idx, :]
             else:
-                self._logger.info(u"interpolate(): Error Dimension {0} not understood.".format(data.shape))
+                self._logger.info("interpolate(): Error Dimension {0} not understood.".format(data.shape))
                 return None
 
     def _update_data_list(self):
         self.dataList.clear()
-        for module, results in self.currentDataset["results"].iteritems():
+        for module, results in self.currentDataset["results"].items():
             if not isinstance(results, np.ndarray):
                 continue
 
@@ -770,8 +771,8 @@ class SimulationGui(QMainWindow):
         """
         starts the post- and metaprocessing application
         """
-        self._logger.info(u"launching postprocessor")
-        self.statusBar().showMessage(u"launching postprocessor", 1000)
+        self._logger.info("launching postprocessor")
+        self.statusBar().showMessage("launching postprocessor", 1000)
         if self.postprocessor is None:
             self.postprocessor = PostProcessor()
 

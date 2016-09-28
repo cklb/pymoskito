@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import cPickle
+import pickle
 import logging
 import os
 
@@ -9,9 +9,9 @@ from PyQt5.QtWidgets import (QWidget, QAction, QMainWindow, QListWidget, QListWi
                              QToolBar, QStatusBar, QLabel, QShortcut,
                              QFileDialog, QGridLayout, QSizePolicy)
 
-import registry as pm
-from processing_core import PostProcessingModule, MetaProcessingModule
-from tools import get_resource, QPlainTextEditLogger, PostFilter
+from . import registry as pm
+from .processing_core import PostProcessingModule, MetaProcessingModule
+from .tools import get_resource, QPlainTextEditLogger, PostFilter
 
 
 class PostProcessor(QMainWindow):
@@ -25,30 +25,30 @@ class PostProcessor(QMainWindow):
         QMainWindow.__init__(self, parent)
         self._logger = logging.getLogger(self.__class__.__name__)
 
-        self.setWindowTitle(u"Processing")
+        self.setWindowTitle("Processing")
         self.setWindowIcon(QIcon(get_resource("processing.png")))
         self.mainFrame = QWidget(self)
         self.resize(1000, 600)
 
         # toolbar
-        self.toolBar = QToolBar(u"file control")
+        self.toolBar = QToolBar("file control")
         self.toolBar.setIconSize(QSize(24, 24))
         self.addToolBar(self.toolBar)
 
         self.actLoad = QAction(self)
-        self.actLoad.setText(u"load result file")
+        self.actLoad.setText("load result file")
         self.actLoad.setIcon(QIcon(get_resource("load.png")))
         self.actLoad.setDisabled(False)
         self.actLoad.triggered.connect(self.load_result_files)
 
         self.actPostLoad = QAction(self)
-        self.actPostLoad.setText(u"load post-result file")
+        self.actPostLoad.setText("load post-result file")
         self.actPostLoad.setIcon(QIcon(get_resource("load.png")))
         self.actPostLoad.setDisabled(False)
         self.actPostLoad.triggered.connect(self.load_post_result_files)
 
         self.actSwitch = QAction(self)
-        self.actSwitch.setText(u"switch display mode")
+        self.actSwitch.setText("switch display mode")
         self.actSwitch.setIcon(QIcon(get_resource("left_mode.png")))
         self.actSwitch.setDisabled(False)
         self.actSwitch.triggered.connect(self.switch_sides)
@@ -60,13 +60,13 @@ class PostProcessor(QMainWindow):
         self.spacer2.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
         self.actReloadMethods = QAction(self)
-        self.actReloadMethods.setText(u"reload methods")
+        self.actReloadMethods.setText("reload methods")
         self.actReloadMethods.setIcon(QIcon(get_resource("reload.png")))
         self.actReloadMethods.setDisabled(False)
         self.actReloadMethods.triggered.connect(self.update_post_method_list)
 
         self.actReloadMetaMethods = QAction(self)
-        self.actReloadMetaMethods.setText(u"reload meta methods")
+        self.actReloadMetaMethods.setText("reload meta methods")
         self.actReloadMetaMethods.setIcon(QIcon(get_resource("reload.png")))
         self.actReloadMetaMethods.setDisabled(False)
         self.actReloadMetaMethods.triggered.connect(self.update_meta_method_list)
@@ -129,18 +129,18 @@ class PostProcessor(QMainWindow):
         self.log_list.setFormatter(formatter)
         logging.getLogger().addHandler(self.log_list)
 
-        self.grid.addWidget(QLabel(u"result files:"), 0, 0)
+        self.grid.addWidget(QLabel("result files:"), 0, 0)
         self.grid.addWidget(self.sim_result_list, 1, 0)
-        self.grid.addWidget(QLabel(u"Postprocessors:"), 2, 0)
+        self.grid.addWidget(QLabel("Postprocessors:"), 2, 0)
         self.grid.addWidget(self.methodList, 3, 0)
-        self.grid.addWidget(QLabel(u"figures:"), 4, 0)
+        self.grid.addWidget(QLabel("figures:"), 4, 0)
         self.grid.addWidget(self.post_figure_list, 5, 0)
-        self.grid.addWidget(QLabel(u"selected figure:"), 0, 1)
-        self.grid.addWidget(QLabel(u"postprocessor files:"), 0, 2)
+        self.grid.addWidget(QLabel("selected figure:"), 0, 1)
+        self.grid.addWidget(QLabel("postprocessor files:"), 0, 2)
         self.grid.addWidget(self.post_result_list, 1, 2)
-        self.grid.addWidget(QLabel(u"Metaprocessors:"), 2, 2)
+        self.grid.addWidget(QLabel("Metaprocessors:"), 2, 2)
         self.grid.addWidget(self.metaMethodList, 3, 2)
-        self.grid.addWidget(QLabel(u"figures:"), 4, 2)
+        self.grid.addWidget(QLabel("figures:"), 4, 2)
         self.grid.addWidget(self.meta_figure_list, 5, 2)
         self.grid.addWidget(self.log_list.widget, 6, 0, 1, 3)
 
@@ -173,15 +173,15 @@ class PostProcessor(QMainWindow):
 
         if files:
             for single_file in files:
-                self._load_result_file(unicode(single_file.toUtf8(), encoding="utf-8"))
+                self._load_result_file(str(single_file.toUtf8(), encoding="utf-8"))
 
     def _load_result_file(self, file_name):
         """
         loads a result file
         """
-        self._logger.info(u"loading result file {}".format(file_name))
+        self._logger.info("loading result file {}".format(file_name))
         with open(file_name.encode("utf-8"), "rb") as f:
-            self.results.append(cPickle.load(f))
+            self.results.append(pickle.load(f))
 
         self.sim_results_changed.emit()
 
@@ -209,7 +209,7 @@ class PostProcessor(QMainWindow):
 
         if files:
             for selectedFile in files:
-                self._load_post_result_file(unicode(selectedFile.toUtf8(), encoding="utf-8"))
+                self._load_post_result_file(str(selectedFile.toUtf8(), encoding="utf-8"))
 
     def _load_post_result_file(self, file_name):
         """
@@ -217,7 +217,7 @@ class PostProcessor(QMainWindow):
         """
         name = os.path.split(file_name)[-1][:-4]
         with open(file_name, "r") as f:
-            results = cPickle.load(f)
+            results = pickle.load(f)
             results.update({"name": name})
             self.post_results.append(results)
 
@@ -260,8 +260,8 @@ class PostProcessor(QMainWindow):
             result_files = self.post_results
             base_cls = MetaProcessingModule
         else:
-            self._logger.error(u"unknown processor type {0}".format(processor_type))
-            raise ValueError(u"unknown processor type {0}".format(processor_type))
+            self._logger.error("unknown processor type {0}".format(processor_type))
+            raise ValueError("unknown processor type {0}".format(processor_type))
 
         if not result_files:
             self._logger.warning("run_processor() Error: no result file loaded!")
@@ -272,9 +272,9 @@ class PostProcessor(QMainWindow):
 
         figs = []
         try:
-            self._logger.info(u"executing processor '{0}'".format(name))
+            self._logger.info("executing processor '{0}'".format(name))
             figs = processor.process(self.results)
-        except Exception, err:
+        except Exception as err:
             self._logger.exception("Error in processor")
 
         self.figures_changed.emit(figs, processor_type)
@@ -282,7 +282,7 @@ class PostProcessor(QMainWindow):
 
     def update_figure_lists(self, figures, target_type):
         # remove no longer needed elements
-        for item, fig in [(key, val[0]) for key, val in self._figure_dict.iteritems() if val[1] == target_type]:
+        for item, fig in [(key, val[0]) for key, val in self._figure_dict.items() if val[1] == target_type]:
             if fig not in [new_fig["figure"] for new_fig in figures]:
                 if target_type == "post":
                     old_item = self.post_figure_list.takeItem(self.post_figure_list.row(item))
@@ -299,7 +299,7 @@ class PostProcessor(QMainWindow):
                 self._figure_dict.update([(QListWidgetItem(fig["name"]), (fig["figure"], target_type))])
 
         # add to display
-        for key, val in self._figure_dict.iteritems():
+        for key, val in self._figure_dict.items():
             if val[1] == "post":
                 self.post_figure_list.addItem(key)
             elif val[1] == "meta":

@@ -53,7 +53,7 @@ class eval_L1Norms_param_linePlot(MetaProcessingModule):
             xlbl = ''
 
         self.plotSettings(axes[0],
-                          titel=u'Fehlerintegral',
+                          titel='Fehlerintegral',
                           grid=True,
                           xlabel=xlbl,
                           ylabel=r'$E \, \lbrack ms\rbrack$')
@@ -62,7 +62,7 @@ class eval_L1Norms_param_linePlot(MetaProcessingModule):
                                    yPath=['metrics', 'L1NormITAE'],
                                    typ='line')
         self.plotSettings(axes[1],
-                          titel=u'ITAE Fehler',
+                          titel='ITAE Fehler',
                           grid=True,
                           xlabel=xlbl,
                           ylabel=r'$E \, \lbrack ms^2\rbrack$')

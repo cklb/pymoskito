@@ -5,7 +5,7 @@ import numpy as np
 
 # from pytrajectory import ControlSystem
 
-from simulation_modules import Solver, \
+from .simulation_modules import Solver, \
     SolverException, \
     Trajectory, \
     TrajectoryException, \

@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
-from __future__ import division
+
 
 import matplotlib as mpl
 import numpy as np
 
-import settings as st
+from . import settings as st
 from pymoskito.visualization import MplVisualizer
 
 

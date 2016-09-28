@@ -11,10 +11,10 @@ from PyQt5.QtCore import Qt, QObject, pyqtSignal, pyqtSlot, QModelIndex, QSize, 
 from PyQt5.QtGui import QStandardItemModel, QStandardItem
 from PyQt5.QtWidgets import QItemDelegate, QComboBox, QTreeView
 
-import simulation_modules
-from generic_simulation_modules import *
-from registry import get_registered_simulation_modules, get_simulation_module_class_by_name
-from simulation_core import Simulator, SimulationSettings, SimulationStateChange
+from . import simulation_modules
+from .generic_simulation_modules import *
+from .registry import get_registered_simulation_modules, get_simulation_module_class_by_name
+from .simulation_core import Simulator, SimulationSettings, SimulationStateChange
 
 
 class SimulatorModel(QStandardItemModel):
@@ -186,7 +186,7 @@ class SimulatorInteractor(QObject):
             return
 
         settings = self._read_settings(module_name, sub_module_name)
-        for key, val in settings.iteritems():
+        for key, val in settings.items():
             setting_name = QStandardItem(key)
             setting_value = QStandardItem(str(val))
             parent.appendRow([setting_name, setting_value])
@@ -304,7 +304,7 @@ class SimulatorInteractor(QObject):
             self._setup_model_items()
 
         # overwrite all settings with the provided ones
-        for module_name, value in reg.iteritems():
+        for module_name, value in reg.items():
             if module_name == "Name" or module_name == "clear previous":
                 continue
 
@@ -332,7 +332,7 @@ class SimulatorInteractor(QObject):
             # due to signal connections, default settings are loaded automatically in the back
 
             # overwrite specific settings
-            for key, val in value.iteritems():
+            for key, val in value.items():
                 if key == "type":
                     continue
 

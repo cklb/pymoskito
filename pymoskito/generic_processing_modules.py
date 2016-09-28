@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from __future__ import division
+
 
 import matplotlib as mpl
 import numpy as np
@@ -7,8 +7,8 @@ from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 from matplotlib.lines import Line2D as Line
 
-from processing_core import PostProcessingModule, MetaProcessingModule
-from tools import sort_tree
+from .processing_core import PostProcessingModule, MetaProcessingModule
+from .tools import sort_tree
 
 
 def get_figure_size(scale):
@@ -242,7 +242,7 @@ class PlotAll(PostProcessingModule):
         t = data["results"]["time"]
         val = t  # default
 
-        for module_name, module_data in data["results"].iteritems():
+        for module_name, module_data in data["results"].items():
             if module_name in ["time", "finished", "Simulation"]:
                 continue
 

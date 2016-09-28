@@ -1,12 +1,12 @@
 ﻿# -*- coding: utf-8 -*-
-from __future__ import division
+
 
 import logging
 
 import numpy as np
 from PyQt5.QtCore import QObject, pyqtSignal, pyqtSlot
 
-from simulation_modules import SimulationException
+from .simulation_modules import SimulationException
 
 
 class SimulationStateChange(object):
@@ -22,7 +22,7 @@ class SimulationStateChange(object):
 
     def __init__(self, **kwargs):
         assert "type" in kwargs.keys()
-        for key, val in kwargs.iteritems():
+        for key, val in kwargs.items():
             setattr(self, key, val)
 
 
@@ -89,7 +89,7 @@ class Simulator(QObject):
         self._counter = {}
         self._current_outputs = {}
         self._current_outputs.update(time=0)
-        for mod_name, obj in self._simulation_modules.iteritems():
+        for mod_name, obj in self._simulation_modules.items():
             self._counter.update({mod_name: obj.tick_divider})
             self._current_outputs.update({mod_name: []})
             self._current_outputs[mod_name] = []
@@ -159,7 +159,7 @@ class Simulator(QObject):
         """
         store all values of finished integration step
         """
-        for key, val in self._current_outputs.iteritems():
+        for key, val in self._current_outputs.items():
             if key in self._storage:
                 self._storage[key].append(val)
             else:
@@ -221,7 +221,7 @@ class Simulator(QObject):
     def output(self):
         # convert storage entries
         out = {}
-        for module, results in self._storage.iteritems():
+        for module, results in self._storage.items():
             if not isinstance(results, list):
                 # flag or string -> nothing to convert
                 entry = results

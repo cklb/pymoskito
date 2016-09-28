@@ -1,4 +1,4 @@
-from __future__ import division
+
 
 import pymoskito.registry as pm
 from pymoskito.processing_core import MetaProcessingModule

@@ -19,15 +19,15 @@ controllerList = ['FController', 'GController', 'JController',\
 #-------------------------------------------------------------
 # init
 #-------------------------------------------------------------
-print '\n ### Regimefile Generator Eval B ### \n'
+print('\n ### Regimefile Generator Eval B ### \n')
 
-print 'Choose parameter to test: '
+print('Choose parameter to test: ')
 for idx, param in enumerate(st.paramVariationListB):
-    print '\t',idx,' - ', param
+    print('\t', idx, ' - ', param)
 
 paramIdx = -1
-while paramIdx not in range(0, len(st.paramVariationListB)):
-    paramIdx = input()
+while paramIdx not in list(range(0, len(st.paramVariationListB))):
+    paramIdx = eval(input())
 
 parameter = st.paramVariationListB[paramIdx]
 tol = st.paramToleranceList[paramIdx]
@@ -37,13 +37,13 @@ paramTolMinValue = paramRealValue - paramRealValue*tol
 paramTolMaxValue = paramRealValue + paramRealValue*tol
 paramMinValue = paramRealValue - paramRealValue*tol
 
-print 'Choose controller: '
+print('Choose controller: ')
 for idx, controller in enumerate(controllerList):
-    print '\t',idx,' - ', controller
+    print('\t', idx, ' - ', controller)
 
 controlIdx = -1
-while controlIdx not in range(0, len(controllerList)):
-    controlIdx = input()
+while controlIdx not in list(range(0, len(controllerList))):
+    controlIdx = eval(input())
 
 controller = controllerList[controlIdx]
 
@@ -127,5 +127,5 @@ filePath = os.path.join(dirPath, fileName)
 with open(filePath, 'w') as f:
     f.write(head)    
     f.write(lines)
-    
-print 'done.'
+
+print('done.')

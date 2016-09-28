@@ -19,26 +19,26 @@ controllerList = ['FController', 'GController', 'JController',\
 #-------------------------------------------------------------
 # init
 #-------------------------------------------------------------
-print '\n ### Regimefile Generator Eval C1 ### \n'
-print 'Choose parameter to test: '
+print('\n ### Regimefile Generator Eval C1 ### \n')
+print('Choose parameter to test: ')
 parameterList = ['sigma', 'delay']
 for idx, param in enumerate(parameterList):
-    print '\t',idx,' - ', param
+    print('\t', idx, ' - ', param)
 
 paramIdx = -1
-while paramIdx not in range(0, len(parameterList)):
-    paramIdx = input()
+while paramIdx not in list(range(0, len(parameterList))):
+    paramIdx = eval(input())
 
 # extract parameter values
 parameter = parameterList[paramIdx]
 
-print 'Choose controller: '
+print('Choose controller: ')
 for idx, controller in enumerate(controllerList):
-    print '\t',idx,' - ', controller
+    print('\t', idx, ' - ', controller)
 
 controlIdx = -1
-while controlIdx not in range(0, len(controllerList)):
-    controlIdx = input()
+while controlIdx not in list(range(0, len(controllerList))):
+    controlIdx = eval(input())
 
 if controlIdx == len(controllerList)-1:
     simCases = controllerList[:-1]
@@ -172,4 +172,4 @@ for controller in simCases:
 if len(simCases) > 1:
     saveOutput(collection, 'all', '', parameter, simLimits)
 
-print 'done.'
+print('done.')

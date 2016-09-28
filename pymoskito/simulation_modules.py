@@ -1,4 +1,4 @@
-from __future__ import division
+
 
 import logging
 from abc import ABCMeta, abstractmethod, abstractproperty
@@ -17,14 +17,13 @@ class SimulationException(Exception):
     pass
 
 
-class SimulationModule(QObject):
+class SimulationModule(QObject, metaclass=SimulationModuleMeta):
     """
     Smallest Unit in Simulation Process.
     Provides necessary functions like output calculation and holds
     all settings is 'settings' all available settings have to be added
     to this dict and have to be known a priori.
     """
-    __metaclass__ = SimulationModuleMeta
 
     def __init__(self, settings):
         QObject.__init__(self, None)
@@ -264,7 +263,7 @@ class SignalMixer(SimulationModule):
         SimulationModule.__init__(self, settings)
 
     def calc_output(self, input_vector):
-        signals = [value for signal, value in input_vector.iteritems()
+        signals = [value for signal, value in input_vector.items()
                    if signal in self._settings["input signals"]]
         return self._mix(signals)
 

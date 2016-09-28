@@ -21,7 +21,7 @@ controllerList = ['FController', 'GController', 'JController',\
 #-------------------------------------------------------------
 # init
 #-------------------------------------------------------------
-print '\n ### Regimefile Generator Eval C2 ### \n'
+print('\n ### Regimefile Generator Eval C2 ### \n')
 
 #print 'Choose parameter to test: '
 #for idx, param in enumerate(st.paramVariationDictC1.keys()):
@@ -34,7 +34,7 @@ print '\n ### Regimefile Generator Eval C2 ### \n'
 paramIdx = 0
 
 # extract parameter values
-parameter = st.paramVariationDictC2.keys()[paramIdx]
+parameter = list(st.paramVariationDictC2.keys())[paramIdx]
 lower_bound = st.paramVariationDictC2[parameter]['lower_bound']
 upper_bound = st.paramVariationDictC2[parameter]['upper_bound']
 step_size = st.paramVariationDictC2[parameter]['step_size']
@@ -43,14 +43,13 @@ step_size = st.paramVariationDictC2[parameter]['step_size']
 #simLimits = [[-1*round(x,1), round(x,1)] for x in simLimits]
 simLimits = [[-1*round(lower_bound, 1), round(lower_bound, 1)]]
 
-
-print 'Choose controller: '
+print('Choose controller: ')
 for idx, controller in enumerate(controllerList):
-    print '\t',idx,' - ', controller
+    print('\t', idx, ' - ', controller)
 
 controlIdx = -1
-while controlIdx not in range(0, len(controllerList)):
-    controlIdx = input()
+while controlIdx not in list(range(0, len(controllerList))):
+    controlIdx = eval(input())
 
 if controlIdx == len(controllerList)-1:
     simCases = controllerList[:-1]
@@ -177,4 +176,4 @@ for controller in simCases:
 if len(simCases) > 1:
     saveOutput(collection, 'all', '_', parameter, simLimits)
 
-print 'done.'
+print('done.')

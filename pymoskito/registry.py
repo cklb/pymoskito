@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
-from __future__ import division
-from simulation_modules import SimulationModule, SignalMixer
-from processing_core import ProcessingModule
-from visualization import Visualizer
+
+from .simulation_modules import SimulationModule, SignalMixer
+from .processing_core import ProcessingModule
+from .visualization import Visualizer
 
 """
 wrapper for easy user interaction

@@ -9,13 +9,13 @@ controllerList = ['FController', 'GController', 'JController',\
 parameterList = ['Jb', 'M']
 lines = ''
 
-print 'Regimefile Generator'
-print 'Choose one of the following parameters: (0-1)'
-print parameterList
+print('Regimefile Generator')
+print('Choose one of the following parameters: (0-1)')
+print(parameterList)
 number = -1
 while not(number >= 0 and number <= 4):
-    print 'Number: '
-    number = input()
+    print('Number: ')
+    number = eval(input())
 
 parameter = parameterList[number]
 

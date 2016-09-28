@@ -4,11 +4,10 @@ from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT, FigureCanva
 from matplotlib.figure import Figure
 
 
-class Visualizer:
+class Visualizer(metaclass=ABCMeta):
     """
     Base Class for animation
     """
-    __metaclass__ = ABCMeta
 
     def __init__(self):
         self.can_reset_view = False

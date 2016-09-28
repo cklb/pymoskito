@@ -24,8 +24,8 @@ controller = controllerList[number]
 
 
 pol = st.poles[controllerList[number]]
-print controller
-print 'pol:', pol
+print(controller)
+print('pol:', pol)
 if controller == 'PIFeedbackController':
     poles = [pol, pol, pol, pol, pol]
 else:

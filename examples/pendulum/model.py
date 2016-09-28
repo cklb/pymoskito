@@ -137,7 +137,7 @@ class TwoPendulumRigidBodyModel(Model):
         settings.update(input_count=1)
         Model.__init__(self, settings)
 
-        print self._settings
+        print(self._settings)
         # shortcuts for readability
         self.d0 = self._settings['d0']
         self.d1 = self._settings['d1']

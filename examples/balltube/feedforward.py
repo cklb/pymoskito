@@ -4,7 +4,7 @@ from collections import OrderedDict
 import pymoskito.registry as pm
 from pymoskito.simulation_modules import Feedforward
 import numpy as np
-import settings as st
+from . import settings as st
 
 
 class BallInTubeFeedforward(Feedforward):

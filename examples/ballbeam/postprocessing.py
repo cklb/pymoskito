@@ -9,6 +9,7 @@ from matplotlib.lines import Line2D
 
 from pymoskito import PostProcessingModule
 
+import settings as st
 
 # TODO get those working again
 
@@ -39,9 +40,9 @@ class EvalA1(PostProcessingModule):
         L1NormAbs = self.calcL1NormAbs(data)
         #
         #        print 'ITAE score: ', errorIntegral
-        print 'L1NormITAE: ', L1NormITAE
-        print 'L1NormAbs: ', L1NormAbs
-        print '\n'
+        print('L1NormITAE: ', L1NormITAE)
+        print('L1NormAbs: ', L1NormAbs)
+        print('\n')
         output.update({'L1NormITAE': L1NormITAE, 'L1NormAbs': L1NormAbs})
 
     def create_time_line(self, axes, t, y, time_value, label):
@@ -177,7 +178,7 @@ class eval_A1_steps_in_one_plot(PostProcessingModule):
 
     def process(self, files):
 
-        print 'processing ', self.name
+        print('processing ', self.name)
 
         # reset counter
         self.counter = 0
@@ -268,8 +269,8 @@ class eval_A1_steps_in_one_plot(PostProcessingModule):
         L1NormAbs = self.calcL1NormAbs(data)
         #                    
         #        print 'ITAE score: ', errorIntegral
-        print 'L1NormITAE: ', L1NormITAE
-        print 'L1NormAbs: ', L1NormAbs
+        print('L1NormITAE: ', L1NormITAE)
+        print('L1NormAbs: ', L1NormAbs)
         output.update({'L1NormITAE': L1NormITAE, 'L1NormAbs': L1NormAbs})
 
 
@@ -287,7 +288,7 @@ class EvalA2(PostProcessingModule):
         return
 
     def run(self, data):
-        print 'processing ', data['regime name']
+        print('processing ', data['regime name'])
 
         output = {}
 
@@ -340,7 +341,7 @@ class EvalA2(PostProcessingModule):
 
         # check for sim succes
         if not data['results']['finished']:
-            for key in output.keys():
+            for key in list(output.keys()):
                 output[key] = None
 
         # add settings and metrics to dictionary results
@@ -363,8 +364,8 @@ class EvalA2(PostProcessingModule):
         L1NormITAE = self.calcL1NormITAE(data)
         L1NormAbs = self.calcL1NormAbs(data)
 
-        print 'L1NormITAE: ', L1NormITAE
-        print 'L1NormAbs: ', L1NormAbs
+        print('L1NormITAE: ', L1NormITAE)
+        print('L1NormAbs: ', L1NormAbs)
 
         output.update({'L1NormITAE': L1NormITAE, 'L1NormAbs': L1NormAbs})
 
@@ -380,7 +381,7 @@ class eval_A2_epsilon(PostProcessingModule):
         return
 
     def run(self, data):
-        print 'processing ', data['regime name']
+        print('processing ', data['regime name'])
 
         output = {}
 
@@ -411,7 +412,7 @@ class eval_A2_epsilon(PostProcessingModule):
 
         # check for sim succes
         if not data['results']['finished']:
-            for key in output.keys():
+            for key in list(output.keys()):
                 output[key] = None
 
         # add settings and metrics to dictionary results
@@ -441,7 +442,7 @@ class eval_A2Hauser(PostProcessingModule):
     def run(self, data):
         results = {}
         output = {}
-        print 'processing ', data['regime name']
+        print('processing ', data['regime name'])
 
         # calculate data-sets
         t = data['results']['simTime']
@@ -548,15 +549,15 @@ class eval_A2Hauser(PostProcessingModule):
         if tStartIdx < tEndIdx:
             maximumError = max(error[tStartIdx:tEndIdx])
 
-        print 'maximum error between %d and %d seconds: %f' % \
-              (start, end, maximumError)
+        print('maximum error between %d and %d seconds: %f' % \
+              (start, end, maximumError))
 
         # collect results
         output.update({'maximumError': maximumError})
 
         # check for sim succes
         if not data['results']['finished']:
-            for key in output.keys():
+            for key in list(output.keys()):
                 output[key] = None
 
         results.update({'metrics': output})
@@ -592,7 +593,7 @@ class EvalA2HauserLikeHauser(PostProcessingModule):
         return
 
     def process(self, files):
-        print 'process() of A2Hauser_LikeHauser called'
+        print('process() of A2Hauser_LikeHauser called')
         results = {}
         output = {}
         l = []
@@ -689,7 +690,7 @@ class EvalA2HauserLikeHauser(PostProcessingModule):
         #        contr = ['FController', 'GController', 'JController', 'LSSController']
         contr = ['FController', 'GController', 'JController']
         for c in contr:
-            print 'controller:', c
+            print('controller:', c)
 
             fig = Figure()
             #            fig.subplots_adjust(wspace=0.3, hspace=0.25) 
@@ -746,12 +747,12 @@ class EvalA2HauserLikeHauser(PostProcessingModule):
                 if tStartIdx < tEndIdx:
                     maximumError = max(controllerDict[c]['e'][i][1][tStartIdx:tEndIdx])
 
-                print 'maximum error between %d and %d seconds: %f' % \
-                      (start, end, maximumError)
+                print('maximum error between %d and %d seconds: %f' % \
+                      (start, end, maximumError))
 
             # check for sim succes
             if not res['results']['finished']:
-                for key in output.keys():
+                for key in list(output.keys()):
                     output[key] = None
 
             results.update({'metrics': output})
@@ -798,7 +799,7 @@ class EvalA3(PostProcessingModule):
         return
 
     def run(self, data):
-        print 'processing ', data['regime name']
+        print('processing ', data['regime name'])
 
         # dict for calculated values
         output = {}
@@ -920,8 +921,8 @@ class EvalA3(PostProcessingModule):
         L1NormITAE = self.calcL1NormITAE(data)
         L1NormAbs = self.calcL1NormAbs(data)
 
-        print 'L1NormITAE: ', L1NormITAE
-        print 'L1NormAbs: ', L1NormAbs
+        print('L1NormITAE: ', L1NormITAE)
+        print('L1NormAbs: ', L1NormAbs)
 
         output.update({'L1NormITAE': L1NormITAE, \
                        'L1NormAbs': L1NormAbs, \
@@ -953,7 +954,7 @@ class EvalB(PostProcessingModule):
         return
 
     def process(self, dataList):
-        print 'process() of B called'
+        print('process() of B called')
         output = {}
 
         # ideal regime name
@@ -969,7 +970,7 @@ class EvalB(PostProcessingModule):
         y_pTolMax = self.extractValues(dataList, 'paramTolMax', 'model_output.0')
 
         par = next((param for param in st.paramVariationListB if param in regName), None)
-        print 'assuming that', par, 'has been varied.'
+        print('assuming that', par, 'has been varied.')
 
         # sort files by variied parameter
         modDataList = sorted(dataList, key=lambda k: k['modules']['model'][par], reverse=False)
@@ -985,8 +986,8 @@ class EvalB(PostProcessingModule):
         y_pAbsMax = resAbsMax['results']['model_output.0']
         # print len(y_pAbsMin), len(y_pAbsMax), len(y_ideal)
 
-        print 'stablity limits are:', \
-            resAbsMin['modules']['model'][par], '/', resAbsMax['modules']['model'][par]
+        print('stablity limits are:', \
+              resAbsMin['modules']['model'][par], '/', resAbsMax['modules']['model'][par])
 
         output.update({'parameter': par, \
                        'minLimit': resAbsMin['modules']['model'][par], \
@@ -996,7 +997,7 @@ class EvalB(PostProcessingModule):
         # create plot
         fig = Figure()
         axes = fig.add_subplot(111)
-        axes.set_title(u'Vergleich Signalverläufe')
+        axes.set_title('Vergleich Signalverläufe')
 
         # create epsilon tub
         # eps = self.epsPercent*yd/100
@@ -1081,7 +1082,7 @@ class EvalC2(PostProcessingModule):
         return
 
     def process(self, dataList):
-        print 'process() of C2 called'
+        print('process() of C2 called')
 
         output = []
         for cName in st.smoothPoles.keys():
@@ -1097,7 +1098,7 @@ class EvalC2(PostProcessingModule):
                 # limited controller lastet longer
                 timeIdx = 1
 
-            print 'found entry of ', cName
+            print('found entry of ', cName)
 
             # get curves
             r = [None, None]
@@ -1123,7 +1124,7 @@ class EvalC2(PostProcessingModule):
 
             # fig1 controller output
             axes.append(fig.add_subplot(211))
-            axes[0].set_title(u"Reglerausgänge im Vergleich")
+            axes[0].set_title("Reglerausgänge im Vergleich")
 
             # create limitation tube
             upperBoundLine = Line2D([0, t[timeIdx][-1]], [limits[0]] * 2, ls='--', c=self.line_color)
@@ -1145,7 +1146,7 @@ class EvalC2(PostProcessingModule):
 
             # fig2 model output
             axes.append(fig.add_subplot(212))
-            axes[1].set_title(u"Ausgangsverläufe im Vergleich")
+            axes[1].set_title("Ausgangsverläufe im Vergleich")
 
             # create epsilon tube
             upperBoundLine = Line2D([0, t[timeIdx][-1]], [ydEnd + eps, ydEnd + eps], ls='--', c=self.line_color)
@@ -1216,7 +1217,7 @@ class EvalCObserver(PostProcessingModule):
         return
 
     def run(self, data):
-        print 'processing ', data['regime name']
+        print('processing ', data['regime name'])
 
         output = {}
 
@@ -1268,7 +1269,7 @@ class EvalCObserver(PostProcessingModule):
                 errorIntegrals[i] += 1
                 errorIntegrals[i] += abs(val - xm[i][k]) * dt
 
-            print 'errorIntegral_x[' + str(i) + ']:', errorIntegrals[i]
+            print('errorIntegral_x[' + str(i) + ']:', errorIntegrals[i])
             output.update({'error_L1Norm_x[' + str(i) + ']': errorIntegrals[i]})
 
         # add settings and metrics to dictionary results
