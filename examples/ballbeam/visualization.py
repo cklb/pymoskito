@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
-
-
 import numpy as np
-import vtk
+try:
+    import vtk
+except ImportError as e:
+    raise ImportError("This example needs vtk")
 
 from pymoskito import register_visualizer
 from pymoskito.visualization import VtkVisualizer

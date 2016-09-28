@@ -162,25 +162,24 @@ class PostProcessor(QMainWindow):
     
     def load_result_files(self):
         path = os.path.join(os.path.pardir, "results", "simulation")
+
         dialog = QFileDialog(self)
         dialog.setFileMode(QFileDialog.ExistingFiles)
         dialog.setDirectory(path)
         dialog.setNameFilter("PyMoskito Result files (*.pmr)")
 
-        files = None
         if dialog.exec_():
             files = dialog.selectedFiles()
-
-        if files:
             for single_file in files:
-                self._load_result_file(str(single_file.toUtf8(), encoding="utf-8"))
+                if single_file:
+                    self._load_result_file(single_file)
 
     def _load_result_file(self, file_name):
         """
         loads a result file
         """
         self._logger.info("loading result file {}".format(file_name))
-        with open(file_name.encode("utf-8"), "rb") as f:
+        with open(file_name.encode(), "rb") as f:
             self.results.append(pickle.load(f))
 
         self.sim_results_changed.emit()
@@ -198,25 +197,25 @@ class PostProcessor(QMainWindow):
 
     def load_post_result_files(self):
         path = os.path.join(os.path.pardir, "results", "processing")
+
         dialog = QFileDialog(self)
         dialog.setFileMode(QFileDialog.ExistingFiles)
         dialog.setDirectory(path)
         dialog.setNameFilter("Postprocessing Output files (*.pof)")
 
-        files = None
         if dialog.exec_():
             files = dialog.selectedFiles()
-
-        if files:
-            for selectedFile in files:
-                self._load_post_result_file(str(selectedFile.toUtf8(), encoding="utf-8"))
+            for single_file in files:
+                if single_file:
+                    self._load_post_result_file(single_file)
 
     def _load_post_result_file(self, file_name):
         """
         loads a post-result file (.pof)
         """
         name = os.path.split(file_name)[-1][:-4]
-        with open(file_name, "r") as f:
+        self._logger.info("loading result file {}".format(file_name))
+        with open(file_name.encode(), "rb") as f:
             results = pickle.load(f)
             results.update({"name": name})
             self.post_results.append(results)
@@ -296,14 +295,15 @@ class PostProcessor(QMainWindow):
         # add new ones to internal storage
         for fig in figures:
             if fig["figure"] not in self._figure_dict.values():
-                self._figure_dict.update([(QListWidgetItem(fig["name"]), (fig["figure"], target_type))])
+                new_entry = [(fig["name"], (QListWidgetItem(fig["name"]), fig["figure"], target_type))]
+                self._figure_dict.update(new_entry)
 
         # add to display
         for key, val in self._figure_dict.items():
-            if val[1] == "post":
-                self.post_figure_list.addItem(key)
-            elif val[1] == "meta":
-                self.meta_figure_list.addItem(key)
+            if val[2] == "post":
+                self.post_figure_list.addItem(val[0])
+            elif val[2] == "meta":
+                self.meta_figure_list.addItem(val[0])
 
         self.post_figure_list.setCurrentItem(self.post_figure_list.item(0))
         self.meta_figure_list.setCurrentItem(self.meta_figure_list.item(0))
@@ -315,8 +315,8 @@ class PostProcessor(QMainWindow):
             self.grid.removeWidget(self.lastFigure)
             self.lastFigure.setVisible(False)
 
-        if current_item in figures:
-            figure_widget = figures[current_item][0]
+        if current_item.text() in figures:
+            figure_widget = figures[current_item.text()][1]
             self.grid.addWidget(figure_widget, 1, 1, 5, 1)
             figure_widget.setVisible(True)
             self.lastFigure = figure_widget

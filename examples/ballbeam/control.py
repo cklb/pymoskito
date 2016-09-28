@@ -4,7 +4,7 @@ from collections import OrderedDict
 from pymoskito.simulation_modules import Controller
 import pymoskito.tools as to
 
-from . import settings as st
+import settings as st
 # from linearization import Linearization
 
 

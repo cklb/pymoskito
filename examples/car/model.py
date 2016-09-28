@@ -1,11 +1,9 @@
 # -*- coding: utf-8 -*-
-
 from collections import OrderedDict
-
 import numpy as np
-
-from . import settings as st
 from pymoskito.simulation_modules import Model
+
+import settings as st
 
 
 class CarModel(Model):

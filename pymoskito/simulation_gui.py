@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-
 # system
 import logging
 import time
@@ -37,7 +36,7 @@ try:
     vtk_available = True
 except ImportError as e:
     vtk_available = False
-    vtk_error_msg = e.message
+    vtk_error_msg = e.msg
     vtkRenderer = None
     QVTKRenderWindowInteractor = None
 
@@ -397,15 +396,14 @@ class SimulationGui(QMainWindow):
 
         :param ok: unused parameter from QAction.triggered() Signal
         """
-        res, ok = QInputDialog.getText(self,
-                                       "PyMoskito",
-                                       "Please specify regime a name",
-                                       QLineEdit.Normal,
-                                       self._regimes[self._current_regime_index]["Name"])
+        name, ok = QInputDialog.getText(self,
+                                        "PyMoskito",
+                                        "Please specify regime a name",
+                                        QLineEdit.Normal,
+                                        self._regimes[self._current_regime_index]["Name"])
         if not ok:
             return
 
-        name = str(res.toUtf8(), encoding="utf-8")
         if not name:
             self._logger.warning("empty regime name specified!")
 
@@ -426,23 +424,23 @@ class SimulationGui(QMainWindow):
 
         # pmr - PyMoskito Result
         file_name = os.path.join(path, time.strftime("%Y%m%d-%H%M%S") + "_" + name + ".pmr")
-        with open(file_name.encode("utf-8"), "wb") as f:
+        with open(file_name.encode(), "wb") as f:
             pickle.dump(self.currentDataset, f, protocol=2)
 
         self.statusLabel.setText("results saved to {}".format(file_name))
         self._logger.info("results saved to {}".format(file_name))
 
     def load_regime_dialog(self):
-        regime_path = os.path.join("../regimes/")
-        file_name = str(QFileDialog.getOpenFileName(self,
-                                                              "Open Regime File",
-                                                    regime_path,
-                                                              "Simulation Regime files (*.sreg)").toUtf8(),
-                        encoding="utf-8")
-        if not file_name:
-            return
+        regime_path = os.path.join(os.curdir)
 
-        self.load_regimes_from_file(file_name)
+        dialog = QFileDialog(self)
+        dialog.setFileMode(QFileDialog.ExistingFile)
+        dialog.setDirectory(regime_path)
+        dialog.setNameFilter("Simulation Regime files (*.sreg)")
+
+        if dialog.exec_():
+            file = dialog.selectedFiles()[0]
+            self.load_regimes_from_file(file)
 
     def load_regimes_from_file(self, file_name):
         """
@@ -451,7 +449,7 @@ class SimulationGui(QMainWindow):
         """
         self.regime_file_name = os.path.split(file_name)[-1][:-5]
         self._logger.info("loading regime file: {0}".format(self.regime_file_name))
-        with open(file_name.encode("utf-8"), "r") as f:
+        with open(file_name.encode(), "r") as f:
             self._regimes += yaml.load(f)
 
         self._update_regime_list()
@@ -491,7 +489,7 @@ class SimulationGui(QMainWindow):
         """
         # get regime idx
         try:
-            idx = map(itemgetter("Name"), self._regimes).index(regime_name)
+            idx = list(map(itemgetter("Name"), self._regimes)).index(regime_name)
         except ValueError as e:
             self._logger.info("apply_regime_by_name(): Error no regime called {0}".format(regime_name))
             return

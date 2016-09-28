@@ -1,7 +1,4 @@
 # -*- coding: utf-8 -*-
-
-
-
 import numpy as np
 # ---------------------------------------------------------------------
 # global default settings for physical simulation

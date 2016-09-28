@@ -1,13 +1,11 @@
 # -*- coding: utf-8 -*-
-
-
-
 import numpy as np
 import vtk
 
-import pymoskito.tools as to
-import settings as st
 from pymoskito.visualization import VtkVisualizer
+import pymoskito.tools as to
+
+import settings as st
 
 
 class TwoPendulumVisualizer(VtkVisualizer):

@@ -1,12 +1,9 @@
 # -*- coding: utf-8 -*-
-
-
-
 import numpy as np
 import vtk
-
-from . import settings as st
 from pymoskito.visualization import VtkVisualizer
+
+import settings as st
 
 
 class BallInTubeVisualizer(VtkVisualizer):

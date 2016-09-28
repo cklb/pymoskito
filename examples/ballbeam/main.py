@@ -1,16 +1,14 @@
 # -*- coding: utf-8 -*-
 from PyQt5.QtWidgets import QApplication
-
-from .control import FController
-from .model import BallBeamModel
-from .postprocessing import EvalA1
-from pymoskito import Simulator, PostProcessor,\
+from pymoskito import Simulator, PostProcessor, \
     register_simulation_module, register_processing_module, register_visualizer, \
     PostProcessingModule, \
     Model, Controller
-from .visualization import BallBeamVisualizer
 
-__author__ = 'stefan'
+from control import FController
+from model import BallBeamModel
+from postprocessing import EvalA1
+from visualization import BallBeamVisualizer
 
 if __name__ == '__main__':
     # register own modules

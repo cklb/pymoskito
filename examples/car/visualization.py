@@ -1,11 +1,9 @@
 # -*- coding: utf-8 -*-
-
-
 import matplotlib as mpl
 import numpy as np
-
-from . import settings as st
 from pymoskito.visualization import MplVisualizer
+
+import settings as st
 
 
 class CarVisualizer(MplVisualizer):

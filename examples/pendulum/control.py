@@ -1,12 +1,11 @@
 # -*- coding: utf-8 -*-
-
 import numpy as np
 from collections import OrderedDict
 from pymoskito.simulation_modules import Controller
+import pymoskito.tools as to
 
 import settings as st
 import symbolic_calculation as symcalc
-import pymoskito.tools as to
 
 
 class LinearStateFeedback(Controller):

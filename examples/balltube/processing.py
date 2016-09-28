@@ -1,11 +1,9 @@
-
-
 import pymoskito.registry as pm
 from pymoskito.processing_core import MetaProcessingModule
 from pymoskito.generic_processing_modules import XYMetaProcessor
 
-__author__ = 'stefan'
 
+# TODO
 class ErrorProcessor(XYMetaProcessor):
 
     def __init__(self):

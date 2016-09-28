@@ -1,11 +1,9 @@
-__author__ = 'christoph'
-
-from collections import OrderedDict
 import numpy as np
+from collections import OrderedDict
 import pymoskito.registry as pm
 from pymoskito.simulation_modules import Model, ModelException
 
-from . import settings as st
+import settings as st
 
 
 class BallInTubeModel(Model):

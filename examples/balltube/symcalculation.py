@@ -1,9 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-
 import sympy as sp
 import numpy as np
-
 import pymoskito.tools as to
 
 params = sp.symbols('x1, x2, x3, x4,'
