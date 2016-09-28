@@ -1,7 +1,7 @@
 .. _module-docs:
 
-PyInduct Modules Reference
-==========================
+PyMoskito Modules Reference
+===========================
 
 Because every feature of PyMoskito must have a test case, when you are not sure how
 to use something, just look into the ``tests/`` directories, find that feature
@@ -18,6 +18,8 @@ access any PyInduct module, or use this contens:
 
     simulation_gui
     simulation_modules
+    processing_gui
+    processing_modules
 
 
 Contributions to docs

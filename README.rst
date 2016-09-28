@@ -48,3 +48,12 @@ Still here? So PyMoskito features:
 * VTK based 3D visualization interface
 * playback functions for 3D visualization
 * ready-to-go graphs for all simulation signals
+
+Maintainers
+-----------
+* Stefan Ecklebe
+* Christoph Burggraf
+
+Contributors
+------------
+Marcus Riesmeier
