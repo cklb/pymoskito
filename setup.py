@@ -23,16 +23,15 @@ test_requirements = [
 
 setup(
     name='pymoskito',
-    version='0.1.0',
+    version='0.1.1',
     description="Python based modular simulation & postprocessing kickass toolbox",
     long_description=readme + '\n\n' + history,
     classifiers=[
-        'Development Status :: 2 - Pre-Alpha',
+        'Development Status :: 3 - Alpha',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: GPLv3',
         'Natural Language :: English',
-        'Programming Language :: Python :: 2.7',
-        # 'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.5',
     ],
     keywords='pymoskito control simulation feedback feedforward',
     url='https://github.com/cklb/pymoskito',
@@ -42,6 +41,9 @@ setup(
     packages=['pymoskito'],
     package_dir={'pymoskito':
                  'pymoskito'},
+    package_data={
+        "pymoskito": ["../ressources/*"],
+    },
     install_requires=requirements,
     include_package_data=True,
     test_suite='tests',
