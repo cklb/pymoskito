@@ -3,7 +3,7 @@ import matplotlib as mpl
 import numpy as np
 from pymoskito.visualization import MplVisualizer
 
-import settings as st
+from . import settings as st
 
 
 class CarVisualizer(MplVisualizer):

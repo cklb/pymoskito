@@ -30,7 +30,7 @@ def get_resource(res_name, res_type="icons"):
     :return: path to resource
     """
     own_path = os.path.dirname(__file__)
-    resource_path = os.path.abspath(os.path.join(own_path, os.pardir, "resources", res_type))
+    resource_path = os.path.abspath(os.path.join(own_path, "resources", res_type))
     return os.path.join(resource_path, res_name)
 
 

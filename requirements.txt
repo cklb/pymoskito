@@ -3,3 +3,4 @@ scipy
 pyqtgraph
 matplotlib
 wheel>=0.23.0
+pyyaml

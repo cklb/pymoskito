@@ -4,11 +4,9 @@ include HISTORY.rst
 include LICENSE
 include README.rst
 
-include resources/icons/*.png
-include resources/logging.yaml
-
-recursive-include examples *.py
-recursive-include tests *.py
+recursive-include pymoskito/resources *.png *.yaml
+recursive-include pymoskito/examples *.py *.sreg
+recursive-include pymoskito/tests *.py
 
 recursive-exclude * __pycache__
 recursive-exclude * *.py[co]

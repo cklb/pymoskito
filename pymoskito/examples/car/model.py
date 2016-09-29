@@ -3,7 +3,7 @@ from collections import OrderedDict
 import numpy as np
 from pymoskito.simulation_modules import Model
 
-import settings as st
+from . import settings as st
 
 
 class CarModel(Model):

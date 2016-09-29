@@ -41,9 +41,6 @@ setup(
     packages=['pymoskito'],
     package_dir={'pymoskito':
                  'pymoskito'},
-    package_data={
-        "pymoskito": ["../ressources/*"],
-    },
     install_requires=requirements,
     include_package_data=True,
     test_suite='tests',
