@@ -391,43 +391,52 @@ class SimulationGui(QMainWindow):
 
     def export_simulation_data(self, ok):
         """
-        query the user for a custome name and export the current simulation results
+        query the user for a custom name and export the current simulation results
 
         :param ok: unused parameter from QAction.triggered() Signal
         """
-        name, ok = QInputDialog.getText(self,
-                                        "PyMoskito",
-                                        "Please specify regime a name",
-                                        QLineEdit.Normal,
-                                        self._regimes[self._current_regime_index]["Name"])
-        if not ok:
-            return
+        self._save_data()
 
-        if not name:
-            self._logger.warning("empty regime name specified!")
-
-        self._save_data(name)
-
-    def _save_data(self, name):
+    def _save_data(self, regime_name=None):
         """
-        save current data-set
+        Save the result data for a given regime.
+        If *regime_name* is given, the result will be saved to a default path, making automated exporting easier.
 
-        :param name: name of the file
+        :param regime_name: name of the regime to export
         """
-        self.currentDataset.update({"regime name": name})
-        path = os.path.join(os.path.pardir, "results", "simulation", self.regime_file_name)
+        if regime_name is None:
+            regime_name = self._regimes[self._current_regime_index]["Name"]
+            suggestion = time.strftime("%Y%m%d-%H%M%S") + "_" + regime_name + ".pmr"
+            export_path = os.path.join(os.curdir)
 
-        # check for path existence
-        if not os.path.isdir(path):
-            os.makedirs(path)
+            dialog = QFileDialog(self)
+            dialog.setAcceptMode(QFileDialog.AcceptSave)
+            dialog.setFileMode(QFileDialog.AnyFile)
+            dialog.setDirectory(export_path)
+            dialog.setNameFilter("PyMoskito Results (*.pmr)")
+            dialog.selectFile(suggestion)
 
-        # pmr - PyMoskito Result
-        file_name = os.path.join(path, time.strftime("%Y%m%d-%H%M%S") + "_" + name + ".pmr")
-        with open(file_name.encode(), "wb") as f:
+            if dialog.exec_():
+                path = dialog.selectedFiles()[0]
+            else:
+                self._logger.warning("exported aborted")
+                return
+
+            # TODO for existence of file and aks for overwrite permission
+        else:
+            # create default path
+            path = os.path.join(os.path.curdir, "results", "simulation")
+            if not os.path.isdir(path):
+                os.makedirs(path)
+
+            path = os.path.join(path, time.strftime("%Y%m%d-%H%M%S") + "_" + regime_name + ".pmr")
+
+        self.currentDataset.update({"regime name": regime_name})
+        with open(path, "wb") as f:
             pickle.dump(self.currentDataset, f, protocol=2)
 
-        self.statusLabel.setText("results saved to {}".format(file_name))
-        self._logger.info("results saved to {}".format(file_name))
+        self.statusLabel.setText("results saved to {}".format(path))
+        self._logger.info("results saved to {}".format(path))
 
     def load_regime_dialog(self):
         regime_path = os.path.join(os.curdir)
