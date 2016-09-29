@@ -1,14 +1,12 @@
-__author__ = 'stefan'
-
-from collections import OrderedDict
 import numpy as np
-import pymoskito.registry as pm
-from pymoskito.simulation_modules import Model, ModelException
+from collections import OrderedDict
 
-import settings as st
+import pymoskito as pm
+
+from . import settings as st
 
 
-class BallBeamModel(Model):
+class BallBeamModel(pm.Model):
     """
     Implementation of the Ball and Beam System
     """
@@ -27,7 +25,7 @@ class BallBeamModel(Model):
         # add specific "private" settings
         settings.update(state_count=4)
         settings.update(input_count=1)
-        Model.__init__(self, settings)
+        pm.Model.__init__(self, settings)
 
         # shortcuts for readability
         self.M = self._settings['M']
@@ -79,9 +77,9 @@ class BallBeamModel(Model):
         :param x: state
         """
         if abs(x[0]) > float(self._settings['beam length']) / 2:
-            raise ModelException('Ball fell down.')
+            raise pm.ModelException('Ball fell down.')
         if abs(x[2]) > np.pi / 2:
-            raise ModelException('Beam reached critical angle.')
+            raise pm.ModelException('Beam reached critical angle.')
 
     def calc_output(self, input_vector):
         """
@@ -90,3 +88,5 @@ class BallBeamModel(Model):
         :return: ball position
         """
         return np.array([input_vector[0]], dtype=float)
+
+pm.register_simulation_module(pm.Model, BallBeamModel)

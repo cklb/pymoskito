@@ -1,3 +1,5 @@
-__author__ = 'stefan'
+from . import model
+from . import control
+from . import visualization
 
 

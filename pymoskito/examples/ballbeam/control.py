@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
 import numpy as np
 from collections import OrderedDict
-from pymoskito.simulation_modules import Controller
-import pymoskito.tools as to
 
-import settings as st
-# from linearization import Linearization
+import pymoskito as pm
 
+from . import settings as st
+# from .linearization import Linearization
+
+# TODO convert these controllers to the new interface version
 
 # class Controller(SimulationModule):
 #
@@ -37,7 +38,7 @@ import settings as st
 #         return
 
 
-class FController(Controller):
+class FController(pm.Controller):
     """
     controller created by changing f(x)
     """
@@ -50,10 +51,10 @@ class FController(Controller):
         settings.update(output_dim=4)
         settings.update(input_type="system_state")
 
-        Controller.__init__(self, settings)
+        pm.Controller.__init__(self, settings)
 
         # run pole placement
-        self.K = to.get_coefficients(self._settings["poles"])
+        self.K = pm.get_coefficients(self._settings["poles"])
 
     def _control(self, time, trajectory_values=None, feedforward_values=None, input_values=None, **kwargs):
         # input abbreviations
@@ -371,3 +372,5 @@ class FController(Controller):
 # #        u = np.dot(-self.K,np.transpose(x))[0,0]\
 # #            + self.settings['K_I']*(yd[0]-x[0,0]) + yd[0]*self.V
 #         return u
+
+pm.register_simulation_module(pm.Controller, FController)

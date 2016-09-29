@@ -1,14 +1,15 @@
 # -*- coding: utf-8 -*-
 import matplotlib as mpl
 import numpy as np
-from pymoskito.visualization import MplVisualizer
+
+import pymoskito as pm
 
 from . import settings as st
 
 
-class CarVisualizer(MplVisualizer):
+class CarVisualizer(pm.MplVisualizer):
     def __init__(self, q_widget, q_layout):
-        MplVisualizer.__init__(self, q_widget, q_layout)
+        pm.MplVisualizer.__init__(self, q_widget, q_layout)
         self.image = None
         self.color = "green"
         self.axes.set_xlim(-1, 1)
@@ -265,3 +266,5 @@ class CarVisualizer(MplVisualizer):
                 x1_joint2, x2_joint2,
                 x1_trailer2, x2_trailer2,
                 x2T1_1, y2T1_1, x2T1_2, y2T1_2, x2T2_1, y2T2_1, x2T2_2, y2T2_2)
+
+pm.register_visualizer(CarVisualizer)

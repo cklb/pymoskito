@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 import numpy as np
 from collections import OrderedDict
-from pymoskito.simulation_modules import Controller
-import pymoskito.tools as to
 
-import settings as st
-import symbolic_calculation as symcalc
+import pymoskito as pm
+
+from . import settings as st
+from . import symbolic_calculation as symcalc
 
 
-class LinearStateFeedback(Controller):
+class LinearStateFeedback(pm.Controller):
 
     public_settings = OrderedDict([('poles', [-9, -7, -4, -2, -3, -2]),
                                    ("long pendulum", "u"),
@@ -21,7 +21,7 @@ class LinearStateFeedback(Controller):
         settings.update(ouput_dim=1)
         settings.update(input_type='system_state')
 
-        Controller.__init__(self, settings)
+        pm.Controller.__init__(self, settings)
 
         eq_state = calc_equilibrium(settings)
         # pole placement
@@ -57,7 +57,7 @@ class LinearStateFeedback(Controller):
         return u
 
 
-class LinearStateFeedbackParLin(Controller):
+class LinearStateFeedbackParLin(pm.Controller):
 
     public_settings = OrderedDict([('poles', [-9, -7, -4, -2, -3, -2]),
                                    ("long pendulum", "u"),
@@ -70,7 +70,7 @@ class LinearStateFeedbackParLin(Controller):
         settings.update(ouput_dim=1)
         settings.update(input_type='system_state')
 
-        Controller.__init__(self, settings)
+        pm.Controller.__init__(self, settings)
 
         eq_state = calc_equilibrium(settings)
         # pole placement
@@ -115,7 +115,7 @@ class LinearStateFeedbackParLin(Controller):
         return u
 
 
-class LjapunovController(Controller):
+class LjapunovController(pm.Controller):
 
     public_settings = OrderedDict([
         ("k", 8),
@@ -127,7 +127,7 @@ class LjapunovController(Controller):
         settings.update(input_order=0)
         settings.update(output_order=1)
         settings.update(input_type="system_state")
-        Controller.__init__(self, settings)
+        pm.Controller.__init__(self, settings)
 
         self.w = st.m1*st.l1/(st.m2*st.l2)
 
@@ -167,7 +167,7 @@ class LjapunovController(Controller):
         return u
 
 
-class SwingUpController(Controller):
+class SwingUpController(pm.Controller):
     """
     This class realise the swing up for equilibria with a arbitrary
     amount of turns of the pendulums
@@ -191,7 +191,7 @@ class SwingUpController(Controller):
         settings.update(output_order=1)
         settings.update(input_type="system_state")
         self.module_settings = {"modules": settings["modules"]}
-        Controller.__init__(self, settings)
+        pm.Controller.__init__(self, settings)
 
         # add dict with module information, because it was deleted in the base class
         settings.update(self.module_settings)
@@ -351,6 +351,7 @@ def calc_small_signal_state(settings, state):
 
     return small_signal_state
 
-
-
-
+pm.register_simulation_module(pm.Controller, LinearStateFeedback)
+pm.register_simulation_module(pm.Controller, LinearStateFeedbackParLin)
+pm.register_simulation_module(pm.Controller, LjapunovController)
+pm.register_simulation_module(pm.Controller, SwingUpController)

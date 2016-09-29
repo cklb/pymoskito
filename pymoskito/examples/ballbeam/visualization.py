@@ -5,16 +5,15 @@ try:
 except ImportError as e:
     raise ImportError("This example needs vtk")
 
-from pymoskito import register_visualizer
-from pymoskito.visualization import VtkVisualizer
+import pymoskito as pm
 
-import settings as st
+from . import settings as st
 
 
-class BallBeamVisualizer(VtkVisualizer):
+class BallBeamVisualizer(pm.VtkVisualizer):
 
     def __init__(self, renderer):
-        VtkVisualizer.__init__(self)
+        pm.VtkVisualizer.__init__(self)
 
         assert isinstance(renderer, vtk.vtkRenderer)
         self.ren = renderer
@@ -112,3 +111,5 @@ class BallBeamVisualizer(VtkVisualizer):
         r_beam, t_beam, r_ball, t_ball = self.calc_positions(x)
         self.set_body_state(self.beamActor, r_beam, t_beam)
         self.set_body_state(self.ballActor, r_ball, t_ball)
+
+pm.register_visualizer(pm.VtkVisualizer, BallBeamVisualizer)

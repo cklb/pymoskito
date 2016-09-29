@@ -1,12 +1,12 @@
 import numpy as np
 from collections import OrderedDict
-import pymoskito.registry as reg
-from pymoskito.simulation_modules import Model, ModelException
 
-import settings as st
+import pymoskito as pm
+
+from . import settings as st
 
 
-class BallInTubeModel(Model):
+class BallInTubeModel(pm.Model):
     """
     Implementation of the Ball in Tube System
     """
@@ -29,7 +29,7 @@ class BallInTubeModel(Model):
         # add specific "private" settings
         settings.update(state_count=4)
         settings.update(input_count=1)
-        Model.__init__(self, settings)
+        pm.Model.__init__(self, settings)
 
         # shortcuts for readability
         self.d_B = self._settings['d_B']
@@ -109,7 +109,7 @@ class BallInTubeModel(Model):
         :param x: state
         """
         if x[2] > (self._settings['tube_length']): #+ self._settings['tube_length']*0.2):
-            raise ModelException('Ball flew out of the tube')
+            raise pm.ModelException('Ball flew out of the tube')
 
     def calc_output(self, input_vector):
         """
@@ -120,7 +120,7 @@ class BallInTubeModel(Model):
         return np.array([input_vector[2]], dtype=float)
 
 
-class BallInTubeSpringModel(Model):
+class BallInTubeSpringModel(pm.Model):
     """
     Implementation of the Ball in Tube System with a spring on the bottom
     """
@@ -145,7 +145,7 @@ class BallInTubeSpringModel(Model):
         # add specific "private" settings
         settings.update(state_count=4)
         settings.update(input_count=1)
-        Model.__init__(self, settings)
+        pm.Model.__init__(self, settings)
 
         # shortcuts for readability
         self.d_B = self._settings['d_B']
@@ -236,7 +236,7 @@ class BallInTubeSpringModel(Model):
         :param x: state
         """
         if x[2] > (self._settings['tube_length']): #+ self._settings['tube_length']*0.2):
-            raise ModelException('Ball flew out of the tube')
+            raise pm.ModelException('Ball flew out of the tube')
 
     def calc_output(self, input_vector):
         """
@@ -246,5 +246,5 @@ class BallInTubeSpringModel(Model):
         """
         return np.array([input_vector[2]], dtype=float)
 
-reg.register_simulation_module(Model, BallInTubeModel)
-reg.register_simulation_module(Model, BallInTubeSpringModel)
+pm.register_simulation_module(pm.Model, BallInTubeModel)
+pm.register_simulation_module(pm.Model, BallInTubeSpringModel)

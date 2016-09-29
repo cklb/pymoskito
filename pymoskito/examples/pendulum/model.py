@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
-
 from collections import OrderedDict
 import numpy as np
 
-from pymoskito.simulation_modules import Model, ModelException
-import settings as st
+import pymoskito as pm
+
+from . import settings as st
 
 
-class TwoPendulumModel(Model):
+class TwoPendulumModel(pm.Model):
     """
     Implementation of the two pendulum on a cart system
     this is implemented as a point mass model
@@ -32,7 +32,7 @@ class TwoPendulumModel(Model):
         # add specific "private" settings
         settings.update(state_count=6)
         settings.update(input_count=1)
-        Model.__init__(self, settings)
+        pm.Model.__init__(self, settings)
 
         # shortcuts for readability
         self.d0 = self._settings['d0']
@@ -110,7 +110,7 @@ class TwoPendulumModel(Model):
         return np.array([input[0]], dtype=float)
 
 
-class TwoPendulumRigidBodyModel(Model):
+class TwoPendulumRigidBodyModel(pm.Model):
     """
     Implementation of the two pendulum on a cart system
     this is implemented as rigid body model
@@ -135,7 +135,7 @@ class TwoPendulumRigidBodyModel(Model):
         # add specific "private" settings
         settings.update(state_count=6)
         settings.update(input_count=1)
-        Model.__init__(self, settings)
+        pm.Model.__init__(self, settings)
 
         print(self._settings)
         # shortcuts for readability
@@ -213,7 +213,7 @@ class TwoPendulumRigidBodyModel(Model):
         return np.array([input[0]], dtype=float)
 
 
-class TwoPendulumModelParLin(Model):
+class TwoPendulumModelParLin(pm.Model):
     """
     Implementation of the two pendulum on a cart system
     model with a acceleration as input
@@ -238,7 +238,7 @@ class TwoPendulumModelParLin(Model):
         # add specific "private" settings
         settings.update(state_count=6)
         settings.update(input_count=1)
-        Model.__init__(self, settings)
+        pm.Model.__init__(self, settings)
 
         # shortcuts for readability
         self.d0 = self._settings['d0']
@@ -302,3 +302,7 @@ class TwoPendulumModelParLin(Model):
         :return: cart position
         """
         return np.array([input[0]], dtype=float)
+
+pm.register_simulation_module(pm.Model, TwoPendulumModel)
+pm.register_simulation_module(pm.Model, TwoPendulumModelParLin)
+pm.register_simulation_module(pm.Model, TwoPendulumRigidBodyModel)

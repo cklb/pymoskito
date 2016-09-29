@@ -2,16 +2,15 @@
 import numpy as np
 import vtk
 
-from pymoskito.visualization import VtkVisualizer
-import pymoskito.tools as to
+import pymoskito as pm
 
-import settings as st
+from . import settings as st
 
 
-class TwoPendulumVisualizer(VtkVisualizer):
+class TwoPendulumVisualizer(pm.VtkVisualizer):
 
     def __init__(self, renderer):
-        VtkVisualizer.__init__(self)
+        pm.VtkVisualizer.__init__(self)
         assert isinstance(renderer, vtk.vtkRenderer)
         self.ren = renderer
 
@@ -89,7 +88,7 @@ class TwoPendulumVisualizer(VtkVisualizer):
         self.ren.AddActor(self.axis_Actor)
         # save pose
         self.axis_pose = [np.array([0, 0, st.cart_depth/2 + st.axis_height/2]),
-                          to.rotation_matrix_xyz("x", 90, "deg")]
+                          pm.rotation_matrix_xyz("x", 90, "deg")]
 
         # -------- add short pendulum ----
         # add short pendulum shaft
@@ -121,7 +120,7 @@ class TwoPendulumVisualizer(VtkVisualizer):
         self.short_pendulum_shaft_pose = [np.array([0,
                                                     0,
                                                     st.cart_depth/2 + st.axis_height + st.pendulum_shaft_height/2]),
-                                          to.rotation_matrix_xyz("x", 90, "deg")]
+                                          pm.rotation_matrix_xyz("x", 90, "deg")]
 
         # add short pendulum
         # geometry
@@ -219,7 +218,7 @@ class TwoPendulumVisualizer(VtkVisualizer):
                                                    + st.axis_height
                                                    + st.pendulum_shaft_height
                                                    + st.pendulum_shaft_height/2]),
-                                         to.rotation_matrix_xyz("x", 90, "deg")]
+                                         pm.rotation_matrix_xyz("x", 90, "deg")]
 
         # add long pendulum
         # geometry
@@ -328,42 +327,42 @@ class TwoPendulumVisualizer(VtkVisualizer):
         positions_dict.update({"axis": [self.axis_Actor, t_axis, r_axis]})
         # short_pendulum_shaft
         t_short_pendulum_shaft = np.array([x[0], 0, 0]) + self.short_pendulum_shaft_pose[0]
-        r_short_pendulum_shaft = np.dot(to.rotation_matrix_xyz("z", x[4], "rad"), self.short_pendulum_shaft_pose[1])
+        r_short_pendulum_shaft = np.dot(pm.rotation_matrix_xyz("z", x[4], "rad"), self.short_pendulum_shaft_pose[1])
         positions_dict.update({"short_pendulum_shaft": [self.short_pendulum_shaft_Actor,
                                                         t_short_pendulum_shaft,
                                                         r_short_pendulum_shaft]})
         # short_pendulum
-        t_short_pendulum = np.array([x[0], 0, 0]) + np.dot(to.rotation_matrix_xyz("z", x[4], "rad"),
+        t_short_pendulum = np.array([x[0], 0, 0]) + np.dot(pm.rotation_matrix_xyz("z", x[4], "rad"),
                                                            self.short_pendulum_pose[0])
-        r_short_pendulum = np.dot(to.rotation_matrix_xyz("z", x[4], "rad"), self.short_pendulum_pose[1])
+        r_short_pendulum = np.dot(pm.rotation_matrix_xyz("z", x[4], "rad"), self.short_pendulum_pose[1])
         positions_dict.update({"short_pendulum": [self.short_pendulum_Actor,
                                                   t_short_pendulum,
                                                   r_short_pendulum]})
         # short_pendulum_weight
-        t_short_pendulum_weight = np.array([x[0], 0, 0]) + np.dot(to.rotation_matrix_xyz("z", x[4], "rad"),
+        t_short_pendulum_weight = np.array([x[0], 0, 0]) + np.dot(pm.rotation_matrix_xyz("z", x[4], "rad"),
                                                                   self.short_pendulum_weight_pose[0])
-        r_short_pendulum_weight = np.dot(to.rotation_matrix_xyz("z", x[4], "rad"), self.short_pendulum_weight_pose[1])
+        r_short_pendulum_weight = np.dot(pm.rotation_matrix_xyz("z", x[4], "rad"), self.short_pendulum_weight_pose[1])
         positions_dict.update({"short_pendulum_weight": [self.short_pendulum_weight_Actor,
                                                          t_short_pendulum_weight,
                                                          r_short_pendulum_weight]})
 
         # long_pendulum_shaft
         t_long_pendulum_shaft = np.array([x[0], 0, 0]) + self.long_pendulum_shaft_pose[0]
-        r_long_pendulum_shaft = np.dot(to.rotation_matrix_xyz("z", x[2], "rad"), self.long_pendulum_shaft_pose[1])
+        r_long_pendulum_shaft = np.dot(pm.rotation_matrix_xyz("z", x[2], "rad"), self.long_pendulum_shaft_pose[1])
         positions_dict.update({"long_pendulum_shaft": [self.long_pendulum_shaft_Actor,
                                                        t_long_pendulum_shaft,
                                                        r_long_pendulum_shaft]})
         # long_pendulum
-        t_long_pendulum = np.array([x[0], 0, 0]) + np.dot(to.rotation_matrix_xyz("z", x[2], "rad"),
+        t_long_pendulum = np.array([x[0], 0, 0]) + np.dot(pm.rotation_matrix_xyz("z", x[2], "rad"),
                                                           self.long_pendulum_pose[0])
-        r_long_pendulum = np.dot(to.rotation_matrix_xyz("z", x[2], "rad"), self.long_pendulum_pose[1])
+        r_long_pendulum = np.dot(pm.rotation_matrix_xyz("z", x[2], "rad"), self.long_pendulum_pose[1])
         positions_dict.update({"long_pendulum": [self.long_pendulum_Actor,
                                                  t_long_pendulum,
                                                  r_long_pendulum]})
         # long_pendulum_weight
-        t_long_pendulum_weight = np.array([x[0], 0, 0]) + np.dot(to.rotation_matrix_xyz("z", x[2], "rad"),
+        t_long_pendulum_weight = np.array([x[0], 0, 0]) + np.dot(pm.rotation_matrix_xyz("z", x[2], "rad"),
                                                                  self.long_pendulum_weight_pose[0])
-        r_long_pendulum_weight = np.dot(to.rotation_matrix_xyz("z", x[2], "rad"), self.long_pendulum_weight_pose[1])
+        r_long_pendulum_weight = np.dot(pm.rotation_matrix_xyz("z", x[2], "rad"), self.long_pendulum_weight_pose[1])
         positions_dict.update({"long_pendulum_weight": [self.long_pendulum_weight_Actor,
                                                         t_long_pendulum_weight,
                                                         r_long_pendulum_weight]})
@@ -372,7 +371,7 @@ class TwoPendulumVisualizer(VtkVisualizer):
 
     def set_body_state(self, pos_dict):
 
-        for x in pos_dict.itervalues():
+        for x in pos_dict.values():
             poke = vtk.vtkMatrix4x4()
             actor = x[0]
             t = x[1]
@@ -390,3 +389,4 @@ class TwoPendulumVisualizer(VtkVisualizer):
         """
         self.set_body_state(self.calc_positions(x))
 
+pm.register_visualizer(TwoPendulumVisualizer)

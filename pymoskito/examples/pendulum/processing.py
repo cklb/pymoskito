@@ -3,16 +3,15 @@ import numpy as np
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 
-from pymoskito.generic_processing_modules import construct_result_dict
-from pymoskito.processing_core import PostProcessingModule
+import pymoskito as pm
 
 
-class TwoPendulum(PostProcessingModule):
+class TwoPendulum(pm.PostProcessingModule):
     """
     plot diagrams of all system quantities
     """
     def __init__(self):
-        PostProcessingModule.__init__(self)
+        pm.PostProcessingModule.__init__(self)
         return
 
     def run(self, data):
@@ -69,7 +68,7 @@ class TwoPendulum(PostProcessingModule):
                 # save file
                 self.write_output_files(result_name='_'.join([data['regime name'], filename_list[idx]]),
                                         figure=fig,
-                                        output=construct_result_dict(data, output={}))
+                                        output=pm.construct_result_dict(data, output={}))
 
         #################################################
         # this section is for combined and custom plots
@@ -100,7 +99,7 @@ class TwoPendulum(PostProcessingModule):
             # save file
             self.write_output_files(result_name='_'.join([data['regime name'], "x0_x0_vel"]),
                                     figure=fig,
-                                    output=construct_result_dict(data, output={}))
+                                    output=pm.construct_result_dict(data, output={}))
 
         if plot_selection['phi1_phi2']:
             self._logger.debug("creating phi1_phi2 plot")
@@ -133,7 +132,7 @@ class TwoPendulum(PostProcessingModule):
             # save file
             self.write_output_files(result_name='_'.join([data['regime name'], "phi1_phi2"]),
                                     figure=fig,
-                                    output=construct_result_dict(data, output={}))
+                                    output=pm.construct_result_dict(data, output={}))
 
         if plot_selection['V_V_dot']:
             self._logger.debug("creating V_V_dot plot")
@@ -159,7 +158,7 @@ class TwoPendulum(PostProcessingModule):
             # save file
             self.write_output_files(result_name='_'.join([data['regime name'], "V_V_dot"]),
                                     figure=fig,
-                                    output=construct_result_dict(data, output={}))
+                                    output=pm.construct_result_dict(data, output={}))
 
         return return_list
 
@@ -217,3 +216,5 @@ class TwoPendulum(PostProcessingModule):
             V_dot = np.zeros(len(val_list[0]))
 
         return [V, V_dot]
+
+pm.register_processing_module(pm.PostProcessingModule, TwoPendulum)

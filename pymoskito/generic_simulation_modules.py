@@ -18,7 +18,6 @@ from .simulation_modules import Solver, \
     Sensor, \
     Disturbance
 
-__author__ = 'stefan'
 """
 ready to go implementations of simulation modules
 """

@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
 from collections import OrderedDict
 import numpy as np
-from pymoskito.simulation_modules import Model
+
+import pymoskito as pm
 
 from . import settings as st
 
 
-class CarModel(Model):
+class CarModel(pm.Model):
     public_settings = OrderedDict([('initial state', st.initial_state),
                                    ("d1", st.d1),
                                    ("l2", st.l2),
@@ -21,7 +22,7 @@ class CarModel(Model):
         # add specific "private" settings
         settings.update(state_count=5)
         settings.update(input_count=2)
-        Model.__init__(self, settings)
+        pm.Model.__init__(self, settings)
 
         # shortcuts for readability
         self.d1 = self._settings['d1']
@@ -58,3 +59,5 @@ class CarModel(Model):
 
     def calc_output(self, input):
         return np.array([input], dtype=float)
+
+pm.register_simulation_module(pm.Model, CarModel)

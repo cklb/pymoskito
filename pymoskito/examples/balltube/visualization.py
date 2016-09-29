@@ -1,16 +1,19 @@
 # -*- coding: utf-8 -*-
 import numpy as np
-import vtk
-from pymoskito.visualization import VtkVisualizer
-from pymoskito import register_visualizer
+try:
+    import vtk
+except ImportError as e:
+    raise ImportError("This example needs vtk.")
 
-import settings as st
+import pymoskito as pm
+
+from . import settings as st
 
 
-class BallInTubeVisualizer(VtkVisualizer):
+class BallInTubeVisualizer(pm.VtkVisualizer):
 
     def __init__(self, renderer):
-        VtkVisualizer.__init__(self)
+        pm.VtkVisualizer.__init__(self)
 
         assert isinstance(renderer, vtk.vtkRenderer)
         self.ren = renderer
@@ -122,4 +125,4 @@ class BallInTubeVisualizer(VtkVisualizer):
         r_ball, t_ball = self.calc_positions(x)
         self.set_body_state(self.ballActor, r_ball, t_ball)
 
-register_visualizer(BallInTubeVisualizer)
+pm.register_visualizer(BallInTubeVisualizer)

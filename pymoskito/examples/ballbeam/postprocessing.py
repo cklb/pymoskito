@@ -1,20 +1,19 @@
 # -*- coding: utf-8 -*-
 import os
-
 import matplotlib as mpl
 import numpy as np
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 from matplotlib.lines import Line2D
 
-from pymoskito import PostProcessingModule
+import pymoskito as pm
 
-import settings as st
+from . import settings as st
 
 # TODO get those working again
 
 
-class EvalA1(PostProcessingModule):
+class EvalA1(pm.PostProcessingModule):
     """
     create diagrams for evaluation step A1
     """
@@ -28,7 +27,7 @@ class EvalA1(PostProcessingModule):
     counter = 0
 
     def __init__(self):
-        PostProcessingModule.__init__(self)
+        pm.PostProcessingModule.__init__(self)
         self.label_positions = None
 
     def calc_metrics(self, data, output):
@@ -160,7 +159,7 @@ class EvalA1(PostProcessingModule):
         self.results.update({'control_deviation': control_deviation})
 
 
-class eval_A1_steps_in_one_plot(PostProcessingModule):
+class eval_A1_steps_in_one_plot(pm.PostProcessingModule):
     """
     create several step respond in one plot
     """
@@ -173,7 +172,7 @@ class eval_A1_steps_in_one_plot(PostProcessingModule):
     counter = 0
 
     def __init__(self):
-        PostProcessingModule.__init__(self)
+        pm.PostProcessingModule.__init__(self)
         return
 
     def process(self, files):
@@ -274,7 +273,7 @@ class eval_A1_steps_in_one_plot(PostProcessingModule):
         output.update({'L1NormITAE': L1NormITAE, 'L1NormAbs': L1NormAbs})
 
 
-class EvalA2(PostProcessingModule):
+class EvalA2(pm.PostProcessingModule):
     """
     create diagrams like hauser did
     """
@@ -284,7 +283,7 @@ class EvalA2(PostProcessingModule):
     name = 'A2'
 
     def __init__(self):
-        PostProcessingModule.__init__(self)
+        pm.PostProcessingModule.__init__(self)
         return
 
     def run(self, data):
@@ -370,14 +369,14 @@ class EvalA2(PostProcessingModule):
         output.update({'L1NormITAE': L1NormITAE, 'L1NormAbs': L1NormAbs})
 
 
-class eval_A2_epsilon(PostProcessingModule):
+class eval_A2_epsilon(pm.PostProcessingModule):
     '''
     create diagrams like hauser did
     '''
     name = 'A2_epsilon'
 
     def __init__(self):
-        PostProcessingModule.__init__(self)
+        pm.PostProcessingModule.__init__(self)
         return
 
     def run(self, data):
@@ -428,7 +427,7 @@ class eval_A2_epsilon(PostProcessingModule):
                 'figure': canvas}
 
 
-class eval_A2Hauser(PostProcessingModule):
+class eval_A2Hauser(pm.PostProcessingModule):
     '''
     create diagrams like hauser did
     '''
@@ -436,7 +435,7 @@ class eval_A2Hauser(PostProcessingModule):
     name = 'A2_hauser'
 
     def __init__(self):
-        PostProcessingModule.__init__(self)
+        pm.PostProcessingModule.__init__(self)
         return
 
     def run(self, data):
@@ -581,7 +580,7 @@ class eval_A2Hauser(PostProcessingModule):
                 'figure': canvas}
 
 
-class EvalA2HauserLikeHauser(PostProcessingModule):
+class EvalA2HauserLikeHauser(pm.PostProcessingModule):
     """
     create diagrams like hauser did
     """
@@ -589,7 +588,7 @@ class EvalA2HauserLikeHauser(PostProcessingModule):
     name = 'A2_hauser'
 
     def __init__(self):
-        PostProcessingModule.__init__(self)
+        pm.PostProcessingModule.__init__(self)
         return
 
     def process(self, files):
@@ -780,7 +779,7 @@ class EvalA2HauserLikeHauser(PostProcessingModule):
         return l
 
 
-class EvalA3(PostProcessingModule):
+class EvalA3(pm.PostProcessingModule):
     """
     create diagrams for evaluation step A3
     """
@@ -795,7 +794,7 @@ class EvalA3(PostProcessingModule):
     counter = 0
 
     def __init__(self):
-        PostProcessingModule.__init__(self)
+        pm.PostProcessingModule.__init__(self)
         return
 
     def run(self, data):
@@ -931,7 +930,7 @@ class EvalA3(PostProcessingModule):
                        })
 
 
-class EvalB(PostProcessingModule):
+class EvalB(pm.PostProcessingModule):
     """
     create diagrams for evaluation step B
     """
@@ -950,7 +949,7 @@ class EvalB(PostProcessingModule):
     # counter = 0
 
     def __init__(self):
-        PostProcessingModule.__init__(self)
+        pm.PostProcessingModule.__init__(self)
         return
 
     def process(self, dataList):
@@ -1064,7 +1063,7 @@ class EvalB(PostProcessingModule):
             })
 
 
-class EvalC2(PostProcessingModule):
+class EvalC2(pm.PostProcessingModule):
     """
     create diagrams for evaluation step C - limitations
     """
@@ -1078,7 +1077,7 @@ class EvalC2(PostProcessingModule):
     font_size = 20
 
     def __init__(self):
-        PostProcessingModule.__init__(self)
+        pm.PostProcessingModule.__init__(self)
         return
 
     def process(self, dataList):
@@ -1203,7 +1202,7 @@ class EvalC2(PostProcessingModule):
             })
 
 
-class EvalCObserver(PostProcessingModule):
+class EvalCObserver(pm.PostProcessingModule):
     """
     create diagrams like hauser did
     """
@@ -1213,7 +1212,7 @@ class EvalCObserver(PostProcessingModule):
     name = 'C_observer'
 
     def __init__(self):
-        PostProcessingModule.__init__(self)
+        pm.PostProcessingModule.__init__(self)
         return
 
     def run(self, data):
@@ -1282,3 +1281,5 @@ class EvalCObserver(PostProcessingModule):
         self.writeOutputFiles(self.name, data["regime name"], fig, results)
 
         return dict(name="_".join({data["regime name"], self.name}), figure=canvas)
+
+pm.register_simulation_module(pm.PostProcessingModule, EvalA1)

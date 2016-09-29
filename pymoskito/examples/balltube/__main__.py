@@ -10,12 +10,12 @@ if __name__ == '__main__':
     sys.path.insert(0, parent_dir)
 
     if __package__ is None or __package__ == '':
-        import car
-        __package__ = "car"
+        import balltube
+        __package__ = "balltube"
 
     app = QApplication([])
     sim = pm.Simulator()
-    sim.load_regimes_from_file(os.path.join(parent_dir, "car", "default.sreg"))
+    sim.load_regimes_from_file(os.path.join(parent_dir, "balltube", "default.sreg"))
     sim.apply_regime_by_name("test")
     sim.show()
 
