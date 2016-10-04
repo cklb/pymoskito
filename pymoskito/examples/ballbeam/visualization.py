@@ -112,4 +112,4 @@ class BallBeamVisualizer(pm.VtkVisualizer):
         self.set_body_state(self.beamActor, r_beam, t_beam)
         self.set_body_state(self.ballActor, r_ball, t_ball)
 
-pm.register_visualizer(pm.VtkVisualizer, BallBeamVisualizer)
+pm.register_visualizer(BallBeamVisualizer)
