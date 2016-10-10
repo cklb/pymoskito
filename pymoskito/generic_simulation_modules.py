@@ -378,27 +378,36 @@ class ModelInputLimiter(Limiter):
 
 class DeadTimeSensor(Sensor):
     """
-    Sensor that adds a measurement delay
+    Sensor that adds a measurement delay on chosen states
     """
 
-    public_settings = OrderedDict([("output", [True, True, True, True]),
+    public_settings = OrderedDict([("states to delay", [0]),
                                    ("delay", 1)])
 
     def __init__(self, settings):
-        settings.update([("input signal", "Solver")])
+        settings.update([("input signal", "system_state")])
         Sensor.__init__(self, settings)
         self._storage = None
 
     def _measure(self, value):
         if self._storage is None:
-            self._storage = [np.zeros_like(value)] * self._settings["delay"]
+            # create storage with length "delay"
+            # initial values are the first input
+            self._storage = [value]*int(self._settings["delay"])
 
+        # save current values
+        measurement = value.copy()
         # add new measurement
-        meas = value[self._settings["output"]]
-        self._storage.append(meas)
+        self._storage.append(value)
 
-        # return delayed one
-        return self._storage.pop(0)
+        # get delayed measurements
+        delayed_measurement = self._storage.pop(0)
+
+        # replace current values with delayed values, if it is chosen
+        for i in self._settings["states to delay"]:
+            measurement[i] = delayed_measurement[i]
+
+        return measurement
 
 
 class GaussianNoise(Disturbance):
