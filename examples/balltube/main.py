@@ -20,7 +20,7 @@ if __name__ == "__main__":
 
         # load default config
         sim.load_regimes_from_file("default.sreg")
-        sim.apply_regime_by_name("test")
+        sim.apply_regime_by_name("PID_Controller")
         # gui.start_simulation()
 
         sim.show()

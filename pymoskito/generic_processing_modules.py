@@ -36,7 +36,7 @@ latex_settings = {  # setup matplotlib to use latex for output
                     "legend.fontsize": 9,  # Make the legend/label fonts a little smaller
                     "xtick.labelsize": 9,
                     "ytick.labelsize": 9,
-    "figure.figsize": get_figure_size(1),  # default fig size of 1.0 textwidth
+                    "figure.figsize": get_figure_size(1),  # default fig size of 1.0 textwidth
                     "lines.linewidth": 0.5,
                     "axes.labelsize": 11,  # LaTeX default is 10pt font.
                     "axes.linewidth": 0.5,
