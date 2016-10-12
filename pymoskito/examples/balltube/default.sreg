@@ -1,7 +1,7 @@
  # default regime file that is loaded when the simulation environment starts up
  # use this to create your own files
 
-- Name: test
+- Name: PID_Controller
   clear previous: !!python/bool True # decide whether previous settings should remain or not
 
   Model:
@@ -12,13 +12,20 @@
    type: ODEInt
    measure rate: 500
    step size: 0.001
-   end time: 5
+   end time: 10
 
   Controller:
    type: PIDController
+   Kp: 300
+   Ki: 310
+   Kd: 72
+   output_limits: [0, 255]
+   input_state: [2]
 
   Trajectory:
-   type: HarmonicTrajectory
+   type: Setpoint
+   State: [2]
+   Setpoint: [0.7]
 
   ModelMixer:
    type: AdditiveMixer

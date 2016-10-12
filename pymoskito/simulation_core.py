@@ -4,6 +4,7 @@
 import logging
 
 import numpy as np
+from copy import deepcopy
 from PyQt5.QtCore import QObject, pyqtSignal, pyqtSlot
 
 from .simulation_modules import SimulationException
@@ -161,7 +162,7 @@ class Simulator(QObject):
         """
         for key, val in self._current_outputs.items():
             if key in self._storage:
-                self._storage[key].append(val)
+                self._storage[key].append(deepcopy(val))
             else:
                 self._storage.update({key: [val]})
 
@@ -199,7 +200,7 @@ class Simulator(QObject):
                     dt = solver.t - t
 
                 except SimulationException as e:
-                    self._loggger.error("run()>> {0}: {1}".format(type(e).__name__, e.args[0]))
+                    self._logger.error("run()>> {0}: {1}".format(type(e).__name__, e.args[0]))
 
                     # overwrite end time with reached time
                     self._settings.end_time = self._current_outputs["time"]
