@@ -265,9 +265,9 @@ class PIDController(Controller):
                     integral = self._settings["output_limits"][0]
                 differential = (e - self.e_old[i][0]) / dt
 
-                self.output[i][0] = self._settings["Kp"] * e \
-                                    + self._settings["Ki"] * integral \
-                                    + self._settings["Kd"] * differential
+                self.output[i][0] = (self._settings["Kp"] * e
+                                     + self._settings["Ki"] * integral
+                                     + self._settings["Kd"] * differential)
 
                 if self.output[i][0] > self._settings["output_limits"][1]:
                     self.output[i][0] = self._settings["output_limits"][1]

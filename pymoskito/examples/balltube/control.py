@@ -8,7 +8,7 @@ import settings as st
 import symcalculation as symcalc
 
 
-class ExactInputOutputLinearisation(Controller):
+class ExactInputOutputLinearization(Controller):
     """
     controller which use the flatness virtue of the system
     """
@@ -50,11 +50,11 @@ class ExactInputOutputLinearisation(Controller):
         Lf4h = symcalc.Lf4h_func(*parameter)
 
         # calculate fictional input v
-        v = yd[4] + \
-            self.k[3] * (yd[3] - y_d3) + \
-            self.k[2] * (yd[2] - y_d2) + \
-            self.k[1] * (yd[1] - y_d1) + \
-            self.k[0] * (yd[0] - y_d0)
+        v = (yd[4]
+             + self.k[3] * (yd[3] - y_d3)
+             + self.k[2] * (yd[2] - y_d2)
+             + self.k[1] * (yd[1] - y_d1)
+             + self.k[0] * (yd[0] - y_d0))
         u = (v - Lf4h)/LgLf3h
         
         return u

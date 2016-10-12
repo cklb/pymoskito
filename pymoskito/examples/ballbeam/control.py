@@ -5,7 +5,6 @@ from collections import OrderedDict
 import pymoskito as pm
 
 from . import settings as st
-from pymoskito import tools as tool
 
 # from .linearization import Linearization
 
@@ -54,10 +53,10 @@ class FController(pm.Controller):
         settings.update(input_type="system_state")
 
         pm.Controller.__init__(self, settings)
+        self._output = np.zeros(1)
 
         # run pole placement
-        self.K = tool.get_coefficients(self._settings["poles"])
-
+        self.K = pm.tools.get_coefficients(self._settings["poles"])
 
     def _control(self, time, trajectory_values=None, feedforward_values=None, input_values=None, **kwargs):
         # input abbreviations
@@ -69,13 +68,13 @@ class FController(pm.Controller):
         phi2 = x2
         phi3 = -st.B*st.G*np.sin(x3)
         phi4 = -st.B*st.G*x4*np.cos(x3)
-        
+
         # calculate fictional input v
-        v = yd[0,[4]] + \
-            self.K[0,[3]]*(yd[0,[3]] - phi4) + \
-            self.K[0,[2]]*(yd[0,[2]] - phi3) + \
-            self.K[0,[1]]*(yd[0,[1]] - phi2) + \
-            self.K[0,[0]]*(yd[0,[0]] - phi1)
+        v = (yd[0, [4]]
+             + self.K[0, [3]] * (yd[0, [3]] - phi4)
+             + self.K[0, [2]] * (yd[0, [2]] - phi3)
+             + self.K[0, [1]] * (yd[0, [1]] - phi2)
+             + self.K[0, [0]] * (yd[0, [0]] - phi1))
 
         # calculate a(x)
         a = -st.B*st.G*np.cos(x3)
@@ -86,10 +85,10 @@ class FController(pm.Controller):
         u = (v-b)/a
 
         # transform back
-        tau = u * (st.M*x1**2 + st.J + st.Jb)\
-              + st.M*(2*x1*x2*x4 + st.G*x1*np.cos(x3))
+        self._output = (u * (st.M*x1**2 + st.J + st.Jb)
+                        + st.M*(2*x1*x2*x4 + st.G*x1*np.cos(x3)))
         
-        return np.array([tau], dtype=float)
+        return self._output
 
 # #---------------------------------------------------------------------
 # # controller created by changing g(x)
