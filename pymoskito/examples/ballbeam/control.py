@@ -5,6 +5,8 @@ from collections import OrderedDict
 import pymoskito as pm
 
 from . import settings as st
+from pymoskito import tools as tool
+
 # from .linearization import Linearization
 
 # TODO convert these controllers to the new interface version
@@ -54,7 +56,8 @@ class FController(pm.Controller):
         pm.Controller.__init__(self, settings)
 
         # run pole placement
-        self.K = pm.get_coefficients(self._settings["poles"])
+        self.K = tool.get_coefficients(self._settings["poles"])
+
 
     def _control(self, time, trajectory_values=None, feedforward_values=None, input_values=None, **kwargs):
         # input abbreviations

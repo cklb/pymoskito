@@ -25,18 +25,18 @@
    Input A: Controller
    Input B: None
 
-- Name: test-linear
-  clear previous: !!python/bool True
-  Model:
-   type: BallBeamModel
-
-  Solver:
-   type: ODEInt
-
-  Controller:
-   type: LSSController
-   r0: 3
-
-  Trajectory:
-   type: FixedPointTrajectory
-   Position: 3
+# - Name: test-linear
+#   clear previous: !!python/bool True
+#   Model:
+#    type: BallBeamModel
+#
+#   Solver:
+#    type: ODEInt
+#
+#   Controller:
+#    type: LSSController
+#    r0: 3
+#
+#   Trajectory:
+#    type: FixedPointTrajectory
+#    Position: 3

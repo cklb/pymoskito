@@ -25,7 +25,7 @@
    Input A: Controller
    Input B: Feedforward
 
-- Name: test_spring
+- Name: test_spring_with_dead_time
   clear previous: !!python/bool True # decide whether previous settings should remain or not
 
   Model:
@@ -34,9 +34,14 @@
 
   Solver:
    type: ODEInt
-   measure rate: 500
+   measure rate: 60
    step size: 0.001
    end time: 5
+
+  Sensor:
+   type: DeadTimeSensor
+   delay: 5
+   states to delay: [2, 3]
 
   ModelMixer:
    type: AdditiveMixer

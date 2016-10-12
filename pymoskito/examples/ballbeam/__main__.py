@@ -17,7 +17,7 @@ if __name__ == '__main__':
     app = QApplication([])
     prog = None
 
-    if 0:
+    if 1:
         # create simulator
         prog = pm.Simulator()
 
