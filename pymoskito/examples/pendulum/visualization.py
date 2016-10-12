@@ -177,10 +177,12 @@ try:
             self.short_pendulum_weight_Prop.SetColor(162 / 255, 166 / 255, 164 / 255)
 
             self.ren.AddActor(self.short_pendulum_weight_Actor)
-            self.short_pendulum_weight_pose = [np.array([0,
-                                                         (st.short_pendulum_height + st.pendulum_weight_height/2),
-                                                         st.cart_depth/2 + st.axis_height + st.pendulum_shaft_height/2]),
-                                               np.eye(3)]
+            self.short_pendulum_weight_pose = [
+                np.array([0,
+                          (st.short_pendulum_height + st.pendulum_weight_height/2),
+                          st.cart_depth/2 + st.axis_height + st.pendulum_shaft_height/2]),
+                np.eye(3)
+            ]
 
             # -------- add long pendulum ----
             # add long pendulum shaft
@@ -317,52 +319,59 @@ try:
             Calculate stationary vectors and rot. matrices for bodies
             """
             positions_dict = {}
+
             # cart
             t_cart = np.array([x[0], 0, 0]) + self.cart_pose[0]
-            r_cart = np.dot(np.eye(3), self.cart_pose[1])
+            r_cart = np.eye(3) @ self.cart_pose[1]
             positions_dict.update({"cart": [self.cart_Actor, t_cart, r_cart]})
+
             # axis
             t_axis = np.array([x[0], 0, 0]) + self.axis_pose[0]
-            r_axis = np.dot(np.eye(3), self.axis_pose[1])
+            r_axis = np.eye(3) @ self.axis_pose[1]
             positions_dict.update({"axis": [self.axis_Actor, t_axis, r_axis]})
+
             # short_pendulum_shaft
             t_short_pendulum_shaft = np.array([x[0], 0, 0]) + self.short_pendulum_shaft_pose[0]
-            r_short_pendulum_shaft = np.dot(pm.rotation_matrix_xyz("z", x[4], "rad"), self.short_pendulum_shaft_pose[1])
+            r_short_pendulum_shaft = pm.rotation_matrix_xyz("z", x[4], "rad") @ self.short_pendulum_shaft_pose[1]
             positions_dict.update({"short_pendulum_shaft": [self.short_pendulum_shaft_Actor,
                                                             t_short_pendulum_shaft,
                                                             r_short_pendulum_shaft]})
             # short_pendulum
-            t_short_pendulum = np.array([x[0], 0, 0]) + np.dot(pm.rotation_matrix_xyz("z", x[4], "rad"),
-                                                               self.short_pendulum_pose[0])
-            r_short_pendulum = np.dot(pm.rotation_matrix_xyz("z", x[4], "rad"), self.short_pendulum_pose[1])
+            t_short_pendulum = (np.array([x[0], 0, 0])
+                                + pm.rotation_matrix_xyz("z", x[4], "rad") @ self.short_pendulum_pose[0])
+
+            r_short_pendulum = pm.rotation_matrix_xyz("z", x[4], "rad") @ self.short_pendulum_pose[1]
             positions_dict.update({"short_pendulum": [self.short_pendulum_Actor,
                                                       t_short_pendulum,
                                                       r_short_pendulum]})
+
             # short_pendulum_weight
-            t_short_pendulum_weight = np.array([x[0], 0, 0]) + np.dot(pm.rotation_matrix_xyz("z", x[4], "rad"),
-                                                                      self.short_pendulum_weight_pose[0])
-            r_short_pendulum_weight = np.dot(pm.rotation_matrix_xyz("z", x[4], "rad"), self.short_pendulum_weight_pose[1])
+            t_short_pendulum_weight = (np.array([x[0], 0, 0])
+                                       + pm.rotation_matrix_xyz("z", x[4], "rad") @ self.short_pendulum_weight_pose[0])
+            r_short_pendulum_weight = pm.rotation_matrix_xyz("z", x[4], "rad") @ self.short_pendulum_weight_pose[1]
             positions_dict.update({"short_pendulum_weight": [self.short_pendulum_weight_Actor,
                                                              t_short_pendulum_weight,
                                                              r_short_pendulum_weight]})
 
             # long_pendulum_shaft
             t_long_pendulum_shaft = np.array([x[0], 0, 0]) + self.long_pendulum_shaft_pose[0]
-            r_long_pendulum_shaft = np.dot(pm.rotation_matrix_xyz("z", x[2], "rad"), self.long_pendulum_shaft_pose[1])
+            r_long_pendulum_shaft = pm.rotation_matrix_xyz("z", x[2], "rad") @ self.long_pendulum_shaft_pose[1]
             positions_dict.update({"long_pendulum_shaft": [self.long_pendulum_shaft_Actor,
                                                            t_long_pendulum_shaft,
                                                            r_long_pendulum_shaft]})
+
             # long_pendulum
-            t_long_pendulum = np.array([x[0], 0, 0]) + np.dot(pm.rotation_matrix_xyz("z", x[2], "rad"),
-                                                              self.long_pendulum_pose[0])
-            r_long_pendulum = np.dot(pm.rotation_matrix_xyz("z", x[2], "rad"), self.long_pendulum_pose[1])
+            t_long_pendulum = (np.array([x[0], 0, 0])
+                               + pm.rotation_matrix_xyz("z", x[2], "rad") @ self.long_pendulum_pose[0])
+            r_long_pendulum = pm.rotation_matrix_xyz("z", x[2], "rad") @ self.long_pendulum_pose[1]
             positions_dict.update({"long_pendulum": [self.long_pendulum_Actor,
                                                      t_long_pendulum,
                                                      r_long_pendulum]})
+
             # long_pendulum_weight
-            t_long_pendulum_weight = np.array([x[0], 0, 0]) + np.dot(pm.rotation_matrix_xyz("z", x[2], "rad"),
-                                                                     self.long_pendulum_weight_pose[0])
-            r_long_pendulum_weight = np.dot(pm.rotation_matrix_xyz("z", x[2], "rad"), self.long_pendulum_weight_pose[1])
+            t_long_pendulum_weight = (np.array([x[0], 0, 0])
+                                      + pm.rotation_matrix_xyz("z", x[2], "rad") @ self.long_pendulum_weight_pose[0])
+            r_long_pendulum_weight = pm.rotation_matrix_xyz("z", x[2], "rad") @ self.long_pendulum_weight_pose[1]
             positions_dict.update({"long_pendulum_weight": [self.long_pendulum_weight_Actor,
                                                             t_long_pendulum_weight,
                                                             r_long_pendulum_weight]})
