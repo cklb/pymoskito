@@ -6,6 +6,7 @@
 import copy
 import logging
 import sys
+import traceback
 
 from PyQt5.QtCore import Qt, QObject, pyqtSignal, pyqtSlot, QModelIndex, QSize, QThread
 from PyQt5.QtGui import QStandardItemModel, QStandardItem
@@ -350,7 +351,7 @@ class SimulatorInteractor(QObject):
 
     def run_simulation(self):
         """
-        entry hook for timestep simulation
+        entry hook for time step simulation
         - use settings to create modules in simulation loop
         - move them into an extra thread
         - start simulation
@@ -397,6 +398,8 @@ class SimulatorInteractor(QObject):
         elif state_change.type == "abort":
             self._sim_state = "aborted"
             self._sim_data.update({'results': copy.deepcopy(state_change.data)})
+            self._logger.error("simulation has been aborted due to an exception:", exc_info=state_change.info)
+            self._logger.info("check your configuration")
         elif state_change.type == "finish":
             self._sim_state = "finished"
             self._sim_data.update({'results': copy.deepcopy(state_change.data)})

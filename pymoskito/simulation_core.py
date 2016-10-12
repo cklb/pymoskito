@@ -2,6 +2,7 @@
 
 
 import logging
+import sys
 
 import numpy as np
 from copy import deepcopy
@@ -187,6 +188,7 @@ class Simulator(QObject):
 
         self.state_changed.emit(SimulationStateChange(type="start"))
         end_state = None
+        info = None
 
         # TODO store values for timestamp t=0, store initial states for model and observer
 
@@ -199,13 +201,12 @@ class Simulator(QObject):
                     self._calc_step()
                     dt = solver.t - t
 
-                except SimulationException as e:
-                    self._logger.error("run()>> {0}: {1}".format(type(e).__name__, e.args[0]))
-
+                except Exception as e:
                     # overwrite end time with reached time
                     self._settings.end_time = self._current_outputs["time"]
                     self._storage.update(finished=False)
                     end_state = "abort"
+                    info = sys.exc_info()
                     break
 
             self._store_values()
@@ -215,7 +216,7 @@ class Simulator(QObject):
             self._storage.update(finished=True)
             end_state = "finish"
 
-        self.state_changed.emit(SimulationStateChange(type=end_state, data=self.output))
+        self.state_changed.emit(SimulationStateChange(type=end_state, data=self.output, info=info))
         self.finished.emit()
 
     @property
