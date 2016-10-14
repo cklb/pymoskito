@@ -226,8 +226,9 @@ class SimulatorInteractor(QObject):
             property_val_str = str(item.child(row, 1).text())
 
             if "np." in property_val_str or "numpy." in property_val_str:
-                self._logger.warn("In module '" + module_name + "' and property '" + property_name + "'"
-                                  " a numpy-object was detected. Only standard python types are supported!")
+                self._logger.error(
+                    ("Property '{}' of module '{}' contains a numpy expression. "
+                     + "Only standard python types are supported for entries.").format(property_name, module_name))
             elif "pi" in property_val_str or "Pi" in property_val_str or "PI" in property_val_str:
                 property_val = np.pi
             elif (("exp(" in property_val_str and property_val_str[-1] == ")")
