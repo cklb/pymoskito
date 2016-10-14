@@ -16,7 +16,7 @@ if __name__ == '__main__':
     app = QApplication([])
     sim = pm.Simulator()
     sim.load_regimes_from_file(os.path.join(parent_dir, "balltube", "default.sreg"))
-    sim.apply_regime_by_name("test")
+    sim.apply_regime_by_name("PID_Controller")
     sim.show()
 
     app.exec_()

@@ -6,6 +6,7 @@
 import copy
 import logging
 import sys
+import ast
 import traceback
 
 from PyQt5.QtCore import Qt, QObject, pyqtSignal, pyqtSlot, QModelIndex, QSize, QThread
@@ -218,29 +219,28 @@ class SimulatorInteractor(QObject):
     def _get_settings(self, model, module_name):
         item = model.findItems(module_name).pop(0)
 
+        # TODO this is not the good way --> switch to pyqtgraphs implementation
         settings = OrderedDict()
         for row in range(item.rowCount()):
             property_name = str(item.child(row, 0).text())
-            # TODO this is not the good way --> switch to pyqtgraphs implementation
-            if property_name == 'Method':
-                prop_val = str(item.child(row, 1).text())
-            else:
-                val_str = str(item.child(row, 1).text())
-                if '[' in val_str:
-                    # parse vector
-                    # if the vector contains complex numbers the command text(), see above,
-                    # build a string with ' in it, we have to delete this
-                    val_str = val_str.replace("'", "")
-                    prop_val = np.array([complex(x) if "j" in x else float(x) for x in val_str[1:-1].split(',')])
-                else:
-                    # parse scalar
-                    try:
-                        prop_val = np.array(float(val_str))
-                    except ValueError:
-                        # well then it is probably no float
-                        prop_val = val_str
+            property_val_str = str(item.child(row, 1).text())
 
-            settings.update({property_name: prop_val})
+            if "np." in property_val_str:
+                pass
+            elif "pi" in property_val_str or "Pi" in property_val_str or "PI" in property_val_str:
+                property_val = np.pi
+            else:
+                try:
+                    property_val = ast.literal_eval(property_val_str)
+                    # convert list to array
+                    if isinstance(property_val, list):
+                        property_val = np.array(property_val)
+                except ValueError:
+                    # property_val_str is not parseable from literal_eval
+                    # save string in dict
+                    property_val = property_val_str
+
+            settings.update({property_name: property_val})
 
         return settings
 

@@ -499,7 +499,7 @@ class SimulationGui(QMainWindow):
         try:
             idx = list(map(itemgetter("Name"), self._regimes)).index(regime_name)
         except ValueError as e:
-            self._logger.info("apply_regime_by_name(): Error no regime called {0}".format(regime_name))
+            self._logger.error("apply_regime_by_name(): Error no regime called {0}".format(regime_name))
             return
 
         # apply

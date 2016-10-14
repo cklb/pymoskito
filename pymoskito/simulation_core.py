@@ -163,9 +163,9 @@ class Simulator(QObject):
         """
         for key, val in self._current_outputs.items():
             if key in self._storage:
-                self._storage[key].append(deepcopy(val))
+                self._storage[key].append(np.array(val))
             else:
-                self._storage.update({key: [val]})
+                self._storage.update({key: [np.array(val)]})
 
         return
 
