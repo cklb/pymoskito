@@ -225,18 +225,26 @@ class SimulatorInteractor(QObject):
             property_name = str(item.child(row, 0).text())
             property_val_str = str(item.child(row, 1).text())
 
-            if "np." in property_val_str:
-                pass
+            if "np." in property_val_str or "numpy." in property_val_str:
+                self._logger.warn("In module '" + module_name + "' and property '" + property_name + "'"
+                                  " a numpy-object was detected. Only standard python types are supported!")
             elif "pi" in property_val_str or "Pi" in property_val_str or "PI" in property_val_str:
                 property_val = np.pi
+            elif (("exp(" in property_val_str and property_val_str[-1] == ")")
+                  or ("e^(" in property_val_str and property_val_str[-1] is ")")):
+                tmp = property_val_str[:-1]  # cut off last bracket
+                tmp = tmp.replace("exp(", "")
+                tmp = tmp.replace("e^(", "")
+                try:
+                    property_val = ast.literal_eval(tmp)
+                    property_val = np.exp(property_val)
+                except ValueError:
+                    property_val = property_val_str
             else:
                 try:
                     property_val = ast.literal_eval(property_val_str)
-                    # convert list to array
-                    if isinstance(property_val, list):
-                        property_val = np.array(property_val)
                 except ValueError:
-                    # property_val_str is not parseable from literal_eval
+                    # property_val_str can not be parsed by literal_eval
                     # save string in dict
                     property_val = property_val_str
 

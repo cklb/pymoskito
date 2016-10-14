@@ -28,7 +28,7 @@ class TwoPendulumModel(pm.Model):
 
     def __init__(self, settings):
         # conversion from degree to radiant
-        settings['initial state'][2:] = settings['initial state'][2:]*np.pi/180
+        settings['initial state'][2:] = [val*np.pi/180.0 for val in settings["initial state"][2:]]
         # add specific "private" settings
         settings.update(state_count=6)
         settings.update(input_count=1)

@@ -34,8 +34,8 @@ class LinearStateFeedback(pm.Controller):
         # eig = np.linalg.eig(self.A - np.dot(self.B, self.K))
 
         self._logger.info("Equilibrium: {}".format(eq_state.tolist()))
-        self._logger.info("Poles: {}".format(self._settings["poles"].tolist()))
-        self._logger.info("K: {}".format(self.K.tolist()[0]))
+        self._logger.info("Poles: {}".format(self._settings["poles"]))
+        self._logger.info("K: {}".format(self.K[0]))
         self._logger.info("V: {}".format(self.V[0]))
 
     def _control(self, time, trajectory_values=None, feedforward_values=None, input_values=None, **kwargs):

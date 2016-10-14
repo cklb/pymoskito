@@ -37,7 +37,6 @@ class CarModel(pm.Model):
         :param t: time
         :type args: system input force on the cart
         """
-        self._logger.info("Hallo")
 
         x1, x2, x3, x4, x5 = x
         v, w = 1, 1

@@ -122,7 +122,7 @@ def lie_derivative(h, f, x, n):
 
 def get_coefficients(poles):
     """
-    calculate the coefficient of a characteristic polynomial
+    calculate the coefficients of a characteristic polynomial
     :param poles: list or numpy array with poles
     :return: coefficients as a 2d numpy array (row vector)
     """

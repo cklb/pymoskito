@@ -97,7 +97,7 @@ class Simulator(QObject):
             self._current_outputs[mod_name] = []
 
         # init model output with current state
-        self._current_outputs["Solver"] = self._simulation_modules["Model"].initial_state
+        self._current_outputs["Solver"] = np.array(self._simulation_modules["Model"].initial_state)
 
         return
 
