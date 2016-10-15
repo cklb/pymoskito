@@ -3,7 +3,7 @@ PyMoskito
 =========
 
 .. image:: https://img.shields.io/travis/cklb/pymoskito.svg
-        :target: https://travis-ci.org/freddy_k/pymoskito
+        :target: https://travis-ci.org/cklb/pymoskito
 
 .. image:: https://img.shields.io/pypi/v/pymoskito.svg
         :target: https://pypi.python.org/pypi/pymoskito
