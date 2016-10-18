@@ -3,6 +3,27 @@ from abc import ABCMeta, abstractmethod
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT, FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 
+try:
+    import vtk
+    from vtk.qt.QVTKRenderWindowInteractor import *
+
+    class QVTKRenderWindowInteractor(QVTKRenderWindowInteractor):
+        """
+        overload class to patch problem with zooming in vtk window
+        the reason is that the QWheelEvent in PyQt5 hasn't the function delta()
+        so we have to replace that with angleDelta()
+        the error is caused by vtk 7.0.0
+        """
+        # override function
+        def wheelEvent(self, ev):
+            if ev.angleDelta().y() >= 0:
+                self._Iren.MouseWheelForwardEvent()
+            else:
+                self._Iren.MouseWheelBackwardEvent()
+
+except ImportError as e:
+    QVTKRenderWindowInteractor = None
+
 
 class Visualizer(metaclass=ABCMeta):
     """

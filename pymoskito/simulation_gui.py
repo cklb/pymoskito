@@ -31,7 +31,7 @@ try:
 
     from vtk import vtkRenderer
     from vtk import qt
-    from vtk.qt.QVTKRenderWindowInteractor import *
+    from .visualization import QVTKRenderWindowInteractor  # import patched class
     vtk_available = True
 except ImportError as e:
     vtk_available = False
