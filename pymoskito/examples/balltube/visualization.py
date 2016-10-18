@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
 import numpy as np
+import matplotlib as mpl
+import matplotlib.patches
+
 import pymoskito as pm
 
 from . import settings as st
@@ -130,4 +133,38 @@ except ImportError as e:
     print(e.msg)
     print("VTK Visualization not available.")
 
-# TODO mpl visualizer
+
+class MplBallInTubeVisualizer(pm.MplVisualizer):
+
+    def __init__(self, q_widget, q_layout):
+        pm.MplVisualizer.__init__(self, q_widget, q_layout)
+
+        self.axes.set_xlim(-0.6, 0.6)
+        self.axes.set_ylim(-0.05, 1.55)
+        self.axes.set_aspect("equal")
+        self.axes.get_xaxis().set_visible(False)
+#        tube = mpl.patches.Rectangle(xy=[-st.d_R*st.scale/2.0, 0],
+#                                     width=st.d_R*st.scale,
+#                                     height=st.tube_length,
+#                                     fill=False)
+#        self.axes.add_patch(tube)
+        tube_out = mpl.patches.Rectangle(xy=[-st.d_R_out * st.scale / 2.0, 0],
+                                         width=st.d_R_out * st.scale,
+                                         height=st.tube_length,
+                                         linewidth=1,
+                                         fill=False)
+        self.axes.add_patch(tube_out)
+
+        self.ball = mpl.patches.Circle(xy=[0, st.d_B*st.scale/2.0],
+                                       radius=st.d_B*st.scale/2.0,
+                                       color="#0059A3",
+                                       linewidth=1)
+        self.ball.set_edgecolor("black")
+        self.axes.add_patch(self.ball)
+
+    def update_scene(self, x):
+        self.ball.center = (0, x[2] + st.d_R*st.scale/2.0)
+
+        self.canvas.draw()
+
+pm.register_visualizer(MplBallInTubeVisualizer)
