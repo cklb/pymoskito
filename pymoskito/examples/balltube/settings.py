@@ -49,10 +49,11 @@ visTubeDiameter = d_R*scale
 visBallDiameter = d_B*scale
 
 # equilibrium
-xe1 = A_Sp*np.sqrt(m*g/k_L)/k_V
-xe2 = 0
-xe3 = 0  # random
-xe4 = 0
+x1_e = A_Sp*np.sqrt(m*g/k_L)/k_V
+x2_e = 0
+x3_e = 0  # random
+x4_e = 0
+u_e = A_Sp*np.sqrt(m*g/k_L)/(k_V*k_s)
 
 # ----------------------------------------------------------------------------------------------------------------------
 # export settings latex-style
