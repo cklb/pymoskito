@@ -24,6 +24,7 @@ end_time = 20
 T = 0.24757155405           # s - time constant of the motor
 d = 0.733277219979          # - damping ratio of the motor
 k_s = 10.0291812304         # 1/Vs - gain motor
+Vcc = 12                    # V - voltage supply
 
 k_V = 6.28192637773e-05     # m**3 - proportionality factor between fan speed and airflow
 k_L = 2.27269527471e-04     # N*s**2/m - proportionality factor between flow velocity in
@@ -46,6 +47,12 @@ scale = 2
 visTubeLength = tube_length/scale
 visTubeDiameter = d_R*scale
 visBallDiameter = d_B*scale
+
+# equilibrium
+xe1 = A_Sp*np.sqrt(m*g/k_L)/k_V
+xe2 = 0
+xe3 = 0  # random
+xe4 = 0
 
 # ----------------------------------------------------------------------------------------------------------------------
 # export settings latex-style

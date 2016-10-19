@@ -32,6 +32,56 @@
    Input A: Controller
    Input B: Feedforward
 
+- Name: OpenLoop
+  clear previous: !!python/bool True # decide whether previous settings should remain or not
+
+  Model:
+   type: BallInTubeModel
+   initial state: [0, 0, 0, 0]
+
+  Solver:
+   type: ODEInt
+   measure rate: 500
+   step size: 0.001
+   end time: 10
+
+  Controller:
+   type: OpenLoop
+   pwm: 170
+
+  ModelMixer:
+   type: AdditiveMixer
+   Input A: Controller
+   Input B: Feedforward
+
+- Name: Feedforward
+  clear previous: !!python/bool True # decide whether previous settings should remain or not
+
+  Model:
+   type: BallInTubeModel
+   # 75.23 is the fan speed in the equilibrium
+   initial state: [75.233802172, 0, 0, 0]
+
+  Solver:
+   type: ODEInt
+   measure rate: 500
+   step size: 0.001
+   end time: 10
+
+  Feedforward:
+   type: BallInTubeFeedforward
+
+  Trajectory:
+   type: SmoothTransition
+   states: [0.0, 1.0]
+   start_time: 2
+   delta t: 5
+
+  ModelMixer:
+   type: AdditiveMixer
+   Input A: Controller
+   Input B: Feedforward
+
 - Name: test_spring_with_dead_time
   clear previous: !!python/bool True # decide whether previous settings should remain or not
 
@@ -78,7 +128,7 @@
 
   Model:
    type: BallInTubeModel
-   initial state: [100, 0, 0, 0]
+   initial state: [200, 0, 0, 0]
 
   Solver:
    type: ODEInt

@@ -208,13 +208,13 @@ class Feedforward(SimulationModule):
         return self._settings["input_order"]
 
     def calc_output(self, input_dict):
-        return self._feedforward(input_dict["Trajectory"], input_dict["time"])
+        return self._feedforward(input_dict["time"], input_dict["Trajectory"])
 
     @abstractmethod
-    def _feedforward(self, traj_values):
+    def _feedforward(self, time, trajectory_values):
         """
         placeholder for feedforward calculation
-        :param traj_values: values from trajectory with there derivation
+        :param trajectory_values: values from trajectory with there derivation
         :return: feedforward output
         """
         pass
