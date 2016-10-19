@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 import numpy as np
-# ---------------------------------------------------------------------
+# ----------------------------------------------------------------------------------------------------------------------
 # global default settings for physical simulation
-# ---------------------------------------------------------------------
+# ----------------------------------------------------------------------------------------------------------------------
 
 # standard values for integration
 step_size = 0.0005
@@ -16,49 +16,40 @@ int_rtol = 1e-6
 int_atol = 1e-9
 end_time = 20
 
-# # standard system values BallInTube
-# d_B = 39.7e-3       # m
-# d_n = 3.25          #
-# d_p = 2.75          #
-# d_R = 41e-3         # m
-# k_L = 1.0637e-5     # N*s^2/m
-# k_s = 7.04          # 1/V*s
-# k_V = 8.3503e-5     # m^3
-# m = 2.7122e-3       # kg
-# T_n = 0.1950        # s
-# T_p = 0.13          # s
-tube_length = 1.5     # m
+# ----------------------------------------------------------------------------------------------------------------------
+# parameters of the ball in tube system according to the
+# real test station on the institute of control theory of the
+# TU-Dresden
 
-T_n = 0.24757155405
-T_p = 0.24757155405
-d_p = 0.733277219979
-d_n = 0.733277219979
-k_s = 10.0291812304
+T = 0.24757155405           # s - time constant of the motor
+d = 0.733277219979          # - damping ratio of the motor
+k_s = 10.0291812304         # 1/Vs - gain motor
 
-k_V = 6.28192637773e-05
-k_L = 2.27269527471e-04
-d_R = 64.4e-3
-d_R_out = 70.0e-3
-d_B = 60.0e-3
+k_V = 6.28192637773e-05     # m**3 - proportionality factor between fan speed and airflow
+k_L = 2.27269527471e-04     # N*s**2/m - proportionality factor between flow velocity in
+#  the air gap squared and the buoyancy force
+d_R = 64.4e-3               # m - diameter of the tube
+d_R_out = 70.0e-3           # m - external diameter of the tube
+tube_length = 1.5           # m -  length of the tube
+d_B = 60.0e-3               # m - diameter of the ball
+m = 2.8e-3                  # kg - mass of the ball
+g = 9.81                    # m/s^2 - gravity
 
-g = 9.81            # m/s^2
-m = 2.8e-3
-K = 10000            # N/m
-D = 1               # Ns/m
+K = 10000                   # N/m - stiffness of the spring
+D = 1                       # Ns/m - damping ratio of the spring
 
-A_B = np.pi*d_B**2/4
-A_R = np.pi*d_R**2/4
-A_Sp = A_R - A_B
+A_B = np.pi*d_B**2/4        # m**2 - cross sectional area of the ball
+A_R = np.pi*d_R**2/4        # m**2 - cross sectional area of the tube
+A_Sp = A_R - A_B            # m**2 - cross sectional area of air gap
 
 scale = 2
 visTubeLength = tube_length/scale
 visTubeDiameter = d_R*scale
 visBallDiameter = d_B*scale
 
-
-# -----------------------------------------------
+# ----------------------------------------------------------------------------------------------------------------------
 # export settings latex-style
-# -----------------------------------------------
+# ----------------------------------------------------------------------------------------------------------------------
 latex_font_size = 14
 label_size = 1*latex_font_size
 title_size = 1.5*latex_font_size
