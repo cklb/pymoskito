@@ -253,13 +253,13 @@ class PlotAll(PostProcessingModule):
                 if len(module_shape) == 2:
                     val = module_data[:, idx]
 
-                plot_name = '_'.join({data["regime name"], self.name, module_name, str(idx)})
+                plot_name = "_".join([data["regime name"], self.name, module_name, str(idx)])
                 fig = Figure()
                 axes = fig.add_subplot(111)
                 axes.set_title(r"\textbf{%s %d}" % (module_name.replace("_", " "), idx))
                 axes.plot(t, val, c='k')
                 axes.set_xlim(left=0, right=t[-1])
-                axes.set_xlabel(r"Zeit [s]")
+                axes.set_xlabel(r"Time in s")
                 axes.set_ylabel(r"%s %s" % (module_name.replace("_", " "), str(idx)))
                 axes.grid(True)
                 canvas = FigureCanvas(fig)

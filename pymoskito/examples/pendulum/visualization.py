@@ -2,6 +2,10 @@
 import numpy as np
 import pymoskito as pm
 
+import matplotlib as mpl
+import matplotlib.patches
+import matplotlib.transforms
+
 from . import settings as st
 
 try:
@@ -18,7 +22,7 @@ try:
             # geometry
             self.beam = vtk.vtkCubeSource()
             self.beam.SetXLength(st.beam_length)
-            self.beam.SetYLength(st.beam_width)
+            self.beam.SetYLength(st.beam_height)
             self.beam.SetZLength(st.beam_depth)
 
             # mapper
@@ -28,7 +32,7 @@ try:
             # actor
             self.beam_Actor = vtk.vtkLODActor()
             self.beam_Actor.SetMapper(self.beam_Mapper)
-            self.beam_Actor.SetPosition(0, -(st.cart_width/2 + st.beam_width/2), 0)
+            self.beam_Actor.SetPosition(0, -(st.cart_height / 2 + st.beam_height / 2), 0)
 
             # make it look nice
             self.beam_Prop = self.beam_Actor.GetProperty()
@@ -41,7 +45,7 @@ try:
             # geometry
             self.cart = vtk.vtkCubeSource()
             self.cart.SetXLength(st.cart_length)
-            self.cart.SetYLength(st.cart_width)
+            self.cart.SetYLength(st.cart_height)
             self.cart.SetZLength(st.cart_depth)
 
             # mapper
@@ -400,9 +404,95 @@ try:
             self.set_body_state(self.calc_positions(x))
 
     pm.register_visualizer(TwoPendulumVisualizer)
+
 except ImportError as e:
     print("BallTube Visualizer:")
     print(e.msg)
     print("VTK Visualization not available.")
 
-# TODO mpl visualizer
+
+class MplTwoPendulumVisualizer(pm.MplVisualizer):
+
+    def __init__(self, q_widget, q_layout):
+        pm.MplVisualizer.__init__(self, q_widget, q_layout)
+        self.axes.set_xlim(st.x_min_plot, st.x_max_plot)
+        self.axes.set_ylim(st.y_min_plot, st.y_max_plot)
+        self.axes.set_aspect("equal")
+
+        self.beam = mpl.patches.Rectangle(xy=[-st.beam_length/2, -(st.beam_height + st.cart_height/2)],
+                                          width=st.beam_length,
+                                          height=st.beam_height,
+                                          color="lightgrey")
+        self.cart = mpl.patches.Rectangle(xy=[-st.cart_length/2, -st.cart_height/2],
+                                          width=st.cart_length,
+                                          height=st.cart_height,
+                                          color="dimgrey")
+        self.pendulum_shaft = mpl.patches.Circle(xy=[0, 0],
+                                                 radius=st.pendulum_shaft_radius,
+                                                 color="lightgrey",
+                                                 zorder=3)
+
+        t = mpl.transforms.Affine2D().rotate_deg(180) + self.axes.transData
+        self.short_pendulum = mpl.patches.Rectangle(xy=[-st.short_pendulum_radius, 0],
+                                                    width=2*st.short_pendulum_radius,
+                                                    height=st.short_pendulum_height,
+                                                    color="#E87B14",  # TUD CD HKS 07_K
+                                                    zorder=2,
+                                                    transform=t)
+        self.short_pendulum_weight = mpl.patches.Rectangle(xy=[-st.pendulum_weight_radius, st.short_pendulum_height],
+                                                           width=2*st.pendulum_weight_radius,
+                                                           height=st.pendulum_weight_height,
+                                                           color="#E87B14",  # TUD CD HKS 07_K
+                                                           zorder=2,
+                                                           transform=t)
+        self.long_pendulum = mpl.patches.Rectangle(xy=[-st.long_pendulum_radius, 0],
+                                                   width=2*st.long_pendulum_radius,
+                                                   height=st.long_pendulum_height,
+                                                   color="#0059A3",  # TUD CD HKS 44_K
+                                                   zorder=1,
+                                                   transform=t)
+        self.long_pendulum_weight = mpl.patches.Rectangle(xy=[-st.pendulum_weight_radius, st.long_pendulum_height],
+                                                          width=2*st.pendulum_weight_radius,
+                                                          height=st.pendulum_weight_height,
+                                                          color="#0059A3",  # TUD CD HKS 44_K
+                                                          zorder=1,
+                                                          transform=t)
+        self.axes.add_patch(self.beam)
+        self.axes.add_patch(self.cart)
+        self.axes.add_patch(self.pendulum_shaft)
+        self.axes.add_patch(self.short_pendulum)
+        self.axes.add_patch(self.short_pendulum_weight)
+        self.axes.add_patch(self.long_pendulum)
+        self.axes.add_patch(self.long_pendulum_weight)
+
+    def update_scene(self, x):
+        x0 = x[0]
+        phi1 = np.rad2deg(x[2])
+        phi2 = np.rad2deg(x[4])
+
+        # cart and shaft
+        self.cart.set_x(-st.cart_length/2 + x0)
+        self.pendulum_shaft.center = [x0, 0]
+
+        t_phi1 = mpl.transforms.Affine2D().rotate_deg_around(x0, 0, phi1) + self.axes.transData
+        t_phi2 = mpl.transforms.Affine2D().rotate_deg_around(x0, 0, phi2) + self.axes.transData
+
+        # long pendulum
+        self.long_pendulum.set_xy(np.array([-st.long_pendulum_radius, 0]) + np.array([x0, 0]))
+        self.long_pendulum.set_transform(t_phi1)
+        self.long_pendulum_weight.set_xy(np.array([-st.pendulum_weight_radius, st.long_pendulum_height])
+                                         + np.array([x0, 0]))
+        self.long_pendulum_weight.set_transform(t_phi1)
+
+        # short pendulum
+        self.short_pendulum.set_xy(np.array([-st.short_pendulum_radius, 0]) + np.array([x0, 0]))
+        self.short_pendulum.set_transform(t_phi2)
+        self.short_pendulum_weight.set_xy(np.array([-st.pendulum_weight_radius, st.short_pendulum_height])
+                                          + np.array([x0, 0]))
+        self.short_pendulum_weight.set_transform(t_phi2)
+        self.canvas.draw()
+
+pm.register_visualizer(MplTwoPendulumVisualizer)
+
+
+

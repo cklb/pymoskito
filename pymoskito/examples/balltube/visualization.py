@@ -128,6 +128,7 @@ try:
             self.set_body_state(self.ballActor, r_ball, t_ball)
 
     pm.register_visualizer(BallInTubeVisualizer)
+
 except ImportError as e:
     print("BallTube Visualizer:")
     print(e.msg)
@@ -139,7 +140,7 @@ class MplBallInTubeVisualizer(pm.MplVisualizer):
     def __init__(self, q_widget, q_layout):
         pm.MplVisualizer.__init__(self, q_widget, q_layout)
 
-        self.axes.set_xlim(-0.6, 0.6)
+        self.axes.set_xlim(-0.3, 0.3)
         self.axes.set_ylim(-0.05, 1.55)
         self.axes.set_aspect("equal")
         self.axes.get_xaxis().set_visible(False)
@@ -163,8 +164,8 @@ class MplBallInTubeVisualizer(pm.MplVisualizer):
         self.axes.add_patch(self.ball)
 
     def update_scene(self, x):
-        self.ball.center = (0, x[2] + st.d_R*st.scale/2.0)
 
+        self.ball.center = (0, x[2] + st.d_R*st.scale/2.0)
         self.canvas.draw()
 
 pm.register_visualizer(MplBallInTubeVisualizer)

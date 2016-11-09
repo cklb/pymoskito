@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 import matplotlib.pyplot as plt
 import numpy as np
 import sympy as sp
@@ -75,10 +74,10 @@ dict_names = {x0_d0: r'x_{0}',
               phi2_d1: r'\dot{\varphi}_{2}'}
 simplification_list = [(phi1_d1, 0), (phi2_d1, 0),
                        (F, 0), (M1, 0), (M2, 0),
-                       #(sp.sin(phi1_d0), 0), (sp.sin(phi2_d0), 0),
-                       #(sp.cos(phi1_d0)**2, 1), (sp.cos(phi2_d0)**2, 1),
-                       # #(sp.cos(phi1_d0)**3, sp.cos(phi1_d0)),
-                       # #(sp.cos(phi2_d0)**3, sp.cos(phi2_d0))
+                       # (sp.sin(phi1_d0), 0), (sp.sin(phi2_d0), 0),
+                       # (sp.cos(phi1_d0)**2, 1), (sp.cos(phi2_d0)**2, 1),
+                       # (sp.cos(phi1_d0)**3, sp.cos(phi1_d0)),
+                       # (sp.cos(phi2_d0)**3, sp.cos(phi2_d0))
                        ]
 
 A = sys.jacobian(x)

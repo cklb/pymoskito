@@ -20,7 +20,7 @@
    Input B: Feedforward
 
 
-- Name: R_oo_init_x0_0.5_setpoint_-0.5
+- Name: LinearStateFeedback_oo_x0_0.5_setpoint_-0.5
   clear previous: !!python/bool True # decide whether previous settings should remain or not
 
   Model:
@@ -49,7 +49,7 @@
    Input A: Controller
    Input B: Feedforward
 
-- Name: R_oo
+- Name: LinearStateFeedback_oo
   clear previous: !!python/bool True # decide whether previous settings should remain or not
 
   Model:
@@ -83,7 +83,7 @@
    Input B: Feedforward
 
 
-- Name: R_uu
+- Name: LinearStateFeedback_uu
   clear previous: !!python/bool True # decide whether previous settings should remain or not
 
   Model:
@@ -117,7 +117,7 @@
    Input B: Feedforward
 
 
-- Name: R_ou
+- Name: LinearStateFeedback_ou
   clear previous: !!python/bool True # decide whether previous settings should remain or not
 
   Model:
@@ -151,7 +151,7 @@
    Input B: Feedforward
 
 
-- Name: R_uo
+- Name: LinearStateFeedback_uo
   clear previous: !!python/bool True # decide whether previous settings should remain or not
 
   Model:
@@ -185,12 +185,12 @@
    Input B: Feedforward
 
 
-- Name: ljapunov_uo
+- Name: LQR_oo
   clear previous: !!python/bool True # decide whether previous settings should remain or not
 
   Model:
    type: TwoPendulumModel
-   initial state: [0, 0, 180, 0, 190, 0]
+   initial state: [0, 0, 10, 0, 10, 0]
 
   Solver:
    type: ODEInt
@@ -199,9 +199,8 @@
    end time: 10
 
   Controller:
-   type: LjapunovController
-   k: 8
-   long pendulum: u
+   type: LinearQuadraticRegulator
+   long pendulum: o
    short pendulum: o
 
   Trajectory:
@@ -265,7 +264,7 @@
 
   Controller:
    type: SwingUpController
-   k: 10
+   k: 9
    long pendulum: u
    short pendulum: o
    poles: [-9, -7, -4, -2, -3, -2]
@@ -277,7 +276,7 @@
 
   Limiter:
    type: ModelInputLimiter
-   Limits: [-6, 6]
+   Limits: [-10, 10]
 
   ModelMixer:
    type: AdditiveMixer
@@ -299,11 +298,11 @@
    type: ODEInt
    measure rate: 500
    step size: 0.01
-   end time: 30
+   end time: 20
 
   Controller:
    type: SwingUpController
-   k: 9
+   k: 10
    long pendulum: o
    short pendulum: u
    poles: [-9, -7, -4, -2, -3, -2]
@@ -315,7 +314,7 @@
 
   Limiter:
    type: ModelInputLimiter
-   Limits: [-6, 6]
+   Limits: [-10, 10]
 
   ModelMixer:
    type: AdditiveMixer
@@ -337,11 +336,11 @@
    type: ODEInt
    measure rate: 500
    step size: 0.01
-   end time: 50
+   end time: 30
 
   Controller:
    type: SwingUpController
-   k: 7
+   k: 9
    long pendulum: o
    short pendulum: o
    poles: [-9, -7, -4, -2, -3, -2]
@@ -353,7 +352,7 @@
 
   Limiter:
    type: ModelInputLimiter
-   Limits: [-6, 6]
+   Limits: [-10, 10]
 
   ModelMixer:
    type: AdditiveMixer

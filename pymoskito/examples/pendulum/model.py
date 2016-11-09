@@ -12,7 +12,7 @@ class TwoPendulumModel(pm.Model):
     Implementation of the two pendulum on a cart system
     this is implemented as a point mass model
     """
-    public_settings = OrderedDict([('initial state', st.initial_state),
+    public_settings = OrderedDict([("initial state", st.initial_state),
                                    ("m0*", st.m0_star),
                                    ("d0", st.d0),
                                    ("m1*", st.m1_star),
@@ -28,25 +28,25 @@ class TwoPendulumModel(pm.Model):
 
     def __init__(self, settings):
         # conversion from degree to radiant
-        settings['initial state'][2:] = [val*np.pi/180.0 for val in settings["initial state"][2:]]
+        settings["initial state"][2:] = [val*np.pi/180.0 for val in settings["initial state"][2:]]
         # add specific "private" settings
         settings.update(state_count=6)
         settings.update(input_count=1)
         pm.Model.__init__(self, settings)
 
         # shortcuts for readability
-        self.d0 = self._settings['d0']
-        self.d1 = self._settings['d1']
-        self.d2 = self._settings['d2']
-        self.g = self._settings['g']
+        self.d0 = self._settings["d0"]
+        self.d1 = self._settings["d1"]
+        self.d2 = self._settings["d2"]
+        self.g = self._settings["g"]
 
-        self.l1 = self._settings['J_DP1']/(self._settings['m1*']*self._settings['l1*'])
-        self.l2 = self._settings['J_DP2']/(self._settings['m2*']*self._settings['l2*'])
+        self.l1 = self._settings["J_DP1"]/(self._settings["m1*"]*self._settings["l1*"])
+        self.l2 = self._settings["J_DP2"]/(self._settings["m2*"]*self._settings["l2*"])
 
-        self.m1 = (self._settings['m1*']*self._settings['l1*'])**2/self._settings['J_DP1']
-        self.m2 = (self._settings['m2*']*self._settings['l2*'])**2/self._settings['J_DP2']
+        self.m1 = (self._settings["m1*"]*self._settings["l1*"])**2/self._settings["J_DP1"]
+        self.m2 = (self._settings["m2*"]*self._settings["l2*"])**2/self._settings["J_DP2"]
 
-        self.m0 = self._settings['m0*'] + (self._settings['m1*'] - self.m1) + (self._settings['m2*'] - self.m2)
+        self.m0 = self._settings["m0*"] + (self._settings["m1*"] - self.m1) + (self._settings["m2*"] - self.m2)
 
     def state_function(self, t, x, args):
         """
@@ -115,7 +115,7 @@ class TwoPendulumRigidBodyModel(pm.Model):
     Implementation of the two pendulum on a cart system
     this is implemented as rigid body model
     """
-    public_settings = OrderedDict([('initial state', st.initial_state),
+    public_settings = OrderedDict([("initial state", st.initial_state),
                                    ("m0*", st.m0_star),
                                    ("d0", st.d0),
                                    ("m1*", st.m1_star),
@@ -131,7 +131,7 @@ class TwoPendulumRigidBodyModel(pm.Model):
 
     def __init__(self, settings):
         # conversion from degree to radiant
-        settings['initial state'][2:] = settings['initial state'][2:]*np.pi/180
+        settings["initial state"][2:] = settings["initial state"][2:]*np.pi/180
         # add specific "private" settings
         settings.update(state_count=6)
         settings.update(input_count=1)
@@ -139,20 +139,20 @@ class TwoPendulumRigidBodyModel(pm.Model):
 
         print(self._settings)
         # shortcuts for readability
-        self.d0 = self._settings['d0']
-        self.d1 = self._settings['d1']
-        self.d2 = self._settings['d2']
-        self.g = self._settings['g']
+        self.d0 = self._settings["d0"]
+        self.d1 = self._settings["d1"]
+        self.d2 = self._settings["d2"]
+        self.g = self._settings["g"]
 
-        self.l1_star = self._settings['l1*']
-        self.l2_star = self._settings['l2*']
+        self.l1_star = self._settings["l1*"]
+        self.l2_star = self._settings["l2*"]
 
-        self.J_DP1 = self._settings['J_DP1']
-        self.J_DP2 = self._settings['J_DP2']
+        self.J_DP1 = self._settings["J_DP1"]
+        self.J_DP2 = self._settings["J_DP2"]
 
-        self.m0_star = self._settings['m0*']
-        self.m1_star = self._settings['m1*']
-        self.m2_star = self._settings['m2*']
+        self.m0_star = self._settings["m0*"]
+        self.m1_star = self._settings["m1*"]
+        self.m2_star = self._settings["m2*"]
 
     def state_function(self, t, x, args):
         """
@@ -174,18 +174,34 @@ class TwoPendulumRigidBodyModel(pm.Model):
         M2 = 0
 
         # transformation of the input
-        term1 = self.m0_star + self.m1_star + self.m2_star - self.m1_star**2*self.l1_star**2*(np.cos(x3))**2/self.J_DP1 \
-                - self.m2_star**2*self.l2_star**2*(np.cos(x5))**2/self.J_DP2
-        term2 = self.m1_star*self.l1_star*(np.cos(x3))*(M1 - self.d1*x4 + self.m1_star*self.l1_star*self.g*np.sin(x3))/self.J_DP1
-        term3 = self.m2_star*self.l2_star*(np.cos(x5))*(M2 - self.d2*x6 + self.m2_star*self.l2_star*self.g*np.sin(x5))/self.J_DP2
-        term4 = F - self.d0*x2 - self.m1_star*self.l1_star*x4**2*np.sin(x3) - self.m2_star*self.l2_star*x6**2*np.sin(x5)
+        term1 = (self.m0_star
+                 + self.m1_star
+                 + self.m2_star
+                 - self.m1_star**2*self.l1_star**2*(np.cos(x3))**2/self.J_DP1
+                 - self.m2_star**2*self.l2_star**2*(np.cos(x5))**2/self.J_DP2)
+        term2 = self.m1_star*self.l1_star*(np.cos(x3))*(M1
+                                                        - self.d1*x4
+                                                        + self.m1_star*self.l1_star*self.g*np.sin(x3))/self.J_DP1
+        term3 = self.m2_star*self.l2_star*(np.cos(x5))*(M2
+                                                        - self.d2*x6
+                                                        + self.m2_star*self.l2_star*self.g*np.sin(x5))/self.J_DP2
+        term4 = (F
+                 - self.d0*x2
+                 - self.m1_star*self.l1_star*x4**2*np.sin(x3)
+                 - self.m2_star*self.l2_star*x6**2*np.sin(x5))
 
         dx1 = x2
         dx2 = (term2 + term3 + term4)/term1
         dx3 = x4
-        dx4 = (self.m1_star*self.l1_star*np.cos(x3)*dx2 + M1 - self.d1*x4 + self.m1_star*self.l1_star*self.g*np.sin(x3))/self.J_DP1
+        dx4 = (self.m1_star*self.l1_star*np.cos(x3)*dx2
+               + M1
+               - self.d1*x4
+               + self.m1_star*self.l1_star*self.g*np.sin(x3))/self.J_DP1
         dx5 = x6
-        dx6 = (self.m2_star*self.l2_star*np.cos(x5)*dx2 + M2 - self.d2*x6 + self.m2_star*self.l2_star*self.g*np.sin(x5))/self.J_DP2
+        dx6 = (self.m2_star*self.l2_star*np.cos(x5)*dx2
+               + M2
+               - self.d2*x6
+               + self.m2_star*self.l2_star*self.g*np.sin(x5))/self.J_DP2
 
         dx = np.array([[dx1],
                        [dx2],
@@ -215,10 +231,10 @@ class TwoPendulumRigidBodyModel(pm.Model):
 
 class TwoPendulumModelParLin(pm.Model):
     """
-    Implementation of the two pendulum on a cart system
-    model with a acceleration as input
+    Implementation of the two pendulum on a cart system, with a acceleration as input
+    this is the partial linerarisation of the TwoPendulumModel
     """
-    public_settings = OrderedDict([('initial state', st.initial_state),
+    public_settings = OrderedDict([("initial state", st.initial_state),
                                    ("m0*", st.m0_star),
                                    ("d0", st.d0),
                                    ("m1*", st.m1_star),
@@ -234,25 +250,25 @@ class TwoPendulumModelParLin(pm.Model):
 
     def __init__(self, settings):
         # conversion from degree to radiant
-        settings['initial state'][2:] = settings['initial state'][2:]*np.pi/180
+        settings["initial state"][2:] = settings["initial state"][2:]*np.pi/180
         # add specific "private" settings
         settings.update(state_count=6)
         settings.update(input_count=1)
         pm.Model.__init__(self, settings)
 
         # shortcuts for readability
-        self.d0 = self._settings['d0']
-        self.d1 = self._settings['d1']
-        self.d2 = self._settings['d2']
-        self.g = self._settings['g']
+        self.d0 = self._settings["d0"]
+        self.d1 = self._settings["d1"]
+        self.d2 = self._settings["d2"]
+        self.g = self._settings["g"]
 
-        self.l1 = self._settings['J_DP1']/(self._settings['m1*']*self._settings['l1*'])
-        self.l2 = self._settings['J_DP2']/(self._settings['m2*']*self._settings['l2*'])
+        self.l1 = self._settings["J_DP1"]/(self._settings["m1*"]*self._settings["l1*"])
+        self.l2 = self._settings["J_DP2"]/(self._settings["m2*"]*self._settings["l2*"])
 
-        self.m1 = (self._settings['m1*']*self._settings['l1*'])**2/self._settings['J_DP1']
-        self.m2 = (self._settings['m2*']*self._settings['l2*'])**2/self._settings['J_DP2']
+        self.m1 = (self._settings["m1*"]*self._settings["l1*"])**2/self._settings["J_DP1"]
+        self.m2 = (self._settings["m2*"]*self._settings["l2*"])**2/self._settings["J_DP2"]
 
-        self.m0 = self._settings['m0*'] + (self._settings['m1*'] - self.m1) + (self._settings['m2*'] - self.m2)
+        self.m0 = self._settings["m0*"] + (self._settings["m1*"] - self.m1) + (self._settings["m2*"] - self.m2)
 
     def state_function(self, t, x, args):
         """

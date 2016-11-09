@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import numpy as np
+from scipy.linalg import solve_continuous_are
 from collections import OrderedDict
 
 import pymoskito as pm
@@ -110,6 +111,65 @@ class LinearStateFeedbackParLin(pm.Controller):
         # x = calc_small_signal_state(self._settings, is_values)
 
         # u corresponds to a acceleration [m/s**2]
+        u = - np.dot(self.K, x) + np.dot(self.V, yd[0, 0])
+
+        return u
+
+
+class LinearQuadraticRegulator(pm.Controller):
+
+    public_settings = OrderedDict([("Q", [1, 0.063, 0.025, 0.025, 0.025, 0.025]),
+                                   ("R", [1.0 / 144.0]),
+                                   ("long pendulum", "u"),
+                                   ("short pendulum", "o"),
+                                   ("d0", 0.0),
+                                   ('tick divider', 1)])
+
+    def __init__(self, settings):
+        # add specific private settings
+        settings.update(input_order=0)
+        settings.update(ouput_dim=1)
+        settings.update(input_type='system_state')
+
+        pm.Controller.__init__(self, settings)
+
+        eq_state = calc_equilibrium(settings)
+        # pole placement
+        parameter = [st.m0, st.m1, st.m2, st.l1, st.l2, st.g, self._settings["d0"], st.d1, st.d2]
+        self.A = symcalc.A_func(list(eq_state), parameter)
+        self.B = symcalc.B_func(list(eq_state), parameter)
+        self.C = symcalc.C
+
+        # create Q and R matrix
+        self.Q = np.diag(self._settings["Q"])
+        self.R = np.diag(self._settings["R"])
+
+        # try to solve linear riccati equation
+        self.P = solve_continuous_are(self.A, self.B, self.Q, self.R)
+        self.K = np.dot(np.dot(np.linalg.inv(self.R), self.B.T), self.P)
+        self.V = pm.tools.calc_prefilter(self.A, self.B, self.C, self.K)
+
+        eig = np.linalg.eig(self.A - np.dot(self.B, self.K))
+
+        self._logger.info("equilibrium = " + str(eq_state))
+        self._logger.info("Q = " + str(self._settings["Q"]))
+        self._logger.info("R = " + str(self._settings["R"]))
+        self._logger.info("P = " + str(self.P))
+        self._logger.info("K = " + str(self.K))
+        self._logger.info("eig = " + str(eig))
+        self._logger.info("V = " + str(self.V[0][0]))
+
+    def _control(self, time, trajectory_values=None, feedforward_values=None, input_values=None, **kwargs):
+        # input abbreviations
+        x = input_values
+        yd = trajectory_values
+        eq = kwargs.get("eq", None)
+
+        if eq is None:
+            eq = calc_closest_eq_state(self._settings, x)
+        x = x - np.atleast_2d(eq).T
+
+        # u corresponds to a force [kg*m/s**2] = [N]
         u = - np.dot(self.K, x) + np.dot(self.V, yd[0, 0])
 
         return u
@@ -353,5 +413,6 @@ def calc_small_signal_state(settings, state):
 
 pm.register_simulation_module(pm.Controller, LinearStateFeedback)
 pm.register_simulation_module(pm.Controller, LinearStateFeedbackParLin)
+pm.register_simulation_module(pm.Controller, LinearQuadraticRegulator)
 pm.register_simulation_module(pm.Controller, LjapunovController)
 pm.register_simulation_module(pm.Controller, SwingUpController)

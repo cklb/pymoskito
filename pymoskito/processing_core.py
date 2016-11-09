@@ -1,5 +1,3 @@
-
-
 import logging
 import os
 from abc import ABCMeta, abstractmethod
@@ -119,8 +117,8 @@ class ProcessingModule(QObject, metaclass=ProcessingModuleMeta):
 
         file_name = os.path.join(file_path, result_name)
         if output:
-            with open(file_name + '.pof', 'w') as f:
-                dump(output, f)
+            with open(file_name + ".pof", "wb") as f:
+                dump(output, f, protocol=4)
 
         if figure:
             for export_format in self._export_formats:
