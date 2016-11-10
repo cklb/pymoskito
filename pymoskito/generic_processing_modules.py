@@ -17,54 +17,69 @@ def get_figure_size(scale):
     :param scale:
     :return:
     """
-    fig_width_pt = 448.13095  # Get this from LaTeX using \the\textwidth
-    inches_per_pt = 1.0 / 72.27  # Convert pt to inch
-    golden_ratio = (np.sqrt(5.0) - 1.0) / 2.0  # Aesthetic ratio (you could change this)
+    # TODO: Get this from LaTeX using \the\textwidth
+    fig_width_pt = 448.13095
+    inches_per_pt = 1.0 / 72.27  # Convert pt to inch (stupid imperial system)
+    golden_ratio = (np.sqrt(5.0) - 1.0) / 2.0  # Aesthetic ratio
     fig_width = fig_width_pt * inches_per_pt * scale  # width in inches
     fig_height = fig_width * golden_ratio  # height in inches
     fig_size = [fig_width, fig_height]
     return fig_size
 
-latex_settings = {  # setup matplotlib to use latex for output
-                    "pgf.texsystem": "pdflatex",  # change this if using xetex or lautex
-                    "text.usetex": True,  # use LaTeX to write all text
-                    "font.family": "serif",
-                    "font.serif": [],  # blank entries should cause plots to inherit fonts from the document
-                    "font.sans-serif": [],
-                    "font.monospace": [],
-                    # "text.fontsize": 11,
-                    "legend.fontsize": 9,  # Make the legend/label fonts a little smaller
-                    "xtick.labelsize": 9,
-                    "ytick.labelsize": 9,
-                    "figure.figsize": get_figure_size(1),  # default fig size of 1.0 textwidth
-                    "lines.linewidth": 0.5,
-                    "axes.labelsize": 11,  # LaTeX default is 10pt font.
-                    "axes.linewidth": 0.5,
-                    "axes.unicode_minus": False,
-                    "figure.subplot.left": 0.1,  # the left side of the subplots of the figure
-                    "figure.subplot.right": 0.95,  # the right side of the subplots of the figure
-                    "figure.subplot.bottom": 0.125,  # the bottom of the subplots of the figure
-                    "figure.subplot.top": 0.95,  # the top of the subplots of the figure
-                    "figure.subplot.wspace": 0.4,  # the amount of width reserved for blank space between subplots
-                    "figure.subplot.hspace": 0.4,  # the amount of height reserved for white space between subplots
-                    "patch.linewidth": 0.5,
-                    # Patches are graphical objects that fill 2D space, like polygons or circles
-                    }
+latex_settings = {
+    # change this if using contex, xetex or lualatex
+    "pgf.texsystem": "pdflatex",
+    # use LaTeX to write all text
+    "text.usetex": True,
+    'font.family': 'lmodern',
+    # blank entries should cause plots to inherit fonts from the document
+    # "font.serif": [],
+    # "font.sans-serif": [],
+    # "font.monospace": [],
+    # "text.fontsize": 11,
+    "legend.fontsize": 9,  # Make the legend/label fonts a little smaller
+    "xtick.labelsize": 9,
+    "ytick.labelsize": 9,
+    "figure.figsize": get_figure_size(1),  # default fig size of 1\textwidth
+    "lines.linewidth": 0.5,
+    "axes.labelsize": 11,  # LaTeX default is 10pt font.
+    "axes.linewidth": 0.5,
+    "axes.unicode_minus": False,
+    # subfig related
+    "figure.subplot.left": 0.1,
+    "figure.subplot.right": 0.95,
+    "figure.subplot.bottom": 0.125,
+    "figure.subplot.top": 0.95,
+    # the amount of width reserved for blank space between subplots
+    "figure.subplot.wspace": 0.4,
+    # the amount of height reserved for white space between subplots
+    "figure.subplot.hspace": 0.4,
+    # Patches are graphical objects that fill 2D space, like polygons or circles
+    "patch.linewidth": 0.5,
+    }
 mpl.rcParams.update(latex_settings)
+mpl.rcParams['text.latex.preamble'].append(r'\usepackage{lmodern}'),
+mpl.rcParams['text.latex.preamble'].append(r'\usepackage{siunitx}'),
 
 
 class StepResponse(PostProcessingModule):
     """
     Postprocessor that creates diagrams for step response experiments.
 
-    Various measures are taken, displayed in a diagram and saved to result files. The following list contains the
-    measured/calculated entries and their explanations:
-        - rise time (t_rise): time needed until the output reaches 90% of its desired value
-        - correction time (t_corr): time needed until the output reaches the desired value for the first time
+    Various measures are taken, displayed in a diagram and saved to result
+    files. The following list contains the measured/calculated entries and
+    their explanations:
+
+        - rise time (t_rise): time needed until the output reaches 90% of its
+        desired value
+        - correction time (t_corr): time needed until the output reaches the
+        desired value for the first time
         - overshoot time (t_over): time of the greatest overshot
-        - overshot: maximum error between is and desired while approaching the desired value
-        - damping time (t_damp): time needed for the output to enter and remain in an epsilon region around
-        the desired value
+        - overshot: maximum error between is and desired while approaching the
+        desired value
+        - damping time (t_damp): time needed for the output to enter and remain
+        in an epsilon region around the desired value
+
     """
     line_color = '#aaaaaa'
     line_style = '-'
@@ -89,21 +104,23 @@ class StepResponse(PostProcessingModule):
         # calculate data sets
         t = data["results"]["time"]
         y = data["results"]["Model"][:, 0]
-        yd = data["results"]["Trajectory"][-1][0]
-
-        self.label_positions = np.arange(np.min(y) + 0.1 * yd, yd, (yd - np.min(y)) / 4)
+        yd = data["results"]["Trajectory"][-1, 0, 0]
+        self.label_positions = np.arange(y.min() + 0.1 * yd,
+                                         yd,
+                                         (yd - y.min()) / 4)
 
         # create plot
         fig = Figure()
         axes = fig.add_subplot(111)
-        axes.set_title(r"\textbf{Sprungantwort}")
+        axes.set_title(r"Sprungantwort")
         axes.plot(t, y, c='k')
         axes.set_xlim(left=0, right=t[-1])
-        axes.set_xlabel(r"\textit{Zeit [s]}")
-        axes.set_ylabel(r"\textit{Systemausgang [m]}")
+        axes.set_xlabel(r"Zeit in $\si{\second}$")
+        axes.set_ylabel(r"Systemausgang in $\si{\metre}$")
 
         # create desired line
-        desired_line = Line([0, t[-1]], [yd, yd], lw=1, ls=self.line_style, c='k')
+        desired_line = Line([0, t[-1]], [yd, yd],
+                            lw=1, ls=self.line_style, c='k')
         axes.add_line(desired_line)
 
         # calc rise-time (Anstiegszeit)
@@ -122,7 +139,8 @@ class StepResponse(PostProcessingModule):
         except IndexError:
             output.update({"t_corr": None})
 
-        # calc overshoot-time and overshoot in percent (Überschwingzeit und Überschwingen)
+        # calc overshoot-time and overshoot in percent
+        # (Überschwingzeit und Überschwingen)
         if output["t_corr"]:
             if yd > 0:
                 y_max = np.max(y[np.where(t > output["t_corr"])])
@@ -134,9 +152,13 @@ class StepResponse(PostProcessingModule):
             overshoot_per = overshoot/yd * 100
 
             self.create_time_line(axes, t, y, t_over, r"$T_o$")
-            output.update(dict(t_over=t_over, overshoot=overshoot, overshoot_percent=overshoot_per))
+            output.update(dict(t_over=t_over,
+                               overshoot=overshoot,
+                               overshoot_percent=overshoot_per))
         else:
-            output.update(dict(t_over=None, overshoot=None, overshoot_percent=None))
+            output.update(dict(t_over=None,
+                               overshoot=None,
+                               overshoot_percent=None))
 
         # calc damping-time (Beruhigungszeit)
         try:
@@ -156,9 +178,11 @@ class StepResponse(PostProcessingModule):
             output.update({"t_damp": None})
 
         # create epsilon tube
-        upper_bound_line = Line([0, t[-1]], [yd + self.eps, yd + self.eps], ls="--", c=self.line_color)
+        upper_bound_line = Line([0, t[-1]], [yd + self.eps, yd + self.eps],
+                                ls="--", c=self.line_color)
         axes.add_line(upper_bound_line)
-        lower_bound_line = Line([0, t[-1]], [yd - self.eps, yd - self.eps], ls="--", c=self.line_color)
+        lower_bound_line = Line([0, t[-1]], [yd - self.eps, yd - self.eps],
+                                ls="--", c=self.line_color)
         axes.add_line(lower_bound_line)
 
         # calc stationary control deviation
@@ -181,7 +205,8 @@ class StepResponse(PostProcessingModule):
 
         self.write_output_files(data["regime name"], fig, results)
 
-        return [dict(name='_'.join([data["regime name"], self.name]), figure=canvas)]
+        return [dict(name='_'.join([data["regime name"], self.name]),
+                     figure=canvas)]
 
     def create_time_line(self, axes, t, y, time_value, label):
         if time_value != t[-1]:
@@ -190,7 +215,8 @@ class StepResponse(PostProcessingModule):
                              ls=self.line_style,
                              c=self.line_color)
             axes.add_line(time_line)
-            axes.text(time_value + self.spacing, self.label_positions[self.counter],
+            axes.text(time_value + self.spacing,
+                      self.label_positions[self.counter],
                       label, size=self.font_size)
             self.counter += 1
 
@@ -212,11 +238,16 @@ class StepResponse(PostProcessingModule):
     @staticmethod
     def get_metric_values(data):
         """
-        helper function to extract data needed to calculate metrics for this postprocessor
-        overload to fit custom model
+        helper function to extract data needed to calculate metrics for this
+        postprocessor.
 
-        :param data: simulation data
-        :return: tuple of (is_values, desired_values, step_width)
+        Note:
+            Overload to fit custom model.
+
+        Params:
+            data: simulation data
+        Returns:
+             (tuple): (is_values, desired_values, step_width)
         """
         metric_values = (data["results"]["Model"],
                          data["results"]["Trajectory"],
@@ -253,14 +284,18 @@ class PlotAll(PostProcessingModule):
                 if len(module_shape) == 2:
                     val = module_data[:, idx]
 
-                plot_name = "_".join([data["regime name"], self.name, module_name, str(idx)])
+                plot_name = "_".join([data["regime name"],
+                                      self.name,
+                                      module_name, str(idx)])
                 fig = Figure()
                 axes = fig.add_subplot(111)
-                axes.set_title(r"\textbf{%s %d}" % (module_name.replace("_", " "), idx))
+                axes.set_title(r"\textbf{{} {}}".format(
+                    module_name.replace("_", " "), idx))
                 axes.plot(t, val, c='k')
                 axes.set_xlim(left=0, right=t[-1])
                 axes.set_xlabel(r"Time in s")
-                axes.set_ylabel(r"%s %s" % (module_name.replace("_", " "), str(idx)))
+                axes.set_ylabel(r"{} {}".format(
+                    module_name.replace("_", " "), idx))
                 axes.grid(True)
                 canvas = FigureCanvas(fig)
 
@@ -295,13 +330,16 @@ class XYMetaProcessor(MetaProcessingModule):
         self.plot_family(source, self.x_path, self.y_path, "line")
         self.set_plot_labeling()
 
-        # extract member_names (subtract common appendix like *Controller or *Feedforward)
+        # extract member_names, therefore
+        # (subtract common appendix like *Controller or *Feedforward)
         member_names = [x[:-len(self.x_path[1])] for x in source.keys()]
 
         canvas = FigureCanvas(self.fig)
 
         # write output files
-        file_name = self.name + "_".join([self.x_path[1], "("]) + "".join(member_names) + ")"
+        file_name = (self.name
+                     + "_".join([self.x_path[1], "("])
+                     + "".join(member_names) + ")")
         self.write_output_files(file_name, self.fig)
 
         return [{'figure': canvas, 'name': self.name}]
