@@ -23,11 +23,14 @@ def sort_lists(a, b):
 
 def get_resource(res_name, res_type="icons"):
     """
-    build absolute path to specified resource within the package
+    Build absolute path to specified resource within the package
 
-    :param res_name: resource
-    :param res_type: subdir
-    :return: path to resource
+    Args:
+        res_name (str): name of the resource
+        res_type (str): subdir
+
+    Return:
+        str: path to resource
     """
     own_path = os.path.dirname(__file__)
     resource_path = os.path.abspath(os.path.join(own_path, "resources", res_type))
@@ -36,12 +39,15 @@ def get_resource(res_name, res_type="icons"):
 
 def sort_tree(data_list, sort_key_path):
     """
-    helper method for data sorting.
+    Helper method for data sorting.
+    Takes a list of simulation results and sorts them into a tree whose index is given by the sort_key_path
 
-    takes a list of simulation results and sorts them into a tree whose index is given by the sort_key_path
+    Args:
+        data_list (list): list of simulation results
+        sort_key_path (str):
 
-    :param data_list:
-    :param sort_key_path:
+    Return:
+        dict: sorted dictionary
     """
     result = {}
     for elem in data_list:
@@ -68,8 +74,14 @@ def get_sub_value(source, key_path):
 
 def _remove_deepest(top_dict, keys=None):
     """
-    iterates recursively over dict and removes deepest entry.
-    :returns entry and path to entry
+    Iterates recursively over dict and removes deepest entry.
+
+    Args:
+        top_dict (dict): dictionary
+        keys (list): select entries to remove
+
+    Return:
+        tuple: entry and path to entry
     """
     if not keys:
         keys = []
@@ -110,7 +122,16 @@ def _add_sub_value(top_dict, keys, val):
 
 def lie_derivative(h, f, x, n):
     """
-    calculates the Lie-Derivative from a scalar field h(x) along a vector field f(x)
+    Calculates the Lie-Derivative from a scalar field :math:`h(x)` along a vector field :math:`f(x)`
+
+    Args:
+        h (sympy.matrix): scalar field
+        f (sympy.matrix): vector field
+        x (sympy.matrix): symbolic representation of the states
+        n (int): order
+
+    Return:
+        sympy.matrix: lie derivative
     """
     if n == 0:
         return h
@@ -122,17 +143,23 @@ def lie_derivative(h, f, x, n):
 
 def get_coefficients(poles):
     """
-    calculate the coefficients of a characteristic polynomial
-    :param poles: list or numpy array with poles
-    :return: coefficients as a 2d numpy array (row vector)
+    Calculate the coefficients of a characteristic polynomial.
+
+    Args:
+        poles (list or :obj:`numpy.ndarray`): pol configuration
+
+    Return:
+        :obj:`numpy.ndarray`: coefficients
     """
 
-    poles = np.array(poles)
-    s = sp.symbols('s')
+    poles = np.array(poles)  # convert to numpy array
+    poles = np.ravel(poles)  # transform to 1d array
+
+    s = sp.symbols("s")
     poly = 1
     for s_i in poles:
         poly = (s - s_i) * poly
-    poly = poly.expand()
+    poly = sp.expand(poly)
 
     # calculate the coefficient of characteristic polynomial
     n = len(poles)
@@ -141,7 +168,8 @@ def get_coefficients(poles):
         p.append(poly.subs([(s, 0)]))
         poly = poly - p[i]
         poly = poly / s
-        poly = poly.expand()
+        poly = sp.expand(poly)
+        # poly = s**n + a_n-1*s**(n-1) + ... + a_1*s + a_0
 
     # convert numbers and complex objects from multiplication to a complex number
     p = [complex(x) for x in p]
@@ -156,17 +184,20 @@ def get_coefficients(poles):
             warnings.warn(msg)
         p[idx] = val.real
 
-    return np.array([p], dtype=float)
+    return np.array([p], dtype=float)  # [a_0, a_1, ... , a_n-1]
 
 
 def rotation_matrix_xyz(axis, angle, angle_dim):
     """
-    calculate the rotation matrix for a rotation around
-    a given axis with the angle phi
-    :param axis: rotation axis
-    :param angle: rotation angle
-    :param angle_dim: angle dimensions, options: rad, deg
-    :return: rotation_matrix
+    Calculate the rotation matrix for a rotation around a given axis with the angle :math:`\\varphi`.
+
+    Args:
+        axis (str): choose rotation axis "x", "y" or "z"
+        angle (int or float): rotation angle :math:`\\varphi`
+        angle_dim (str): choose "deg" for degree or "rad" for radiant
+
+    Return:
+        :obj:`numpy.ndarray`: rotation matrix
     """
     assert angle_dim is "deg" or angle_dim is "rad"
     assert axis is "x" or axis is "y" or axis is "z"
@@ -197,23 +228,36 @@ def rotation_matrix_xyz(axis, angle, angle_dim):
     rotation_matrix = np.array([[c + x ** 2 * (1 - c), x * y * (1 - c) - z * s, x * z * (1 - c) + y * s],
                                 [y * x * (1 - c) + z * s, c + y ** 2 * (1 - c), y * z * (1 - c) - x * s],
                                 [z * x * (1 - c) - y * s, z * y * (1 - c) + x * s, c + z ** 2 * (1 - c)]])
-
     return rotation_matrix
 
 
 def controlability_matrix(A, B):
     """
-    calculate controlability matrix and check controlability of the system
-    :param A:
-    :param B:
-    :return:
+    Calculate controlability matrix and check controlability of the system.
+
+    .. math::
+        \\boldsymbol{Q_{c}} = \\begin{pmatrix}
+        \\boldsymbol{B} & \\boldsymbol{A}\\boldsymbol{B} & \\boldsymbol{A}^{2}\\boldsymbol{B} &
+        \\cdots & \\boldsymbol{A}^{n-1}\\boldsymbol{B}\\\\
+        \\end{pmatrix}
+
+    Args:
+        A (:obj:`numpy.ndarray`): system matrix
+        B (:obj:`numpy.ndarray`): manipulating matrix
+
+    Return:
+        :obj:`numpy.ndarray`: controlability matrix :math:`\\boldsymbol{Q_{c}}`
     """
+    A = np.atleast_2d(A)
+    B = np.atleast_2d(B)
 
     # check dimension of matrix A and B
     if A.shape[0] != A.shape[1]:
-        raise ValueError('A is not square')
+        raise ValueError("A is not square")
     if A.shape[0] != B.shape[0]:
-        raise ValueError('Dimension of A and B does not match')
+        raise ValueError("Dimension of A and B does not match")
+    if A.shape[0] < B.shape[1]:
+        raise ValueError("Dimension of A and B does not match")
     n = A.shape[0]
 
     # calculate controlability matrix
@@ -223,34 +267,82 @@ def controlability_matrix(A, B):
 
     # check controlability of the system
     if np.linalg.matrix_rank(Qc) != n:
-        raise ValueError('System is not controllable')
+        raise ValueError("System is not controllable")
 
     return Qc
 
 
-def ackerSISO(A, B, poles):
+def observability_matrix(A, C):
     """
-    place poles and return a numpy row-matrix
-   - place poles for a state feedback: you have to not transpose A and B
-   - place poles for a observer: you have to transpose A and C,
-     you will get a transposed L
-    :param A:
-    :param B:
-    :param poles:
-    :return:
+    Calculate observability matrix and check observability of the system.
+
+    .. math::
+        \\boldsymbol{Q_{o}} = \\begin{pmatrix}
+        \\boldsymbol{C}\\\\
+        \\boldsymbol{C}\\boldsymbol{A}\\\\
+        \\boldsymbol{C}\\boldsymbol{A}^{2}\\\\
+        \\vdots \\\\
+        \\boldsymbol{C}\\boldsymbol{A}^{n-1}\\\\
+        \\end{pmatrix}
+
+    Args:
+        A (:obj:`numpy.ndarray`): system matrix
+        C (:obj:`numpy.ndarray`): output matrix
+
+    Return:
+        :obj:`numpy.ndarray`: observability matrix :math:`\\boldsymbol{Q_{o}}`
+    """
+    A = np.atleast_2d(A)
+    C = np.atleast_2d(C)
+
+    # check dimension of matrix A and C
+    if A.shape[0] != A.shape[1]:
+        raise ValueError("A is not square")
+    if A.shape[0] != C.shape[1]:
+        raise ValueError("Dimension of A and C does not match")
+    if A.shape[0] < C.shape[0]:
+        raise ValueError("Dimension of A and C does not match")
+    n = A.shape[0]
+
+    # calculate observability matrix
+    Qo = C
+    for x in range(1, n):
+        Qo = np.concatenate((Qo, C @ np.linalg.matrix_power(A, x)), axis=0)
+
+    # check controlability of the system
+    if np.linalg.matrix_rank(Qo) != n:
+        raise ValueError("System is not observable")
+
+    return Qo
+
+
+def place_siso(A, B, poles):
+    """
+    Place poles for single input single output (SISO) systems:
+
+        - pol placement for state feedback: A and B
+        - pol placement for observer: transpose A and C, you will get a transposed gain matrix
+
+    Args:
+        A (:obj:`numpy.ndarray`): system matrix.
+        B (:obj:`numpy.ndarray`): manipulating matrix.
+        poles (list or :obj:`numpy.ndarray`): desired poles.
+
+    Return:
+        :obj:`numpy.ndarray`: control matrix.
     """
 
     # check consistency
     if A.shape[0] != A.shape[1]:
-        raise ValueError('A is not square')
+        raise ValueError("A is not square")
     n = A.shape[0]
     if n != B.shape[0]:
-        raise ValueError('Dimension of A and B does not match')
+        raise ValueError("Dimension of A and B does not match")
     m = B.shape[1]
     if m != 1:
-        raise ValueError('Dimension of B implies that is not a SISO system')
+        raise ValueError("Dimension of B implies that is not a SISO system")
     if n != len(poles):
-        raise ValueError('Dimension of A and the number of poles does not match')
+        raise ValueError("Dimension of A and the number of poles does not match")
 
     p = get_coefficients(poles)
 
@@ -272,20 +364,44 @@ def ackerSISO(A, B, poles):
 
 def calc_prefilter(A, B, C, K=None):
     """
-    calculate the prefilter and return a float
-    :param A:
-    :param B:
-    :param C:
-    :param K:
-    :return:
+    Calculate the prefilter matrix
+
+    .. math::
+        \\boldsymbol{V} = - \\left[\\boldsymbol{C} \\left(\\boldsymbol{A} -
+        \\boldsymbol{B}\\boldsymbol{K}\\right)^{-1}\\right]^{-1}
+
+    Args:
+        A (:obj:`numpy.ndarray`): system matrix
+        B (:obj:`numpy.ndarray`): manipulating matrix
+        C (:obj:`numpy.ndarray`): output matrix
+        K (:obj:`numpy.ndarray`): control matrix
+
+    Return:
+        :obj:`numpy.ndarray`: prefilter matrix
     """
-    # prefilter: V = -[C(A-BK)^-1*B]^-1
-    if K is not None:
+    A = np.atleast_2d(A)
+    B = np.atleast_2d(B)
+    C = np.atleast_2d(C)
+    K = np.atleast_2d(K)
+
+    # check dimension of matrices A, B and C
+    if A.shape[0] != A.shape[1]:
+        raise ValueError("A is not square")
+    if A.shape[0] != B.shape[0]:
+        raise ValueError("Dimension of A and B does not match")
+    if A.shape[0] < B.shape[1]:
+        raise ValueError("Dimension of A and B does not match")
+    if A.shape[0] != C.shape[1]:
+        raise ValueError("Dimension of A and C does not match")
+    if A.shape[0] < C.shape[0]:
+        raise ValueError("Dimension of A and C does not match")
+
+    if K[0, 0] is not None:
         try:
+            # prefilter: V = -[C(A-BK)^-1*B]^-1
             V = - np.linalg.inv(np.dot(np.dot(C, np.linalg.inv(A - np.dot(B, K))), B))
         except np.linalg.linalg.LinAlgError:
-            logger.error("can't calculate V, due to singular matrix")
-            V = np.array([[1]])
+            raise ValueError("Can not calculate V, due to singular matrix")
     else:
         V = np.array([[1]])
 
@@ -294,7 +410,7 @@ def calc_prefilter(A, B, C, K=None):
 
 class QPlainTextEditLogger(logging.Handler):
     """
-    logging handler that displays log-data in the gui
+    Logging handler that displays log-data in the gui
     """
     def __init__(self, parent):
         logging.Handler.__init__(self)
