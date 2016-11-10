@@ -5,6 +5,10 @@ import os
 import matplotlib as mpl
 import yaml
 
+# make everybody use qt5
+mpl.use('Qt5Agg')
+os.environ["PYQTGRAPH_QT_LIB"] = "PyQt5"
+
 from .generic_processing_modules import (StepResponse, PlotAll, XYMetaProcessor,
                                          construct_result_dict)
 from .generic_simulation_modules import ODEInt, SmoothTransition, \
@@ -32,10 +36,6 @@ with open(get_resource("logging.yaml", ""), "r") as f:
     log_conf = yaml.load(f)
 
 logging.config.dictConfig(log_conf)
-
-# make everybody use qt5
-mpl.use('Qt5Agg')
-os.environ["PYQTGRAPH_QT_LIB"] = "PyQt5"
 
 # register all generic modules
 register_simulation_module(Solver, ODEInt)
