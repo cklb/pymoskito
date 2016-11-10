@@ -30,7 +30,7 @@ class LinearStateFeedback(pm.Controller):
         self.A = symcalc.A_func(list(eq_state), parameter)
         self.B = symcalc.B_func(list(eq_state), parameter)
         self.C = symcalc.C
-        self.K = pm.tools.ackerSISO(self.A, self.B, self._settings['poles'])
+        self.K = pm.tools.place_siso(self.A, self.B, self._settings['poles'])
         self.V = pm.tools.calc_prefilter(self.A, self.B, self.C, self.K)
         # eig = np.linalg.eig(self.A - np.dot(self.B, self.K))
 
@@ -79,7 +79,7 @@ class LinearStateFeedbackParLin(pm.Controller):
         self.A = symcalc.A_func_par_lin(list(eq_state), parameter)
         self.B = symcalc.B_func_par_lin(list(eq_state), parameter)
         self.C = symcalc.C_par_lin
-        self.K = pm.tools.ackerSISO(self.A, self.B, self._settings['poles'])
+        self.K = pm.tools.place_siso(self.A, self.B, self._settings['poles'])
         self.V = pm.tools.calc_prefilter(self.A, self.B, self.C, self.K)
         # eig = np.linalg.eig(self.A - np.dot(self.B, self.K))
 

@@ -4,7 +4,7 @@ import logging.config
 
 from .generic_processing_modules import StepResponse, PlotAll, XYMetaProcessor, construct_result_dict
 from .generic_simulation_modules import ODEInt, SmoothTransition, HarmonicTrajectory, Setpoint, PIDController, \
-    PyTrajectory, AdditiveMixer, ModelInputLimiter, DeadTimeSensor, GaussianNoise
+    AdditiveMixer, ModelInputLimiter, DeadTimeSensor, GaussianNoise
 from .processing_core import PostProcessingModule, MetaProcessingModule
 from .processing_gui import PostProcessor as PostProcessor
 from .registry import register_simulation_module, register_processing_module, register_visualizer, \
@@ -32,7 +32,6 @@ register_simulation_module(Trajectory, SmoothTransition)
 register_simulation_module(Trajectory, HarmonicTrajectory)
 register_simulation_module(Trajectory, Setpoint)
 register_simulation_module(Controller, PIDController)
-register_simulation_module(Feedforward, PyTrajectory)
 register_simulation_module(ModelMixer, AdditiveMixer)
 register_simulation_module(ObserverMixer, AdditiveMixer)
 register_simulation_module(Limiter, ModelInputLimiter)
@@ -41,3 +40,4 @@ register_simulation_module(Disturbance, GaussianNoise)
 
 register_processing_module(PostProcessingModule, StepResponse)
 register_processing_module(PostProcessingModule, PlotAll)
+register_processing_module(MetaProcessingModule, XYMetaProcessor)

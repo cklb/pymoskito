@@ -1196,10 +1196,9 @@ class EvalC2(pm.PostProcessingModule):
 
         # calc L1NormITAE
         L1NormITAE = self.calcL1NormITAE(data)
-        output.update({ \
-            'L1NormITAE': L1NormITAE, \
-            'L1NormAbs': L1NormAbs, \
-            })
+        output.update({'L1NormITAE': L1NormITAE,
+                       'L1NormAbs': L1NormAbs,
+                       })
 
 
 class EvalCObserver(pm.PostProcessingModule):
@@ -1257,7 +1256,7 @@ class EvalCObserver(pm.PostProcessingModule):
         dt = 1.0 / data['modules']['solver']['measure rate']
         errorIntegrals = [0, 0, 0, 0]
 
-        # check for sim succes
+        # check for sim success
         if not data['results']['finished']:
             for key in output.keys():
                 output[key] = None
@@ -1282,4 +1281,4 @@ class EvalCObserver(pm.PostProcessingModule):
 
         return dict(name="_".join({data["regime name"], self.name}), figure=canvas)
 
-pm.register_simulation_module(pm.PostProcessingModule, EvalA1)
+pm.register_processing_module(pm.PostProcessingModule, EvalA1)

@@ -9,6 +9,7 @@ Tests for `processing` module.
 """
 
 import unittest
+import os
 
 from PyQt5.QtWidgets import QApplication
 
@@ -22,7 +23,8 @@ class TestProcessing(unittest.TestCase):
         self.post = PostProcessor()
 
         # load some test data sets
-        self.post._load_result_file("data/step_response.pmr")
+        path = os.path.join("data", "step_response.pmr")
+        self.post._load_result_file(path)
 
     def test_postprocessor(self):
         self.post.run_processor("StepResponse", processor_type="post")

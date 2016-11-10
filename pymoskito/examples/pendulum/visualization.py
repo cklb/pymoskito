@@ -478,17 +478,16 @@ class MplTwoPendulumVisualizer(pm.MplVisualizer):
         t_phi2 = mpl.transforms.Affine2D().rotate_deg_around(x0, 0, phi2) + self.axes.transData
 
         # long pendulum
-        self.long_pendulum.set_xy(np.array([-st.long_pendulum_radius, 0]) + np.array([x0, 0]))
+        self.long_pendulum.set_xy([-st.long_pendulum_radius + x0, 0])
         self.long_pendulum.set_transform(t_phi1)
-        self.long_pendulum_weight.set_xy(np.array([-st.pendulum_weight_radius, st.long_pendulum_height])
-                                         + np.array([x0, 0]))
+        self.long_pendulum_weight.set_xy([-st.pendulum_weight_radius + x0, st.long_pendulum_height])
         self.long_pendulum_weight.set_transform(t_phi1)
 
         # short pendulum
         self.short_pendulum.set_xy(np.array([-st.short_pendulum_radius, 0]) + np.array([x0, 0]))
         self.short_pendulum.set_transform(t_phi2)
-        self.short_pendulum_weight.set_xy(np.array([-st.pendulum_weight_radius, st.short_pendulum_height])
-                                          + np.array([x0, 0]))
+        self.short_pendulum_weight.set_xy([-st.pendulum_weight_radius + x0, st.short_pendulum_height])
+
         self.short_pendulum_weight.set_transform(t_phi2)
         self.canvas.draw()
 
