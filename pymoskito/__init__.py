@@ -1,16 +1,24 @@
 # -*- coding: utf-8 -*-
-import yaml
 import logging.config
+import os
 
-from .generic_processing_modules import StepResponse, PlotAll, XYMetaProcessor, construct_result_dict
-from .generic_simulation_modules import ODEInt, SmoothTransition, HarmonicTrajectory, Setpoint, PIDController, \
-    PyTrajectory, AdditiveMixer, ModelInputLimiter, DeadTimeSensor, GaussianNoise
+import matplotlib as mpl
+import yaml
+
+from .generic_processing_modules import (StepResponse, PlotAll, XYMetaProcessor,
+                                         construct_result_dict)
+from .generic_simulation_modules import ODEInt, SmoothTransition, \
+    HarmonicTrajectory, Setpoint, PIDController, \
+    PyTrajectory, AdditiveMixer, ModelInputLimiter, DeadTimeSensor, \
+    GaussianNoise
 from .processing_core import PostProcessingModule, MetaProcessingModule
 from .processing_gui import PostProcessor as PostProcessor
-from .registry import register_simulation_module, register_processing_module, register_visualizer, \
+from .registry import register_simulation_module, register_processing_module, \
+    register_visualizer, \
     get_registered_simulation_modules, get_registered_processing_modules
 from .simulation_gui import SimulationGui as Simulator
-from .simulation_modules import Solver, Trajectory, Model, ModelException, Feedforward, Controller, ModelMixer, \
+from .simulation_modules import Solver, Trajectory, Model, ModelException, \
+    Feedforward, Controller, ModelMixer, \
     ObserverMixer, Disturbance, Sensor, Limiter
 from .tools import get_resource, rotation_matrix_xyz
 from .visualization import VtkVisualizer, MplVisualizer
@@ -19,12 +27,15 @@ __author__ = 'Stefan Ecklebe'
 __email__ = 'stefan.ecklebe@tu-dresden.de'
 __version__ = '0.1.1'
 
-
 # configure logging
 with open(get_resource("logging.yaml", ""), "r") as f:
     log_conf = yaml.load(f)
 
 logging.config.dictConfig(log_conf)
+
+# make everybody use qt5
+mpl.use('Qt5Agg')
+os.environ["PYQTGRAPH_QT_LIB"] = "PyQt5"
 
 # register all generic modules
 register_simulation_module(Solver, ODEInt)

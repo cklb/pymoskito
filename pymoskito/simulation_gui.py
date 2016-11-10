@@ -6,10 +6,7 @@ import time
 import os
 from operator import itemgetter
 import yaml
-try:
-    import pickle as pickle
-except:
-    import pickle
+import pickle
 
 import numpy as np
 
