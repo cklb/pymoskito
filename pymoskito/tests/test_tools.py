@@ -34,48 +34,71 @@ class TestControlTools(unittest.TestCase):
         """
         check the function, which calculates the controlability matrix
         """
+
         # enter matrices with wrong dimensions
         self.assertRaises(ValueError, tools.controlability_matrix,
-                          np.array([[1, 1, 1], [1, 1, 1]]), np.array([[1], [1], [1]]))
+                          np.array([[1, 1, 1], [1, 1, 1]]),
+                          np.array([[1], [1], [1]]))
         self.assertRaises(ValueError, tools.controlability_matrix,
-                          np.array([[1, 1], [1, 1]]), np.array([[1], [1], [1]]))
+                          np.array([[1, 1], [1, 1]]),
+                          np.array([[1], [1], [1]]))
         self.assertRaises(ValueError, tools.controlability_matrix,
-                          np.array([[1, 1], [1, 1]]), np.array([[1, 1, 1], [1, 1, 1]]))
+                          np.array([[1, 1], [1, 1]]),
+                          np.array([[1, 1, 1], [1, 1, 1]]))
+
         # enter matrices, where the system shall be not controllable
         self.assertRaises(ValueError, tools.controlability_matrix,
-                          np.array([[0, 0], [0, 0]]), np.array([[0], [0]]))
-        # calculate a example
+                          np.array([[0, 0], [0, 0]]),
+                          np.array([[0], [0]]))
+
+        # calculate an example
         test_Qc = tools.controlability_matrix(self.A, self.B)
         self.assertTrue(np.allclose(test_Qc, self.Qc))
-        self.assertTrue(np.allclose(tools.controlability_matrix(self.A.tolist(), self.B.tolist()), self.Qc))
-        self.assertEqual(test_Qc.shape, (self.n, self.n*self.m))  # check dimensions
+        self.assertTrue(np.allclose(
+            tools.controlability_matrix(self.A.tolist(), self.B.tolist()),
+            self.Qc))
+
+        # check dimensions
+        self.assertEqual(test_Qc.shape, (self.n, self.n*self.m))
 
     def test_observability_matrix(self):
         """
         check the function, which calculates the observability matrix
         """
+
         # enter matrices with wrong dimensions
         self.assertRaises(ValueError, tools.observability_matrix,
-                          np.array([[1, 1, 1], [1, 1, 1]]), np.array([[1, 1, 1]]))
+                          np.array([[1, 1, 1], [1, 1, 1]]),
+                          np.array([[1, 1, 1]]))
         self.assertRaises(ValueError, tools.observability_matrix,
-                          np.array([[1, 1], [1, 1]]), np.array([[1, 1, 1]]))
+                          np.array([[1, 1], [1, 1]]),
+                          np.array([[1, 1, 1]]))
         self.assertRaises(ValueError, tools.observability_matrix,
-                          np.array([[1, 1], [1, 1]]), np.array([[1, 1], [1, 1], [1, 1]]))
+                          np.array([[1, 1], [1, 1]]),
+                          np.array([[1, 1], [1, 1], [1, 1]]))
+
         # enter matrices, where the system shall be not observable
         self.assertRaises(ValueError, tools.observability_matrix,
-                          np.array([[0, 0], [0, 0]]), np.array([[0, 0]]))
-        # calculate a example
+                          np.array([[0, 0], [0, 0]]),
+                          np.array([[0, 0]]))
+
+        # calculate an example
         test_Qo = tools.observability_matrix(self.A, self.C)
         self.assertTrue(np.allclose(test_Qo, self.Qo))
-        self.assertTrue(np.allclose(tools.observability_matrix(self.A.tolist(), self.C.tolist()), self.Qo))
-        self.assertEqual(test_Qo.shape, (self.r*self.n, self.n))  # check dimensions
+        self.assertTrue(np.allclose(
+            tools.observability_matrix(self.A.tolist(), self.C.tolist()),
+            self.Qo))
+
+        # check dimensions
+        self.assertEqual(test_Qo.shape, (self.r*self.n, self.n))
 
     def test_get_coefficients(self):
         """
-        check function, which calculates the coefficients of a characteristic polynomial
+        check function, which calculates the coefficients of a characteristic
+        polynomial
         """
 
-        # calculate a example
+        # calculate an example
         co = tools.get_coefficients(self.poles)
         self.assertTrue(np.allclose(co, self.coefficients))
         self.assertEqual(co.size, self.coefficients.size)
@@ -87,13 +110,19 @@ class TestControlTools(unittest.TestCase):
 
         # ValueError must occur if it is a MIMO system
         self.assertRaises(ValueError, tools.place_siso,
-                          np.array([[1, 1], [1, 1]]), np.array([[1, 1], [1, 1]]), self.poles)
+                          np.array([[1, 1], [1, 1]]),
+                          np.array([[1, 1], [1, 1]]),
+                          self.poles)
         self.assertRaises(ValueError, tools.place_siso,
-                          np.array([[1, 1], [1, 1]]), np.array([[1], [1]]), np.array([1, 1, 1]))
+                          np.array([[1, 1], [1, 1]]),
+                          np.array([[1], [1]]),
+                          np.array([1, 1, 1]))
 
-        # calculate a state feedback and a observer gain
+        # calculate a state feedback and an observer gain
         test_K = tools.place_siso(self.A, self.B, self.poles)
-        test_L = tools.place_siso(self.A.transpose(), self.C.transpose(), self.poles).transpose()
+        test_L = tools.place_siso(self.A.transpose(),
+                                  self.C.transpose(),
+                                  self.poles).transpose()
 
         self.assertTrue(np.allclose(test_K, self.K))
         self.assertTrue(np.allclose(test_L, self.L))
@@ -102,21 +131,33 @@ class TestControlTools(unittest.TestCase):
         """
         check function, which calculates the prefilter matrix
         """
-        self.assertRaises(ValueError, tools.calc_prefilter,
-                          np.array([[1], [1]]), np.array([[1], [1]]), np.array([[1, 1]]))
-        self.assertRaises(ValueError, tools.calc_prefilter,
-                          np.array([[1, 1], [1, 1]]), np.array([[1], [1], [1]]), np.array([[1, 1]]))
-        self.assertRaises(ValueError, tools.calc_prefilter,
-                          np.array([[1, 1], [1, 1]]), np.array([[1, 1, 1], [1, 1, 1]]), np.array([[1, 1]]))
 
         self.assertRaises(ValueError, tools.calc_prefilter,
-                          np.array([[1, 1], [1, 1]]), np.array([[1], [1]]), np.array([[1, 1, 1]]))
+                          np.array([[1], [1]]),
+                          np.array([[1], [1]]),
+                          np.array([[1, 1]]))
         self.assertRaises(ValueError, tools.calc_prefilter,
-                          np.array([[1, 1], [1, 1]]), np.array([[1], [1]]), np.array([[1, 1], [1, 1], [1, 1]]))
+                          np.array([[1, 1], [1, 1]]),
+                          np.array([[1], [1], [1]]),
+                          np.array([[1, 1]]))
+        self.assertRaises(ValueError, tools.calc_prefilter,
+                          np.array([[1, 1], [1, 1]]),
+                          np.array([[1, 1, 1], [1, 1, 1]]),
+                          np.array([[1, 1]]))
 
-        # enter matrices, where the prefilter shall be not calculable
         self.assertRaises(ValueError, tools.calc_prefilter,
-                          np.array([[0, 0], [0, 0]]), np.array([[0], [0]]), np.array([[0, 0]]), np.array([[0, 0]]))
+                          np.array([[1, 1], [1, 1]]),
+                          np.array([[1], [1]]),
+                          np.array([[1, 1, 1]]))
+        self.assertRaises(ValueError, tools.calc_prefilter,
+                          np.array([[1, 1], [1, 1]]),
+                          np.array([[1], [1]]),
+                          np.array([[1, 1], [1, 1], [1, 1]]))
+
+        # enter matrices, where the prefilter's calculation should fail
+        self.assertRaises(ValueError, tools.calc_prefilter,
+                          np.array([[0, 0], [0, 0]]), np.array([[0], [0]]),
+                          np.array([[0, 0]]), np.array([[0, 0]]))
 
         test_V = tools.calc_prefilter(self.A, self.B, self.C, self.K)
         self.assertTrue(np.allclose(test_V, self.V))
