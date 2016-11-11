@@ -3,7 +3,22 @@ import numpy as np
 
 import pymoskito as pm
 
+import matplotlib as mpl
+import matplotlib.patches
+import matplotlib.transforms
+
 from . import settings as st
+
+HKS41K100 = '#0b2a51'
+HKS44K100 = '#0059a3'
+HKS44K80 = '#346FB2'
+HKS36K100 = '#512947'
+HKS33K100 = '#811a78'
+HKS57K100 = '#007a47'
+HKS65K100 = '#22ad36'
+HKS07K100 = '#e87b14'
+HKS07K80 = '#ef9c51'
+
 
 try:
     import vtk
@@ -118,4 +133,56 @@ except ImportError as e:
     print(e.msg)
     print("VTK Visualization not available.")
 
-# TODO mpl visualizer
+
+class MplBallBeamVisualizer(pm.MplVisualizer):
+
+    def __init__(self, q_widget, q_layout):
+        pm.MplVisualizer.__init__(self, q_widget, q_layout)
+        self.axes.set_xlim(st.x_min_plot, st.x_max_plot)
+        self.axes.set_ylim(st.y_min_plot, st.y_max_plot)
+        self.axes.set_aspect("equal")
+
+        self.ball_base = mpl.patches.Circle(
+            xy=[0, 0],
+            radius=st.visR,
+            color=HKS44K100,
+            zorder=1)
+        self.ball_highlight = mpl.patches.Wedge(
+            center=[0, 0],
+            r=st.visR,
+            theta1=0,
+            theta2=90,
+            color=HKS07K100,
+            zorder=2)
+        self.beam = mpl.patches.Rectangle(
+            xy=[-st.visBeamLength/2, -(st.visR + st.visBeamWidth)],
+            width=st.visBeamLength,
+            height=st.visBeamWidth,
+            color=HKS41K100,
+            zorder=0)
+
+        self.axes.add_patch(self.ball_base)
+        self.axes.add_patch(self.ball_highlight)
+        self.axes.add_patch(self.beam)
+
+    def update_scene(self, x):
+        x_ball, dx_ball, theta_beam, dtheta_beam = x
+        theta_ball = -x_ball / st.visR
+
+        t_beam = (mpl.transforms.Affine2D().rotate_around(0, 0, theta_beam)
+                  + self.axes.transData)
+        t_ball = (mpl.transforms.Affine2D().rotate_around(0, 0, theta_ball)
+                  + mpl.transforms.Affine2D().translate(x_ball, 0)
+                  + t_beam)
+
+        # ball
+        self.ball_base.set_transform(t_ball)
+        self.ball_highlight.set_transform(t_ball)
+
+        # beam
+        self.beam.set_y(-(st.visR + st.visBeamWidth))
+        self.beam.set_transform(t_beam)
+
+        self.canvas.draw()
+
+pm.register_visualizer(MplBallBeamVisualizer)

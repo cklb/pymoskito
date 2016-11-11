@@ -28,6 +28,10 @@ class TestProcessing(unittest.TestCase):
 
     def test_postprocessor(self):
         self.post.run_processor("StepResponse", processor_type="post")
+        self.assertTrue(os.path.isfile(os.path.join("results",
+                                                    "processing",
+                                                    "StepResponse",
+                                                    "test-nonlinear.pof")))
 
     def tearDown(self):
         del self.post

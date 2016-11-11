@@ -8,7 +8,8 @@
 step_size = 0.002
 measure_rate = 500
 
-# initial minimal state vector (n, dn, x, dx) default values (used if none is given)
+# initial minimal state vector (n, dn, x, dx)
+# default values (used if none is given)
 initial_state = [0, 0, 180, 0, 180, 0]
 int_mode = 'vode'
 int_method = 'adams'
