@@ -29,6 +29,7 @@ class SimulationModule(QObject, metaclass=SimulationModuleMeta):
         self._logger = logging.getLogger(self.__class__.__name__)
 
         assert isinstance(settings, OrderedDict)
+
         assert ("tick divider" in settings)
         self._settings = settings
         del self._settings["modules"]

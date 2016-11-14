@@ -22,7 +22,9 @@ if __name__ == '__main__':
         prog = pm.Simulator()
 
         # load default config
-        prog.load_regimes_from_file(os.path.join(parent_dir, "ballbeam", "default.sreg"))
+        prog.load_regimes_from_file(os.path.join(parent_dir,
+                                                 "ballbeam",
+                                                 "default.sreg"))
         prog.apply_regime_by_name("test-nonlinear")
     else:
         prog = pm.PostProcessor()
