@@ -9,7 +9,7 @@ from . import settings as st
 
 class CarVisualizer(MplVisualizer):
     def __init__(self, q_widget, q_layout):
-        MplVisualizer.__init__(self, q_widget, q_layout)
+        MplVisualizer.__init__(self, q_widget, q_layout, save_animation_dialog=True)
         self.is_first_run = True
         self.color = "green"
         self.axes.set_xlim(-1, 1)
@@ -126,7 +126,7 @@ class CarVisualizer(MplVisualizer):
             self.sphere.center = (x1, x2)
 
             # wheel2
-            self.image[1].set_data([xR1_1, xR1_2], [yR1_1, yR1_2])
+            self.wheel_1.set_data([xR1_1, xR1_2], [yR1_1, yR1_2])
 
             self.wheel_2.set_data([xR2_1, xR2_2], [yR2_1, yR2_2])
 

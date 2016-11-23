@@ -75,7 +75,7 @@ class MplVisualizer(Visualizer):
     Base Class with some function the help visualizing the system using matplotlib
     """
 
-    def __init__(self, q_widget, q_layout):
+    def __init__(self, q_widget, q_layout, save_animation_dialog=False):
         Visualizer.__init__(self)
         self.q_widget = q_widget
         self.q_layout = q_layout
@@ -117,7 +117,7 @@ class MplVisualizer(Visualizer):
         self.save_each = 1
         self.combo_box1 = QtGui.QComboBox()
         self.combo_box1.setMaximumHeight(self.max_height)
-        self.combo_box1_content = ['frame'] + [str(num) for num in range(2, 25) + range(35, 250, 11)]
+        self.combo_box1_content = ['frame'] + [str(num) for num in list(range(2, 25)) + list(range(35, 250, 11))]
         self.combo_box1.addItems(self.combo_box1_content)
         # qt5:
         self.combo_box1.currentTextChanged.connect(self.index_changed)
@@ -166,7 +166,8 @@ class MplVisualizer(Visualizer):
         vbox.setAlignment(self.push_button, QtCore.Qt.AlignLeft)
         hbox2.addWidget(self.mpl_toolbar)
         hbox2.setAlignment(self.mpl_toolbar, QtCore.Qt.AlignBottom)
-        hbox2.addLayout(vbox)
+        if save_animation_dialog:
+            hbox2.addLayout(vbox)
         hbox2.setAlignment(vbox, QtCore.Qt.AlignTop)
         self.q_layout.addLayout(hbox2)
         self.q_layout.addWidget(self.canvas)
