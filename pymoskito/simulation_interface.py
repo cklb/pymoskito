@@ -225,6 +225,9 @@ class SimulatorInteractor(QObject):
             property_name = str(item.child(row, 0).text())
             property_val_str = str(item.child(row, 1).text())
 
+            # delete unnecessary quotes
+            property_val_str = property_val_str.replace("'", "")
+
             if "np." in property_val_str or "numpy." in property_val_str:
                 self._logger.error(
                     ("Property '{}' of module '{}' contains a numpy expression. "
