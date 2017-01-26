@@ -1,4 +1,6 @@
 sympy
 scipy
-pyqtgraph
+pyqtgraph>=0.10.0
+matplotlib
 wheel>=0.23.0
+pyyaml

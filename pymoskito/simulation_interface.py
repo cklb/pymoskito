@@ -3,17 +3,20 @@
     provides functions to manipulate settings of the simulator and
     to inspect its current state.
 """
-import sys
 import copy
 import logging
+import sys
+import ast
+import traceback
 
-from PyQt4 import QtCore, QtGui
-from PyQt4.QtGui import QStandardItemModel, QStandardItem, QItemDelegate, QComboBox
+from PyQt5.QtCore import Qt, QObject, pyqtSignal, pyqtSlot, QModelIndex, QSize, QThread
+from PyQt5.QtGui import QStandardItemModel, QStandardItem
+from PyQt5.QtWidgets import QItemDelegate, QComboBox, QTreeView
 
-from registry import get_registered_simulation_modules, get_simulation_module_class_by_name
-import simulation_modules
-from generic_simulation_modules import *
-from simulation_core import Simulator, SimulationSettings, SimulationStateChange
+from . import simulation_modules
+from .generic_simulation_modules import *
+from .registry import get_registered_simulation_modules, get_simulation_module_class_by_name
+from .simulation_core import Simulator, SimulationSettings, SimulationStateChange
 
 
 class SimulatorModel(QStandardItemModel):
@@ -22,9 +25,9 @@ class SimulatorModel(QStandardItemModel):
 
     def flags(self, index):
         if index.column() == 1:
-            return QtCore.Qt.ItemIsEditable | QtCore.Qt.ItemIsEnabled
+            return Qt.ItemIsEditable | Qt.ItemIsEnabled
         else:
-            return QtCore.Qt.ItemIsEnabled
+            return Qt.ItemIsEnabled
 
 
 class PropertyDelegate(QItemDelegate):
@@ -93,7 +96,7 @@ class ComboDelegate(QItemDelegate):
         extract all possible choices for the selected SimulationModule
         """
         entries = ['None']
-        idx = index.model().index(index.row(), 0, QtCore.QModelIndex())
+        idx = index.model().index(index.row(), 0, QModelIndex())
         sim_module_name = str(index.model().itemFromIndex(idx).text())
         sim_module = getattr(simulation_modules, sim_module_name)
         sub_modules = get_registered_simulation_modules(sim_module)
@@ -103,31 +106,31 @@ class ComboDelegate(QItemDelegate):
         return entries
 
 
-class SimulatorView(QtGui.QTreeView):
+class SimulatorView(QTreeView):
     def __init__(self, parent=None):
-        QtGui.QTreeView.__init__(self, parent)
+        QTreeView.__init__(self, parent)
         self.setItemDelegateForColumn(1, PropertyDelegate(self))
 
     def sizeHint(self):
-        return QtCore.QSize(300, 150)
+        return QSize(300, 150)
 
     def minimumSizeHint(self):
         return self.sizeHint()
 
 
-class SimulatorInteractor(QtCore.QObject):
+class SimulatorInteractor(QObject):
     """
     Class that interacts between the gui which controls the programs execution
     and the Simulator which handles the time step simulation
     """
 
     # signals
-    simulation_finished = QtCore.pyqtSignal(dict)
-    simulation_failed = QtCore.pyqtSignal(dict)
-    simulationProgressChanged = QtCore.pyqtSignal(int)
+    simulation_finished = pyqtSignal(dict)
+    simulation_failed = pyqtSignal(dict)
+    simulationProgressChanged = pyqtSignal(int)
 
     def __init__(self, parent=None):
-        QtCore.QObject.__init__(self, parent)
+        QObject.__init__(self, parent)
         self._logger = logging.getLogger(self.__class__.__name__)
 
         self.last_progress = 0
@@ -136,7 +139,7 @@ class SimulatorInteractor(QtCore.QObject):
 
         self._sim = None
         self._sim_settings = None
-        self.simThread = QtCore.QThread()
+        self.simThread = QThread()
         self._sim_modules = {}
         self._sim_data = {'modules': {}}
         self._sim_state = None
@@ -185,7 +188,7 @@ class SimulatorInteractor(QtCore.QObject):
             return
 
         settings = self._read_settings(module_name, sub_module_name)
-        for key, val in settings.iteritems():
+        for key, val in settings.items():
             setting_name = QStandardItem(key)
             setting_value = QStandardItem(str(val))
             parent.appendRow([setting_name, setting_value])
@@ -216,29 +219,40 @@ class SimulatorInteractor(QtCore.QObject):
     def _get_settings(self, model, module_name):
         item = model.findItems(module_name).pop(0)
 
+        # TODO this is not the good way --> switch to pyqtgraphs implementation
         settings = OrderedDict()
         for row in range(item.rowCount()):
             property_name = str(item.child(row, 0).text())
-            # TODO this is not the good way --> switch to pyqtgraphs implementation
-            if property_name == 'Method':
-                prop_val = str(item.child(row, 1).text())
-            else:
-                val_str = str(item.child(row, 1).text())
-                if '[' in val_str:
-                    # parse vector
-                    # if the vector contains complex numbers the command text(), see above,
-                    # build a string with ' in it, we have to delete this
-                    val_str = val_str.replace("'", "")
-                    prop_val = np.array([complex(x) if "j" in x else float(x) for x in val_str[1:-1].split(',')])
-                else:
-                    # parse scalar
-                    try:
-                        prop_val = np.array(float(val_str))
-                    except ValueError:
-                        # well then it is probably no float
-                        prop_val = val_str
+            property_val_str = str(item.child(row, 1).text())
 
-            settings.update({property_name: prop_val})
+            # delete unnecessary quotes
+            property_val_str = property_val_str.replace("'", "")
+
+            if "np." in property_val_str or "numpy." in property_val_str:
+                self._logger.error(
+                    ("Property '{}' of module '{}' contains a numpy expression. "
+                     + "Only standard python types are supported for entries.").format(property_name, module_name))
+            elif "pi" in property_val_str or "Pi" in property_val_str or "PI" in property_val_str:
+                property_val = np.pi
+            elif (("exp(" in property_val_str and property_val_str[-1] == ")")
+                  or ("e^(" in property_val_str and property_val_str[-1] is ")")):
+                tmp = property_val_str[:-1]  # cut off last bracket
+                tmp = tmp.replace("exp(", "")
+                tmp = tmp.replace("e^(", "")
+                try:
+                    property_val = ast.literal_eval(tmp)
+                    property_val = np.exp(property_val)
+                except ValueError:
+                    property_val = property_val_str
+            else:
+                try:
+                    property_val = ast.literal_eval(property_val_str)
+                except ValueError:
+                    # property_val_str can not be parsed by literal_eval
+                    # save string in dict
+                    property_val = property_val_str
+
+            settings.update({property_name: property_val})
 
         return settings
 
@@ -303,7 +317,7 @@ class SimulatorInteractor(QtCore.QObject):
             self._setup_model_items()
 
         # overwrite all settings with the provided ones
-        for module_name, value in reg.iteritems():
+        for module_name, value in reg.items():
             if module_name == "Name" or module_name == "clear previous":
                 continue
 
@@ -331,7 +345,7 @@ class SimulatorInteractor(QtCore.QObject):
             # due to signal connections, default settings are loaded automatically in the back
 
             # overwrite specific settings
-            for key, val in value.iteritems():
+            for key, val in value.items():
                 if key == "type":
                     continue
 
@@ -349,7 +363,7 @@ class SimulatorInteractor(QtCore.QObject):
 
     def run_simulation(self):
         """
-        entry hook for timestep simulation
+        entry hook for time step simulation
         - use settings to create modules in simulation loop
         - move them into an extra thread
         - start simulation
@@ -375,7 +389,7 @@ class SimulatorInteractor(QtCore.QObject):
         # run
         self.simThread.start()
 
-    @QtCore.pyqtSlot(SimulationStateChange)
+    @pyqtSlot(SimulationStateChange)
     def simulation_state_changed(self, state_change):
         """
         slot for simulation state changes
@@ -396,6 +410,8 @@ class SimulatorInteractor(QtCore.QObject):
         elif state_change.type == "abort":
             self._sim_state = "aborted"
             self._sim_data.update({'results': copy.deepcopy(state_change.data)})
+            self._logger.error("simulation has been aborted due to an exception:", exc_info=state_change.info)
+            self._logger.info("check your configuration")
         elif state_change.type == "finish":
             self._sim_state = "finished"
             self._sim_data.update({'results': copy.deepcopy(state_change.data)})

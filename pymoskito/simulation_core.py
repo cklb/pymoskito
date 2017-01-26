@@ -1,10 +1,14 @@
 ﻿# -*- coding: utf-8 -*-
-from __future__ import division
-import logging
-import numpy as np
-from PyQt4.QtCore import QObject, pyqtSignal, pyqtSlot
 
-from simulation_modules import SimulationException
+
+import logging
+import sys
+
+import numpy as np
+from copy import deepcopy
+from PyQt5.QtCore import QObject, pyqtSignal, pyqtSlot
+
+from .simulation_modules import SimulationException
 
 
 class SimulationStateChange(object):
@@ -20,7 +24,7 @@ class SimulationStateChange(object):
 
     def __init__(self, **kwargs):
         assert "type" in kwargs.keys()
-        for key, val in kwargs.iteritems():
+        for key, val in kwargs.items():
             setattr(self, key, val)
 
 
@@ -87,13 +91,13 @@ class Simulator(QObject):
         self._counter = {}
         self._current_outputs = {}
         self._current_outputs.update(time=0)
-        for mod_name, obj in self._simulation_modules.iteritems():
+        for mod_name, obj in self._simulation_modules.items():
             self._counter.update({mod_name: obj.tick_divider})
             self._current_outputs.update({mod_name: []})
             self._current_outputs[mod_name] = []
 
         # init model output with current state
-        self._current_outputs["Solver"] = self._simulation_modules["Model"].initial_state
+        self._current_outputs["Solver"] = np.array(self._simulation_modules["Model"].initial_state)
 
         return
 
@@ -157,11 +161,11 @@ class Simulator(QObject):
         """
         store all values of finished integration step
         """
-        for key, val in self._current_outputs.iteritems():
+        for key, val in self._current_outputs.items():
             if key in self._storage:
-                self._storage[key].append(val)
+                self._storage[key].append(np.array(val))
             else:
-                self._storage.update({key: [val]})
+                self._storage.update({key: [np.array(val)]})
 
         return
 
@@ -184,6 +188,7 @@ class Simulator(QObject):
 
         self.state_changed.emit(SimulationStateChange(type="start"))
         end_state = None
+        info = None
 
         # TODO store values for timestamp t=0, store initial states for model and observer
 
@@ -196,13 +201,12 @@ class Simulator(QObject):
                     self._calc_step()
                     dt = solver.t - t
 
-                except SimulationException as e:
-                    self._loggger.error("run()>> {0}: {1}".format(type(e).__name__, e.args[0]))
-
+                except Exception as e:
                     # overwrite end time with reached time
                     self._settings.end_time = self._current_outputs["time"]
                     self._storage.update(finished=False)
                     end_state = "abort"
+                    info = sys.exc_info()
                     break
 
             self._store_values()
@@ -212,14 +216,14 @@ class Simulator(QObject):
             self._storage.update(finished=True)
             end_state = "finish"
 
-        self.state_changed.emit(SimulationStateChange(type=end_state, data=self.output))
+        self.state_changed.emit(SimulationStateChange(type=end_state, data=self.output, info=info))
         self.finished.emit()
 
     @property
     def output(self):
         # convert storage entries
         out = {}
-        for module, results in self._storage.iteritems():
+        for module, results in self._storage.items():
             if not isinstance(results, list):
                 # flag or string -> nothing to convert
                 entry = results

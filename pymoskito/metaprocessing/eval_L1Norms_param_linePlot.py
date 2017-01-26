@@ -1,13 +1,10 @@
 # -*- coding: utf-8 -*-
-import os
 import matplotlib as mpl
 
-mpl.use("Qt4Agg")
 mpl.rcParams['text.usetex'] = True
 mpl.rcParams['text.latex.unicode'] = True
-from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
-from matplotlib.lines import Line2D as line
 
 from processing_gui import MetaProcessingModule
 import settings as st
@@ -56,7 +53,7 @@ class eval_L1Norms_param_linePlot(MetaProcessingModule):
             xlbl = ''
 
         self.plotSettings(axes[0],
-                          titel=u'Fehlerintegral',
+                          titel='Fehlerintegral',
                           grid=True,
                           xlabel=xlbl,
                           ylabel=r'$E \, \lbrack ms\rbrack$')
@@ -65,7 +62,7 @@ class eval_L1Norms_param_linePlot(MetaProcessingModule):
                                    yPath=['metrics', 'L1NormITAE'],
                                    typ='line')
         self.plotSettings(axes[1],
-                          titel=u'ITAE Fehler',
+                          titel='ITAE Fehler',
                           grid=True,
                           xlabel=xlbl,
                           ylabel=r'$E \, \lbrack ms^2\rbrack$')

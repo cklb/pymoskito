@@ -1,15 +1,13 @@
 # -*- coding: utf-8 -*-
-import os
 
-import matplotlib as mpl
-mpl.use("Qt4Agg")
 #mpl.rcParams['text.usetex']=True
 #mpl.rcParams['text.latex.unicode']=True
-from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 
 from processing_gui import MetaProcessingModule
 from tools import sortTree
+
 
 class eval_L1NormAbs_delay_linePlot(MetaProcessingModule):
     '''

@@ -1,0 +1,142 @@
+ # default regime file that is loaded when the simulation environment starts up
+ # use this to create your own files
+
+- Name: PID_Controller
+  clear previous: !!python/bool True # decide whether previous settings should remain or not
+
+  Model:
+   type: BallInTubeModel
+   initial state: [0, 0, 0, 0]
+
+  Solver:
+   type: ODEInt
+   measure rate: 500
+   step size: 0.001
+   end time: 10
+
+  Controller:
+   type: PIDController
+   Kp: 300
+   Ki: 310
+   Kd: 72
+   output_limits: [0, 255]
+   input_state: [2]
+
+  Trajectory:
+   type: Setpoint
+   State: [2]
+   Setpoint: [0.7]
+
+  ModelMixer:
+   type: AdditiveMixer
+   Input A: Controller
+   Input B: Feedforward
+
+- Name: OpenLoop
+  clear previous: !!python/bool True # decide whether previous settings should remain or not
+
+  Model:
+   type: BallInTubeModel
+   initial state: [0, 0, 0, 0]
+
+  Solver:
+   type: ODEInt
+   measure rate: 500
+   step size: 0.001
+   end time: 10
+
+  Controller:
+   type: OpenLoop
+   pwm: 170
+
+  ModelMixer:
+   type: AdditiveMixer
+   Input A: Controller
+   Input B: Feedforward
+
+- Name: Feedforward
+  clear previous: !!python/bool True # decide whether previous settings should remain or not
+
+  Model:
+   type: BallInTubeModel
+   # 75.23 is the fan speed in the equilibrium
+   initial state: [75.233802172, 0, 0, 0]
+
+  Solver:
+   type: ODEInt
+   measure rate: 500
+   step size: 0.001
+   end time: 10
+
+  Feedforward:
+   type: BallInTubeFeedforward
+
+  Trajectory:
+   type: SmoothTransition
+   states: [0.0, 1.0]
+   start_time: 2
+   delta t: 5
+
+  ModelMixer:
+   type: AdditiveMixer
+   Input A: Controller
+   Input B: Feedforward
+
+- Name: test_spring_with_dead_time
+  clear previous: !!python/bool True # decide whether previous settings should remain or not
+
+  Model:
+   type: BallInTubeSpringModel
+   initial state: [0, 0, 1, 0]
+
+  Solver:
+   type: ODEInt
+   measure rate: 60
+   step size: 0.001
+   end time: 5
+
+  Sensor:
+   type: DeadTimeSensor
+   delay: 5
+   states to delay: [2, 3]
+
+  ModelMixer:
+   type: AdditiveMixer
+   Input A: Controller
+   Input B: Feedforward
+
+- Name: initial_ball_speed
+  clear previous: !!python/bool True # decide whether previous settings should remain or not
+
+  Model:
+   type: BallInTubeModel
+   initial state: [0, 0, 0, 1.65]
+
+  Solver:
+   type: ODEInt
+   measure rate: 500
+   step size: 0.001
+   end time: 5
+
+  ModelMixer:
+   type: AdditiveMixer
+   Input A: Controller
+   Input B: Feedforward
+
+- Name: initial_fan_speed
+  clear previous: !!python/bool True # decide whether previous settings should remain or not
+
+  Model:
+   type: BallInTubeModel
+   initial state: [200, 0, 0, 0]
+
+  Solver:
+   type: ODEInt
+   measure rate: 500
+   step size: 0.001
+   end time: 5
+
+  ModelMixer:
+   type: AdditiveMixer
+   Input A: Controller
+   Input B: Feedforward

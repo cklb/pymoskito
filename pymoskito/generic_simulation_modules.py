@@ -3,10 +3,7 @@ from scipy.integrate import ode
 import sympy as sp
 import numpy as np
 
-# from pytrajectory import ControlSystem
-
-from registry import register_simulation_module
-from simulation_modules import Solver, \
+from .simulation_modules import Solver, \
     SolverException, \
     Trajectory, \
     TrajectoryException, \
@@ -19,7 +16,6 @@ from simulation_modules import Solver, \
     Sensor, \
     Disturbance
 
-__author__ = 'stefan'
 """
 ready to go implementations of simulation modules
 """
@@ -243,18 +239,18 @@ class PIDController(Controller):
         self.last_u = np.zeros((len(self._settings["input_state"]), 1))  # column vector
         self.output = np.zeros((len(self._settings["input_state"]), 1))  # column vector
 
-    def _control(self, is_values, desired_values, t):
+    def _control(self, time, trajectory_values=None, feedforward_values=None, input_values=None, **kwargs):
         # input abbreviations
         x = np.zeros((len(self._settings["input_state"]), 1))
         for idx, state in enumerate(self._settings["input_state"]):
-            x[idx][0] = is_values[int(state)][0]
+            x[idx][0] = input_values[int(state)][0]
 
-        yd = desired_values
+        yd = trajectory_values
 
         # step size
-        dt = t - self.last_time
+        dt = time - self.last_time
         # save current time
-        self.last_time = t
+        self.last_time = time
 
         if dt != 0:
             for i in range(len(x)):
@@ -267,9 +263,9 @@ class PIDController(Controller):
                     integral = self._settings["output_limits"][0]
                 differential = (e - self.e_old[i][0]) / dt
 
-                self.output[i][0] = self._settings["Kp"] * e \
-                                    + self._settings["Ki"] * integral \
-                                    + self._settings["Kd"] * differential
+                self.output[i][0] = (self._settings["Kp"] * e
+                                     + self._settings["Ki"] * integral
+                                     + self._settings["Kd"] * differential)
 
                 if self.output[i][0] > self._settings["output_limits"][1]:
                     self.output[i][0] = self._settings["output_limits"][1]
@@ -284,58 +280,6 @@ class PIDController(Controller):
             u = self.last_u
         self.last_u = u
         return u
-
-
-class PyTrajectory(Feedforward):
-    """
-    this class is WIP!
-    integration  of the PyTrajectory package,
-    PyTrajectory is a Python library for the determination of the feed forward control
-    to achieve a transition between desired states of a nonlinear control system.
-    """
-
-    public_settings = OrderedDict([
-        ("state a", [0]),
-        ("state b", [0]),
-        ("input a", [0]),
-        ("input b", [0]),
-        ("time a", 0),
-        ("time b", 2),
-        ("tick divider", 1)
-    ])
-
-    def __init__(self, settings):
-        settings.update(input_order=0)
-        Feedforward.__init__(self, settings)
-
-        # check consistency between public_settings and the given model
-        # TODO don't do this!
-        assert (self._model._settings["state_count"] == len(self._settings["state a"]))
-        assert (self._model._settings["state_count"] == len(self._settings["state b"]))
-        assert (self._model._settings["input_count"] == len(self._settings["input a"]))
-        assert (self._model._settings["input_count"] == len(self._settings["input b"]))
-
-        # TODO get integration of PyTrajectory going
-        # # calculate the feedforward
-        # system = ControlSystem(self._model.f,
-        #                        a=self._settings["time a"],
-        #                        b=self._settings["time b"],
-        #                        xa=self._settings["state a"],
-        #                        xb=self._settings["state b"],
-        #                        ua=self._settings["input a"],
-        #                        ub=self._settings["input b"])
-        # # alter some method parameters to increase performance
-        # system.set_param('su', 10)
-        # system.set_param('eps', 8e-2)
-        # system.solve()
-        #
-        # self.feed_time = system.sim_data[0]
-        # self.feed_u =system.sim_data[2]
-
-    def _feedforward(self, traj_values, t):
-        # TODO get rid of this extra parameter
-        u_feed = 0
-        return u_feed
 
 
 class AdditiveMixer(SignalMixer):
@@ -380,27 +324,36 @@ class ModelInputLimiter(Limiter):
 
 class DeadTimeSensor(Sensor):
     """
-    Sensor that adds a measurement delay
+    Sensor that adds a measurement delay on chosen states
     """
 
-    public_settings = OrderedDict([("output", [True, True, True, True]),
+    public_settings = OrderedDict([("states to delay", [0]),
                                    ("delay", 1)])
 
     def __init__(self, settings):
-        settings.update([("input signal", "Solver")])
+        settings.update([("input signal", "system_state")])
         Sensor.__init__(self, settings)
         self._storage = None
 
     def _measure(self, value):
         if self._storage is None:
-            self._storage = [np.zeros_like(value)] * self._settings["delay"]
+            # create storage with length "delay"
+            # initial values are the first input
+            self._storage = [value]*int(self._settings["delay"])
 
+        # save current values
+        measurement = value.copy()
         # add new measurement
-        meas = value[self._settings["output"]]
-        self._storage.append(meas)
+        self._storage.append(value)
 
-        # return delayed one
-        return self._storage.pop(0)
+        # get delayed measurements
+        delayed_measurement = self._storage.pop(0)
+
+        # replace current values with delayed values, if it is chosen
+        for i in self._settings["states to delay"]:
+            measurement[i] = delayed_measurement[i]
+
+        return measurement
 
 
 class GaussianNoise(Disturbance):

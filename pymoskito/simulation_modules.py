@@ -1,9 +1,10 @@
-from __future__ import division
-from abc import ABCMeta, abstractmethod, abstractproperty
-import logging
-from collections import OrderedDict
-from PyQt4.QtCore import QObject, pyqtWrapperType
 
+
+import logging
+from abc import ABCMeta, abstractmethod, abstractproperty
+from collections import OrderedDict
+
+from PyQt5.QtCore import QObject, pyqtWrapperType
 
 __author__ = 'stefan'
 
@@ -16,14 +17,13 @@ class SimulationException(Exception):
     pass
 
 
-class SimulationModule(QObject):
+class SimulationModule(QObject, metaclass=SimulationModuleMeta):
     """
     Smallest Unit in Simulation Process.
     Provides necessary functions like output calculation and holds
     all settings is 'settings' all available settings have to be added
     to this dict and have to be known a priori.
     """
-    __metaclass__ = SimulationModuleMeta
 
     def __init__(self, settings):
         QObject.__init__(self, None)
@@ -174,16 +174,20 @@ class Controller(SimulationModule):
                              if src == self._settings["input_type"]), None)
         if input_values is None:
             raise ControllerException("Selected Input not available")
-        desired_values = input_vector["Trajectory"]
-        return self._control(input_values, desired_values, input_vector["time"])
+        trajectory_values = input_vector.get("Trajectory", None)
+        feedforward_values = input_vector.get("Feedforward", None)
+
+        return self._control(input_vector["time"], trajectory_values, feedforward_values, input_values)
 
     @abstractmethod
-    def _control(self, is_values, desired_values, t):
+    def _control(self, time, trajectory_values=None, feedforward_values=None, input_values=None, **kwargs):
         """
         placeholder for control law, for more sophisticated implementations
         overload calc_output.
-        :param is_values: input vector of values
-        :param desired_values: desired values
+        :param trajectory_values: desired values from trajectory generator
+        :param feedforward_values: output of feed-forward block
+        :param input_values: the input values selected by the *input_type* setting
+        :param **kwargs: placeholder for custom parameters
         :return: control output
         """
         pass
@@ -204,13 +208,13 @@ class Feedforward(SimulationModule):
         return self._settings["input_order"]
 
     def calc_output(self, input_dict):
-        return self._feedforward(input_dict["Trajectory"], input_dict["time"])
+        return self._feedforward(input_dict["time"], input_dict["Trajectory"])
 
     @abstractmethod
-    def _feedforward(self, traj_values):
+    def _feedforward(self, time, trajectory_values):
         """
         placeholder for feedforward calculation
-        :param traj_values: values from trajectory with there derivation
+        :param trajectory_values: values from trajectory with there derivation
         :return: feedforward output
         """
         pass
@@ -259,7 +263,7 @@ class SignalMixer(SimulationModule):
         SimulationModule.__init__(self, settings)
 
     def calc_output(self, input_vector):
-        signals = [value for signal, value in input_vector.iteritems()
+        signals = [value for signal, value in input_vector.items()
                    if signal in self._settings["input signals"]]
         return self._mix(signals)
 

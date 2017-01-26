@@ -8,7 +8,7 @@ to use something, just look into the ``tests/`` directories, find that feature
 and read the tests for it, that will tell you everything you need to know.
 
 Most of the things are already documented though in this document, that is
-automatically generated using PyInduct's docstrings.
+automatically generated using PyMoskito's docstrings.
 
 Click the  "modules" (:ref:`modindex`) link in the top right corner to easily
 access any PyInduct module, or use this contens:
@@ -18,6 +18,7 @@ access any PyInduct module, or use this contens:
 
     simulation_gui
     simulation_modules
+    tools
 
 
 Contributions to docs

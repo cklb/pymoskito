@@ -1,0 +1,360 @@
+ # default regime file that is loaded when the simulation environment starts up
+ # use this to create your own files
+
+- Name: test
+  clear previous: !!python/bool True # decide whether previous settings should remain or not
+
+  Model:
+   type: TwoPendulumModel
+   initial state: [0, 0, 90, 0, 180, 0]
+
+  Solver:
+   type: ODEInt
+   measure rate: 500
+   step size: 0.001
+   end time: 10
+
+  ModelMixer:
+   type: AdditiveMixer
+   Input A: Controller
+   Input B: Feedforward
+
+
+- Name: LinearStateFeedback_oo_x0_0.5_setpoint_-0.5
+  clear previous: !!python/bool True # decide whether previous settings should remain or not
+
+  Model:
+   type: TwoPendulumModel
+   initial state: [0.5, 0, 0, 0, 0, 0]
+
+  Solver:
+   type: ODEInt
+   measure rate: 500
+   step size: 0.001
+   end time: 10
+
+  Controller:
+   type: LinearStateFeedback
+   poles: [-9, -7, -4, -2, -3, -2]
+   long pendulum: o
+   short pendulum: o
+
+  Trajectory:
+   type: Setpoint
+   State: [0]
+   Setpoint: [-0.5]
+
+  ModelMixer:
+   type: AdditiveMixer
+   Input A: Controller
+   Input B: Feedforward
+
+- Name: LinearStateFeedback_oo
+  clear previous: !!python/bool True # decide whether previous settings should remain or not
+
+  Model:
+   type: TwoPendulumModel
+   initial state: [0, 0, 2, 0, 2, 0]
+
+  Solver:
+   type: ODEInt
+   measure rate: 500
+   step size: 0.001
+   end time: 10
+
+  Controller:
+   type: LinearStateFeedback
+   poles: [-9, -7, -4, -2, -3, -2]
+   long pendulum: o
+   short pendulum: o
+
+  Trajectory:
+   type: Setpoint
+   State: [0]
+   Setpoint: [0]
+
+  Limiter:
+   type: ModelInputLimiter
+   Limits: [-8, 8]
+
+  ModelMixer:
+   type: AdditiveMixer
+   Input A: Controller
+   Input B: Feedforward
+
+
+- Name: LinearStateFeedback_uu
+  clear previous: !!python/bool True # decide whether previous settings should remain or not
+
+  Model:
+   type: TwoPendulumModel
+   initial state: [0, 0, 190, 0, 180, 0]
+
+  Solver:
+   type: ODEInt
+   measure rate: 500
+   step size: 0.001
+   end time: 10
+
+  Controller:
+   type: LinearStateFeedback
+   poles: [-9, -7, -4, -2, -3, -2]
+   long pendulum: u
+   short pendulum: u
+
+  Trajectory:
+   type: Setpoint
+   State: [0]
+   Setpoint: [0]
+
+  Limiter:
+   type: ModelInputLimiter
+   Limits: [-6, 6]
+
+  ModelMixer:
+   type: AdditiveMixer
+   Input A: Controller
+   Input B: Feedforward
+
+
+- Name: LinearStateFeedback_ou
+  clear previous: !!python/bool True # decide whether previous settings should remain or not
+
+  Model:
+   type: TwoPendulumModel
+   initial state: [0, 0, 4, 0, 180, 0]
+
+  Solver:
+   type: ODEInt
+   measure rate: 500
+   step size: 0.001
+   end time: 10
+
+  Controller:
+   type: LinearStateFeedback
+   poles: [-9, -7, -4, -2, -3, -2]
+   long pendulum: o
+   short pendulum: u
+
+  Trajectory:
+   type: Setpoint
+   State: [0]
+   Setpoint: [0]
+
+  Limiter:
+   type: ModelInputLimiter
+   Limits: [-6, 6]
+
+  ModelMixer:
+   type: AdditiveMixer
+   Input A: Controller
+   Input B: Feedforward
+
+
+- Name: LinearStateFeedback_uo
+  clear previous: !!python/bool True # decide whether previous settings should remain or not
+
+  Model:
+   type: TwoPendulumModel
+   initial state: [0, 0, 180, 0, 5, 0]
+
+  Solver:
+   type: ODEInt
+   measure rate: 500
+   step size: 0.001
+   end time: 10
+
+  Controller:
+   type: LinearStateFeedback
+   poles: [-9, -7, -4, -2, -3, -2]
+   long pendulum: u
+   short pendulum: o
+
+  Trajectory:
+   type: Setpoint
+   State: [0]
+   Setpoint: [0]
+
+  Limiter:
+   type: ModelInputLimiter
+   Limits: [-6, 6]
+
+  ModelMixer:
+   type: AdditiveMixer
+   Input A: Controller
+   Input B: Feedforward
+
+
+- Name: LQR_oo
+  clear previous: !!python/bool True # decide whether previous settings should remain or not
+
+  Model:
+   type: TwoPendulumModel
+   initial state: [0, 0, 10, 0, 10, 0]
+
+  Solver:
+   type: ODEInt
+   measure rate: 500
+   step size: 0.001
+   end time: 10
+
+  Controller:
+   type: LinearQuadraticRegulator
+   long pendulum: o
+   short pendulum: o
+
+  Trajectory:
+   type: Setpoint
+   State: [0]
+   Setpoint: [0]
+
+  ModelMixer:
+   type: AdditiveMixer
+   Input A: Controller
+   Input B: Feedforward
+
+
+- Name: PID
+  clear previous: !!python/bool True # decide whether previous settings should remain or not
+
+  Model:
+   type: TwoPendulumModel
+   initial state: [0.5, 0, 180, 0, 180, 0]
+
+  Solver:
+   type: ODEInt
+   measure rate: 500
+   step size: 0.001
+   end time: 10
+
+  Controller:
+   type: PIDController
+   Kp: 30
+   Ki: 20
+   Kd: 5
+   output_limits: [-10, 10]
+   input_state: [0]
+
+  Trajectory:
+   type: Setpoint
+   State: [0]
+   Setpoint: [0]
+
+  ModelMixer:
+   type: AdditiveMixer
+   Input A: Controller
+   Input B: Feedforward
+
+
+- Name: SwingUp_uo
+  clear previous: !!python/bool True # decide whether previous settings should remain or not
+
+  Model:
+   type: TwoPendulumModel
+   initial state: [0, 0, 180, 0, 190, 0]
+   d0: 0
+   d1: 0
+   d2: 0
+
+  Solver:
+   type: ODEInt
+   measure rate: 500
+   step size: 0.01
+   end time: 10
+
+  Controller:
+   type: SwingUpController
+   k: 9
+   long pendulum: u
+   short pendulum: o
+   poles: [-9, -7, -4, -2, -3, -2]
+
+  Trajectory:
+   type: Setpoint
+   State: [0]
+   Setpoint: [0]
+
+  Limiter:
+   type: ModelInputLimiter
+   Limits: [-10, 10]
+
+  ModelMixer:
+   type: AdditiveMixer
+   Input A: Controller
+   Input B: Feedforward
+
+
+- Name: SwingUp_ou
+  clear previous: !!python/bool True # decide whether previous settings should remain or not
+
+  Model:
+   type: TwoPendulumModel
+   initial state: [0, 0, 190, 0, 180, 0]
+   d0: 0
+   d1: 0
+   d2: 0
+
+  Solver:
+   type: ODEInt
+   measure rate: 500
+   step size: 0.01
+   end time: 20
+
+  Controller:
+   type: SwingUpController
+   k: 10
+   long pendulum: o
+   short pendulum: u
+   poles: [-9, -7, -4, -2, -3, -2]
+
+  Trajectory:
+   type: Setpoint
+   State: [0]
+   Setpoint: [0]
+
+  Limiter:
+   type: ModelInputLimiter
+   Limits: [-10, 10]
+
+  ModelMixer:
+   type: AdditiveMixer
+   Input A: Controller
+   Input B: Feedforward
+
+
+- Name: SwingUp_oo
+  clear previous: !!python/bool True # decide whether previous settings should remain or not
+
+  Model:
+   type: TwoPendulumModel
+   initial state: [0, 0, 190, 0, 190, 0]
+   d0: 0
+   d1: 0
+   d2: 0
+
+  Solver:
+   type: ODEInt
+   measure rate: 500
+   step size: 0.01
+   end time: 30
+
+  Controller:
+   type: SwingUpController
+   k: 9
+   long pendulum: o
+   short pendulum: o
+   poles: [-9, -7, -4, -2, -3, -2]
+
+  Trajectory:
+   type: Setpoint
+   State: [0]
+   Setpoint: [0]
+
+  Limiter:
+   type: ModelInputLimiter
+   Limits: [-10, 10]
+
+  ModelMixer:
+   type: AdditiveMixer
+   Input A: Controller
+   Input B: Feedforward
