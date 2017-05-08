@@ -4,7 +4,8 @@ from abc import ABCMeta, abstractmethod
 from pickle import dump
 
 import numpy as np
-from PyQt5.QtCore import QObject, pyqtWrapperType
+from PyQt5.QtCore import QObject
+pyqtWrapperType = type(QObject)
 
 from .tools import get_sub_value
 

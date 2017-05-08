@@ -1,10 +1,9 @@
-
-
 import logging
 from abc import ABCMeta, abstractmethod, abstractproperty
 from collections import OrderedDict
 
-from PyQt5.QtCore import QObject, pyqtWrapperType
+from PyQt5.QtCore import QObject
+pyqtWrapperType = type(QObject)
 
 __author__ = 'stefan'
 
