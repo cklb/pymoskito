@@ -8,10 +8,10 @@ Contents:
 .. toctree::
   :maxdepth: 2
 
-  BallandBeam
-  BallinTube
-  Pendulum
-  Car
+  ball_beam
+  ball_tube
+  pendulum
+  car
 
 Indices and tables
 ==================

@@ -161,11 +161,18 @@ class PostProcessingModule(ProcessingModule):
     @abstractmethod
     def run(self, data):
         """
-        function to overwrite for implementing your own PostProcessor.
-        this function will be called from process() and will be provided with the simulation results from one file
+        Run this postprocessor.
+        
+        This function will be called from :py:func:`process` with the simulation
+        results from one simulation result file.
+        
+        Overwrite this function to implement your own PostProcessor.
 
-        :param data: simulation results from a pymoskito simulation result file
-        :returns dict consisting of a figure Canvas an a name
+        Args;
+        param data: simulation results from a pymoskito simulation result file.
+        
+        Returns:
+             Dict: With a figure Canvas an a name.
         """
         self._logger.warning("placeholder routine called!")
         return {"name": "* placeholder *", "figure": None}

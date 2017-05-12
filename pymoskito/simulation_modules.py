@@ -47,14 +47,23 @@ class SimulationModule(QObject, metaclass=SimulationModuleMeta):
 
 
 class ModelException(SimulationException):
+    """
+    Exception to be raised if the current system state violates modelling
+    assumptions.
+    """
     pass
 
 
 class Model(SimulationModule):
     """
     Base class for all user defined system models in state-space form.
+    
     To be used in the simulation loop the user has the specify certain
-    parameters of his implementation. See assertions in _init__
+    parameters of his implementation. See assertions in _init__.
+    
+    
+    Args:
+        settings(dict): Dictionary holding the config options for this module.
     """
 
     def __init__(self, settings):
@@ -66,6 +75,7 @@ class Model(SimulationModule):
 
     @property
     def initial_state(self):
+        """ Return the initial state of the system. """
         return self._settings["initial state"]
 
     @abstractmethod
@@ -81,20 +91,35 @@ class Model(SimulationModule):
     @abstractmethod
     def root_function(self, x):
         """
-        function that signal the integrator when a reinitialisation should be performed
-        due to discontinuities in the model equations.
-        :param x: system state
-        :return: tuple of: -reset flag
-                        and -new initial state to use
+        Check whether a reinitialisation of the integrator should be performed.
+        
+        
+        This can be the case if there are discontinuities in the system dynamics
+        such as switching.
+        
+        Args:
+            x(array-like): Current system state.
+            
+        Returns: 
+            tuple: 
+                * bool: True if reset is advised.
+                * array-like: State to continue with.
+                
         """
         pass
 
     @abstractmethod
     def check_consistency(self, x):
         """
-        checks whether the assumptions, made in the modelling process are violated.
-        :param x: system state
-        :raises: ModelException if violation is detected
+        Check whether the assumptions, made in the modelling process are 
+        violated.
+        
+        Args:
+            x: Current system state
+            
+        Raises: 
+            :py:class:`ModelException` : If a violation is detected. This will
+                stop the simulation process.
         """
         pass
 

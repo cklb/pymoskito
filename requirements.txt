@@ -1,6 +1,10 @@
-sympy
-scipy
+sympy>=1.0
+scipy>=0.19
+numpy>=1.12.1
 pyqtgraph>=0.10.0
-matplotlib
+matplotlib>=2.0.0
 wheel>=0.23.0
-pyyaml
+PyYaml>=3.12
+Sphinx>=1.5.5
+sphinx-rtd-theme>=0.2.4
+PyQt5>=5.6

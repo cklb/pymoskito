@@ -14,15 +14,23 @@ from .simulation_modules import SimulationException
 class SimulationStateChange(object):
     """
     Object that is emitted when Simulator changes its state.
-    This happens on:
-        - Initialisation
-        - Start of Simulation
-        - Accomplishment of new progress step
-        - Finish of Simulation
-        - Abortion of Simulation
+    
+    Keyword Args:
+        type: Keyword describing the state change, can be one of the following
+        
+            * `init` Initialisation
+            * `start` : Start of Simulation
+            * `time` : Accomplishment of new progress step
+            * `finish` : Finish of Simulation
+            * `abort` : Abortion of Simulation
+            
+        data: Data that is emitted on state change.
+        info: Further information.
+        
     """
 
     def __init__(self, **kwargs):
+
         assert "type" in kwargs.keys()
         for key, val in kwargs.items():
             setattr(self, key, val)
@@ -43,9 +51,12 @@ class SimulationSettings(object):
 
 
 class Simulator(QObject):
-    """ Simulation Wrapper
-        This Class executes the timestep integration.
-        It forms the Core of the physical simulation
+    """ 
+        This Class executes the time-step integration.
+        
+        It forms the Core of the physical simulation and interacts with the GUI
+        vie the :py:class:''SimulationInterface`
+        
         Calculated values will be stored every 1 / measure rate seconds.
     """
 
@@ -182,8 +193,7 @@ class Simulator(QObject):
     @pyqtSlot()
     def run(self):
         """
-        worker function of simulator.
-        call to start simulation
+        Start the simulation.
         """
 
         self.state_changed.emit(SimulationStateChange(type="start"))

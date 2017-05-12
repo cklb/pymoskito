@@ -31,6 +31,7 @@ setup(
         'License :: OSI Approved :: GPLv3',
         'Natural Language :: English',
         'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
     ],
     keywords='pymoskito control simulation feedback feedforward',
     url='https://github.com/cklb/pymoskito',
