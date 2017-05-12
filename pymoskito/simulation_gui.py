@@ -240,7 +240,9 @@ class SimulationGui(QMainWindow):
 
         # toolbar for control
         self.toolbarSim = QToolBar("Simulation")
-        self.toolbarSim.setIconSize(QSize(32, 32))
+        self.toolbarSim.setContextMenuPolicy(Qt.PreventContextMenu)
+        self.toolbarSim.setMovable(False)
+        self.toolbarSim.setIconSize(QSize(20, 20))
         self.addToolBar(self.toolbarSim)
         self.toolbarSim.addAction(self.actLoadRegimes)
         self.toolbarSim.addAction(self.actSave)
