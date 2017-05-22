@@ -26,6 +26,7 @@ def get_figure_size(scale):
     fig_size = [fig_width, fig_height]
     return fig_size
 
+
 latex_settings = {
     # change this if using contex, xetex or lualatex
     "pgf.texsystem": "pdflatex",
@@ -56,7 +57,7 @@ latex_settings = {
     "figure.subplot.hspace": 0.4,
     # Patches are graphical objects that fill 2D space, like polygons or circles
     "patch.linewidth": 0.5,
-    }
+}
 mpl.rcParams.update(latex_settings)
 mpl.rcParams['text.latex.preamble'].append(r'\usepackage{lmodern}'),
 mpl.rcParams['text.latex.preamble'].append(r'\usepackage{siunitx}'),
@@ -125,7 +126,7 @@ class StepResponse(PostProcessingModule):
 
         # calc rise-time (Anstiegszeit)
         try:
-            t_rise = t[np.where(y > 0.9*yd)][0]
+            t_rise = t[np.where(y > 0.9 * yd)][0]
             self.create_time_line(axes, t, y, t_rise, r"$T_r$")
             output.update({"t_rise": t_rise})
         except IndexError:
@@ -149,7 +150,7 @@ class StepResponse(PostProcessingModule):
 
             t_over = t[np.where(y == y_max)][0]
             overshoot = y_max - yd
-            overshoot_per = overshoot/yd * 100
+            overshoot_per = overshoot / yd * 100
 
             self.create_time_line(axes, t, y, t_over, r"$T_o$")
             output.update(dict(t_over=t_over,
@@ -251,7 +252,7 @@ class StepResponse(PostProcessingModule):
         """
         metric_values = (data["results"]["Model"],
                          data["results"]["Trajectory"],
-                         1/data["modules"]["Solver"]["measure rate"])
+                         1 / data["modules"]["Solver"]["measure rate"])
 
         return metric_values
 
@@ -260,6 +261,7 @@ class PlotAll(PostProcessingModule):
     """
     plot diagrams of all system quantities
     """
+
     def __init__(self):
         PostProcessingModule.__init__(self)
         return
@@ -289,8 +291,10 @@ class PlotAll(PostProcessingModule):
                                       module_name, str(idx)])
                 fig = Figure()
                 axes = fig.add_subplot(111)
-                axes.set_title(r"\textbf{{} {}}".format(
-                    module_name.replace("_", " "), idx))
+                axes.set_title(r"\textbf{"
+                               + "{} {}".format(
+                                    module_name.replace("_", " "), idx)
+                               + "}")
                 axes.plot(t, val, c='k')
                 axes.set_xlim(left=0, right=t[-1])
                 axes.set_xlabel(r"Time in s")
@@ -308,6 +312,7 @@ class XYMetaProcessor(MetaProcessingModule):
     """
     create XY-diagrams for the given key to be compared
     """
+
     def __init__(self, sort_key, x_path, y_path):
         MetaProcessingModule.__init__(self)
         self.sort_key = sort_key
