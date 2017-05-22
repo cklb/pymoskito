@@ -145,13 +145,14 @@ class Solver(SimulationModule):
         elif "ModelMixer" in input_vector:
             self.set_input(input_vector["ModelMixer"])
         else:
-            raise SolverException("ERROR input not provided.")
+            raise SolverException("ERROR no input.")
 
         output = self.integrate(input_vector["time"])
         try:
             self._model.check_consistency(output)
         except ModelException as e:
-            raise SolverException("Timestep Integration failed! Model raised: {0}".format(e.message))
+            raise SolverException("Timestep Integration failed! "
+                                  "Model raised: {0}".format(e))
         return output
 
     @abstractmethod
