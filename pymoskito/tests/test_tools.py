@@ -9,6 +9,7 @@ Tests for several tools and functions
 
 import unittest
 import numpy as np
+import sympy as sp
 
 from pymoskito import tools
 
@@ -162,6 +163,38 @@ class TestControlTools(unittest.TestCase):
         test_V = tools.calc_prefilter(self.A, self.B, self.C, self.K)
         self.assertTrue(np.allclose(test_V, self.V))
 
+
+class TestLieMath(unittest.TestCase):
+
+    def setUp(self):
+        self._x1, self._x2 = sp.symbols("x y")
+        self.x = sp.Matrix([self._x1, self._x2])
+        self.f = sp.Matrix([-self._x2**2, sp.sin(self._x1)])
+        self.h = sp.Matrix([self._x1**2 - sp.sin(self._x2)])
+
+    def test_lie_derivative(self):
+        Lfh = tools.lie_derivatives(self.h, self.f, self.x, 0)
+        self.assertEqual(Lfh, [self.h])
+
+        Lfh = tools.lie_derivatives(self.h, self.f, self.x, 1)
+        self.assertEqual(Lfh, [self.h,
+                               sp.Matrix([-2*self._x1*self._x2**2
+                                          - sp.sin(self._x1)*sp.cos(self._x2)])
+                               ])
+        Lfh = tools.lie_derivatives(self.h, self.f, self.x, 2)
+        self.assertEqual(Lfh, [self.h,
+                               sp.Matrix([-2*self._x1*self._x2**2
+                                          - sp.sin(self._x1)*sp.cos(self._x2)]),
+                               sp.Matrix([
+                                   -self._x2**2*(
+                                       -2*self._x2**2
+                                       - sp.cos(self._x1)*sp.cos(self._x2)
+                                   )
+                                   + sp.sin(self._x1)*(
+                                       - 4*self._x1*self._x2
+                                       + sp.sin(self._x1)*sp.sin(self._x2)
+                                   )])
+                               ])
 
 if __name__ == '__main__':
     unittest.main()

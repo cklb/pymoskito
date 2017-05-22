@@ -120,30 +120,37 @@ def _add_sub_value(top_dict, keys, val):
     return
 
 
-def lie_derivative(h, f, x, n):
+def lie_derivatives(h, f, x, order=1):
     """
-    Calculates the Lie-Derivative from a scalar field :math:`h(x)` along a vector field :math:`f(x)`
+    Calculates the Lie-Derivative from a scalar field :math:`h(x)` along a 
+    vector field :math:`f(x)`.
+    
+    Todo:
+        Move this to a control related module, for the long shot, replace
+        with implementation from pycontroltools.
 
     Args:
         h (sympy.matrix): scalar field
         f (sympy.matrix): vector field
         x (sympy.matrix): symbolic representation of the states
-        n (int): order
+        order (int): order
 
     Return:
-        sympy.matrix: lie derivative
+        list of sympy.matrix: lie derivatives in ascending order
     """
-    if n == 0:
-        return h
-    elif n == 1:
-        return h.jacobian(x) * f
-    else:
-        return lie_derivative(lie_derivative(h, f, x, 1), f, x, n - 1)
+    derivatives = [h]
+    for i in range(order):
+        derivatives.append(derivatives[-1].jacobian(x) * f)
+
+    return derivatives
 
 
 def get_coefficients(poles):
     """
     Calculate the coefficients of a characteristic polynomial.
+    
+    Todo:
+        Move this to a control related module
 
     Args:
         poles (list or :obj:`numpy.ndarray`): pol configuration
