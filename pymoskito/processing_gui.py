@@ -309,6 +309,9 @@ class PostProcessor(QMainWindow):
         self.meta_figure_list.setCurrentItem(self.meta_figure_list.item(0))
 
     def current_figure_changed(self, current_item, last_item=None):
+        if current_item is None:
+            return
+
         figures = self._figure_dict
 
         if self.lastFigure:
