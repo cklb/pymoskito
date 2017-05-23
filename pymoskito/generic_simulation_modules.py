@@ -87,7 +87,7 @@ class ODEInt(Solver):
             self._solver.set_initial_value(new_state[1], self.t)
 
         if not self._solver.successful():
-            raise SolverException("integration step was not successful.")
+            raise SolverException("Integration has not been successful.")
 
         return state
 
@@ -128,7 +128,7 @@ class SmoothTransition(Trajectory):
         """
         Calculates desired trajectory
         """
-        y = np.zeros((1, len(self.dphi_num)))
+        y = np.zeros((len(self.dphi_num),))
         yd = self._settings['states']
         t0 = self._settings['start time']
         dt = self._settings['delta t']
@@ -177,7 +177,7 @@ class HarmonicTrajectory(Trajectory):
 
     def _desired_values(self, t):
         # yd = []
-        yd = np.zeros((1, self._settings['differential_order'] + 1))
+        yd = np.zeros((self._settings['differential_order'] + 1), )
 
         a = self._settings['Amplitude']
         f = self._settings['Frequency']
@@ -185,7 +185,7 @@ class HarmonicTrajectory(Trajectory):
         p = self._settings["Phase in degree"] * np.pi / 180
 
         for idx, val in enumerate(self.yd_sym):
-            yd[0][idx] = val(t, a, f, off, p)
+            yd[idx] = val(t, a, f, off, p)
             # yd.append(val(t, a, f, off, p))
 
         return yd
@@ -206,7 +206,8 @@ class Setpoint(Trajectory):
             raise TrajectoryException("The amount of states and setpoints is not equal")
 
     def _desired_values(self, t):
-        yd = np.zeros((len(self._settings["Setpoint"]), self._settings["differential_order"] + 1))
+        yd = np.zeros((len(self._settings["Setpoint"]),
+                       self._settings["differential_order"] + 1))
 
         for idx, val in enumerate(self._settings["Setpoint"]):
             yd[idx, 0] = val
@@ -234,16 +235,16 @@ class PIDController(Controller):
         Controller.__init__(self, settings)
 
         # define variables for data saving in the right dimension
-        self.e_old = np.zeros((len(self._settings["input_state"]), 1))  # column vector
-        self.integral_old = np.zeros((len(self._settings["input_state"]), 1))  # column vector
-        self.last_u = np.zeros((len(self._settings["input_state"]), 1))  # column vector
-        self.output = np.zeros((len(self._settings["input_state"]), 1))  # column vector
+        self.e_old = np.zeros((len(self._settings["input_state"]), ))  # column vector
+        self.integral_old = np.zeros((len(self._settings["input_state"]), ))  # column vector
+        self.last_u = np.zeros((len(self._settings["input_state"]), ))  # column vector
+        self.output = np.zeros((len(self._settings["input_state"]), ))  # column vector
 
     def _control(self, time, trajectory_values=None, feedforward_values=None, input_values=None, **kwargs):
         # input abbreviations
-        x = np.zeros((len(self._settings["input_state"]), 1))
+        x = np.zeros((len(self._settings["input_state"]), ))
         for idx, state in enumerate(self._settings["input_state"]):
-            x[idx][0] = input_values[int(state)][0]
+            x[idx] = input_values[int(state)]
 
         yd = trajectory_values
 
@@ -255,26 +256,26 @@ class PIDController(Controller):
         if dt != 0:
             for i in range(len(x)):
                 # error
-                e = yd[i][0] - x[i][0]
-                integral = e * dt + self.integral_old[i][0]
+                e = yd[i] - x[i]
+                integral = e * dt + self.integral_old[i]
                 if integral > self._settings["output_limits"][1]:
                     integral = self._settings["output_limits"][1]
                 elif integral < self._settings["output_limits"][0]:
                     integral = self._settings["output_limits"][0]
-                differential = (e - self.e_old[i][0]) / dt
+                differential = (e - self.e_old[i]) / dt
 
-                self.output[i][0] = (self._settings["Kp"] * e
-                                     + self._settings["Ki"] * integral
-                                     + self._settings["Kd"] * differential)
+                self.output[i] = (self._settings["Kp"] * e
+                                  + self._settings["Ki"] * integral
+                                  + self._settings["Kd"] * differential)
 
-                if self.output[i][0] > self._settings["output_limits"][1]:
-                    self.output[i][0] = self._settings["output_limits"][1]
-                elif self.output[i][0] < self._settings["output_limits"][0]:
-                    self.output[i][0] = self._settings["output_limits"][0]
+                if self.output[i] > self._settings["output_limits"][1]:
+                    self.output[i] = self._settings["output_limits"][1]
+                elif self.output[i] < self._settings["output_limits"][0]:
+                    self.output[i] = self._settings["output_limits"][0]
 
                 # save data for new calculation
-                self.e_old[i][0] = e
-                self.integral_old[i][0] = integral
+                self.e_old[i] = e
+                self.integral_old[i] = integral
             u = self.output
         else:
             u = self.last_u
@@ -291,11 +292,12 @@ class AdditiveMixer(SignalMixer):
                                    ("Input B", None)])
 
     def __init__(self, settings):
-        settings.update([("input signals", [settings["Input A"], settings["Input B"]])])
+        settings.update([("input signals", [settings["Input A"],
+                                            settings["Input B"]])])
         SignalMixer.__init__(self, settings)
 
     def _mix(self, signal_values):
-        return np.array([[np.sum(signal_values)]], dtype=float)
+        return np.atleast_1d(np.sum(signal_values))
 
 
 class ModelInputLimiter(Limiter):
@@ -311,9 +313,11 @@ class ModelInputLimiter(Limiter):
 
     def _limit(self, value):
         if value < self._settings["Limits"][0]:
-            value = np.array([[self._settings["Limits"][0]]])  # convert number into numpy (1,1) array
+            # convert number into numpy (1,1) array
+            value = np.array(self._settings["Limits"][0])
         if value > self._settings["Limits"][1]:
-            value = np.array([[self._settings["Limits"][1]]])  # convert number into numpy (1,1) array
+            # convert number into numpy (1,1) array
+            value = np.array(self._settings["Limits"][1])
 
         # TODO restructure to something like this:
         # value = np.max(value, self._settings["Limits"][0])

@@ -58,6 +58,6 @@ class CarModel(pm.Model):
         pass
 
     def calc_output(self, input):
-        return np.array([input], dtype=float)
+        return input
 
 pm.register_simulation_module(pm.Model, CarModel)

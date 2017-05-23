@@ -442,11 +442,20 @@ class SimulatorInteractor(QObject):
         # TODO make this able to calc error for vector-like model output
         # control and observer error
         if "Trajectory" in self._sim_data["results"]:
-            # take only the first column
-            c_error = self._get_result_by_name("Trajectory")[:, :, 0] - self._get_result_by_name("Model")[:, :, 0]
+            m_data = self._get_result_by_name("Model")
+            t_data = self._get_result_by_name("Trajectory")
+            if len(t_data.shape) == 2:
+                c_error = t_data[:, 0] - m_data[:, 0]
+            elif len(t_data.shape) == 3:
+                c_error = np.array([t_data[:, idx, 0] - m_data[:, idx]
+                                    for idx in range(m_data.shape[1])]).T
+            else:
+                raise ValueError("Unknown Trajectory Format.")
             self._sim_data['results'].update(control_error=c_error)
+
         if "Observer" in self._sim_data["results"]:
-            o_error = self._get_result_by_name("Solver") - self._get_result_by_name("Observer")
+            o_error = (self._get_result_by_name("Solver")
+                       - self._get_result_by_name("Observer"))
             self._sim_data['results'].update(observer_error=o_error)
 
     def _get_result_by_name(self, name):

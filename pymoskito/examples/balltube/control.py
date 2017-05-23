@@ -21,9 +21,10 @@ class OpenLoop(pm.Controller):
 
         pm.Controller.__init__(self, settings)
 
-    def _control(self, time, trajectory_values=None, feedforward_values=None, input_values=None, **kwargs):
+    def _control(self, time, trajectory_values=None, feedforward_values=None,
+                 input_values=None, **kwargs):
 
         u = self._settings["pwm"]
-        return np.array([[u]], dtype=float)
+        return np.array(u)
 
 pm.register_simulation_module(pm.Controller, OpenLoop)

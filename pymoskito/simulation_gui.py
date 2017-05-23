@@ -771,15 +771,12 @@ class SimulationGui(QMainWindow):
 
     def _get_data_by_name(self, name):
         tmp = name.split(".")
+        module_name = tmp[0]
         if len(tmp) == 1:
-            data = self.currentDataset["results"][tmp[0]]
-            # if the data-set contains 1d array -> convert to float
-            data = [float(x) for x in data]
+            data = np.array(self.currentDataset["results"][module_name])
         elif len(tmp) == 2:
-            if len(self.currentDataset["results"][tmp[0]].shape) == 2:
-                data = self.currentDataset["results"][tmp[0]][:, tmp[1]]
-            if len(self.currentDataset["results"][tmp[0]].shape) == 3:  # data-set has the structure [ [[1]], [[2]] ]
-                data = self.currentDataset['results'][tmp[0]][..., tmp[1], 0]
+            idx = int(tmp[1])
+            data = self.currentDataset["results"][module_name][..., idx]
 
         return data
 

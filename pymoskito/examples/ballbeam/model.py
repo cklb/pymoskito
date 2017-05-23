@@ -58,10 +58,7 @@ class BallBeamModel(pm.Model):
         u = (tau - self.M * (2 * x1 * x2 * x4 + self.G * x1 * np.cos(x3))) / (self.M * x1 ** 2 + self.J + self.Jb)
         dx4 = u
 
-        return np.array([[dx1],
-                         [dx2],
-                         [dx3],
-                         [dx4]])
+        return np.array([dx1, dx2, dx3, dx4])
 
     def root_function(self, x):
         """
@@ -87,6 +84,6 @@ class BallBeamModel(pm.Model):
         :param input_vector: input values
         :return: ball position
         """
-        return np.array([input_vector[0]], dtype=float)
+        return input_vector[0]
 
 pm.register_simulation_module(pm.Model, BallBeamModel)

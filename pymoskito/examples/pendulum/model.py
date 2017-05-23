@@ -28,7 +28,9 @@ class TwoPendulumModel(pm.Model):
 
     def __init__(self, settings):
         # conversion from degree to radiant
-        settings["initial state"][2:] = [val*np.pi/180.0 for val in settings["initial state"][2:]]
+        settings["initial state"][2:] = [
+            val*np.pi/180.0 for val in settings["initial state"][2:]]
+
         # add specific "private" settings
         settings.update(state_count=6)
         settings.update(input_count=1)
@@ -63,7 +65,7 @@ class TwoPendulumModel(pm.Model):
         x4 = x[3]
         x5 = x[4]
         x6 = x[5]
-        F_star = args[0][0]
+        F_star = args[0]
         M1_star = 0
         M2_star = 0
 
@@ -84,12 +86,7 @@ class TwoPendulumModel(pm.Model):
         dx5 = x6
         dx6 = self.g*np.sin(x5)/self.l2 + u*np.cos(x5)/self.l2 + (M2_star - self.d2*x6)/(self.m2*self.l2**2)
 
-        dx = np.array([[dx1],
-                       [dx2],
-                       [dx3],
-                       [dx4],
-                       [dx5],
-                       [dx6]])
+        dx = np.array([dx1, dx2, dx3, dx4, dx5, dx6])
         return dx
 
     def root_function(self, x):
@@ -107,7 +104,7 @@ class TwoPendulumModel(pm.Model):
         :param input: input values
         :return: cart position
         """
-        return np.array([input[0]], dtype=float)
+        return input[0]
 
 
 class TwoPendulumRigidBodyModel(pm.Model):
@@ -203,12 +200,7 @@ class TwoPendulumRigidBodyModel(pm.Model):
                - self.d2*x6
                + self.m2_star*self.l2_star*self.g*np.sin(x5))/self.J_DP2
 
-        dx = np.array([[dx1],
-                       [dx2],
-                       [dx3],
-                       [dx4],
-                       [dx5],
-                       [dx6]])
+        dx = np.array([dx1, dx2, dx3, dx4, dx5, dx6])
         return dx
 
     def root_function(self, x):
@@ -226,7 +218,7 @@ class TwoPendulumRigidBodyModel(pm.Model):
         :param input: input values
         :return: cart position
         """
-        return np.array([input[0]], dtype=float)
+        return input[0]
 
 
 class TwoPendulumModelParLin(pm.Model):
@@ -294,12 +286,7 @@ class TwoPendulumModelParLin(pm.Model):
         dx5 = x6
         dx6 = self.g*np.sin(x5)/self.l2 - (self.d2*x6)/(self.m2*self.l2**2) + np.cos(x5)*u/self.l2
 
-        dx = np.array([[dx1],
-                       [dx2],
-                       [dx3],
-                       [dx4],
-                       [dx5],
-                       [dx6]])
+        dx = np.array([dx1, dx2, dx3, dx4, dx5, dx6])
         return dx
 
     def root_function(self, x):
@@ -317,7 +304,7 @@ class TwoPendulumModelParLin(pm.Model):
         :param input: input values
         :return: cart position
         """
-        return np.array([input[0]], dtype=float)
+        return input[0]
 
 pm.register_simulation_module(pm.Model, TwoPendulumModel)
 pm.register_simulation_module(pm.Model, TwoPendulumModelParLin)

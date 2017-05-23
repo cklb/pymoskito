@@ -39,7 +39,8 @@ class LinearStateFeedback(pm.Controller):
         self._logger.info("K: {}".format(self.K[0]))
         self._logger.info("V: {}".format(self.V[0]))
 
-    def _control(self, time, trajectory_values=None, feedforward_values=None, input_values=None, **kwargs):
+    def _control(self, time, trajectory_values=None, feedforward_values=None,
+                 input_values=None, **kwargs):
         # input abbreviations
         x = input_values
         yd = trajectory_values
@@ -88,7 +89,8 @@ class LinearStateFeedbackParLin(pm.Controller):
         self._logger.info("K: {}".format(self.K.tolist()[0]))
         self._logger.info("V: {}".format(self.V[0]))
 
-    def _control(self, time, trajectory_values=None, feedforward_values=None, input_values=None, **kwargs):
+    def _control(self, time, trajectory_values=None, feedforward_values=None,
+                 input_values=None, **kwargs):
         """
 
         :param time:
@@ -159,7 +161,8 @@ class LinearQuadraticRegulator(pm.Controller):
         self._logger.info("eig = " + str(eig))
         self._logger.info("V = " + str(self.V[0][0]))
 
-    def _control(self, time, trajectory_values=None, feedforward_values=None, input_values=None, **kwargs):
+    def _control(self, time, trajectory_values=None, feedforward_values=None,
+                 input_values=None, **kwargs):
         # input abbreviations
         x = input_values
         yd = trajectory_values
@@ -191,7 +194,8 @@ class LjapunovController(pm.Controller):
 
         self.w = st.m1*st.l1/(st.m2*st.l2)
 
-    def _control(self, time, trajectory_values=None, feedforward_values=None, input_values=None, **kwargs):
+    def _control(self, time, trajectory_values=None, feedforward_values=None,
+                 input_values=None, **kwargs):
         x1, x2, x3, x4, x5, x6 = input_values
 
         E0 = 0.5*st.m0*x2**2

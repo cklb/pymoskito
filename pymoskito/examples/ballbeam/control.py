@@ -53,7 +53,7 @@ class FController(pm.Controller):
         settings.update(input_type="system_state")
 
         pm.Controller.__init__(self, settings)
-        self._output = np.zeros(1)
+        self._output = np.zeros((1, ))
 
         # run pole placement
         self.K = pm.tools.get_coefficients(self._settings["poles"])
@@ -70,11 +70,12 @@ class FController(pm.Controller):
         phi4 = -st.B*st.G*x4*np.cos(x3)
 
         # calculate fictional input v
-        v = (yd[0, [4]]
-             + self.K[0, [3]] * (yd[0, [3]] - phi4)
-             + self.K[0, [2]] * (yd[0, [2]] - phi3)
-             + self.K[0, [1]] * (yd[0, [1]] - phi2)
-             + self.K[0, [0]] * (yd[0, [0]] - phi1))
+        v = (yd[4]
+             + self.K[0, [3]] * (yd[3] - phi4)
+             + self.K[0, [2]] * (yd[2] - phi3)
+             + self.K[0, [1]] * (yd[1] - phi2)
+             + self.K[0, [0]] * (yd[0] - phi1)
+             )
 
         # calculate a(x)
         a = -st.B*st.G*np.cos(x3)

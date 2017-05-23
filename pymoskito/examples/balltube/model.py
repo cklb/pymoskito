@@ -64,10 +64,7 @@ class BallInTubeModel(pm.Model):
         dx3 = x4
         dx4 = (self.k_L*((self.k_V*x1 - self.A_B*x4)/self.A_Sp)**2 - self.m*self.g)/self.m
 
-        return np.array([[dx1],
-                         [dx2],
-                         [dx3],
-                         [dx4]])
+        return np.array([dx1, dx2, dx3, dx4])
 
     def root_function(self, x):
         """
@@ -103,7 +100,7 @@ class BallInTubeModel(pm.Model):
         :param input_vector: input values
         :return: ball position
         """
-        return np.array([input_vector[2]], dtype=float)
+        return input_vector[2]
 
 
 class BallInTubeSpringModel(pm.Model):
@@ -174,10 +171,7 @@ class BallInTubeSpringModel(pm.Model):
         else:
             dx4 = (self.k_L*((self.k_V*x1 - self.A_B*x4)/self.A_Sp)**2)/self.m - self.g
 
-        return np.array([[dx1],
-                         [dx2],
-                         [dx3],
-                         [dx4]])
+        return np.array([dx1, dx2, dx3, dx4])
 
     def root_function(self, x):
         """
@@ -209,7 +203,7 @@ class BallInTubeSpringModel(pm.Model):
         :param input_vector: input values
         :return: ball position
         """
-        return np.array([input_vector[2]], dtype=float)
+        return input_vector[2]
 
 pm.register_simulation_module(pm.Model, BallInTubeModel)
 pm.register_simulation_module(pm.Model, BallInTubeSpringModel)
