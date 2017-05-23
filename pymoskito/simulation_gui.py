@@ -7,15 +7,20 @@ import os
 from operator import itemgetter
 import yaml
 import pickle
+import pkg_resources
+import webbrowser
 
 import numpy as np
 
 # Qt
 from PyQt5.QtCore import Qt, QTimer, pyqtSignal, QSize
 from PyQt5.QtGui import QIcon, QKeySequence
-from PyQt5.QtWidgets import (QWidget, QAction, QSlider, QDial, QMainWindow, QTreeView, QListWidget,
-                             QAbstractItemView, QToolBar, QStatusBar, QProgressBar, QLabel, QShortcut,
-                             QLineEdit, QFileDialog, QInputDialog, QAbstractSlider, QFrame, QVBoxLayout)
+from PyQt5.QtWidgets import (QWidget, QAction, QSlider, QDial, QMainWindow,
+                             QTreeView, QListWidget, QAbstractItemView,
+                             QToolBar, QStatusBar, QProgressBar, QLabel,
+                             QShortcut, QLineEdit, QFileDialog, QInputDialog,
+                             QAbstractSlider, QFrame, QVBoxLayout, QMenu,
+                             QMessageBox)
 
 # pyqtgraph
 import pyqtgraph as pg
@@ -32,7 +37,7 @@ try:
     vtk_available = True
 except ImportError as e:
     vtk_available = False
-    vtk_error_msg = e.msg
+    vtk_error_msg = e
     vtkRenderer = None
     QVTKRenderWindowInteractor = None
 
@@ -85,6 +90,7 @@ class SimulationGui(QMainWindow):
         self.area = pg.dockarea.DockArea()
 
         # Window properties
+        icon_size = QSize(25, 25)
         self.setCentralWidget(self.area)
         self.resize(1000, 700)
         self.setWindowTitle("PyMoskito")
@@ -142,7 +148,8 @@ class SimulationGui(QMainWindow):
                     self.visualizer = available_vis[0][0](self.vtk_renderer)
                     self.vtkWidget.Initialize()
                 else:
-                    self._logger.warn("visualizer depends on vtk which is not available on this system!")
+                    self._logger.warning("visualizer depends on vtk which is "
+                                         "not available on this system!")
             elif available_vis:
                 raise NotImplementedError
         else:
@@ -156,22 +163,60 @@ class SimulationGui(QMainWindow):
         self._regimes = []
         self.regime_file_name = ""
 
+        self.actDeleteRegimes = QAction(parent=self.regime_list)
+        self.actDeleteRegimes.setText("&Delete Selected Regimes")
+        # TODO shortcut works always, not only with focus on the regime list
+        # self.actDeleteRegimes.setShortcutContext(Qt.WindowShortcut)
+        self.actDeleteRegimes.setShortcut(QKeySequence(Qt.Key_Delete))
+        self.actDeleteRegimes.triggered.connect(self.remove_regime_items)
+
+        self.actSave = QAction(self)
+        self.actSave.setText('Save Results As')
+        self.actSave.setIcon(QIcon(get_resource("save.png")))
+        self.actSave.setDisabled(True)
+        self.actSave.setShortcut(QKeySequence.SaveAs)
+        self.actSave.triggered.connect(self.export_simulation_data)
+
+        self.actLoadRegimes = QAction(self)
+        self.actLoadRegimes.setText("Load Regimes from File")
+        self.actLoadRegimes.setIcon(QIcon(get_resource("load.png")))
+        self.actLoadRegimes.setDisabled(False)
+        self.actLoadRegimes.setShortcut(QKeySequence.Open)
+        self.actLoadRegimes.triggered.connect(self.load_regime_dialog)
+
+        # regime management
+        self.runningBatch = False
+        self._current_regime_index = 0
+        self._regimes = []
+
+        self.regimeFinished.connect(self.run_next_regime)
+        self.finishedRegimeBatch.connect(self.regime_batch_finished)
+
         # data window
         self.dataList = QListWidget(self)
         self.dataDock.addWidget(self.dataList)
         self.dataList.itemDoubleClicked.connect(self.create_plot)
 
         # actions for simulation control
-        self.actSimulate = QAction(self)
-        self.actSimulate.setText("Simulate")
-        self.actSimulate.setIcon(QIcon(get_resource("simulate.png")))
-        self.actSimulate.triggered.connect(self.start_simulation)
+        self.actSimulateCurrent = QAction(self)
+        self.actSimulateCurrent.setText("&Simulate Current Regime")
+        self.actSimulateCurrent.setIcon(QIcon(get_resource("simulate.png")))
+        self.actSimulateCurrent.setShortcut(QKeySequence("F5"))
+        self.actSimulateCurrent.triggered.connect(self.start_simulation)
+
+        self.actSimulateAll = QAction(self)
+        self.actSimulateAll.setText("Simulate &All Regimes")
+        self.actSimulateAll.setIcon(QIcon(get_resource("execute_regimes.png")))
+        self.actSimulateAll.setShortcut(QKeySequence("F6"))
+        self.actSimulateAll.setDisabled(True)
+        self.actSimulateAll.triggered.connect(self.execute_regimes_clicked)
 
         # actions for animation control
         self.actPlayPause = QAction(self)
-        self.actPlayPause.setText("Play")
+        self.actPlayPause.setText("Play Animation")
         self.actPlayPause.setIcon(QIcon(get_resource("play.png")))
         self.actPlayPause.setDisabled(True)
+        self.actPlayPause.setShortcut(QKeySequence(Qt.Key_Space))
         self.actPlayPause.triggered.connect(self.play_animation)
 
         self.actStop = QAction(self)
@@ -180,14 +225,29 @@ class SimulationGui(QMainWindow):
         self.actStop.setDisabled(True)
         self.actStop.triggered.connect(self.stop_animation)
 
-        self.speedDial = QDial()
-        self.speedDial.setDisabled(True)
-        self.speedDial.setMinimum(0)
-        self.speedDial.setMaximum(100)
-        self.speedDial.setValue(50)
-        self.speedDial.setSingleStep(1)
-        self.speedDial.resize(24, 24)
-        self.speedDial.valueChanged.connect(self.update_playback_gain)
+        self.actSlow = QAction(self)
+        self.actSlow.setText("Slowest")
+        self.actSlow.setIcon(QIcon(get_resource("slow.png")))
+        self.actSlow.setDisabled(False)
+        self.actSlow.triggered.connect(self.set_slowest_playback_speed)
+
+        self.actFast = QAction(self)
+        self.actFast.setText("Fastest")
+        self.actFast.setIcon(QIcon(get_resource("fast.png")))
+        self.actFast.setDisabled(False)
+        self.actFast.triggered.connect(self.set_fastest_playback_speed)
+
+        self.speedControl = QSlider(Qt.Horizontal, self)
+        self.speedControl.setMaximumSize(200, 25)
+        self.speedControl.setTickPosition(QSlider.TicksBothSides)
+        self.speedControl.setDisabled(False)
+        self.speedControl.setMinimum(0)
+        self.speedControl.setMaximum(12)
+        self.speedControl.setValue(6)
+        self.speedControl.setTickInterval(6)
+        self.speedControl.setSingleStep(2)
+        self.speedControl.setPageStep(3)
+        self.speedControl.valueChanged.connect(self.update_playback_speed)
 
         self.timeSlider = QSlider(Qt.Horizontal, self)
         self.timeSlider.setMinimum(0)
@@ -207,30 +267,6 @@ class SimulationGui(QMainWindow):
         self.playbackTimeChanged.connect(self.update_gui)
         self.playbackTimeout = 33  # in [ms] -> 30 fps
 
-        self.actSave = QAction(self)
-        self.actSave.setText('Save')
-        self.actSave.setIcon(QIcon(get_resource("save.png")))
-        self.actSave.setDisabled(True)
-        self.actSave.triggered.connect(self.export_simulation_data)
-
-        self.actLoadRegimes = QAction(self)
-        self.actLoadRegimes.setText("load regimes")
-        self.actLoadRegimes.setIcon(QIcon(get_resource("load.png")))
-        self.actLoadRegimes.setDisabled(False)
-        self.actLoadRegimes.triggered.connect(self.load_regime_dialog)
-
-        self.actExecuteRegimes = QAction(self)
-        self.actExecuteRegimes.setText("execute all regimes")
-        self.actExecuteRegimes.setIcon(QIcon(get_resource("execute_regimes.png")))
-        self.actExecuteRegimes.setDisabled(True)
-        self.actExecuteRegimes.triggered.connect(self.execute_regimes_clicked)
-
-        self.actPostprocessing = QAction(self)
-        self.actPostprocessing.setText("launch postprocessor")
-        self.actPostprocessing.setIcon(QIcon(get_resource("processing.png")))
-        self.actPostprocessing.setDisabled(False)
-        self.actPostprocessing.triggered.connect(self.postprocessing_clicked)
-
         self.act_reset_camera = QAction(self)
         self.act_reset_camera.setText("reset camera")
         self.act_reset_camera.setIcon(QIcon(get_resource("reset_camera.png")))
@@ -238,33 +274,39 @@ class SimulationGui(QMainWindow):
             self.act_reset_camera.setDisabled(not self.visualizer.can_reset_view)
         self.act_reset_camera.triggered.connect(self.reset_camera_clicked)
 
-        # toolbar for control
+        # postprocessing
+        self.actPostprocessing = QAction(self)
+        self.actPostprocessing.setText("Launch Postprocessor")
+        self.actPostprocessing.setIcon(QIcon(get_resource("processing.png")))
+        self.actPostprocessing.setDisabled(False)
+        self.actPostprocessing.triggered.connect(self.postprocessing_clicked)
+        self.actPostprocessing.setShortcut(QKeySequence("F7"))
+
+        self.postprocessor = None
+
+        # toolbar
         self.toolbarSim = QToolBar("Simulation")
         self.toolbarSim.setContextMenuPolicy(Qt.PreventContextMenu)
         self.toolbarSim.setMovable(False)
-        self.toolbarSim.setIconSize(QSize(20, 20))
+        self.toolbarSim.setIconSize(icon_size)
         self.addToolBar(self.toolbarSim)
         self.toolbarSim.addAction(self.actLoadRegimes)
         self.toolbarSim.addAction(self.actSave)
         self.toolbarSim.addSeparator()
-        self.toolbarSim.addAction(self.actSimulate)
-        self.toolbarSim.addAction(self.actExecuteRegimes)
+        self.toolbarSim.addAction(self.actSimulateCurrent)
+        self.toolbarSim.addAction(self.actSimulateAll)
         self.toolbarSim.addSeparator()
         self.toolbarSim.addAction(self.actPlayPause)
         self.toolbarSim.addAction(self.actStop)
-        self.toolbarSim.addWidget(self.speedDial)
         self.toolbarSim.addWidget(self.timeSlider)
+        self.toolbarSim.addSeparator()
+        self.toolbarSim.addAction(self.actSlow)
+        self.toolbarSim.addWidget(self.speedControl)
+        self.toolbarSim.addAction(self.actFast)
+        self.toolbarSim.addSeparator()
         self.toolbarSim.addAction(self.actPostprocessing)
         self.toolbarSim.addAction(self.act_reset_camera)
         self.postprocessor = None
-
-        # regime management
-        self.runningBatch = False
-        self._current_regime_index = 0
-        self._regimes = []
-
-        self.regimeFinished.connect(self.run_next_regime)
-        self.finishedRegimeBatch.connect(self.regime_batch_finished)
 
         # log dock
         self.logBox = QPlainTextEditLogger(self)
@@ -280,6 +322,37 @@ class SimulationGui(QMainWindow):
         logging.getLogger().addHandler(self.logBox)
         self.logDock.addWidget(self.logBox.widget)
 
+        # menu bar
+        fileMenu = self.menuBar().addMenu("&File")
+        fileMenu.addAction(self.actLoadRegimes)
+        fileMenu.addAction(self.actSave)
+        fileMenu.addAction("&Quit", self.close)
+
+        editMenu = self.menuBar().addMenu("&Edit")
+        editMenu.addAction(self.actDeleteRegimes
+                           )
+
+        simMenu = self.menuBar().addMenu("&Simulation")
+        simMenu.addAction(self.actSimulateCurrent)
+        simMenu.addAction(self.actSimulateAll)
+        simMenu.addAction(self.actPostprocessing)
+
+        animMenu = self.menuBar().addMenu("&Animation")
+        animMenu.addAction(self.actPlayPause)
+        animMenu.addAction("&Increase Playback Speed",
+                           self.increment_playback_speed,
+                           QKeySequence(Qt.CTRL + Qt.Key_Plus))
+        animMenu.addAction("&Decrease Playback Speed",
+                           self.decrement_playback_speed,
+                           QKeySequence(Qt.CTRL + Qt.Key_Minus))
+        animMenu.addAction("&Reset Playback Speed",
+                           self.reset_playback_speed,
+                           QKeySequence(Qt.CTRL + Qt.Key_0))
+
+        helpMenu = self.menuBar().addMenu("&Help")
+        helpMenu.addAction("&Online Documentation", self.show_online_docs)
+        helpMenu.addAction("&About", self.show_info)
+
         # status bar
         self.status = QStatusBar(self)
         self.setStatusBar(self.status)
@@ -288,40 +361,6 @@ class SimulationGui(QMainWindow):
         self.timeLabel = QLabel("current time: 0.0")
         self.statusBar().addPermanentWidget(self.timeLabel)
 
-        # shortcuts
-        self.delShort = QShortcut(QKeySequence(Qt.Key_Delete), self.regime_list)
-        self.delShort.activated.connect(self.remove_regime_items)
-
-        self.shortOpenRegime = QShortcut(QKeySequence.Open, self)
-        self.shortOpenRegime.activated.connect(self.load_regime_dialog)
-
-        self.shortSaveResult = QShortcut(QKeySequence.Save, self)
-        self.shortSaveResult.activated.connect(self.export_simulation_data)
-        self.shortSaveResult.setEnabled(False)
-
-        self.shortSpeedUp = QShortcut(QKeySequence.ZoomIn, self)
-        self.shortSpeedUp.activated.connect(self.increment_playback_speed)
-
-        self.shortSpeedDown = QShortcut(QKeySequence.ZoomOut, self)
-        self.shortSpeedDown.activated.connect(self.decrement_playback_speed)
-
-        self.shortSpeedReset = QShortcut(QKeySequence(Qt.CTRL + Qt.Key_0), self)
-        self.shortSpeedReset.activated.connect(self.reset_playback_speed)
-
-        self.shortRunSimulation = QShortcut(QKeySequence('F5'), self)
-        self.shortRunSimulation.activated.connect(self.start_simulation)
-
-        self.shortRunRegimeBatch = QShortcut(QKeySequence('F6'), self)
-        self.shortRunRegimeBatch.activated.connect(self.execute_regimes_clicked)
-
-        self.shortRunPostprocessing = QShortcut(QKeySequence('F7'), self)
-        self.shortRunPostprocessing.activated.connect(self.postprocessing_clicked)
-
-        self.shortPlayPause = QShortcut(QKeySequence(Qt.Key_Space), self)
-        self.shortPlayPause.activated.connect(self.play_animation)
-        self.shortPlayPause.setEnabled(False)
-
-        self.postprocessor = None
         self._logger.info("Simulation GUI is up and running.")
 
     def set_visualizer(self, vis):
@@ -333,12 +372,10 @@ class SimulationGui(QMainWindow):
         play the animation
         """
         # self.statusLabel.setText('playing animation')
-        self.actPlayPause.setText("Pause")
+        self.actPlayPause.setText("Pause Animation")
         self.actPlayPause.setIcon(QIcon(get_resource("pause.png")))
         self.actPlayPause.triggered.disconnect(self.play_animation)
         self.actPlayPause.triggered.connect(self.pause_animation)
-        self.shortPlayPause.activated.disconnect(self.play_animation)
-        self.shortPlayPause.activated.connect(self.pause_animation)
         self.playbackTimer.start(self.playbackTimeout)
 
     def pause_animation(self):
@@ -347,27 +384,23 @@ class SimulationGui(QMainWindow):
         """
         # self.statusLabel.setText('pausing animation')
         self.playbackTimer.stop()
-        self.actPlayPause.setText("Play")
+        self.actPlayPause.setText("Play Animation")
         self.actPlayPause.setIcon(QIcon(get_resource("play.png")))
         self.actPlayPause.triggered.disconnect(self.pause_animation)
         self.actPlayPause.triggered.connect(self.play_animation)
-        self.shortPlayPause.activated.disconnect(self.pause_animation)
-        self.shortPlayPause.activated.connect(self.play_animation)
 
     def stop_animation(self):
         """
         pause the animation
         """
         # self.statusLabel.setText('stopping animation')
-        if self.actPlayPause.text() == "Pause":
+        if self.actPlayPause.text() == "Pause Animation":
             # animation is playing -> stop it
             self.playbackTimer.stop()
-            self.actPlayPause.setText("Play")
+            self.actPlayPause.setText("Play Animation")
             self.actPlayPause.setIcon(QIcon(get_resource("play.png")))
             self.actPlayPause.triggered.disconnect(self.pause_animation)
             self.actPlayPause.triggered.connect(self.play_animation)
-            self.shortPlayPause.activated.disconnect(self.pause_animation)
-            self.shortPlayPause.activated.connect(self.play_animation)
 
         self.timeSlider.setValue(0)
 
@@ -379,10 +412,8 @@ class SimulationGui(QMainWindow):
         self.statusLabel.setText("simulating {}".format(regime_name))
         self._logger.info("Simulating: {}".format(regime_name))
 
-        self.actSimulate.setDisabled(True)
-        self.shortRunSimulation.setEnabled(False)
-        self.shortRunRegimeBatch.setEnabled(False)
-        self.actExecuteRegimes.setDisabled(True)
+        self.actSimulateCurrent.setDisabled(True)
+        self.actSimulateAll.setDisabled(True)
         self.guiProgress = QProgressBar(self)
         self.sim.simulationProgressChanged.connect(self.guiProgress.setValue)
         self.statusBar().addWidget(self.guiProgress)
@@ -462,7 +493,7 @@ class SimulationGui(QMainWindow):
         self._update_regime_list()
 
         if self._regimes:
-            self.actExecuteRegimes.setDisabled(False)
+            self.actSimulateAll.setDisabled(False)
 
         self._logger.info("loaded {} regimes".format(len(self._regimes)))
         self.statusBar().showMessage("loaded {} regimes.".format(len(self._regimes)), 1000)
@@ -538,7 +569,7 @@ class SimulationGui(QMainWindow):
 
     def regime_batch_finished(self):
         self.runningBatch = False
-        self.actExecuteRegimes.setDisabled(False)
+        self.actSimulateAll.setDisabled(False)
         # self._current_regime_index = 0
         self.statusLabel.setText("All regimes have been simulated!")
         self.actSave.setDisabled(True)
@@ -553,15 +584,11 @@ class SimulationGui(QMainWindow):
         self._logger.info("simulation finished")
         self.statusLabel.setText("simulation finished.")
 
-        self.actSimulate.setDisabled(False)
-        self.shortRunSimulation.setEnabled(True)
-        self.shortRunRegimeBatch.setEnabled(True)
+        self.actSimulateCurrent.setDisabled(False)
         self.actPlayPause.setDisabled(False)
-        self.shortPlayPause.setEnabled(True)
-        self.shortSaveResult.setEnabled(True)
         self.actStop.setDisabled(False)
         self.actSave.setDisabled(False)
-        self.speedDial.setDisabled(False)
+        self.speedControl.setDisabled(False)
         self.timeSlider.setDisabled(False)
 
         self.sim.simulationProgressChanged.disconnect(self.guiProgress.setValue)
@@ -582,7 +609,7 @@ class SimulationGui(QMainWindow):
             self._save_data(regime_name)
             self.regimeFinished.emit()
         else:
-            self.actExecuteRegimes.setDisabled(False)
+            self.actSimulateAll.setDisabled(False)
 
     def simulation_failed(self, data):
         """
@@ -602,13 +629,31 @@ class SimulationGui(QMainWindow):
         self.d3.addWidget(plot_widget)
 
     def increment_playback_speed(self):
-        self.speedDial.setValue(self.speedDial.value() + self.speedDial.singleStep())
+        self.speedControl.setValue(self.speedControl.value()
+                                   + self.speedControl.singleStep())
 
     def decrement_playback_speed(self):
-        self.speedDial.setValue(self.speedDial.value() - self.speedDial.singleStep())
+        self.speedControl.setValue(self.speedControl.value()
+                                   - self.speedControl.singleStep())
 
     def reset_playback_speed(self):
-        self.speedDial.setValue(self.speedDial.range()/2)
+        self.speedControl.setValue((self.speedControl.maximum()
+                                    - self.speedControl.minimum())/2)
+
+    def set_slowest_playback_speed(self):
+        self.speedControl.setValue(self.speedControl.minimum())
+
+    def set_fastest_playback_speed(self):
+        self.speedControl.setValue(self.speedControl.maximum())
+
+    def update_playback_speed(self, val):
+        """
+        adjust playback time to slider value
+
+        :param val:
+        """
+        maximum = self.speedControl.maximum()
+        self.playbackGain = 10**(5.0 * (val - maximum / 2) / maximum)
 
     def increment_playback_time(self):
         """
@@ -625,14 +670,6 @@ class SimulationGui(QMainWindow):
         else:
             self.pause_animation()
             return
-
-    def update_playback_gain(self, val):
-        """
-        adjust playback time to slider value
-
-        :param val:
-        """
-        self.playbackGain = 10**(5.0*(val - self.speedDial.maximum()/2)/self.speedDial.maximum())
 
     def update_playback_time(self):
         """
@@ -789,3 +826,19 @@ class SimulationGui(QMainWindow):
         """
         self.visualizer.reset_camera()
         self.vtkWidget.GetRenderWindow().Render()
+
+    def show_info(self):
+        icon_lic = open(get_resource("license.txt"), "r").read()
+        text = "This application was build using PyMoskito ver. {} .<br />" \
+               "PyMoskito is free software distributed under GPLv3. <br />" \
+               "It is developed by members of the " \
+               "<a href=\'https://tu-dresden.de/ing/elektrotechnik/rst'>" \
+               "Institute of Control Theory</a>" \
+               " at the <a href=\'https://tu-dresden.de'>" \
+               "Dresden University of Technology</a>. <br />" \
+               "".format(pkg_resources.require("PyMoskito")[0].version) \
+               + "<br />" + icon_lic
+        box = QMessageBox.about(self, "PyMoskito", text)
+
+    def show_online_docs(self):
+        webbrowser.open("https://pymoskito.readthedocs.org")
