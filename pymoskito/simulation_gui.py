@@ -730,7 +730,6 @@ class SimulationGui(QMainWindow):
         for module, results in self.currentDataset["results"].items():
             if not isinstance(results, np.ndarray):
                 continue
-
             if len(results.shape) == 1:
                 self.dataList.insertItem(0, "{0}".format(module))
             elif len(results.shape) == 2:
@@ -738,7 +737,9 @@ class SimulationGui(QMainWindow):
                     self.dataList.insertItem(0, "{0}.{1}".format(module, col))
             elif len(results.shape) == 3:
                 for col in range(results.shape[1]):
-                    self.dataList.insertItem(0, "{0}.{1}".format(module, col))
+                    for der in range(results.shape[2]):
+                        self.dataList.insertItem(0, "{0}.{1}.{2}".format(
+                            module, col, der))
 
     def create_plot(self, item):
         """
@@ -777,6 +778,12 @@ class SimulationGui(QMainWindow):
         elif len(tmp) == 2:
             idx = int(tmp[1])
             data = self.currentDataset["results"][module_name][..., idx]
+        elif len(tmp) == 3:
+            idx = int(tmp[1])
+            der = int(tmp[2])
+            data = self.currentDataset["results"][module_name][..., idx, der]
+        else:
+            raise ValueError("Format not supported")
 
         return data
 

@@ -9,6 +9,7 @@ from matplotlib.lines import Line2D as Line
 
 from .processing_core import PostProcessingModule, MetaProcessingModule
 from .tools import sort_tree
+from .resources import colors
 
 
 def get_figure_size(scale):
@@ -82,10 +83,12 @@ class StepResponse(PostProcessingModule):
         in an epsilon region around the desired value
 
     """
-    line_color = '#aaaaaa'
+    line_color = colors.HKS41K100
+    line_width = 2
     line_style = '-'
     font_size = 20
-    spacing = 0.01
+    font_color = colors.HKS41K100
+    spacing = 0.05
     counter = 0
     eps = 1e-3
 
@@ -120,11 +123,12 @@ class StepResponse(PostProcessingModule):
         # create plot
         fig = Figure()
         axes = fig.add_subplot(111)
-        axes.set_title(r"Sprungantwort")
-        axes.plot(t, y, c='k')
+        axes.grid()
+        axes.set_title(r"Step Response")
+        axes.plot(t, y, c=colors.HKS44K100, linewidth=self.line_width)
         axes.set_xlim(left=0, right=t[-1])
-        axes.set_xlabel(r"Zeit in $\si{\second}$")
-        axes.set_ylabel(r"Systemausgang in $\si{\metre}$")
+        axes.set_xlabel(r"Time in $\si{\second}$")
+        axes.set_ylabel(r"System Output in $\si{\metre}$")
 
         # create desired line
         desired_line = Line([0, t[-1]], [yd, yd],
@@ -142,7 +146,7 @@ class StepResponse(PostProcessingModule):
         # calc correction-time (Anregelzeit)
         try:
             t_corr = t[np.where(y > yd)][0]
-            self.create_time_line(axes, t, y, t_corr, r"$T_{anr}$")
+            self.create_time_line(axes, t, y, t_corr, r"$T_{c}$")
             output.update({"t_corr": t_corr})
         except IndexError:
             output.update({"t_corr": None})
@@ -158,6 +162,7 @@ class StepResponse(PostProcessingModule):
             t_over = t[np.where(y == y_max)][0]
             overshoot = y_max - yd
             overshoot_per = overshoot / yd * 100
+            self._logger.info("Overshoot: {}%".format(overshoot_per))
 
             self.create_time_line(axes, t, y, t_over, r"$T_o$")
             output.update(dict(t_over=t_over,
@@ -220,12 +225,15 @@ class StepResponse(PostProcessingModule):
         if time_value != t[-1]:
             time_line = Line([time_value, time_value],
                              [np.min(y), y[np.where(t == time_value)][0]],
+                             linewidth=self.line_width,
                              ls=self.line_style,
                              c=self.line_color)
             axes.add_line(time_line)
             axes.text(time_value + self.spacing,
                       self.label_positions[self.counter],
-                      label, size=self.font_size)
+                      label,
+                      color=self.font_color,
+                      size=self.font_size)
             self.counter += 1
 
     def calc_metrics(self, data, output):
@@ -238,8 +246,8 @@ class StepResponse(PostProcessingModule):
         l1_norm_itae = self.calc_l1_norm_itae(*self.get_metric_values(data))
         l1_norm_abs = self.calc_l1_norm_abs(*self.get_metric_values(data))
 
-        self._logger.info("calculated L1NormITAE: {}".format(l1_norm_itae))
-        self._logger.info("calculated L1NormAbs: {}".format(l1_norm_abs))
+        self._logger.info("L1NormITAE: {}".format(l1_norm_itae))
+        self._logger.info("L1NormAbs: {}".format(l1_norm_abs))
 
         output.update({'L1NormITAE': l1_norm_itae, 'L1NormAbs': l1_norm_abs})
 

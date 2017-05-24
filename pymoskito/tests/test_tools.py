@@ -11,7 +11,7 @@ import unittest
 import numpy as np
 import sympy as sp
 
-from pymoskito import tools
+import pymoskito as pm
 
 
 class TestControlTools(unittest.TestCase):
@@ -37,26 +37,30 @@ class TestControlTools(unittest.TestCase):
         """
 
         # enter matrices with wrong dimensions
-        self.assertRaises(ValueError, tools.controlability_matrix,
+        self.assertRaises(ValueError,
+                          pm.controllability_matrix,
                           np.array([[1, 1, 1], [1, 1, 1]]),
                           np.array([[1], [1], [1]]))
-        self.assertRaises(ValueError, tools.controlability_matrix,
+        self.assertRaises(ValueError,
+                          pm.controllability_matrix,
                           np.array([[1, 1], [1, 1]]),
                           np.array([[1], [1], [1]]))
-        self.assertRaises(ValueError, tools.controlability_matrix,
+        self.assertRaises(ValueError,
+                          pm.controllability_matrix,
                           np.array([[1, 1], [1, 1]]),
                           np.array([[1, 1, 1], [1, 1, 1]]))
 
         # enter matrices, where the system shall be not controllable
-        self.assertRaises(ValueError, tools.controlability_matrix,
+        self.assertRaises(ValueError,
+                          pm.controllability_matrix,
                           np.array([[0, 0], [0, 0]]),
                           np.array([[0], [0]]))
 
         # calculate an example
-        test_Qc = tools.controlability_matrix(self.A, self.B)
+        test_Qc = pm.controllability_matrix(self.A, self.B)
         self.assertTrue(np.allclose(test_Qc, self.Qc))
         self.assertTrue(np.allclose(
-            tools.controlability_matrix(self.A.tolist(), self.B.tolist()),
+            pm.controllability_matrix(self.A.tolist(), self.B.tolist()),
             self.Qc))
 
         # check dimensions
@@ -68,26 +72,30 @@ class TestControlTools(unittest.TestCase):
         """
 
         # enter matrices with wrong dimensions
-        self.assertRaises(ValueError, tools.observability_matrix,
+        self.assertRaises(ValueError,
+                          pm.observability_matrix,
                           np.array([[1, 1, 1], [1, 1, 1]]),
                           np.array([[1, 1, 1]]))
-        self.assertRaises(ValueError, tools.observability_matrix,
+        self.assertRaises(ValueError,
+                          pm.observability_matrix,
                           np.array([[1, 1], [1, 1]]),
                           np.array([[1, 1, 1]]))
-        self.assertRaises(ValueError, tools.observability_matrix,
+        self.assertRaises(ValueError,
+                          pm.observability_matrix,
                           np.array([[1, 1], [1, 1]]),
                           np.array([[1, 1], [1, 1], [1, 1]]))
 
         # enter matrices, where the system shall be not observable
-        self.assertRaises(ValueError, tools.observability_matrix,
+        self.assertRaises(ValueError,
+                          pm.observability_matrix,
                           np.array([[0, 0], [0, 0]]),
                           np.array([[0, 0]]))
 
         # calculate an example
-        test_Qo = tools.observability_matrix(self.A, self.C)
+        test_Qo = pm.observability_matrix(self.A, self.C)
         self.assertTrue(np.allclose(test_Qo, self.Qo))
         self.assertTrue(np.allclose(
-            tools.observability_matrix(self.A.tolist(), self.C.tolist()),
+            pm.observability_matrix(self.A.tolist(), self.C.tolist()),
             self.Qo))
 
         # check dimensions
@@ -100,7 +108,7 @@ class TestControlTools(unittest.TestCase):
         """
 
         # calculate an example
-        co = tools.get_coefficients(self.poles)
+        co = pm.char_coefficients(self.poles)
         self.assertTrue(np.allclose(co, self.coefficients))
         self.assertEqual(co.size, self.coefficients.size)
 
@@ -110,20 +118,20 @@ class TestControlTools(unittest.TestCase):
         """
 
         # ValueError must occur if it is a MIMO system
-        self.assertRaises(ValueError, tools.place_siso,
+        self.assertRaises(ValueError, pm.place_siso,
                           np.array([[1, 1], [1, 1]]),
                           np.array([[1, 1], [1, 1]]),
                           self.poles)
-        self.assertRaises(ValueError, tools.place_siso,
+        self.assertRaises(ValueError, pm.place_siso,
                           np.array([[1, 1], [1, 1]]),
                           np.array([[1], [1]]),
                           np.array([1, 1, 1]))
 
         # calculate a state feedback and an observer gain
-        test_K = tools.place_siso(self.A, self.B, self.poles)
-        test_L = tools.place_siso(self.A.transpose(),
-                                  self.C.transpose(),
-                                  self.poles).transpose()
+        test_K = pm.place_siso(self.A, self.B, self.poles)
+        test_L = pm.place_siso(self.A.transpose(),
+                                                   self.C.transpose(),
+                                                   self.poles).transpose()
 
         self.assertTrue(np.allclose(test_K, self.K))
         self.assertTrue(np.allclose(test_L, self.L))
@@ -133,34 +141,34 @@ class TestControlTools(unittest.TestCase):
         check function, which calculates the prefilter matrix
         """
 
-        self.assertRaises(ValueError, tools.calc_prefilter,
+        self.assertRaises(ValueError, pm.calc_prefilter,
                           np.array([[1], [1]]),
                           np.array([[1], [1]]),
                           np.array([[1, 1]]))
-        self.assertRaises(ValueError, tools.calc_prefilter,
+        self.assertRaises(ValueError, pm.calc_prefilter,
                           np.array([[1, 1], [1, 1]]),
                           np.array([[1], [1], [1]]),
                           np.array([[1, 1]]))
-        self.assertRaises(ValueError, tools.calc_prefilter,
+        self.assertRaises(ValueError, pm.calc_prefilter,
                           np.array([[1, 1], [1, 1]]),
                           np.array([[1, 1, 1], [1, 1, 1]]),
                           np.array([[1, 1]]))
 
-        self.assertRaises(ValueError, tools.calc_prefilter,
+        self.assertRaises(ValueError, pm.calc_prefilter,
                           np.array([[1, 1], [1, 1]]),
                           np.array([[1], [1]]),
                           np.array([[1, 1, 1]]))
-        self.assertRaises(ValueError, tools.calc_prefilter,
+        self.assertRaises(ValueError, pm.calc_prefilter,
                           np.array([[1, 1], [1, 1]]),
                           np.array([[1], [1]]),
                           np.array([[1, 1], [1, 1], [1, 1]]))
 
         # enter matrices, where the prefilter's calculation should fail
-        self.assertRaises(ValueError, tools.calc_prefilter,
+        self.assertRaises(ValueError, pm.calc_prefilter,
                           np.array([[0, 0], [0, 0]]), np.array([[0], [0]]),
                           np.array([[0, 0]]), np.array([[0, 0]]))
 
-        test_V = tools.calc_prefilter(self.A, self.B, self.C, self.K)
+        test_V = pm.calc_prefilter(self.A, self.B, self.C, self.K)
         self.assertTrue(np.allclose(test_V, self.V))
 
 
@@ -173,15 +181,15 @@ class TestLieMath(unittest.TestCase):
         self.h = sp.Matrix([self._x1**2 - sp.sin(self._x2)])
 
     def test_lie_derivative(self):
-        Lfh = tools.lie_derivatives(self.h, self.f, self.x, 0)
+        Lfh = pm.lie_derivatives(self.h, self.f, self.x, 0)
         self.assertEqual(Lfh, [self.h])
 
-        Lfh = tools.lie_derivatives(self.h, self.f, self.x, 1)
+        Lfh = pm.lie_derivatives(self.h, self.f, self.x, 1)
         self.assertEqual(Lfh, [self.h,
                                sp.Matrix([-2*self._x1*self._x2**2
                                           - sp.sin(self._x1)*sp.cos(self._x2)])
                                ])
-        Lfh = tools.lie_derivatives(self.h, self.f, self.x, 2)
+        Lfh = pm.lie_derivatives(self.h, self.f, self.x, 2)
         self.assertEqual(Lfh, [self.h,
                                sp.Matrix([-2*self._x1*self._x2**2
                                           - sp.sin(self._x1)*sp.cos(self._x2)]),

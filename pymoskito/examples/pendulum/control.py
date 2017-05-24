@@ -30,8 +30,8 @@ class LinearStateFeedback(pm.Controller):
         self.A = symcalc.A_func(list(eq_state), parameter)
         self.B = symcalc.B_func(list(eq_state), parameter)
         self.C = symcalc.C
-        self.K = pm.tools.place_siso(self.A, self.B, self._settings['poles'])
-        self.V = pm.tools.calc_prefilter(self.A, self.B, self.C, self.K)
+        self.K = pm.place_siso(self.A, self.B, self._settings['poles'])
+        self.V = pm.calc_prefilter(self.A, self.B, self.C, self.K)
         # eig = np.linalg.eig(self.A - np.dot(self.B, self.K))
 
         self._logger.info("Equilibrium: {}".format(eq_state.tolist()))
@@ -80,8 +80,8 @@ class LinearStateFeedbackParLin(pm.Controller):
         self.A = symcalc.A_func_par_lin(list(eq_state), parameter)
         self.B = symcalc.B_func_par_lin(list(eq_state), parameter)
         self.C = symcalc.C_par_lin
-        self.K = pm.tools.place_siso(self.A, self.B, self._settings['poles'])
-        self.V = pm.tools.calc_prefilter(self.A, self.B, self.C, self.K)
+        self.K = pm.place_siso(self.A, self.B, self._settings['poles'])
+        self.V = pm.calc_prefilter(self.A, self.B, self.C, self.K)
         # eig = np.linalg.eig(self.A - np.dot(self.B, self.K))
 
         self._logger.info("Equilibrium: {}".format(eq_state.tolist()))
@@ -149,7 +149,7 @@ class LinearQuadraticRegulator(pm.Controller):
         # try to solve linear riccati equation
         self.P = solve_continuous_are(self.A, self.B, self.Q, self.R)
         self.K = np.dot(np.dot(np.linalg.inv(self.R), self.B.T), self.P)
-        self.V = pm.tools.calc_prefilter(self.A, self.B, self.C, self.K)
+        self.V = pm.calc_prefilter(self.A, self.B, self.C, self.K)
 
         eig = np.linalg.eig(self.A - np.dot(self.B, self.K))
 

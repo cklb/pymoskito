@@ -141,13 +141,7 @@ class Solver(SimulationModule):
         SimulationModule.__init__(self, settings)
 
     def calc_output(self, input_vector):
-        if "Limiter" in input_vector:
-            self.set_input(input_vector["Limiter"])
-        elif "ModelMixer" in input_vector:
-            self.set_input(input_vector["ModelMixer"])
-        else:
-            raise SolverException("ERROR no input.")
-
+        self.set_input(input_vector["system_input"])
         output = self.integrate(input_vector["time"])
         try:
             self._model.check_consistency(output)
@@ -179,11 +173,14 @@ class ControllerException(SimulationException):
 
 class Controller(SimulationModule):
     """
-    Base class for all user defined controllers
-    Use input_order to define order of needed derivatives from trajectory generator
+    Base class for all user defined controllers.
+    Use input_order to define order of required derivatives from the trajectory 
+    generator.
+    Via 'input_type' you may choose one of the sources listed in 'input_sources'
+    for the feedback calculation.
     """
     # selectable input sources for controller
-    input_sources = ["system_state", "system_output", "observer"]
+    input_sources = ["system_state", "system_output", "Observer"]
 
     def __init__(self, settings):
         SimulationModule.__init__(self, settings)
@@ -203,10 +200,12 @@ class Controller(SimulationModule):
         trajectory_values = input_vector.get("Trajectory", None)
         feedforward_values = input_vector.get("Feedforward", None)
 
-        return self._control(input_vector["time"], trajectory_values, feedforward_values, input_values)
+        return self._control(input_vector["time"], trajectory_values,
+                             feedforward_values, input_values)
 
     @abstractmethod
-    def _control(self, time, trajectory_values=None, feedforward_values=None, input_values=None, **kwargs):
+    def _control(self, time, trajectory_values=None, feedforward_values=None,
+                 input_values=None, **kwargs):
         """
         placeholder for control law, for more sophisticated implementations
         overload calc_output.
@@ -215,6 +214,41 @@ class Controller(SimulationModule):
         :param input_values: the input values selected by the *input_type* setting
         :param **kwargs: placeholder for custom parameters
         :return: control output
+        """
+        pass
+
+
+class Observer(SimulationModule):
+    """
+    Base class for all user defined observers.
+    """
+
+    def __init__(self, settings):
+        SimulationModule.__init__(self, settings)
+
+    def calc_output(self, input_vector):
+        system_input = input_vector.get("system_input", None)
+        if "ObserverMixer" in input_vector:
+            system_output = input_vector["ObserverMixer"]
+        elif "system_output" in input_vector:
+            system_output = input_vector["system_output"]
+        else:
+            raise SimulationException("No Observer input specified")
+
+        return self._observe(input_vector["time"], system_input, system_output)
+
+    @abstractmethod
+    def _observe(self, time, system_input, system_output):
+        """
+        Placeholder for observer law.
+        
+        Args:
+            time: Current time
+            system_input: Current system input
+            system_output: Current system output
+
+        Returns:
+            Estimated system state
         """
         pass
 

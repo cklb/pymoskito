@@ -358,7 +358,9 @@ class SimulatorInteractor(QObject):
                         break
 
                 if not found:
-                    self._logger.error("_applyRegime(): setting {0} not available for {1}".format(key, module_type))
+                    self._logger.error("_applyRegime(): setting: '{0}' not "
+                                       "available for module: '{1}'".format(
+                        key, module_type))
                     continue
 
     def run_simulation(self):

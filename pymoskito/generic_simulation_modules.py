@@ -203,7 +203,8 @@ class Setpoint(Trajectory):
     def __init__(self, settings):
         Trajectory.__init__(self, settings)
         if len(self._settings["State"]) != len(self._settings["Setpoint"]):
-            raise TrajectoryException("The amount of states and setpoints is not equal")
+            raise TrajectoryException("Dimension mismatch between selected "
+                                      "states and  the given setpoints.")
 
     def _desired_values(self, t):
         yd = np.zeros((len(self._settings["Setpoint"]),

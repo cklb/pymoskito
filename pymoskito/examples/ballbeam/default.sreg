@@ -63,6 +63,11 @@
    r0: 3
 
   Trajectory:
-   type: SetPoint
+   type: Setpoint
    State: [0]
-   Position: 3
+   Setpoint: [3]
+
+  ModelMixer:
+   type: AdditiveMixer
+   Input A: Controller
+   Input B: None

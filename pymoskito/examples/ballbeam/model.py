@@ -55,7 +55,9 @@ class BallBeamModel(pm.Model):
         dx3 = x4
 
         # inverse nonlinear system transformation
-        u = (tau - self.M * (2 * x1 * x2 * x4 + self.G * x1 * np.cos(x3))) / (self.M * x1 ** 2 + self.J + self.Jb)
+        u = (tau - self.M * (2 * x1 * x2 * x4
+                             + self.G * x1 * np.cos(x3))) / (self.M * x1 ** 2
+                                                             + self.J + self.Jb)
         dx4 = u
 
         return np.array([dx1, dx2, dx3, dx4])

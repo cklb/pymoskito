@@ -22,9 +22,10 @@ from .registry import register_simulation_module, register_processing_module, \
     get_registered_simulation_modules, get_registered_processing_modules
 from .simulation_gui import SimulationGui as Simulator
 from .simulation_modules import Solver, Trajectory, Model, ModelException, \
-    Feedforward, Controller, ModelMixer, \
+    Feedforward, Controller, ModelMixer, Observer, \
     ObserverMixer, Disturbance, Sensor, Limiter
 from .tools import *
+from .controltools import *
 from .visualization import VtkVisualizer, MplVisualizer
 
 __author__ = 'Stefan Ecklebe'
@@ -51,4 +52,3 @@ register_simulation_module(Disturbance, GaussianNoise)
 
 register_processing_module(PostProcessingModule, StepResponse)
 register_processing_module(PostProcessingModule, PlotAll)
-register_processing_module(MetaProcessingModule, XYMetaProcessor)

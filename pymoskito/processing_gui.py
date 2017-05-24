@@ -69,7 +69,8 @@ class PostProcessor(QMainWindow):
         self.actReloadMetaMethods.setText("reload meta methods")
         self.actReloadMetaMethods.setIcon(QIcon(get_resource("reload.png")))
         self.actReloadMetaMethods.setDisabled(False)
-        self.actReloadMetaMethods.triggered.connect(self.update_meta_method_list)
+        self.actReloadMetaMethods.triggered.connect(
+            self.update_meta_method_list)
         
         self.toolBar.addAction(self.actLoad)
         self.toolBar.addAction(self.actReloadMethods)
@@ -88,17 +89,20 @@ class PostProcessor(QMainWindow):
         self.grid.setColumnStretch(1, 1)
 
         self.methodList = QListWidget(self)
-        self.methodList.itemDoubleClicked.connect(self.post_processor_clicked)
+        self.methodList.itemDoubleClicked.connect(
+            self.post_processor_clicked)
         self.update_post_method_list()
         self.metaMethodList = QListWidget(self)
-        self.metaMethodList.itemDoubleClicked.connect(self.meta_processor_clicked)
+        self.metaMethodList.itemDoubleClicked.connect(
+            self.meta_processor_clicked)
         self.update_meta_method_list()
 
         self.sim_result_list = QListWidget(self)
         self.sim_results_changed.connect(self.update_result_list)
         self.results = []
 
-        self.delShort = QShortcut(QKeySequence(Qt.Key_Delete), self.sim_result_list)
+        self.delShort = QShortcut(QKeySequence(Qt.Key_Delete),
+                                  self.sim_result_list)
         self.delShort.activated.connect(self.remove_result_item)
 
         # figures
@@ -106,9 +110,11 @@ class PostProcessor(QMainWindow):
         self.figures_changed.connect(self.update_figure_lists)
 
         self.post_figure_list = QListWidget(self)
-        self.post_figure_list.currentItemChanged.connect(self.current_figure_changed)
+        self.post_figure_list.currentItemChanged.connect(
+            self.current_figure_changed)
         self.meta_figure_list = QListWidget(self)
-        self.meta_figure_list.currentItemChanged.connect(self.current_figure_changed)
+        self.meta_figure_list.currentItemChanged.connect(
+            self.current_figure_changed)
 
         self.plotView = QWidget()
         self.lastFigure = None
@@ -116,31 +122,33 @@ class PostProcessor(QMainWindow):
         self.post_result_list = QListWidget(self)
         self.post_results_changed.connect(self.update_post_result_list)
         self.post_results = []
-        self.delShortPost = QShortcut(QKeySequence(Qt.Key_Backspace), self.post_result_list)
+        self.delShortPost = QShortcut(QKeySequence(Qt.Key_Backspace),
+                                      self.post_result_list)
         self.delShortPost.activated.connect(self.remove_post_result_item)
 
         # log window
         self.log_list = QPlainTextEditLogger(self)
         self.log_list.setLevel(logging.INFO)
-        formatter = logging.Formatter(fmt="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-                                      datefmt="%H:%M:%S")
+        formatter = logging.Formatter(
+            fmt="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+            datefmt="%H:%M:%S")
         self.filter = PostFilter()
         self.log_list.addFilter(self.filter)
         self.log_list.setFormatter(formatter)
         logging.getLogger().addHandler(self.log_list)
 
-        self.grid.addWidget(QLabel("result files:"), 0, 0)
+        self.grid.addWidget(QLabel("Result Files:"), 0, 0)
         self.grid.addWidget(self.sim_result_list, 1, 0)
         self.grid.addWidget(QLabel("Postprocessors:"), 2, 0)
         self.grid.addWidget(self.methodList, 3, 0)
-        self.grid.addWidget(QLabel("figures:"), 4, 0)
+        self.grid.addWidget(QLabel("Figures:"), 4, 0)
         self.grid.addWidget(self.post_figure_list, 5, 0)
-        self.grid.addWidget(QLabel("selected figure:"), 0, 1)
-        self.grid.addWidget(QLabel("postprocessor files:"), 0, 2)
+        self.grid.addWidget(QLabel("Selected Figure:"), 0, 1)
+        self.grid.addWidget(QLabel("Postprocessor Files:"), 0, 2)
         self.grid.addWidget(self.post_result_list, 1, 2)
         self.grid.addWidget(QLabel("Metaprocessors:"), 2, 2)
         self.grid.addWidget(self.metaMethodList, 3, 2)
-        self.grid.addWidget(QLabel("figures:"), 4, 2)
+        self.grid.addWidget(QLabel("Figures:"), 4, 2)
         self.grid.addWidget(self.meta_figure_list, 5, 2)
         self.grid.addWidget(self.log_list.widget, 6, 0, 1, 3)
 
@@ -150,18 +158,9 @@ class PostProcessor(QMainWindow):
         # status bar
         self.statusBar = QStatusBar(self)
         self.setStatusBar(self.statusBar)
-        # self.statusBar.addPermanentWidget(self.log_list.widget)
 
-        # load test results
-        # filePath = os.path.join(os.pardir, 'results', 'simulation', 'default', 'example.pmr')
-        # self._loadResultFile(filePath)
-        #
-        # load test post-results
-        # filePath = os.path.join(os.pardir, 'results', 'postprocessing', 'default')
-        # self._loadResultFile(filePath)
-    
     def load_result_files(self):
-        path = os.path.curdir
+        path = os.path.join(os.path.curdir, "results", "simulation")
         dialog = QFileDialog(self)
         dialog.setFileMode(QFileDialog.ExistingFiles)
         dialog.setDirectory(path)
@@ -195,7 +194,7 @@ class PostProcessor(QMainWindow):
             self.sim_result_list.takeItem(self.sim_result_list.currentRow())
 
     def load_post_result_files(self):
-        path = os.curdir
+        path = os.path.join(os.path.curdir, "results", "processing")
         dialog = QFileDialog(self)
         dialog.setFileMode(QFileDialog.ExistingFiles)
         dialog.setDirectory(path)
@@ -234,14 +233,14 @@ class PostProcessor(QMainWindow):
     def update_post_method_list(self):
         self.methodList.clear()
         modules = pm.get_registered_processing_modules(PostProcessingModule)
-        for module in modules:
-            self.methodList.addItem(module[1])
+        for mod in modules:
+            self.methodList.addItem(mod[1])
 
     def update_meta_method_list(self):
         self.metaMethodList.clear()
         modules = pm.get_registered_processing_modules(MetaProcessingModule)
-        for module in modules:
-            self.metaMethodList.addItem(module[1])
+        for mod in modules:
+            self.metaMethodList.addItem(mod[1])
 
     def post_processor_clicked(self, item):
         self.run_processor(str(item.text()), "post")
@@ -257,11 +256,13 @@ class PostProcessor(QMainWindow):
             result_files = self.post_results
             base_cls = MetaProcessingModule
         else:
-            self._logger.error("unknown processor type {0}".format(processor_type))
-            raise ValueError("unknown processor type {0}".format(processor_type))
+            self._logger.error("unknown processor type {0}".format(
+                processor_type))
+            raise ValueError("unknown processor type {0}".format(
+                processor_type))
 
         if not result_files:
-            self._logger.warning("run_processor() Error: no result file loaded!")
+            self._logger.warning("run_processor() Error: no result file loaded")
             return
 
         processor_cls = pm.get_processing_module_class_by_name(base_cls, name)
@@ -279,13 +280,17 @@ class PostProcessor(QMainWindow):
 
     def update_figure_lists(self, figures, target_type):
         # remove no longer needed elements
-        for item, fig in [(key, val[0]) for key, val in self._figure_dict.items() if val[1] == target_type]:
+        for item, fig in [(key, val[0])
+                          for key, val in self._figure_dict.items()
+                          if val[1] == target_type]:
             if fig not in [new_fig["figure"] for new_fig in figures]:
                 if target_type == "post":
-                    old_item = self.post_figure_list.takeItem(self.post_figure_list.row(item))
+                    old_item = self.post_figure_list.takeItem(
+                        self.post_figure_list.row(item))
                     del old_item
                 elif target_type == "meta":
-                    old_item = self.meta_figure_list.takeItem(self.meta_figure_list.row(item))
+                    old_item = self.meta_figure_list.takeItem(
+                        self.meta_figure_list.row(item))
                     del old_item
 
                 del self._figure_dict[item]
@@ -293,7 +298,10 @@ class PostProcessor(QMainWindow):
         # add new ones to internal storage
         for fig in figures:
             if fig["figure"] not in self._figure_dict.values():
-                new_entry = [(fig["name"], (QListWidgetItem(fig["name"]), fig["figure"], target_type))]
+                new_entry = [(fig["name"],
+                              (QListWidgetItem(fig["name"]),
+                               fig["figure"], target_type)
+                              )]
                 self._figure_dict.update(new_entry)
 
         # add to display

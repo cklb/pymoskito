@@ -4,7 +4,7 @@ import sympy as sp
 import numpy as np
 import matplotlib.pyplot as plt
 
-import pymoskito.tools as to
+import pymoskito as pm
 import settings as st
 
 from matplotlib import rcParams
@@ -117,10 +117,10 @@ n = np.rank(Q_c_cross)
 
 
 # calculate lie derivatives
-Lfh_n = to.lie_derivatives(h_x, f_x, x, 4)
-LgLfh = to.lie_derivatives(Lfh_n[1], g_x, x, 1)
-LgLf2h = to.lie_derivatives(Lfh_n[2], g_x, x, 1)
-LgLf3h = to.lie_derivatives(Lfh_n[3], g_x, x, 1)
+Lfh_n = pm.lie_derivatives(h_x, f_x, x, 4)
+LgLfh = pm.lie_derivatives(Lfh_n[1], g_x, x, 1)
+LgLf2h = pm.lie_derivatives(Lfh_n[2], g_x, x, 1)
+LgLf3h = pm.lie_derivatives(Lfh_n[3], g_x, x, 1)
 
 y_d0 = h_x
 y_d1 = Lfh_n[1]

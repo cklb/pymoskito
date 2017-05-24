@@ -3,10 +3,10 @@ import numpy as np
 from collections import OrderedDict
 
 import pymoskito as pm
+import pymoskito.controltools
 
 from . import settings as st
-
-from .linearization import Linearization
+from .linearization import linearise_system
 
 # TODO convert these controllers to the new interface version
 
@@ -16,19 +16,21 @@ class FController(pm.Controller):
     controller created by changing f(x)
     """
     public_settings = OrderedDict([("poles", [-3.1, -3.1, -3.1, -3.1]),
-                                  ("tick divider", 1)])
+                                   ("source", "system_state"),
+                                   ("tick divider", 1),
+                                   ])
 
     def __init__(self, settings):
         # add specific "private" settings
         settings.update(input_order=4)
         settings.update(output_dim=1)
-        settings.update(input_type="system_state")
+        settings.update(input_type=settings["source"])
 
         pm.Controller.__init__(self, settings)
         self._output = np.zeros((1, ))
 
         # run pole placement
-        self.K = pm.tools.get_coefficients(self._settings["poles"])
+        self.K = pymoskito.controltools.char_coefficients(self._settings["poles"])
 
     def _control(self, time, trajectory_values=None, feedforward_values=None,
                  input_values=None, **kwargs):
@@ -44,10 +46,10 @@ class FController(pm.Controller):
 
         # calculate fictional input v
         v = (yd[4]
-             + self.K[0, [3]] * (yd[3] - phi4)
-             + self.K[0, [2]] * (yd[2] - phi3)
-             + self.K[0, [1]] * (yd[1] - phi2)
-             + self.K[0, [0]] * (yd[0] - phi1)
+             + self.K[3] * (yd[3] - phi4)
+             + self.K[2] * (yd[2] - phi3)
+             + self.K[1] * (yd[1] - phi2)
+             + self.K[0] * (yd[0] - phi1)
              )
 
         # calculate a(x)
@@ -152,11 +154,11 @@ class FController(pm.Controller):
 
 
 class LSSController(pm.Controller):
-    """
-        Linear statespace controller
-        
-        This controller is based on the linearized system. The steady state is
-        given by tau0 and x = [x01, x02, x03, x04].
+    r"""
+    Linear state space controller
+    
+    This controller is based on the linearized system. The steady state is
+    given by :math:`(\boldsymbol{x}^e, \tau^e)` .
     """
     public_settings = OrderedDict([("poles", [-3.1, -3.1, -3.1, -3.1]),
                                    ('r0', 0),
@@ -173,11 +175,9 @@ class LSSController(pm.Controller):
         self._output = np.zeros((1, ))
 
         # run pole placement
-        self.lin = Linearization([self._settings['r0'], 0, 0, 0],
-                                 self._settings['r0'] * st.M*st.G)
-        self.K = self.lin.ackerSISO(self.lin.A,
-                                    self.lin.B,
-                                    self._settings['poles'])
+        a_mat, b_mat, c_mat = linearise_system([self._settings['r0'], 0, 0, 0],
+                                               self._settings['r0'] * st.M*st.G)
+        self.K = pm.place_siso(a_mat, b_mat, self._settings['poles'])
         self.V = pm.calc_prefilter(a_mat, b_mat, c_mat, self.K)
 
     def _control(self, time, trajectory_values=None, feedforward_values=None,
@@ -355,3 +355,4 @@ class LSSController(pm.Controller):
 #         return u
 
 pm.register_simulation_module(pm.Controller, FController)
+pm.register_simulation_module(pm.Controller, LSSController)

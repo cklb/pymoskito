@@ -69,7 +69,8 @@ class Simulator(QObject):
         "Solver"
     ]
 
-    # list of modules that might not always appear but have to be calculated in special order
+    # list of modules that might not always appear but have to be calculated
+    # in a special order
     _dynamic_module_list = [
         "Disturbance",
         "Sensor",
@@ -129,27 +130,38 @@ class Simulator(QObject):
         if module_name in self._simulation_modules.keys():
             if self._counter[module_name] == self._simulation_modules[module_name].tick_divider:
                 self._current_outputs[module_name] = \
-                    self._simulation_modules[module_name].calc_output(self._input_vector)
+                    self._simulation_modules[module_name].calc_output(
+                        self._input_vector)
                 self._counter[module_name] = 1
             else:
                 self._counter[module_name] += 1
 
             # update input vector
-            self._input_vector.update({module_name: self._current_outputs[module_name]})
+            self._input_vector.update(
+                {module_name: self._current_outputs[module_name]})
 
     def _calc_step(self):
         """
-        Calculate one step in simulation
+        Calculate one step in simulation.
+        
+        Warn:
+            Due to the observers need for the last system input, the values of
+            the last step are kept in the input vector until they are 
+            overridden. Be careful about which value is needed at which place or
+            otherwise you end up using a value from the last step.
         """
         # update time and current state
         self._current_outputs["time"] = self._simulation_modules["Solver"].t
-        self._input_vector = dict(time=self._current_outputs["time"],
-                                  system_state=self._current_outputs["Solver"]
-                                  .reshape(self._current_outputs["Solver"].shape[0], 1))
+        self._input_vector.update(
+            time=self._current_outputs["time"],
+            system_state=self._current_outputs["Solver"].reshape(
+                self._current_outputs["Solver"].shape[0], 1)
+        )
 
         # apply new output
         self._current_outputs["Model"] = \
-            self._simulation_modules["Model"].calc_output(self._input_vector["system_state"])
+            self._simulation_modules["Model"].calc_output(
+                self._input_vector["system_state"])
         self._input_vector.update(system_output=self._current_outputs["Model"])
 
         # compute all dynamic modules
@@ -157,16 +169,38 @@ class Simulator(QObject):
             self._calc_module(mod)
 
         # integrate model
+        self._choose_system_input(self._input_vector)
         self._calc_module("Solver")
 
-        # calculate system state changes
-        self._current_outputs["State_Changes"] = \
-            self._simulation_modules["Model"]\
-                .state_function(self._current_outputs["time"],
-                                self._current_outputs["Solver"],
-                                self._current_outputs["ModelMixer"])
+        if 0:
+            # calculate system state changes
+            self._current_outputs["State_Changes"] = \
+                self._simulation_modules["Model"]\
+                    .state_function(self._current_outputs["time"],
+                                    self._current_outputs["Solver"],
+                                    self._current_outputs["ModelMixer"])
 
         return
+
+    def _choose_system_input(self, input_vector):
+        """ This is mainly done for convenience.
+        """
+        if "Limiter" in input_vector:
+            _input = input_vector["Limiter"]
+        elif "ModelMixer" in input_vector:
+            _input = input_vector["ModelMixer"]
+        elif "Controller" in input_vector:
+            if "Feedforward" in input_vector:
+                raise SimulationException(
+                    "Controller and Feedforward present but no"
+                    "ModelMixer. Ambiguous Situation")
+            _input = input_vector["Controller"]
+        elif "Feedforward" in input_vector:
+            _input = input_vector["Feedforward"]
+        else:
+            raise SimulationException("No system input given.")
+
+        self._input_vector["system_input"] = _input
 
     def _store_values(self):
         """
