@@ -6,8 +6,87 @@
 import logging
 import sympy as sp
 import numpy as np
+from numpy.linalg import inv as mat_inv
 
 from examples.ballbeam import settings as st
+
+
+def prefilter(a_mat, b_mat, c_mat, k_mat):
+    """
+    Calculate the prefilter for stationary equivalence.
+    """
+    # V = -[C(A-BK)^-1*B]^-1
+    try:
+        v = -mat_inv(c_mat @ (mat_inv(a_mat - b_mat * k) @ b_mat))
+    except np.linalg.linalg.LinAlgError:
+        raise ValueError("Can't calculate prefilter due to singular "
+                         "matrix")
+    return v
+
+
+def acker_SISO(a_mat, b_mat, poles):
+    """
+    place poles and return a numpy row-matrix
+       - place poles for a state feedback: you have to not transpose A and B
+       - place poles for a observer: you have to transpose A and C,
+         you will get a transposed L
+
+    """
+
+    # check consistency
+    # TODO: throw an Exception clemens. no questionmarks.
+
+    assert a_mat.shape[0] == a_mat.shape[1], 'A is not square'
+    assert a_mat.shape[0] == b_mat.shape[0], 'dim(A) and dim (B) does not match'
+    assert b_mat.shape[1] == 1, 'dim(B) is not for SISO case'
+    assert len(poles) == a_mat.shape[0], 'dim(A) and dim(poles) does not match '
+
+    n = a_mat.shape[0]
+
+    # n = len(poles)
+
+    # starting smypy crap
+    s = sp.symbols('s')
+
+    poly = 1
+    for s_i in poles:
+        poly = (s - s_i) * poly
+    poly = poly.expand()
+
+    p = []
+
+    # calculate the coefficients of characteristic polynomion
+    for i in range(n):
+        p.append(poly.subs([(s, 0)]))
+        poly = poly - p[i]
+        poly = poly / s
+        poly = poly.expand()
+
+    # ending sympy crap
+    p = np.array(p).astype(float)
+
+    # calculate controllability matrix
+    QT = np.zeros((n, n))
+    for i in range(n):
+        QT[i, :] = (np.dot(np.linalg.matrix_power(a_mat, i), b_mat)).transpose()[0]
+
+    Q = QT.transpose()
+
+    # check rank and throw exception
+    if (np.linalg.matrix_rank(Q) != n):
+        raise Exception('System might not be controllable or observable')
+
+    e_4 = np.zeros((1, n))
+    e_4[0, n - 1] = 1
+
+    t1T = np.dot(e_4, np.linalg.inv(Q))
+
+    cm = np.linalg.matrix_power(a_mat, n)
+    for i in range(n):
+        cm = cm + p[i] * np.linalg.matrix_power(a_mat, i)
+
+    K = np.dot(t1T, cm)
+    return K
 
 
 class Linearization:
@@ -62,89 +141,12 @@ class Linearization:
 
         # and we are done with sympy
 
-        self.A = np.array(A).astype(float)
-        self.B = np.array(B).astype(float)
-        self.C = np.array(C).astype(float)
+        a_mat = np.array(A).astype(float)
+        b_mat = np.array(B).astype(float)
+        c_mat = np.array(C).astype(float)
 
         # Steuerbarkeitsmatrix
         # Qs = Matrix([C, C*A, C*A**2, C*A**3])
 
-    def calcPrefilter(self, K=None):
-        """
-        calculate the prefilter and return a float
-        """
-        # Vorfilter V = -[C(A-BK)^-1*B]^-1
-        if K is not None:
-            try:
-                V = -np.linalg.inv(np.dot(np.dot(self.C, (np.linalg.inv(self.A - self.B * K))), self.B))[0][0]
-            except np.linalg.linalg.LinAlgError:
-                self._logger.error("can't calculate V due to singular matrix")
-                V = 1
-        else:
-            return 0
 
-        return V
 
-    def ackerSISO(self, A, B, poles):
-        """
-        place poles and return a numpy row-matrix
-           - place poles for a state feedback: you have to not transpose A and B
-           - place poles for a observer: you have to transpose A and C,
-             you will get a transposed L
-
-        """
-
-        # check consistency
-        # TODO: throw an Exception clemens. no questionmarks.
-
-        assert A.shape[0] == A.shape[1], 'A is not square'
-        assert A.shape[0] == B.shape[0], 'dim(A) and dim (B) does not match'
-        assert B.shape[1] == 1, 'dim(B) is not for SISO case'
-        assert len(poles) == A.shape[0], 'dim(A) and dim(poles) does not match '
-
-        n = A.shape[0]
-
-        # n = len(poles)
-
-        # starting smypy crap
-        s = sp.symbols('s')
-
-        poly = 1
-        for s_i in poles:
-            poly = (s - s_i) * poly
-        poly = poly.expand()
-
-        p = []
-
-        # calculate the coefficients of characteristic polynomion
-        for i in range(n):
-            p.append(poly.subs([(s, 0)]))
-            poly = poly - p[i]
-            poly = poly / s
-            poly = poly.expand()
-
-        # ending sympy crap
-        p = np.array(p).astype(float)
-
-        # calculate controllability matrix
-        QT = np.zeros((n, n))
-        for i in range(n):
-            QT[i, :] = (np.dot(np.linalg.matrix_power(A, i), B)).transpose()[0]
-
-        Q = QT.transpose()
-
-        # check rank and throw exception
-        if (np.linalg.matrix_rank(Q) != n):
-            raise Exception('System might not be controllable or observable')
-
-        e_4 = np.zeros((1, n))
-        e_4[0, n - 1] = 1
-
-        t1T = np.dot(e_4, np.linalg.inv(Q))
-
-        cm = np.linalg.matrix_power(A, n)
-        for i in range(n):
-            cm = cm + p[i] * np.linalg.matrix_power(A, i)
-
-        K = np.dot(t1T, cm)
-        return K

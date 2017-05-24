@@ -161,8 +161,7 @@ class PostProcessor(QMainWindow):
         # self._loadResultFile(filePath)
     
     def load_result_files(self):
-        path = os.path.join(os.path.pardir, "results", "simulation")
-
+        path = os.path.curdir
         dialog = QFileDialog(self)
         dialog.setFileMode(QFileDialog.ExistingFiles)
         dialog.setDirectory(path)
@@ -196,8 +195,7 @@ class PostProcessor(QMainWindow):
             self.sim_result_list.takeItem(self.sim_result_list.currentRow())
 
     def load_post_result_files(self):
-        path = os.path.join(os.path.pardir, "results", "processing")
-
+        path = os.curdir
         dialog = QFileDialog(self)
         dialog.setFileMode(QFileDialog.ExistingFiles)
         dialog.setDirectory(path)

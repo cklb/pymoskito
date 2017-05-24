@@ -1,42 +1,68 @@
- # default regime file that is loaded when the simulation environment starts up
- # use this to create your own files
+# Default regime file that is loaded when the simulation environment starts up.
 
+# This file contains some examples of how you can specify the simulation
+# settings without using the GUI and thus automate the whole process.
+
+# Use them as starting point to build your own ones.
+
+# Name of the regime, this will be displayed in the "Regimes" window.
 - Name: test-nonlinear
-  clear previous: !!python/bool True # decide whether previous settings should remain or not
+  # This regime shows a transition of the ball from the left to the right side
+  # of the beam using a nonlinear controller
+
+  # decide whether previous settings should remain or not. Typically regimes
+  # become a lot shorter if you only overwrite the value that change
+  # e.g. while varying a physical parameter
+  clear previous: !!python/bool True
+
+  # Class name of the SimulationModel that is to be simulated.
+  # As you can see, not all parameters have to be given, all settings that are
+  # not given here will be taken from the default values, defined in the class.
   Model:
    type: BallBeamModel
+   # This puts the ball on the left side of the beam
+   initial state: [-4, 0, 0, 0]
 
+  # Class name and settings for the solver
   Solver:
    type: ODEInt
    measure rate: 10
    end time: 10
 
+  # Class Name of the controller
   Controller:
    type: FController
 
+  # Class Name and settings of the Trajectory
   Trajectory:
-#   type: SmoothTransition
-   type: HarmonicTrajectory
-   Frequency: .1
-   Amplitude: 3
+   type: SmoothTransition
+   states: [-4, 4]
+   start time: 0
+   delta t: 8
 
+  # Class Name and settings of the ModelInputMixer
+  # When using a Feedforward, just provide "Feedforward" for Input B
   ModelMixer:
    type: AdditiveMixer
    Input A: Controller
    Input B: None
 
-# - Name: test-linear
-#   clear previous: !!python/bool True
-#   Model:
-#    type: BallBeamModel
-#
-#   Solver:
-#    type: ODEInt
-#
-#   Controller:
-#    type: LSSController
-#    r0: 3
-#
-#   Trajectory:
-#    type: FixedPointTrajectory
-#    Position: 3
+- Name: test-linear
+  # This regimes shows a typical step response of a linear controller
+
+  clear previous: !!python/bool True
+
+  Model:
+   type: BallBeamModel
+
+  Solver:
+   type: ODEInt
+
+  Controller:
+   type: LSSController
+   r0: 3
+
+  Trajectory:
+   type: SetPoint
+   State: [0]
+   Position: 3

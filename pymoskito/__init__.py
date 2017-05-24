@@ -24,7 +24,7 @@ from .simulation_gui import SimulationGui as Simulator
 from .simulation_modules import Solver, Trajectory, Model, ModelException, \
     Feedforward, Controller, ModelMixer, \
     ObserverMixer, Disturbance, Sensor, Limiter
-from .tools import get_resource, rotation_matrix_xyz
+from .tools import *
 from .visualization import VtkVisualizer, MplVisualizer
 
 __author__ = 'Stefan Ecklebe'

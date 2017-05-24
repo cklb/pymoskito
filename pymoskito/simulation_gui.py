@@ -174,7 +174,7 @@ class SimulationGui(QMainWindow):
         self.actSave.setText('Save Results As')
         self.actSave.setIcon(QIcon(get_resource("save.png")))
         self.actSave.setDisabled(True)
-        self.actSave.setShortcut(QKeySequence.SaveAs)
+        self.actSave.setShortcut(QKeySequence.Save)
         self.actSave.triggered.connect(self.export_simulation_data)
 
         self.actLoadRegimes = QAction(self)

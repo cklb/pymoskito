@@ -134,9 +134,9 @@ class SmoothTransition(Trajectory):
         dt = self._settings['delta t']
 
         if t < t0:
-            y[0][0] = yd[0]
+            y[0] = yd[0]
         elif t > t0 + dt:
-            y[0][0] = yd[1]
+            y[0] = yd[1]
         else:
             for order, dphi in enumerate(self.dphi_num):
                 if order == 0:
@@ -144,7 +144,7 @@ class SmoothTransition(Trajectory):
                 else:
                     ya = 0
 
-                y[0][order] = ya + (yd[1] - yd[0]) * dphi((t - t0) / dt) * 1 / dt ** order
+                y[order] = ya + (yd[1] - yd[0]) * dphi((t - t0) / dt) * 1 / dt ** order
 
         return y
 

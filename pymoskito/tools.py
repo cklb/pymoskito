@@ -9,10 +9,16 @@ import re
 import warnings
 
 import numpy as np
+from numpy.linalg import inv as mat_inv
 import sympy as sp
 from PyQt5.QtWidgets import QPlainTextEdit
 
 logger = logging.getLogger(__name__)
+
+__all__ = ["calc_prefilter", "place_siso", "get_coefficients"
+           "controlability_matrix", "observability_matrix",
+           "rotation_matrix_xyz", "get_resource"
+           "lie_derivatives"]
 
 
 def sort_lists(a, b):
@@ -353,11 +359,11 @@ def place_siso(A, B, poles):
 
     p = get_coefficients(poles)
 
-    # calculate controlability matrix
+    # calculate controllability matrix
     Q = controlability_matrix(A, B)
     Q_inv = np.linalg.inv(Q)
 
-    # last row in the inverse controlability matrix
+    # last row in the inverse controllability matrix
     t1T = np.atleast_2d(Q_inv[-1])
 
     cm = np.linalg.matrix_power(A, n)
@@ -369,7 +375,7 @@ def place_siso(A, B, poles):
     return K
 
 
-def calc_prefilter(A, B, C, K=None):
+def calc_prefilter(a_mat, b_mat, c_mat, k_mat=None):
     """
     Calculate the prefilter matrix
 
@@ -378,41 +384,41 @@ def calc_prefilter(A, B, C, K=None):
         \\boldsymbol{B}\\boldsymbol{K}\\right)^{-1}\\right]^{-1}
 
     Args:
-        A (:obj:`numpy.ndarray`): system matrix
-        B (:obj:`numpy.ndarray`): manipulating matrix
-        C (:obj:`numpy.ndarray`): output matrix
-        K (:obj:`numpy.ndarray`): control matrix
+        a_mat (:obj:`numpy.ndarray`): system matrix
+        b_mat (:obj:`numpy.ndarray`): manipulating matrix
+        c_mat (:obj:`numpy.ndarray`): output matrix
+        k_mat (:obj:`numpy.ndarray`): control matrix
 
     Return:
         :obj:`numpy.ndarray`: prefilter matrix
     """
-    A = np.atleast_2d(A)
-    B = np.atleast_2d(B)
-    C = np.atleast_2d(C)
-    K = np.atleast_2d(K)
+    a_mat = np.atleast_2d(a_mat)
+    b_mat = np.atleast_2d(b_mat)
+    c_mat = np.atleast_2d(c_mat)
+    k_mat = np.atleast_2d(k_mat)
 
     # check dimension of matrices A, B and C
-    if A.shape[0] != A.shape[1]:
+    if a_mat.shape[0] != a_mat.shape[1]:
         raise ValueError("A is not square")
-    if A.shape[0] != B.shape[0]:
+    if a_mat.shape[0] != b_mat.shape[0]:
         raise ValueError("Dimension of A and B does not match")
-    if A.shape[0] < B.shape[1]:
+    if a_mat.shape[0] < b_mat.shape[1]:
         raise ValueError("Dimension of A and B does not match")
-    if A.shape[0] != C.shape[1]:
+    if a_mat.shape[0] != c_mat.shape[1]:
         raise ValueError("Dimension of A and C does not match")
-    if A.shape[0] < C.shape[0]:
+    if a_mat.shape[0] < c_mat.shape[0]:
         raise ValueError("Dimension of A and C does not match")
 
-    if K[0, 0] is not None:
+    if k_mat[0, 0] is not None:
         try:
             # prefilter: V = -[C(A-BK)^-1*B]^-1
-            V = - np.linalg.inv(np.dot(np.dot(C, np.linalg.inv(A - np.dot(B, K))), B))
+            v = -mat_inv(c_mat @ (mat_inv(a_mat - b_mat * k) @ b_mat))
         except np.linalg.linalg.LinAlgError:
             raise ValueError("Can not calculate V, due to singular matrix")
     else:
-        V = np.array([[1]])
+        v = np.array([[1]])
 
-    return V
+    return v
 
 
 class QPlainTextEditLogger(logging.Handler):

@@ -105,7 +105,14 @@ class StepResponse(PostProcessingModule):
         # calculate data sets
         t = data["results"]["time"]
         y = data["results"]["Model"][:, 0]
-        yd = data["results"]["Trajectory"][-1, 0, 0]
+        traj_data = data["results"]["Trajectory"]
+        if len(traj_data.shape) == 2:
+            yd = data["results"]["Trajectory"][-1, 0]
+        elif len(traj_data.shape) == 3:
+            yd = data["results"]["Trajectory"][-1, 0, 0]
+        else:
+            raise ValueError("unknown Trajectory type.")
+
         self.label_positions = np.arange(y.min() + 0.1 * yd,
                                          yd,
                                          (yd - y.min()) / 4)
