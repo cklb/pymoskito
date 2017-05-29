@@ -31,24 +31,28 @@ class PostProcessor(QMainWindow):
         self.resize(1000, 600)
 
         # toolbar
-        self.toolBar = QToolBar("file control")
-        self.toolBar.setIconSize(QSize(24, 24))
+        self.toolBar = QToolBar("File Control")
+        self.toolBar.setContextMenuPolicy(Qt.PreventContextMenu)
+        self.toolBar.setMovable(False)
+        self.toolBar.setIconSize(QSize(25, 25))
         self.addToolBar(self.toolBar)
 
         self.actLoad = QAction(self)
-        self.actLoad.setText("load result file")
+        self.actLoad.setText("Load Simulation Result File")
         self.actLoad.setIcon(QIcon(get_resource("load.png")))
+        self.actLoad.setShortcut(QKeySequence.Open)
         self.actLoad.setDisabled(False)
         self.actLoad.triggered.connect(self.load_result_files)
 
         self.actPostLoad = QAction(self)
-        self.actPostLoad.setText("load post-result file")
+        self.actPostLoad.setText("Load Postprocessor Result File")
         self.actPostLoad.setIcon(QIcon(get_resource("load.png")))
+        self.actLoad.setShortcut(QKeySequence(Qt.CTRL + Qt.SHIFT + Qt.Key_O))
         self.actPostLoad.setDisabled(False)
         self.actPostLoad.triggered.connect(self.load_post_result_files)
 
         self.actSwitch = QAction(self)
-        self.actSwitch.setText("switch display mode")
+        self.actSwitch.setText("Switch Display Mode")
         self.actSwitch.setIcon(QIcon(get_resource("left_mode.png")))
         self.actSwitch.setDisabled(False)
         self.actSwitch.triggered.connect(self.switch_sides)
@@ -234,6 +238,7 @@ class PostProcessor(QMainWindow):
         self.methodList.clear()
         modules = pm.get_registered_processing_modules(PostProcessingModule)
         for mod in modules:
+            pm.reload_module(mod[0])
             self.methodList.addItem(mod[1])
 
     def update_meta_method_list(self):

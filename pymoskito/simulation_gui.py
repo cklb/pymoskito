@@ -223,7 +223,7 @@ class SimulationGui(QMainWindow):
         self.actPlayPause.triggered.connect(self.play_animation)
 
         self.actStop = QAction(self)
-        self.actStop.setText("Stop")
+        self.actStop.setText("Stop Animation")
         self.actStop.setIcon(QIcon(get_resource("stop.png")))
         self.actStop.setDisabled(True)
         self.actStop.triggered.connect(self.stop_animation)
@@ -270,12 +270,12 @@ class SimulationGui(QMainWindow):
         self.playbackTimeChanged.connect(self.update_gui)
         self.playbackTimeout = 33  # in [ms] -> 30 fps
 
-        self.act_reset_camera = QAction(self)
-        self.act_reset_camera.setText("reset camera")
-        self.act_reset_camera.setIcon(QIcon(get_resource("reset_camera.png")))
+        self.actResetCamera = QAction(self)
+        self.actResetCamera.setText("Reset Camera")
+        self.actResetCamera.setIcon(QIcon(get_resource("reset_camera.png")))
         if available_vis:
-            self.act_reset_camera.setDisabled(not self.visualizer.can_reset_view)
-        self.act_reset_camera.triggered.connect(self.reset_camera_clicked)
+            self.actResetCamera.setEnabled(self.visualizer.can_reset_view)
+        self.actResetCamera.triggered.connect(self.reset_camera_clicked)
 
         # postprocessing
         self.actPostprocessing = QAction(self)
@@ -308,7 +308,7 @@ class SimulationGui(QMainWindow):
         self.toolbarSim.addAction(self.actFast)
         self.toolbarSim.addSeparator()
         self.toolbarSim.addAction(self.actPostprocessing)
-        self.toolbarSim.addAction(self.act_reset_camera)
+        self.toolbarSim.addAction(self.actResetCamera)
         self.postprocessor = None
 
         # log dock
@@ -332,8 +332,7 @@ class SimulationGui(QMainWindow):
         fileMenu.addAction("&Quit", self.close)
 
         editMenu = self.menuBar().addMenu("&Edit")
-        editMenu.addAction(self.actDeleteRegimes
-                           )
+        editMenu.addAction(self.actDeleteRegimes)
 
         simMenu = self.menuBar().addMenu("&Simulation")
         simMenu.addAction(self.actSimulateCurrent)
@@ -342,6 +341,7 @@ class SimulationGui(QMainWindow):
 
         animMenu = self.menuBar().addMenu("&Animation")
         animMenu.addAction(self.actPlayPause)
+        animMenu.addAction(self.actStop)
         animMenu.addAction("&Increase Playback Speed",
                            self.increment_playback_speed,
                            QKeySequence(Qt.CTRL + Qt.Key_Plus))
@@ -351,6 +351,7 @@ class SimulationGui(QMainWindow):
         animMenu.addAction("&Reset Playback Speed",
                            self.reset_playback_speed,
                            QKeySequence(Qt.CTRL + Qt.Key_0))
+        animMenu.addAction(self.actResetCamera)
 
         helpMenu = self.menuBar().addMenu("&Help")
         helpMenu.addAction("&Online Documentation", self.show_online_docs)

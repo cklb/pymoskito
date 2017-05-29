@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+import inspect
+import importlib
 
 from .simulation_modules import SimulationModule, SignalMixer
 from .processing_core import ProcessingModule
@@ -49,6 +51,32 @@ def register_module(module_cls, module_type, cls, type_check=True):
 
     cls_entry[module_type.__name__] = entry
     _registry[module_cls.__name__] = cls_entry
+
+
+def reload_module(cls):
+    """
+    Reload a registered module.
+    
+    This is done by first identifying the python file that contains this 
+    module and secondly reloading it.
+    
+    Args:
+        module_cls: 
+        module_type: 
+        cls: 
+
+    """
+    # get the module containing the class
+    py_module = inspect.getmodule(cls)
+
+    # deregister all class contained in this module
+    if 0:
+        for name, obj in inspect.getmembers(py_module):
+            if is_registered(obj):
+                deregister_module(obj)
+
+    # reload module
+    importlib.reload(py_module)
 
 
 def get_registered_modules(module_cls, module_type):
