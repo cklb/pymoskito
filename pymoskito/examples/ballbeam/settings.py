@@ -13,8 +13,8 @@ measure_rate = 1000  # to produce same error dimension as hauser
 initial_state = [0, 0, 0, 0]
 
 # integrator defaults
-int_mode = 'vode'
-int_method = 'adams'
+int_mode = "vode"
+int_method = "adams"
 int_rtol = 1e-6
 int_atol = 1e-9
 end_time = 20
