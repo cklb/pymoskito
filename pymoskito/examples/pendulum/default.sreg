@@ -358,3 +358,34 @@
    type: AdditiveMixer
    Input A: Controller
    Input B: Feedforward
+
+
+- Name: MPC
+  clear previous: !!python/bool True # decide whether previous settings should remain or not
+
+  Model:
+   type: TwoPendulumModelParLin
+   #initial state: [0, 0, 180, 0, 180, 0]
+
+  Solver:
+   type: ODEInt
+   measure rate: 500
+   step size: 0.01
+   end time: 10
+
+  Controller:
+   type: ModelPredictiveController
+   Delta: 0.1
+   X0: (0, 0, 3.14, 0, 3.14, 0)
+   Xref: (0, 0, 0, 0, 0, 0)
+   Steps: 50
+
+  Trajectory:
+   type: Setpoint
+   State: [0]
+   Setpoint: [0]
+
+  ModelMixer:
+   type: AdditiveMixer
+   Input A: Controller
+   Input B: None

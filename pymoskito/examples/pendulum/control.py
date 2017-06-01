@@ -2,6 +2,7 @@
 import numpy as np
 from scipy.linalg import solve_continuous_are
 from collections import OrderedDict
+import mpctools as mpc
 
 import pymoskito as pm
 
@@ -415,8 +416,143 @@ def calc_small_signal_state(settings, state):
 
     return small_signal_state
 
+
+class ModelPredictiveController(pm.Controller):
+    """
+    This class implements a model predictive controller.
+    """
+
+    public_settings = OrderedDict([
+        ("X0", (0, 0, np.pi, 0, np.pi, 0)),
+        ("Xref", (0, 0, 0, 0, 0, 0)),
+        ("Xmin", [-1] + [None] * 5),
+        ("Xmax", [2] + [None] * 5),
+        ("Delta", .1),
+        ("Steps", 50),
+        ("tick divider", 1),
+    ])
+
+    def __init__(self, settings):
+        settings.update(input_order=0)
+        settings.update(output_dim=1)
+        settings.update(input_type="system_state")
+        self.module_settings = {"modules": settings["modules"]}
+        pm.Controller.__init__(self, settings)
+
+        x0 = np.array(self._settings["X0"])
+        x_ref = np.array(self._settings["Xref"])
+        x_min = np.array(self._settings["Xmin"])
+        x_min[np.equal(x_min, None)] = -np.inf
+        x_max = np.array(self._settings["Xmax"])
+        x_max[np.equal(x_max, None)] = np.inf
+
+        Delta = self._settings["Delta"]
+        Nt = self._settings["Steps"]
+        Nx = 6
+        Nu = 1
+        Ns = Nx
+
+        us = np.array([0])
+        u_max = 1e3
+        Dumax = np.array([1e3])
+
+        # Also discretize using RK4.
+        ode_rk4_casadi = mpc.getCasadiFunc(self.ode,
+                                           [Nx, Nu],
+                                           ["x", "u"],
+                                           funcname="F",
+                                           rk4=True,
+                                           Delta=Delta,
+                                           M=1)
+
+        # Define stage cost and terminal weight.
+        def lfunc(x, u, x_sp=None, u_sp=None):
+            if x_sp is None:
+                x_sp = np.zeros(x.shape)
+            dx = (x - x_sp)
+            # du = (u - u_sp)
+            return mpc.mtimes(dx.T, dx)
+
+        l = mpc.getCasadiFunc(lfunc,
+                              [Nx, Nu, Nx],
+                              ["x", "u", "x_sp"],
+                              scalar=False,
+                              funcname="l")
+
+        def Pffunc(x, x_sp=None):
+            if x_sp is None:
+                x_sp = np.zeros(x.shape)
+            dx = (x - x_sp)
+            return 1e5 * mpc.mtimes(dx.T, dx)
+
+        Pf = mpc.getCasadiFunc(Pffunc, [Nx, Nx], ["x", "x_sp"], funcname="Pf")
+
+        def ef_func(x):
+            dx = (x - x_ref)**2
+            return dx
+
+        ef = mpc.getCasadiFunc(ef_func, [Nx], ["x"], funcname="ef")
+
+        # build optimizer
+        commonargs = dict(N={"x": Nx, "u": Nu, "t": Nt, # "ef": Ns
+                             },
+                          verbosity=1,
+                          l=l,
+                          x0=x0,
+                          sp={"x": x_ref},
+                          # ef=ef,
+                          Pf=Pf,
+                          lb={
+                              "x": np.tile(x_min, (Nt + 1, 1)),
+                              # "u": -u_max * np.ones((Nu,)),
+                              # "Du": -Dumax,
+                              "xf": x_ref,
+                          },
+                          ub={
+                              "x": np.tile(x_max, (Nt + 1, 1)),
+                              # "u": u_max * np.ones((Nu,)),
+                              # "Du": Dumax,
+                              "xf": x_ref
+                          },
+                          uprev=us,
+                          funcargs={
+                              "Pf": ["x", "x_sp"],
+                              # "ef": ["x"]
+                          }
+                          )
+
+        self.solver = mpc.nmpc(f=ode_rk4_casadi, **commonargs)
+
+    @staticmethod
+    def ode(q, u):
+        dxdt = (q[1],
+                u,
+                q[3],
+                st.g / st.l1 * np.sin(q[2])
+                - st.d1 * q[3] / (st.m1 * st.l1**2)
+                + np.cos(q[2])/st.l1 * u,
+                q[5],
+                st.g / st.l2 * np.sin(q[4])
+                - st.d2 * q[5] / (st.m2 * st.l2**2)
+                + np.cos(q[4])/st.l2 * u
+                )
+        return np.array(dxdt)
+
+    def _control(self, time, trajectory_values=None, feedforward_values=None,
+                 input_values=None, **kwargs):
+
+        x = input_values
+
+        self.solver.fixvar("x", 0, x)
+        self.solver.solve()
+        u = self.solver.var["u", 0, :]
+        self.solver.par["u_prev", 0, :] = u
+
+        return u
+
 pm.register_simulation_module(pm.Controller, LinearStateFeedback)
 pm.register_simulation_module(pm.Controller, LinearStateFeedbackParLin)
 pm.register_simulation_module(pm.Controller, LinearQuadraticRegulator)
 pm.register_simulation_module(pm.Controller, LjapunovController)
 pm.register_simulation_module(pm.Controller, SwingUpController)
+pm.register_simulation_module(pm.Controller, ModelPredictiveController)

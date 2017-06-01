@@ -228,13 +228,7 @@ class SimulatorInteractor(QObject):
             # delete unnecessary quotes
             property_val_str = property_val_str.replace("'", "")
 
-            if "np." in property_val_str or "numpy." in property_val_str:
-                self._logger.error(
-                    ("Property '{}' of module '{}' contains a numpy expression. "
-                     + "Only standard python types are supported for entries.").format(property_name, module_name))
-            elif "pi" in property_val_str or "Pi" in property_val_str or "PI" in property_val_str:
-                property_val = np.pi
-            elif (("exp(" in property_val_str and property_val_str[-1] == ")")
+            if (("exp(" in property_val_str and property_val_str[-1] == ")")
                   or ("e^(" in property_val_str and property_val_str[-1] is ")")):
                 tmp = property_val_str[:-1]  # cut off last bracket
                 tmp = tmp.replace("exp(", "")
