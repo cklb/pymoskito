@@ -20,7 +20,7 @@ from PyQt5.QtWidgets import (QWidget, QAction, QSlider, QDial, QMainWindow,
                              QToolBar, QStatusBar, QProgressBar, QLabel,
                              QShortcut, QLineEdit, QFileDialog, QInputDialog,
                              QAbstractSlider, QFrame, QVBoxLayout, QMenu,
-                             QMessageBox)
+                             QMessageBox, QDialogButtonBox)
 
 # pyqtgraph
 import pyqtgraph as pg
@@ -176,6 +176,9 @@ class SimulationGui(QMainWindow):
         self.actSave.setDisabled(True)
         self.actSave.setShortcut(QKeySequence.Save)
         self.actSave.triggered.connect(self.export_simulation_data)
+        self._default_path = os.path.join(os.path.curdir,
+                                          "results",
+                                          "simulation")
 
         self.actLoadRegimes = QAction(self)
         self.actLoadRegimes.setText("Load Regimes from File")
@@ -430,36 +433,54 @@ class SimulationGui(QMainWindow):
     def _save_data(self, regime_name=None):
         """
         Save the result data for a given regime.
-        If *regime_name* is given, the result will be saved to a default path, making automated exporting easier.
+        If *regime_name* is given, the result will be saved to a default path, 
+        making automated exporting easier.
 
         :param regime_name: name of the regime to export
         """
-        if regime_name is None:
-            regime_name = self._regimes[self._current_regime_index]["Name"]
-            suggestion = time.strftime("%Y%m%d-%H%M%S") + "_" + regime_name + ".pmr"
-            export_path = os.path.join(os.curdir)
+        # specify default path
+        path = self._default_path
 
-            dialog = QFileDialog(self)
-            dialog.setAcceptMode(QFileDialog.AcceptSave)
-            dialog.setFileMode(QFileDialog.AnyFile)
-            dialog.setDirectory(export_path)
-            dialog.setNameFilter("PyMoskito Results (*.pmr)")
-            dialog.selectFile(suggestion)
+        # create sample file name
+        regime_name = self._regimes[self._current_regime_index]["Name"]
+        suggestion = (time.strftime("%Y%m%d-%H%M%S")
+                      + "_" + regime_name + ".pmr")
 
-            if dialog.exec_():
-                path = dialog.selectedFiles()[0]
-            else:
-                self._logger.warning("exported aborted")
-                return
-
-            # TODO for existence of file and aks for overwrite permission
-        else:
-            # create default path
-            path = os.path.join(os.path.curdir, "results", "simulation")
-            if not os.path.isdir(path):
+        if not os.path.isdir(path):
+            box = QMessageBox()
+            box.setText("Default Export Folder does not exist yet.")
+            box.setInformativeText("Do you want to create it? \n"
+                                   "{}".format(os.path.abspath(path)))
+            box.setStandardButtons(QMessageBox.Ok | QMessageBox.No)
+            box.setDefaultButton(QMessageBox.Ok)
+            ret = box.exec_()
+            if ret == QMessageBox.Ok:
                 os.makedirs(path)
 
-            path = os.path.join(path, time.strftime("%Y%m%d-%H%M%S") + "_" + regime_name + ".pmr")
+            else:
+                dialog = QFileDialog(self)
+                dialog.setAcceptMode(QFileDialog.AcceptSave)
+                dialog.setFileMode(QFileDialog.AnyFile)
+                dialog.setDirectory(path)
+                dialog.setNameFilter("PyMoskito Results (*.pmr)")
+                dialog.selectFile(suggestion)
+
+                if dialog.exec_():
+                    path = dialog.selectedFiles()[0]
+                else:
+                    self._logger.warning("exported aborted")
+                    return
+
+                box = QMessageBox()
+                box.setText("Use this path as new default?")
+                box.setInformativeText("{}".format(os.path.dirname(path)))
+                box.setStandardButtons(QMessageBox.Ok | QMessageBox.No)
+                box.setDefaultButton(QMessageBox.Ok)
+                ret = box.exec_()
+                if ret == QMessageBox.Ok:
+                    self._default_path = os.path.dirname(path)
+        else:
+            path = os.path.join(path, suggestion)
 
         self.currentDataset.update({"regime name": regime_name})
         with open(path, "wb") as f:
