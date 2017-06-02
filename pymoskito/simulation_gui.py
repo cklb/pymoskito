@@ -270,12 +270,12 @@ class SimulationGui(QMainWindow):
         self.playbackTimeChanged.connect(self.update_gui)
         self.playbackTimeout = 33  # in [ms] -> 30 fps
 
-        self.act_reset_camera = QAction(self)
-        self.act_reset_camera.setText("reset camera")
-        self.act_reset_camera.setIcon(QIcon(get_resource("reset_camera.png")))
+        self.actResetCamera = QAction(self)
+        self.actResetCamera.setText("Reset Camera")
+        self.actResetCamera.setIcon(QIcon(get_resource("reset_camera.png")))
         if available_vis:
-            self.act_reset_camera.setDisabled(not self.visualizer.can_reset_view)
-        self.act_reset_camera.triggered.connect(self.reset_camera_clicked)
+            self.actResetCamera.setEnabled(self.visualizer.can_reset_view)
+        self.actResetCamera.triggered.connect(self.reset_camera_clicked)
 
         # postprocessing
         self.actPostprocessing = QAction(self)
@@ -308,7 +308,7 @@ class SimulationGui(QMainWindow):
         self.toolbarSim.addAction(self.actFast)
         self.toolbarSim.addSeparator()
         self.toolbarSim.addAction(self.actPostprocessing)
-        self.toolbarSim.addAction(self.act_reset_camera)
+        self.toolbarSim.addAction(self.actResetCamera)
         self.postprocessor = None
 
         # log dock
@@ -351,6 +351,7 @@ class SimulationGui(QMainWindow):
         animMenu.addAction("&Reset Playback Speed",
                            self.reset_playback_speed,
                            QKeySequence(Qt.CTRL + Qt.Key_0))
+        animMenu.addAction(self.actResetCamera)
 
         helpMenu = self.menuBar().addMenu("&Help")
         helpMenu.addAction("&Online Documentation", self.show_online_docs)
