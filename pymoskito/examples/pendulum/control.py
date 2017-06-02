@@ -424,6 +424,7 @@ class ModelPredictiveController(pm.Controller):
 
     public_settings = OrderedDict([
         ("X0", (0, 0, np.pi, 0, np.pi, 0)),
+        ("U0", 0),
         ("Xref", (0, 0, 0, 0, 0, 0)),
         ("Xmin", [-1] + [None] * 5),
         ("Xmax", [2] + [None] * 5),
@@ -440,6 +441,7 @@ class ModelPredictiveController(pm.Controller):
         pm.Controller.__init__(self, settings)
 
         x0 = np.array(self._settings["X0"])
+        u0 = self._settings["U0"]
         x_ref = np.array(self._settings["Xref"])
         x_min = np.array(self._settings["Xmin"])
         x_min[np.equal(x_min, None)] = -np.inf
@@ -472,6 +474,7 @@ class ModelPredictiveController(pm.Controller):
             dx = (x - x_sp)
             # du = (u - u_sp)
             return mpc.mtimes(dx.T, dx)
+            # return np.array([1])
 
         l = mpc.getCasadiFunc(lfunc,
                               [Nx, Nu, Nx],
@@ -493,12 +496,27 @@ class ModelPredictiveController(pm.Controller):
 
         ef = mpc.getCasadiFunc(ef_func, [Nx], ["x"], funcname="ef")
 
+        sys = mpc.DiscreteSimulator(self.ode, Delta, [Nx, Nu], ["x", "u"])
+
+        # First simulate to get a gue
+        x = np.zeros((Nt+1, Nx))
+        x[0,:] = x0
+        u = np.zeros((Nt, Nu))
+        for t in range(Nt):
+            u[t, :] = u0
+            x[t+1, :] = sys.sim(x[t, :], u[t, :])
+
+        guess = dict()
+        guess["x"] = x
+        guess["u"] = u
+
         # build optimizer
         commonargs = dict(N={"x": Nx, "u": Nu, "t": Nt, # "ef": Ns
                              },
-                          verbosity=1,
+                          verbosity=3,
                           l=l,
                           x0=x0,
+                          # guess=guess,
                           sp={"x": x_ref},
                           # ef=ef,
                           Pf=Pf,
