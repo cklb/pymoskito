@@ -261,10 +261,10 @@ class SimulationGui(QMainWindow):
         self.timeSlider.setDisabled(True)
         self.timeSlider.valueChanged.connect(self.update_playback_time)
 
-        self.playbackTime = 0
+        self.playbackTime = .0
         self.playbackGain = 1
-        self.currentStepSize = 0
-        self.currentEndTime = 0
+        self.currentStepSize = .0
+        self.currentEndTime = .0
         self.playbackTimer = QTimer()
         self.playbackTimer.timeout.connect(self.increment_playback_time)
         self.playbackTimeChanged.connect(self.update_gui)
@@ -375,7 +375,12 @@ class SimulationGui(QMainWindow):
         """
         play the animation
         """
-        # self.statusLabel.setText('playing animation')
+        self._logger.debug("Starting Playback")
+
+        # if we are at the end, start from the beginning
+        if self.playbackTime == self.currentEndTime:
+            self.timeSlider.setValue(0)
+
         self.actPlayPause.setText("Pause Animation")
         self.actPlayPause.setIcon(QIcon(get_resource("pause.png")))
         self.actPlayPause.triggered.disconnect(self.play_animation)
@@ -386,7 +391,7 @@ class SimulationGui(QMainWindow):
         """
         pause the animation
         """
-        # self.statusLabel.setText('pausing animation')
+        self._logger.debug("Pausing Playback")
         self.playbackTimer.stop()
         self.actPlayPause.setText("Play Animation")
         self.actPlayPause.setIcon(QIcon(get_resource("play.png")))
@@ -397,7 +402,7 @@ class SimulationGui(QMainWindow):
         """
         pause the animation
         """
-        # self.statusLabel.setText('stopping animation')
+        self._logger.debug("Stopping Playback")
         if self.actPlayPause.text() == "Pause Animation":
             # animation is playing -> stop it
             self.playbackTimer.stop()
@@ -675,23 +680,25 @@ class SimulationGui(QMainWindow):
         :param val:
         """
         maximum = self.speedControl.maximum()
-        self.playbackGain = 10**(5.0 * (val - maximum / 2) / maximum)
+        self.playbackGain = 10**(3.0 * (val - maximum / 2) / maximum)
 
     def increment_playback_time(self):
         """
         go one time step forward in playback
         """
-        increment = self.playbackGain * self.playbackTimeout / 1000
-        if self.playbackTime + increment <= self.currentEndTime:
-            self.playbackTime += increment
-            pos = self.playbackTime / self.currentEndTime * self.timeSliderRange
-            self.timeSlider.blockSignals(True)
-            self.timeSlider.setValue(pos)
-            self.timeSlider.blockSignals(False)
-            self.playbackTimeChanged.emit()
-        else:
+        if self.playbackTime == self.currentEndTime:
             self.pause_animation()
             return
+
+        increment = self.playbackGain * self.playbackTimeout / 1000
+        self.playbackTime = min(self.currentEndTime,
+                                self.playbackTime + increment)
+        pos = int(self.playbackTime / self.currentEndTime
+                  * self.timeSliderRange)
+        self.timeSlider.blockSignals(True)
+        self.timeSlider.setValue(pos)
+        self.timeSlider.blockSignals(False)
+        self.playbackTimeChanged.emit()
 
     def update_playback_time(self):
         """
