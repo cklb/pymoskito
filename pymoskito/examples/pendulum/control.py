@@ -507,7 +507,8 @@ class ModelPredictiveController(pm.Controller):
             x[t+1, :] = sys.sim(x[t, :], u[t, :])
 
         guess = dict()
-        guess["x"] = x
+        # guess["x"] = x
+        guess["x"] = np.tile(x0, (Nt + 1, 1))
         guess["u"] = u
 
         # build optimizer
