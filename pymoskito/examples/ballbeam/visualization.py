@@ -26,10 +26,7 @@ try:
     class BallBeamVisualizer(pm.VtkVisualizer):
 
         def __init__(self, renderer):
-            pm.VtkVisualizer.__init__(self)
-
-            assert isinstance(renderer, vtk.vtkRenderer)
-            self.ren = renderer
+            pm.VtkVisualizer.__init__(self, renderer)
 
             # -------- add the beam ----
             # geometry
@@ -82,9 +79,15 @@ try:
             self.ren.SetBackground(228 / 255, 232 / 255, 213 / 255)
             self.ren.SetBackground2(38 / 255, 139 / 255, 210 / 255)
 
+            # apply some sane initial state
+            self.update_scene(np.array([0, 0, 0, 0]))
+
             # get everybody into the frame
             self.ren.ResetCamera()
             self.ren.GetActiveCamera().Zoom(1.7)
+
+            # save this view
+            self.save_camera_pose()
 
         @staticmethod
         def calc_positions(x):
@@ -128,9 +131,11 @@ try:
             self.set_body_state(self.ballActor, r_ball, t_ball)
 
     pm.register_visualizer(BallBeamVisualizer)
+
 except ImportError as e:
+    vtk = None
     print("BallBeam Visualizer:")
-    print(e.msg)
+    print(e)
     print("VTK Visualization not available.")
 
 

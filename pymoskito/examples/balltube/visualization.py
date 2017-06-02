@@ -13,10 +13,7 @@ try:
     class BallInTubeVisualizer(pm.VtkVisualizer):
 
         def __init__(self, renderer):
-            pm.VtkVisualizer.__init__(self)
-
-            assert isinstance(renderer, vtk.vtkRenderer)
-            self.ren = renderer
+            pm.VtkVisualizer.__init__(self, renderer)
 
             # -------- add a line ----
             # geometry
@@ -95,6 +92,9 @@ try:
             self.ren.ResetCamera()
             self.ren.GetActiveCamera().Zoom(1.0)
 
+            # save this view
+            self.save_camera_pose()
+
         @staticmethod
         def calc_positions(x):
             """
@@ -130,8 +130,9 @@ try:
     pm.register_visualizer(BallInTubeVisualizer)
 
 except ImportError as e:
+    vtk = None
     print("BallTube Visualizer:")
-    print(e.msg)
+    print(e)
     print("VTK Visualization not available.")
 
 

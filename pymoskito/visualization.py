@@ -44,17 +44,29 @@ class Visualizer(metaclass=ABCMeta):
 
 class VtkVisualizer(Visualizer):
     """
-    Base Class with some function the help visualizing the system using vtk
+    Base Class with some functionality the help visualizing the system using vtk
     """
 
-    def __init__(self):
+    def __init__(self, renderer):
         Visualizer.__init__(self)
+
+        assert isinstance(renderer, vtk.vtkRenderer)
+        self.ren = renderer
+
+        self.can_reset_view = False
+        self.position = None
+        self.focal_point = None
+        self.view_up = None
+        self.parallel_projection = None
+        self.parallel_scale = None
+        self.clipping_range = None
 
     def reset_camera(self):
         """
-        reset camera to original view, will be available if you implement the attributes below and ste the
-        'can_reset_view' flag
-        :return:
+        Reset camera to original view.
+         
+        Will be available if you implement the attributes below and set the
+        'can_reset_view' flag.
         """
         if self.can_reset_view:
             camera = self.ren.GetActiveCamera()
@@ -65,6 +77,21 @@ class VtkVisualizer(Visualizer):
             camera.SetParallelProjection(self.parallel_projection)
             camera.SetParallelScale(self.parallel_scale)
             camera.SetClippingRange(self.clipping_range)
+        else:
+            self.ren.ResetCamera()
+
+    def save_camera_pose(self):
+            # add camera reset functionality
+            camera = self.ren.GetActiveCamera()
+            self.position = camera.GetPosition()
+            self.focal_point = camera.GetFocalPoint()
+            self.view_up = camera.GetViewUp()
+            self.view_angle = camera.GetViewAngle()
+            self.parallel_projection = camera.GetParallelProjection()
+            self.parallel_scale = camera.GetParallelScale()
+            self.clipping_range = camera.GetClippingRange()
+
+            self.can_reset_view = True
 
 
 class MplVisualizer(Visualizer):

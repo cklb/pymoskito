@@ -14,9 +14,7 @@ try:
     class TwoPendulumVisualizer(pm.VtkVisualizer):
 
         def __init__(self, renderer):
-            pm.VtkVisualizer.__init__(self)
-            assert isinstance(renderer, vtk.vtkRenderer)
-            self.ren = renderer
+            pm.VtkVisualizer.__init__(self, renderer)
 
             # -------- add the beam ----
             # geometry
@@ -32,7 +30,8 @@ try:
             # actor
             self.beam_Actor = vtk.vtkLODActor()
             self.beam_Actor.SetMapper(self.beam_Mapper)
-            self.beam_Actor.SetPosition(0, -(st.cart_height / 2 + st.beam_height / 2), 0)
+            self.beam_Actor.SetPosition(0, -(st.cart_height / 2
+                                             + st.beam_height / 2), 0)
 
             # make it look nice
             self.beam_Prop = self.beam_Actor.GetProperty()
@@ -80,7 +79,8 @@ try:
 
             # actor
             self.axis_Actor = vtk.vtkLODActor()
-            self.axis_Actor.SetPosition(0, 0, st.cart_depth/2 + st.axis_height/2)
+            self.axis_Actor.SetPosition(0, 0, st.cart_depth/2
+                                        + st.axis_height/2)
             self.axis_Actor.RotateWXYZ(90, 1, 0, 0)
             self.axis_Actor.SetMapper(self.axis_Mapper)
 
@@ -91,7 +91,9 @@ try:
 
             self.ren.AddActor(self.axis_Actor)
             # save pose
-            self.axis_pose = [np.array([0, 0, st.cart_depth/2 + st.axis_height/2]),
+            self.axis_pose = [np.array([0,
+                                        0,
+                                        st.cart_depth/2 + st.axis_height/2]),
                               pm.rotation_matrix_xyz("x", 90, "deg")]
 
             # -------- add short pendulum ----
@@ -104,27 +106,38 @@ try:
 
             # mapper
             self.short_pendulum_shaft_Mapper = vtk.vtkPolyDataMapper()
-            self.short_pendulum_shaft_Mapper.SetInputConnection(self.short_pendulum_shaft.GetOutputPort())
+            self.short_pendulum_shaft_Mapper.SetInputConnection(
+                self.short_pendulum_shaft.GetOutputPort())
 
             # actor
             self.short_pendulum_shaft_Actor = vtk.vtkLODActor()
-            self.short_pendulum_shaft_Actor.SetPosition(0,
-                                                        0,
-                                                        st.cart_depth/2 + st.axis_height + st.pendulum_shaft_height/2)
+            self.short_pendulum_shaft_Actor.SetPosition(
+                0,
+                0,
+                st.cart_depth/2
+                + st.axis_height
+                + st.pendulum_shaft_height/2)
             self.short_pendulum_shaft_Actor.RotateWXYZ(90, 1, 0, 0)
-            self.short_pendulum_shaft_Actor.SetMapper(self.short_pendulum_shaft_Mapper)
+            self.short_pendulum_shaft_Actor.SetMapper(
+                self.short_pendulum_shaft_Mapper)
 
             # make it look nice
-            self.short_pendulum_shaft_Prop = self.short_pendulum_shaft_Actor.GetProperty()
+            self.short_pendulum_shaft_Prop = \
+                self.short_pendulum_shaft_Actor.GetProperty()
             # RAL 9007, grey-aluminium, a little bit darker
-            self.short_pendulum_shaft_Prop.SetColor(122 / 255, 122 / 255, 119 / 255)
+            self.short_pendulum_shaft_Prop.SetColor(122 / 255,
+                                                    122 / 255,
+                                                    119 / 255)
 
             self.ren.AddActor(self.short_pendulum_shaft_Actor)
             # save pose
-            self.short_pendulum_shaft_pose = [np.array([0,
-                                                        0,
-                                                        st.cart_depth/2 + st.axis_height + st.pendulum_shaft_height/2]),
-                                              pm.rotation_matrix_xyz("x", 90, "deg")]
+            self.short_pendulum_shaft_pose = [
+                np.array([0,
+                          0,
+                          st.cart_depth/2
+                          + st.axis_height
+                          + st.pendulum_shaft_height/2]),
+                pm.rotation_matrix_xyz("x", 90, "deg")]
 
             # add short pendulum
             # geometry
@@ -135,13 +148,16 @@ try:
 
             # mapper
             self.short_pendulum_Mapper = vtk.vtkPolyDataMapper()
-            self.short_pendulum_Mapper.SetInputConnection(self.short_pendulum.GetOutputPort())
+            self.short_pendulum_Mapper.SetInputConnection(
+                self.short_pendulum.GetOutputPort())
 
             # actor
             self.short_pendulum_Actor = vtk.vtkLODActor()
             self.short_pendulum_Actor.SetPosition(0,
                                                   st.short_pendulum_height/2,
-                                                  st.cart_depth/2 + st.axis_height + st.pendulum_shaft_height/2)
+                                                  st.cart_depth/2
+                                                  + st.axis_height
+                                                  + st.pendulum_shaft_height/2)
             self.short_pendulum_Actor.RotateWXYZ(0, 1, 0, 0)
             self.short_pendulum_Actor.SetMapper(self.short_pendulum_Mapper)
 
@@ -151,10 +167,13 @@ try:
             self.short_pendulum_Prop.SetColor(122 / 255, 122 / 255, 119 / 255)
 
             self.ren.AddActor(self.short_pendulum_Actor)
-            self.short_pendulum_pose = [np.array([0,
-                                                  st.short_pendulum_height/2,
-                                                  st.cart_depth/2 + st.axis_height + st.pendulum_shaft_height/2]),
-                                        np.eye(3)]
+            self.short_pendulum_pose = [
+                np.array([0,
+                          st.short_pendulum_height/2,
+                          st.cart_depth/2
+                          + st.axis_height
+                          + st.pendulum_shaft_height/2]),
+                np.eye(3)]
 
             # add short pendulum weight
             # geometry
@@ -165,26 +184,35 @@ try:
 
             # mapper
             self.short_pendulum_weight_Mapper = vtk.vtkPolyDataMapper()
-            self.short_pendulum_weight_Mapper.SetInputConnection(self.short_pendulum_weight.GetOutputPort())
+            self.short_pendulum_weight_Mapper.SetInputConnection(
+                self.short_pendulum_weight.GetOutputPort())
 
             # actor
             self.short_pendulum_weight_Actor = vtk.vtkLODActor()
-            self.short_pendulum_weight_Actor.SetPosition(0,
-                                                         (st.short_pendulum_height + st.pendulum_weight_height/2),
-                                                         st.cart_depth/2 + st.axis_height + st.pendulum_shaft_height/2)
+            self.short_pendulum_weight_Actor.SetPosition(
+                0,
+                (st.short_pendulum_height + st.pendulum_weight_height/2),
+                st.cart_depth/2 + st.axis_height + st.pendulum_shaft_height/2)
             self.short_pendulum_weight_Actor.RotateWXYZ(0, 1, 0, 0)
-            self.short_pendulum_weight_Actor.SetMapper(self.short_pendulum_weight_Mapper)
+            self.short_pendulum_weight_Actor.SetMapper(
+                self.short_pendulum_weight_Mapper)
 
             # make it look nice
-            self.short_pendulum_weight_Prop = self.short_pendulum_weight_Actor.GetProperty()
+            self.short_pendulum_weight_Prop \
+                = self.short_pendulum_weight_Actor.GetProperty()
             # RAL 9006, white-aluminium
-            self.short_pendulum_weight_Prop.SetColor(162 / 255, 166 / 255, 164 / 255)
+            self.short_pendulum_weight_Prop.SetColor(162 / 255,
+                                                     166 / 255,
+                                                     164 / 255)
 
             self.ren.AddActor(self.short_pendulum_weight_Actor)
             self.short_pendulum_weight_pose = [
                 np.array([0,
-                          (st.short_pendulum_height + st.pendulum_weight_height/2),
-                          st.cart_depth/2 + st.axis_height + st.pendulum_shaft_height/2]),
+                          (st.short_pendulum_height
+                           + st.pendulum_weight_height/2),
+                          st.cart_depth/2
+                          + st.axis_height
+                          + st.pendulum_shaft_height/2]),
                 np.eye(3)
             ]
 
@@ -198,33 +226,40 @@ try:
 
             # mapper
             self.long_pendulum_shaft_Mapper = vtk.vtkPolyDataMapper()
-            self.long_pendulum_shaft_Mapper.SetInputConnection(self.long_pendulum_shaft.GetOutputPort())
+            self.long_pendulum_shaft_Mapper.SetInputConnection(
+                self.long_pendulum_shaft.GetOutputPort())
 
             # actor
             self.long_pendulum_shaft_Actor = vtk.vtkLODActor()
-            self.long_pendulum_shaft_Actor.SetPosition(0,
-                                                       0,
-                                                       st.cart_depth/2
-                                                       + st.axis_height
-                                                       + st.pendulum_shaft_height
-                                                       + st.pendulum_shaft_height/2)
+            self.long_pendulum_shaft_Actor.SetPosition(
+                0,
+                0,
+                st.cart_depth/2
+                + st.axis_height
+                + st.pendulum_shaft_height
+                + st.pendulum_shaft_height/2)
             self.long_pendulum_shaft_Actor.RotateWXYZ(90, 1, 0, 0)
-            self.long_pendulum_shaft_Actor.SetMapper(self.long_pendulum_shaft_Mapper)
+            self.long_pendulum_shaft_Actor.SetMapper(
+                self.long_pendulum_shaft_Mapper)
 
             # make it look nice
-            self.long_pendulum_shaft_Prop = self.long_pendulum_shaft_Actor.GetProperty()
+            self.long_pendulum_shaft_Prop =\
+                self.long_pendulum_shaft_Actor.GetProperty()
             # RAL 9007, grey-aluminium
-            self.long_pendulum_shaft_Prop.SetColor(142 / 255, 142 / 255, 139 / 255)
+            self.long_pendulum_shaft_Prop.SetColor(142 / 255,
+                                                   142 / 255,
+                                                   139 / 255)
 
             self.ren.AddActor(self.long_pendulum_shaft_Actor)
             # save pose
-            self.long_pendulum_shaft_pose = [np.array([0,
-                                                       0,
-                                                       st.cart_depth/2
-                                                       + st.axis_height
-                                                       + st.pendulum_shaft_height
-                                                       + st.pendulum_shaft_height/2]),
-                                             pm.rotation_matrix_xyz("x", 90, "deg")]
+            self.long_pendulum_shaft_pose = [
+                np.array([0,
+                          0,
+                          st.cart_depth/2
+                          + st.axis_height
+                          + st.pendulum_shaft_height
+                          + st.pendulum_shaft_height/2]),
+                pm.rotation_matrix_xyz("x", 90, "deg")]
 
             # add long pendulum
             # geometry
@@ -235,7 +270,8 @@ try:
 
             # mapper
             self.long_pendulum_Mapper = vtk.vtkPolyDataMapper()
-            self.long_pendulum_Mapper.SetInputConnection(self.long_pendulum.GetOutputPort())
+            self.long_pendulum_Mapper.SetInputConnection(
+                self.long_pendulum.GetOutputPort())
 
             # actor
             self.long_pendulum_Actor = vtk.vtkLODActor()
@@ -271,32 +307,39 @@ try:
 
             # mapper
             self.long_pendulum_weight_Mapper = vtk.vtkPolyDataMapper()
-            self.long_pendulum_weight_Mapper.SetInputConnection(self.long_pendulum_weight.GetOutputPort())
+            self.long_pendulum_weight_Mapper.SetInputConnection(
+                self.long_pendulum_weight.GetOutputPort())
 
             # actor
             self.long_pendulum_weight_Actor = vtk.vtkLODActor()
-            self.long_pendulum_weight_Actor.SetPosition(0,
-                                                        (st.long_pendulum_height + st.pendulum_weight_height/2),
-                                                        st.cart_depth/2
-                                                        + st.axis_height
-                                                        + st.pendulum_shaft_height
-                                                        + st.pendulum_shaft_height/2)
+            self.long_pendulum_weight_Actor.SetPosition(
+                0,
+                st.long_pendulum_height + st.pendulum_weight_height/2,
+                st.cart_depth/2
+                + st.axis_height
+                + st.pendulum_shaft_height
+                + st.pendulum_shaft_height/2)
             self.long_pendulum_weight_Actor.RotateWXYZ(0, 1, 0, 0)
-            self.long_pendulum_weight_Actor.SetMapper(self.long_pendulum_weight_Mapper)
+            self.long_pendulum_weight_Actor.SetMapper(
+                self.long_pendulum_weight_Mapper)
 
             # make it look nice
-            self.long_pendulum_weight_Prop = self.long_pendulum_weight_Actor.GetProperty()
+            self.long_pendulum_weight_Prop \
+                = self.long_pendulum_weight_Actor.GetProperty()
             # RAL 9006, white-aluminium
-            self.long_pendulum_weight_Prop.SetColor(162 / 255, 166 / 255, 164 / 255)
+            self.long_pendulum_weight_Prop.SetColor(162 / 255,
+                                                    166 / 255,
+                                                    164 / 255)
 
             self.ren.AddActor(self.long_pendulum_weight_Actor)
-            self.long_pendulum_weight_pose = [np.array([0,
-                                                        (st.long_pendulum_height + st.pendulum_weight_height/2),
-                                                        st.cart_depth/2
-                                                        + st.axis_height
-                                                        + st.pendulum_shaft_height
-                                                        + st.pendulum_shaft_height/2]),
-                                              np.eye(3)]
+            self.long_pendulum_weight_pose = [
+                np.array([0,
+                          st.long_pendulum_height + st.pendulum_weight_height/2,
+                          st.cart_depth/2
+                          + st.axis_height
+                          + st.pendulum_shaft_height
+                          + st.pendulum_shaft_height/2]),
+                np.eye(3)]
 
             # add background
             self.ren.GradientBackgroundOn()
@@ -308,15 +351,8 @@ try:
             self.ren.GetActiveCamera().Zoom(1.45)
             self.ren.GetActiveCamera().SetFocalPoint(0, 0, 0)
 
-            # add camera reset functionality
-            self.can_reset_view = True
-            self.position = self.ren.GetActiveCamera().GetPosition()
-            self.focal_point = self.ren.GetActiveCamera().GetFocalPoint()
-            self.view_up = self.ren.GetActiveCamera().GetViewUp()
-            self.view_angle = self.ren.GetActiveCamera().GetViewAngle()
-            self.parallel_projection = self.ren.GetActiveCamera().GetParallelProjection()
-            self.parallel_scale = self.ren.GetActiveCamera().GetParallelScale()
-            self.clipping_range = self.ren.GetActiveCamera().GetClippingRange()
+            # save this view
+            self.save_camera_pose()
 
         def calc_positions(self, x):
             """
@@ -335,50 +371,66 @@ try:
             positions_dict.update({"axis": [self.axis_Actor, t_axis, r_axis]})
 
             # short_pendulum_shaft
-            t_short_pendulum_shaft = np.array([x[0], 0, 0]) + self.short_pendulum_shaft_pose[0]
-            r_short_pendulum_shaft = pm.rotation_matrix_xyz("z", x[4], "rad") @ self.short_pendulum_shaft_pose[1]
-            positions_dict.update({"short_pendulum_shaft": [self.short_pendulum_shaft_Actor,
-                                                            t_short_pendulum_shaft,
-                                                            r_short_pendulum_shaft]})
+            t_short_pendulum_shaft = (np.array([x[0], 0, 0])
+                                      + self.short_pendulum_shaft_pose[0])
+            r_short_pendulum_shaft = pm.rotation_matrix_xyz(
+                "z", x[4], "rad") @ self.short_pendulum_shaft_pose[1]
+            positions_dict.update({"short_pendulum_shaft": [
+                self.short_pendulum_shaft_Actor,
+                t_short_pendulum_shaft,
+                r_short_pendulum_shaft]})
             # short_pendulum
             t_short_pendulum = (np.array([x[0], 0, 0])
-                                + pm.rotation_matrix_xyz("z", x[4], "rad") @ self.short_pendulum_pose[0])
+                                + pm.rotation_matrix_xyz(
+                "z", x[4], "rad") @ self.short_pendulum_pose[0])
 
-            r_short_pendulum = pm.rotation_matrix_xyz("z", x[4], "rad") @ self.short_pendulum_pose[1]
+            r_short_pendulum = pm.rotation_matrix_xyz(
+                "z", x[4], "rad") @ self.short_pendulum_pose[1]
             positions_dict.update({"short_pendulum": [self.short_pendulum_Actor,
                                                       t_short_pendulum,
                                                       r_short_pendulum]})
 
             # short_pendulum_weight
             t_short_pendulum_weight = (np.array([x[0], 0, 0])
-                                       + pm.rotation_matrix_xyz("z", x[4], "rad") @ self.short_pendulum_weight_pose[0])
-            r_short_pendulum_weight = pm.rotation_matrix_xyz("z", x[4], "rad") @ self.short_pendulum_weight_pose[1]
-            positions_dict.update({"short_pendulum_weight": [self.short_pendulum_weight_Actor,
-                                                             t_short_pendulum_weight,
-                                                             r_short_pendulum_weight]})
+                                       + pm.rotation_matrix_xyz(
+                "z", x[4], "rad") @ self.short_pendulum_weight_pose[0])
+            r_short_pendulum_weight = pm.rotation_matrix_xyz(
+                "z", x[4], "rad") @ self.short_pendulum_weight_pose[1]
+            positions_dict.update({"short_pendulum_weight": [
+                self.short_pendulum_weight_Actor,
+                t_short_pendulum_weight,
+                r_short_pendulum_weight]})
 
             # long_pendulum_shaft
-            t_long_pendulum_shaft = np.array([x[0], 0, 0]) + self.long_pendulum_shaft_pose[0]
-            r_long_pendulum_shaft = pm.rotation_matrix_xyz("z", x[2], "rad") @ self.long_pendulum_shaft_pose[1]
-            positions_dict.update({"long_pendulum_shaft": [self.long_pendulum_shaft_Actor,
-                                                           t_long_pendulum_shaft,
-                                                           r_long_pendulum_shaft]})
+            t_long_pendulum_shaft = (np.array([x[0], 0, 0])
+                                     + self.long_pendulum_shaft_pose[0])
+            r_long_pendulum_shaft = pm.rotation_matrix_xyz(
+                "z", x[2], "rad") @ self.long_pendulum_shaft_pose[1]
+            positions_dict.update({"long_pendulum_shaft": [
+                self.long_pendulum_shaft_Actor,
+                t_long_pendulum_shaft,
+                r_long_pendulum_shaft]})
 
             # long_pendulum
             t_long_pendulum = (np.array([x[0], 0, 0])
-                               + pm.rotation_matrix_xyz("z", x[2], "rad") @ self.long_pendulum_pose[0])
-            r_long_pendulum = pm.rotation_matrix_xyz("z", x[2], "rad") @ self.long_pendulum_pose[1]
+                               + pm.rotation_matrix_xyz(
+                "z", x[2], "rad") @ self.long_pendulum_pose[0])
+            r_long_pendulum = pm.rotation_matrix_xyz(
+                "z", x[2], "rad") @ self.long_pendulum_pose[1]
             positions_dict.update({"long_pendulum": [self.long_pendulum_Actor,
                                                      t_long_pendulum,
                                                      r_long_pendulum]})
 
             # long_pendulum_weight
             t_long_pendulum_weight = (np.array([x[0], 0, 0])
-                                      + pm.rotation_matrix_xyz("z", x[2], "rad") @ self.long_pendulum_weight_pose[0])
-            r_long_pendulum_weight = pm.rotation_matrix_xyz("z", x[2], "rad") @ self.long_pendulum_weight_pose[1]
-            positions_dict.update({"long_pendulum_weight": [self.long_pendulum_weight_Actor,
-                                                            t_long_pendulum_weight,
-                                                            r_long_pendulum_weight]})
+                                      + pm.rotation_matrix_xyz(
+                "z", x[2], "rad") @ self.long_pendulum_weight_pose[0])
+            r_long_pendulum_weight = pm.rotation_matrix_xyz(
+                "z", x[2], "rad") @ self.long_pendulum_weight_pose[1]
+            positions_dict.update({"long_pendulum_weight": [
+                self.long_pendulum_weight_Actor,
+                t_long_pendulum_weight,
+                r_long_pendulum_weight]})
 
             return positions_dict
 
@@ -406,8 +458,9 @@ try:
     pm.register_visualizer(TwoPendulumVisualizer)
 
 except ImportError as e:
+    vtk = None
     print("BallTube Visualizer:")
-    print(e.msg)
+    print(e)
     print("VTK Visualization not available.")
 
 
@@ -419,44 +472,55 @@ class MplTwoPendulumVisualizer(pm.MplVisualizer):
         self.axes.set_ylim(st.y_min_plot, st.y_max_plot)
         self.axes.set_aspect("equal")
 
-        self.beam = mpl.patches.Rectangle(xy=[-st.beam_length/2, -(st.beam_height + st.cart_height/2)],
+        self.beam = mpl.patches.Rectangle(xy=[-st.beam_length/2,
+                                              -(st.beam_height
+                                                + st.cart_height/2)],
                                           width=st.beam_length,
                                           height=st.beam_height,
                                           color="lightgrey")
-        self.cart = mpl.patches.Rectangle(xy=[-st.cart_length/2, -st.cart_height/2],
+
+        self.cart = mpl.patches.Rectangle(xy=[-st.cart_length/2,
+                                              -st.cart_height/2],
                                           width=st.cart_length,
                                           height=st.cart_height,
                                           color="dimgrey")
-        self.pendulum_shaft = mpl.patches.Circle(xy=[0, 0],
-                                                 radius=st.pendulum_shaft_radius,
-                                                 color="lightgrey",
-                                                 zorder=3)
+
+        self.pendulum_shaft = mpl.patches.Circle(
+            xy=[0, 0],
+            radius=st.pendulum_shaft_radius,
+            color="lightgrey",
+            zorder=3)
 
         t = mpl.transforms.Affine2D().rotate_deg(180) + self.axes.transData
-        self.short_pendulum = mpl.patches.Rectangle(xy=[-st.short_pendulum_radius, 0],
-                                                    width=2*st.short_pendulum_radius,
-                                                    height=st.short_pendulum_height,
-                                                    color="#E87B14",  # TUD CD HKS 07_K
-                                                    zorder=2,
-                                                    transform=t)
-        self.short_pendulum_weight = mpl.patches.Rectangle(xy=[-st.pendulum_weight_radius, st.short_pendulum_height],
-                                                           width=2*st.pendulum_weight_radius,
-                                                           height=st.pendulum_weight_height,
-                                                           color="#E87B14",  # TUD CD HKS 07_K
-                                                           zorder=2,
-                                                           transform=t)
-        self.long_pendulum = mpl.patches.Rectangle(xy=[-st.long_pendulum_radius, 0],
-                                                   width=2*st.long_pendulum_radius,
-                                                   height=st.long_pendulum_height,
-                                                   color="#0059A3",  # TUD CD HKS 44_K
-                                                   zorder=1,
-                                                   transform=t)
-        self.long_pendulum_weight = mpl.patches.Rectangle(xy=[-st.pendulum_weight_radius, st.long_pendulum_height],
-                                                          width=2*st.pendulum_weight_radius,
-                                                          height=st.pendulum_weight_height,
-                                                          color="#0059A3",  # TUD CD HKS 44_K
-                                                          zorder=1,
-                                                          transform=t)
+        self.short_pendulum = mpl.patches.Rectangle(
+            xy=[-st.short_pendulum_radius, 0],
+            width=2*st.short_pendulum_radius,
+            height=st.short_pendulum_height,
+            color="#E87B14",  # TUD CD HKS 07_K
+            zorder=2,
+            transform=t)
+        self.short_pendulum_weight = mpl.patches.Rectangle(
+            xy=[-st.pendulum_weight_radius, st.short_pendulum_height],
+            width=2*st.pendulum_weight_radius,
+            height=st.pendulum_weight_height,
+            color="#E87B14",  # TUD CD HKS 07_K
+            zorder=2,
+            transform=t)
+        self.long_pendulum = mpl.patches.Rectangle(
+            xy=[-st.long_pendulum_radius, 0],
+            width=2*st.long_pendulum_radius,
+            height=st.long_pendulum_height,
+            color="#0059A3",  # TUD CD HKS 44_K
+            zorder=1,
+            transform=t)
+        self.long_pendulum_weight = mpl.patches.Rectangle(
+            xy=[-st.pendulum_weight_radius, st.long_pendulum_height],
+            width=2*st.pendulum_weight_radius,
+            height=st.pendulum_weight_height,
+            color="#0059A3",  # TUD CD HKS 44_K
+            zorder=1,
+            transform=t)
+
         self.axes.add_patch(self.beam)
         self.axes.add_patch(self.cart)
         self.axes.add_patch(self.pendulum_shaft)
@@ -474,24 +538,26 @@ class MplTwoPendulumVisualizer(pm.MplVisualizer):
         self.cart.set_x(-st.cart_length/2 + x0)
         self.pendulum_shaft.center = [x0, 0]
 
-        t_phi1 = mpl.transforms.Affine2D().rotate_deg_around(x0, 0, phi1) + self.axes.transData
-        t_phi2 = mpl.transforms.Affine2D().rotate_deg_around(x0, 0, phi2) + self.axes.transData
+        t_phi1 = (mpl.transforms.Affine2D().rotate_deg_around(x0, 0, phi1)
+                  + self.axes.transData)
+        t_phi2 = (mpl.transforms.Affine2D().rotate_deg_around(x0, 0, phi2)
+                  + self.axes.transData)
 
         # long pendulum
         self.long_pendulum.set_xy([-st.long_pendulum_radius + x0, 0])
         self.long_pendulum.set_transform(t_phi1)
-        self.long_pendulum_weight.set_xy([-st.pendulum_weight_radius + x0, st.long_pendulum_height])
+        self.long_pendulum_weight.set_xy([-st.pendulum_weight_radius
+                                          + x0, st.long_pendulum_height])
         self.long_pendulum_weight.set_transform(t_phi1)
 
         # short pendulum
-        self.short_pendulum.set_xy(np.array([-st.short_pendulum_radius, 0]) + np.array([x0, 0]))
+        self.short_pendulum.set_xy(np.array([-st.short_pendulum_radius, 0])
+                                   + np.array([x0, 0]))
         self.short_pendulum.set_transform(t_phi2)
-        self.short_pendulum_weight.set_xy([-st.pendulum_weight_radius + x0, st.short_pendulum_height])
+        self.short_pendulum_weight.set_xy([-st.pendulum_weight_radius + x0,
+                                           st.short_pendulum_height])
 
         self.short_pendulum_weight.set_transform(t_phi2)
         self.canvas.draw()
 
 pm.register_visualizer(MplTwoPendulumVisualizer)
-
-
-
