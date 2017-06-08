@@ -89,6 +89,7 @@ class Simulator(QObject):
 
     def __init__(self, settings, modules):
         QObject.__init__(self, None)
+        self._run = False
         self._logger = logging.getLogger(self.__class__.__name__)
 
         assert isinstance(settings, SimulationSettings)
@@ -232,10 +233,8 @@ class Simulator(QObject):
         """
         Start the simulation.
         """
-
+        self._run = True
         self.state_changed.emit(SimulationStateChange(type="start"))
-        end_state = None
-        info = None
 
         first_run = True
         rate = 1 / self._settings.measure_rate
@@ -245,15 +244,16 @@ class Simulator(QObject):
             t = solver.t
             dt = 0
             while dt < rate:
+                if not self._run:
+                    self._abort("Simulation aborted by user")
+                    break
+
                 try:
                     self._calc_step()
 
                 except Exception as e:
-                    # overwrite end time with reached time
-                    self._settings.end_time = self._current_outputs["time"]
-                    self._storage.update(finished=False)
-                    end_state = "abort"
-                    info = sys.exc_info()
+                    # catch all to avoid loosing data
+                    self._abort(sys.exc_info())
                     break
 
                 dt = solver.t - t
@@ -264,12 +264,30 @@ class Simulator(QObject):
             self._store_values()
             self._check_time()
 
-        if end_state is None:
-            self._storage.update(finished=True)
-            end_state = "finish"
+        self._finish()
 
-        self.state_changed.emit(SimulationStateChange(type=end_state, data=self.output, info=info))
+    def _abort(self, info):
+        """ Overwrite end time with reached time.
+        """
+        self._settings.end_time = self._current_outputs["time"]
+        self._storage.update(finished=False)
+        end_state = "abort"
+        self.state_changed.emit(SimulationStateChange(type=end_state,
+                                                      data=self.output,
+                                                      info=info))
+
+    def _finish(self):
+        self._storage.update(finished=True)
+        end_state = "finish"
+        self.state_changed.emit(SimulationStateChange(type=end_state,
+                                                      data=self.output,
+                                                      info="Success"))
         self.finished.emit()
+
+    @pyqtSlot(bool)
+    def stop(self):
+        """ Stop the simulation. """
+        self._run = False
 
     @property
     def output(self):

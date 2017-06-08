@@ -54,10 +54,10 @@ class SimulationGui(QMainWindow):
     class for the graphical user interface
     """
     # TODO enable closing plot docks by right-clicking their name
-    # TODO add ability to stop an simulation
     # TODO add ability to stop regime execution
 
     runSimulation = pyqtSignal()
+    stopSimulation = pyqtSignal()
     playbackTimeChanged = pyqtSignal()
     regimeFinished = pyqtSignal()
     finishedRegimeBatch = pyqtSignal()
@@ -73,6 +73,7 @@ class SimulationGui(QMainWindow):
         self.cmdProgress = None
         self.sim = SimulatorInteractor(self)
         self.runSimulation.connect(self.sim.run_simulation)
+        self.stopSimulation.connect(self.sim.stop_simulation)
         self.sim.simulation_finished.connect(self.simulation_finished)
         self.sim.simulation_failed.connect(self.simulation_failed)
         self.currentDataset = None
@@ -317,8 +318,9 @@ class SimulationGui(QMainWindow):
         self.logBox = QPlainTextEditLogger(self)
         self.logBox.setLevel(logging.INFO)
 
-        formatter = logging.Formatter(fmt="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-                                      datefmt="%H:%M:%S")
+        formatter = logging.Formatter(
+            fmt="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+            datefmt="%H:%M:%S")
         self.logBox.setFormatter(formatter)
 
         self.log_filter = PostFilter(invert=True)
@@ -428,12 +430,20 @@ class SimulationGui(QMainWindow):
         self.statusLabel.setText("simulating {}".format(regime_name))
         self._logger.info("Simulating: {}".format(regime_name))
 
-        self.actSimulateCurrent.setDisabled(True)
+        self.actSimulateCurrent.setIcon(QIcon(
+            get_resource("stop_simulation.png")))
+        self.actSimulateCurrent.setText("Abort &Simulation")
+        self.actSimulateCurrent.triggered.disconnect(self.start_simulation)
+        self.actSimulateCurrent.triggered.connect(self.stop_simulation)
+
         self.actSimulateAll.setDisabled(True)
         self.guiProgress = QProgressBar(self)
         self.sim.simulationProgressChanged.connect(self.guiProgress.setValue)
         self.statusBar().addWidget(self.guiProgress)
         self.runSimulation.emit()
+
+    def stop_simulation(self):
+        self.stopSimulation.emit()
 
     def export_simulation_data(self, ok):
         """
@@ -617,7 +627,11 @@ class SimulationGui(QMainWindow):
         self._logger.info("Simulation Finished")
         self.statusLabel.setText("Simulation Finished.")
 
-        self.actSimulateCurrent.setDisabled(False)
+        self.actSimulateCurrent.setText("&Simulate Current Regime")
+        self.actSimulateCurrent.setIcon(QIcon(get_resource("simulate.png")))
+        self.actSimulateCurrent.triggered.disconnect(self.stop_simulation)
+        self.actSimulateCurrent.triggered.connect(self.start_simulation)
+
         self.actPlayPause.setDisabled(False)
         self.actStop.setDisabled(False)
         self.actSave.setDisabled(False)

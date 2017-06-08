@@ -417,27 +417,43 @@ class SimulatorInteractor(QObject):
 
         :param state_change: see :cls:SimulationStateChange
         """
-        self._logger.debug("simulation state change '{}'".format(state_change.type))
+        self._logger.debug("simulation state change '{}'".format(
+            state_change.type))
 
         if state_change.type == "start":
             self._sim_state = "running"
+
         elif state_change.type == "time":
-            self._logger.debug("reached simulation time {0}".format(state_change.t))
+            self._logger.debug("Reached simulation time {0}".format(
+                state_change.t))
             progress = int(state_change.t / self._sim_settings.end_time * 100)
             if progress != self.last_progress:
-                self._logger.info("simulation reached {0}%".format(progress))
+                self._logger.info("Simulation reached {0}%".format(progress))
                 self.simulationProgressChanged.emit(progress)
                 self.last_progress = progress
+
         elif state_change.type == "abort":
             self._sim_state = "aborted"
             self._sim_data.update({'results': copy.deepcopy(state_change.data)})
-            self._logger.error("simulation has been aborted due to an exception:", exc_info=state_change.info)
-            self._logger.info("check your configuration")
+            if isinstance(state_change.info, str):
+                self._logger.info(state_change.info)
+            else:
+                self._logger.error("Simulation has been aborted due to an "
+                                   "exception",
+                                   exc_info=state_change.info)
+                self._logger.warning("check your configuration")
+
         elif state_change.type == "finish":
             self._sim_state = "finished"
             self._sim_data.update({'results': copy.deepcopy(state_change.data)})
+
         else:
-            self._logger.error("simulation_state_changed(): ERROR Unknown state {0}".format(state_change.type))
+            self._logger.error("simulation_state_changed(): "
+                               "ERROR Unknown state {0}".format(
+                state_change.type))
+
+    def stop_simulation(self):
+        self._sim.stop()
 
     def _sim_aftercare(self):
         # reset internal states
