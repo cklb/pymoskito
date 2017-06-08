@@ -21,7 +21,6 @@ class LuenbergerObserver(pm.Observer):
         ("poles", [-20, -20, -20, -20]),
         ("steady state", [0, 0, 0, 0]),
         ("steady tau", 0),
-        ("step width", .001),
         ("tick divider", 1),
     ])
 
@@ -35,7 +34,6 @@ class LuenbergerObserver(pm.Observer):
         self.L = pm.place_siso(self.a_mat.T,
                                self.c_mat.T,
                                self._settings["poles"]).T
-        self.h = self._settings["tick divider"] * self._settings["step width"]
         self.output = np.array(self._settings["initial state"], dtype=float)
 
     def state_func(self, t, q, args):
@@ -53,7 +51,7 @@ class LuenbergerObserver(pm.Observer):
         if system_input is not None:
             dy = self.state_func(time, self.output,
                                  (system_input, system_output))
-            self.output += self.h * dy
+            self.output += self.step_width * dy
         return self.output
 
 
@@ -70,7 +68,6 @@ class LuenbergerObserverReduced(pm.Observer):
         ("poles", [-3, -3, -3]),
         ("steady state", [0, 0, 0, 0]),
         ("steady tau", 0),
-        ("step width", .001),
         ("tick divider", 1),
     ])
 
@@ -113,7 +110,6 @@ class LuenbergerObserverReduced(pm.Observer):
         self.L = pm.place_siso(self.a_mat_22.T,
                                self.a_mat_12.T,
                                self._settings["poles"]).T
-        self.h = self._settings["tick divider"] * self._settings["step width"]
         self.output = np.array(self._settings["initial state"], dtype=float)
 
     def _observe(self, time, system_input, system_output):
@@ -137,7 +133,7 @@ class LuenbergerObserverReduced(pm.Observer):
               )
 
         # EULER integration
-        x_o_t += self.h * dy
+        x_o_t += self.step_width * dy
 
         # transform system back to original observer coordinates
         x_o = x_o_t + self.L @ y
@@ -157,15 +153,12 @@ class HighGainObserver(pm.Observer):
     public_settings = OrderedDict([
         ("initial state", [0, 0, 0, 0]),
         ("poles", [-10, -10, -10, -10]),
-        ("step width", .001),
         ("tick divider", 1),
     ])
 
     def __init__(self, settings):
         settings.update(output_dim=4)
         super().__init__(settings)
-
-        self.h = self._settings["tick divider"] * self._settings["step width"]
 
         params = sp.symbols('x1, x2, x3, x4, tau')
         x1, x2, x3, x4, tau = params
@@ -211,7 +204,7 @@ class HighGainObserver(pm.Observer):
         dx_o = f_np + l_np @ (y - h_x_o)
 
         # EULER integration
-        self.output += np.squeeze(self.h * dx_o, axis=1)
+        self.output += np.squeeze(self.step_width * dx_o, axis=1)
 
         return self.output
 
@@ -245,7 +238,7 @@ class LuenbergerObserverInt(pm.Observer):
         self.L = pm.place_siso(self.a_mat.T,
                                self.c_mat.T,
                                self._settings["poles"]).T
-        self.h = self._settings["tick divider"] * self._settings["step width"]
+        self.step_width = self._settings["tick divider"] * self._settings["step width"]
         self.output = np.array(self._settings["initial state"], dtype=float)
 
         self.solver = ode(self.linear_state_function)

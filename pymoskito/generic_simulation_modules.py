@@ -74,7 +74,8 @@ class ODEInt(Solver):
 
     def integrate(self, t):
         """
-        integrates until target step reached
+        Integrate until target step is reached.
+
         :param t: target time
         :return: system state at target time
         """

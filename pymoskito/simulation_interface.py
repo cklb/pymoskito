@@ -293,6 +293,7 @@ class SimulatorInteractor(QObject):
                 self._sim_settings = SimulationSettings(
                     settings["start time"],
                     settings["end time"],
+                    settings["step size"],
                     settings["measure rate"])
 
             # build object
@@ -464,12 +465,13 @@ class SimulatorInteractor(QObject):
         """
 
         # TODO make this able to calc error for vector-like model output
+        # TODO make the entries to compare selectable
         # control and observer error
         if "Trajectory" in self._sim_data["results"]:
             m_data = self._get_result_by_name("Model")
             t_data = self._get_result_by_name("Trajectory")
             if len(t_data.shape) == 2:
-                c_error = t_data[:, 0] - m_data[:, 0]
+                c_error = t_data[:, 0] - m_data[..., 0]
             elif len(t_data.shape) == 3:
                 c_error = np.array([t_data[:, idx, 0] - m_data[:, idx]
                                     for idx in range(m_data.shape[1])]).T

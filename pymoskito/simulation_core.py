@@ -37,15 +37,17 @@ class SimulationStateChange(object):
 
 
 class SimulationSettings(object):
-    def __init__(self, start_time, end_time, measure_rate):
+    def __init__(self, start_time, end_time, step_size, measure_rate):
         self.start_time = start_time
         self.end_time = end_time
+        self.step_size = step_size
         self.measure_rate = measure_rate
 
     def to_dict(self):
         return {
             "start time": self.start_time,
             "end time": self.end_time,
+            "step size": self.step_size,
             "measure rate": self.measure_rate,
         }
 
@@ -95,6 +97,7 @@ class Simulator(QObject):
         self._simulation_modules = modules
 
         self._init_states()
+        self._init_settings()
         self.updated_time = 0
         self._storage = dict()
 
@@ -102,36 +105,36 @@ class Simulator(QObject):
         self._input_vector = {}
         self._counter = {}
         self._current_outputs = {}
-        self._current_outputs.update(time=0)
+        self._current_outputs.update(time=self._settings.start_time)
+
         for mod_name, obj in self._simulation_modules.items():
             self._counter.update({mod_name: obj.tick_divider})
             self._current_outputs.update({mod_name: []})
             self._current_outputs[mod_name] = []
 
         # init model output with current state
-        self._current_outputs["Solver"] = np.array(self._simulation_modules["Model"].initial_state)
+        self._simulation_modules["Solver"].next_output = np.array(
+            self._simulation_modules["Model"].initial_state)
+
+    def _init_settings(self):
+        """ Initialize module settings that depend on other modules.
+        """
+        # TODO special init for other blocks
+
+        # calculate the correct step width for every block
+        for mod_name, obj in self._simulation_modules.items():
+            obj.step_width = obj.tick_divider * self._settings.step_size
 
         return
 
-        # TODO special init for other blocks
-        # init observer
-        # if hasattr(self, 'observer'):
-        #     self.observer_counter = self.observer.settings['tick divider']
-        #     self.observer.setStepWidth(1 / self.solver.settings['measure rate'])
-
-        # init feedforward
-        # if hasattr(self, 'feedforward'):
-        #     self.feedforward.setStepWidth(1 / self.solver.settings['measure rate'])
-
     def _calc_module(self, module_name):
-        """
-        calculates the output of a simulation module
+        """ Calculates the output of a simulation module
         """
         if module_name in self._simulation_modules.keys():
             if self._counter[module_name] == self._simulation_modules[module_name].tick_divider:
-                self._current_outputs[module_name] = \
+                self._current_outputs[module_name] = np.atleast_1d(
                     self._simulation_modules[module_name].calc_output(
-                        self._input_vector)
+                        self._input_vector))
                 self._counter[module_name] = 1
             else:
                 self._counter[module_name] += 1
@@ -154,14 +157,14 @@ class Simulator(QObject):
         self._current_outputs["time"] = self._simulation_modules["Solver"].t
         self._input_vector.update(
             time=self._current_outputs["time"],
-            system_state=self._current_outputs["Solver"].reshape(
-                self._current_outputs["Solver"].shape[0], 1)
+            system_state=np.atleast_1d(
+                self._simulation_modules["Solver"].next_output)
         )
 
         # apply new output
-        self._current_outputs["Model"] = \
+        self._current_outputs["Model"] = np.atleast_1d(
             self._simulation_modules["Model"].calc_output(
-                self._input_vector["system_state"])
+                self._input_vector["system_state"]))
         self._input_vector.update(system_output=self._current_outputs["Model"])
 
         # compute all dynamic modules
@@ -234,16 +237,16 @@ class Simulator(QObject):
         end_state = None
         info = None
 
-        # TODO store values for timestamp t=0, store initial states for model and observer
-
+        first_run = True
+        rate = 1 / self._settings.measure_rate
         solver = self._simulation_modules["Solver"]
+
         while self._current_outputs["time"] < self._settings.end_time:
             t = solver.t
             dt = 0
-            while dt < 1 / self._settings.measure_rate:
+            while dt < rate:
                 try:
                     self._calc_step()
-                    dt = solver.t - t
 
                 except Exception as e:
                     # overwrite end time with reached time
@@ -252,6 +255,11 @@ class Simulator(QObject):
                     end_state = "abort"
                     info = sys.exc_info()
                     break
+
+                dt = solver.t - t
+                if dt < rate and first_run:
+                    self._store_values()
+                first_run = False
 
             self._store_values()
             self._check_time()

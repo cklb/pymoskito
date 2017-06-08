@@ -30,7 +30,8 @@ class SimulationModule(QObject, metaclass=SimulationModuleMeta):
 
         assert isinstance(settings, OrderedDict)
 
-        assert ("tick divider" in settings)
+        settings["tick divider"] = settings.get("tick divider", 1)
+        settings["step width"] = None
         self._settings = settings
         del self._settings["modules"]
 
@@ -41,6 +42,14 @@ class SimulationModule(QObject, metaclass=SimulationModuleMeta):
     @property
     def tick_divider(self):
         return self._settings["tick divider"]
+
+    @property
+    def step_width(self):
+        return self._settings["step width"]
+
+    @step_width.setter
+    def step_width(self, value):
+        self._settings["step width"] = value
 
     @abstractmethod
     def calc_output(self, input_vector):
@@ -138,13 +147,16 @@ class Solver(SimulationModule):
         settings.update({"tick divider": 1})
         assert isinstance(settings["modules"]["Model"], Model)
         self._model = settings["modules"]["Model"]
+        self._next_output = None
         SimulationModule.__init__(self, settings)
 
     def calc_output(self, input_vector):
         self.set_input(input_vector["system_input"])
-        output = self.integrate(input_vector["time"])
+        output = self.next_output
+
+        self.next_output = self.integrate(input_vector["time"])
         try:
-            self._model.check_consistency(output)
+            self._model.check_consistency(self.next_output)
         except ModelException as e:
             raise SolverException("Timestep Integration failed! "
                                   "Model raised: {0}".format(e))
