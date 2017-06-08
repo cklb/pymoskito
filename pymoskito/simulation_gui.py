@@ -273,6 +273,7 @@ class SimulationGui(QMainWindow):
         self.actResetCamera = QAction(self)
         self.actResetCamera.setText("Reset Camera")
         self.actResetCamera.setIcon(QIcon(get_resource("reset_camera.png")))
+        self.actResetCamera.setDisabled(True)
         if available_vis:
             self.actResetCamera.setEnabled(self.visualizer.can_reset_view)
         self.actResetCamera.triggered.connect(self.reset_camera_clicked)
