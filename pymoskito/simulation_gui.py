@@ -189,7 +189,8 @@ class SimulationGui(QMainWindow):
 
         # regime management
         self.runningBatch = False
-        self._current_regime_index = 0
+        self._current_regime_index = None
+        self._current_regime_name = None
         self._regimes = []
 
         self.regimeFinished.connect(self.run_next_regime)
@@ -418,7 +419,12 @@ class SimulationGui(QMainWindow):
         """
         start the simulation and disable start button
         """
-        regime_name = str(self.regime_list.item(self._current_regime_index).text())
+        if self._current_regime_index is None:
+            regime_name = ""
+        else:
+            regime_name = str(self.regime_list.item(
+                self._current_regime_index).text())
+
         self.statusLabel.setText("simulating {}".format(regime_name))
         self._logger.info("Simulating: {}".format(regime_name))
 
@@ -543,15 +549,13 @@ class SimulationGui(QMainWindow):
 
     def regime_dclicked(self, item):
         """
-        applies the selected regime to the current target
-        :param item:
+        Apply the selected regime to the current target.
         """
         self.apply_regime_by_name(str(item.text()))
 
     def apply_regime_by_name(self, regime_name):
         """
-        :param regime_name:
-        :return:
+        Apply the regime given by `regime_name` und update the regime index.
         """
         # get regime idx
         try:
@@ -569,10 +573,12 @@ class SimulationGui(QMainWindow):
             return
 
         reg_name = self._regimes[index]["Name"]
-        self.statusBar().showMessage("regime {} applied.".format(reg_name), 1000)
+        self.statusBar().showMessage("regime {} applied.".format(reg_name),
+                                     1000)
         self._logger.info("applying regime '{}'".format(reg_name))
 
         self._current_regime_index = index
+        self._current_regime_name = reg_name
         self.sim.set_regime(self._regimes[index])
 
     def execute_regimes_clicked(self):
@@ -598,7 +604,6 @@ class SimulationGui(QMainWindow):
     def regime_batch_finished(self):
         self.runningBatch = False
         self.actSimulateAll.setDisabled(False)
-        # self._current_regime_index = 0
         self.statusLabel.setText("All regimes have been simulated!")
         self.actSave.setDisabled(True)
 
@@ -609,8 +614,8 @@ class SimulationGui(QMainWindow):
 
         :param data: dict with simulation data
         """
-        self._logger.info("simulation finished")
-        self.statusLabel.setText("simulation finished.")
+        self._logger.info("Simulation Finished")
+        self.statusLabel.setText("Simulation Finished.")
 
         self.actSimulateCurrent.setDisabled(False)
         self.actPlayPause.setDisabled(False)
@@ -625,9 +630,10 @@ class SimulationGui(QMainWindow):
         self.timeSlider.triggerAction(QAbstractSlider.SliderToMinimum)
 
         self.currentDataset = data
-        self._read_results()
-        self._update_data_list()
-        self._update_plots()
+        if data:
+            self._read_results()
+            self._update_data_list()
+            self._update_plots()
 
         self.stop_animation()
         # self.playAnimation()
@@ -645,7 +651,7 @@ class SimulationGui(QMainWindow):
 
         :param data:
         """
-        self.statusLabel.setText("simulation failed!")
+        self._logger.info("Simulation Failed")
         self.simulation_finished(data)
 
     def _read_results(self):

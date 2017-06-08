@@ -258,10 +258,13 @@ class SimulatorInteractor(QObject):
 
     def _setup_sim_modules(self, model):
         """
-        setup simulation Modules
-        :param model: model holding the public settings of each module
-        """
+        Setup simulation Modules.
 
+        :param model: model holding the public settings of each module
+
+        Returns:
+            bool: If setup was successful.
+        """
         for row in range(model.rowCount()):
             # build correct object and add it to the simulator
             module_item = model.item(row, 0)
@@ -274,7 +277,9 @@ class SimulatorInteractor(QObject):
 
             # get class
             module_cls = getattr(simulation_modules, module_name)
-            sub_module_cls = get_simulation_module_class_by_name(module_cls, sub_module_name)
+            sub_module_cls = get_simulation_module_class_by_name(
+                module_cls,
+                sub_module_name)
 
             # get public settings for module
             settings = self._get_settings(self.target_model, module_item.text())
@@ -283,9 +288,12 @@ class SimulatorInteractor(QObject):
 
             # append special settings
             if module_name == "Solver":
-                self._sim_settings = SimulationSettings(settings["start time"],
-                                                        settings["end time"],
-                                                        settings["measure rate"])
+                if "Model" not in settings["modules"]:
+                    return False
+                self._sim_settings = SimulationSettings(
+                    settings["start time"],
+                    settings["end time"],
+                    settings["measure rate"])
 
             # build object
             slot = sub_module_cls(settings)
@@ -295,6 +303,12 @@ class SimulatorInteractor(QObject):
 
             # store settings
             self._sim_data['modules'].update({module_name: settings})
+
+        if all([mod in self._sim_data["modules"]
+                for mod in ["Solver", "Model"]]):
+            return True
+
+        return False
 
     def set_regime(self, reg):
         if reg is None:
@@ -371,15 +385,19 @@ class SimulatorInteractor(QObject):
         - start simulation
         """
         # setup simulation modules
-        self._setup_sim_modules(self.target_model)
+        suc = self._setup_sim_modules(self.target_model)
+        if not suc:
+            self._logger.error("Simulation Setup failed. Check Configuration.")
+            self.simulation_failed.emit(None)
+            return
 
         # setup simulator
         self._sim = Simulator(self._sim_settings, self._sim_modules)
         self._sim.moveToThread(self.simThread)
 
         # setup simulation modules
-        for module in self._sim_modules.values():
-            module.moveToThread(self.simThread)
+        for _module in self._sim_modules.values():
+            _module.moveToThread(self.simThread)
 
         # setup signal connections
         self.simThread.started.connect(self._sim.run)
@@ -421,6 +439,10 @@ class SimulatorInteractor(QObject):
             self._logger.error("simulation_state_changed(): ERROR Unknown state {0}".format(state_change.type))
 
     def _sim_aftercare(self):
+        # reset internal states
+        self._sim_settings = None
+        self._sim_data = {'modules': {}}
+
         # delete modules
         for module in self._sim_modules.keys():
             del module
@@ -468,7 +490,6 @@ class SimulatorInteractor(QObject):
         slot to be called when the simulator reached the target time or aborted
         simulation due to an error
         """
-        self._sim_aftercare()
         self._postprocessing()
 
         assert self._sim_state == "finished" or self._sim_state == "aborted"
@@ -476,3 +497,5 @@ class SimulatorInteractor(QObject):
             self.simulation_finished.emit(self._sim_data)
         else:
             self.simulation_failed.emit(self._sim_data)
+
+        self._sim_aftercare()
