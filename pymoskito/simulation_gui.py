@@ -491,7 +491,7 @@ class SimulationGui(QMainWindow):
                 if dialog.exec_():
                     path = dialog.selectedFiles()[0]
                 else:
-                    self._logger.warning("exported aborted")
+                    self._logger.warning("Export Aborted")
                     return
 
                 box = QMessageBox()
