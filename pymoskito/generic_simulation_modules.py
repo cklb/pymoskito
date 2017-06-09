@@ -300,11 +300,7 @@ class AdditiveMixer(SignalMixer):
         SignalMixer.__init__(self, settings)
 
     def _mix(self, signal_values):
-        out = np.zeros((1,))
-        for value in signal_values:
-            out += value
-
-        return out
+        return sum(signal_values)
 
 
 class ModelInputLimiter(Limiter):
