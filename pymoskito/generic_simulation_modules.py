@@ -287,8 +287,9 @@ class PIDController(Controller):
 
 class AdditiveMixer(SignalMixer):
     """
-    Signal Mixer that ads up input signals
-    processing is done according to rules of numpy casting
+    Signal Mixer that accumulates all input signals.
+
+    Processing is done according to rules of numpy broadcasting.
     """
     public_settings = OrderedDict([("Input A", None),
                                    ("Input B", None)])
@@ -299,7 +300,11 @@ class AdditiveMixer(SignalMixer):
         SignalMixer.__init__(self, settings)
 
     def _mix(self, signal_values):
-        return np.atleast_1d(np.sum(signal_values))
+        out = np.zeros((1,))
+        for value in signal_values:
+            out += value
+
+        return out
 
 
 class ModelInputLimiter(Limiter):
