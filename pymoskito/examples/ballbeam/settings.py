@@ -1,8 +1,11 @@
 # -*- coding: utf-8 -*-
 
-# ---------------------------------------------------------------------------
-# global default settings for physical simulation of the ball and beam system
-# -------------------------------------------------------------------- ------
+"""
+This file contains default settings for physical simulation of the ball and beam
+system. These values are used to maintain consistent settings over the whole
+test system. The values given here are used to generate regime lists that are
+used to perform experimental studies.
+"""
 
 # standard values for integration
 step_size = 0.0005  # to produce same error dimension as hauser

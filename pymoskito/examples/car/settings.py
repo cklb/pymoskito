@@ -1,22 +1,7 @@
 # -*- coding: utf-8 -*-
-
-
-
 # ---------------------------------------------------------------------
 # global default settings for physical simulation
 # ---------------------------------------------------------------------
-
-# standard values for integration
-step_size = 0.0005
-measure_rate = 1000
-
-# initial minimal state vector (n, dn, x, dx) default values (used if none is given)
-initial_state = [0, 0, 0, 0, 0]
-int_mode = 'vode'
-int_method = 'adams'
-int_rtol = 1e-6
-int_atol = 1e-9
-end_time = 10
 
 # system parameters
 d1 = 0.08
