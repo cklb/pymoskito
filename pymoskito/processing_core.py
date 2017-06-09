@@ -4,7 +4,8 @@ from abc import ABCMeta, abstractmethod
 from pickle import dump
 
 import numpy as np
-from PyQt5.QtCore import QObject
+from PyQt5.QtCore import QObject, QSettings
+from PyQt5.QtWidgets import QMessageBox, QFileDialog, QApplication
 pyqtWrapperType = type(QObject)
 
 from .tools import get_sub_value
@@ -46,13 +47,19 @@ class ProcessingModule(QObject, metaclass=ProcessingModuleMeta):
     def __init__(self, parent=None):
         QObject.__init__(self, parent)
         self.name = self.__class__.__name__
+        self._settings = QSettings()
         self._logger = logging.getLogger(self.name)
-        return
+
+        self._path_name = None
+        self._file_type = None
+        self._file_info = None
 
     @abstractmethod
     def process(self, result_data):
         """
-        function that is called when the Processing environment processes all loaded result files
+        function that is called when the Processing environment processes all
+        loaded result files.
+
         :param result_data: list of result dicts
         :return: list of diagrams
         """
@@ -67,7 +74,8 @@ class ProcessingModule(QObject, metaclass=ProcessingModuleMeta):
         :param setting_name:
         :return:
         """
-        return self.extract(data_list, ["modules", module_name, setting_name], names)
+        return self.extract(data_list, ["modules", module_name, setting_name],
+                            names)
 
     def extract_values(self, data_list, names, value_name):
         """
@@ -105,28 +113,65 @@ class ProcessingModule(QObject, metaclass=ProcessingModuleMeta):
 
     def write_output_files(self, result_name, figure, output=None):
         """
-        this function exports the created diagram and saves calculation results
-        in a POF (processing output file) file.
+        Export the created diagrams and save calculation results in a POF
+        (processing output file) file.
 
         :param result_name:
         :param figure:
         :param output:
         :return:
         """
-        file_path = os.path.join("results",
-                                 "processing",
-                                 self.name)
-        if not os.path.isdir(file_path):
-            os.makedirs(file_path)
+        path = self._settings.value(self._path_name)
+        if not os.path.isdir(path):
+            box = QMessageBox()
+            box.setText("Export Folder does not exist yet.")
+            box.setInformativeText("Do you want to create it? \n"
+                                   "{}".format(os.path.abspath(path)))
+            box.setStandardButtons(QMessageBox.Ok | QMessageBox.No)
+            box.setDefaultButton(QMessageBox.Ok)
+            ret = box.exec_()
+            if ret == QMessageBox.Ok:
+                os.makedirs(path)
+            else:
+                path = os.path.curdir
 
-        file_name = os.path.join(file_path, result_name)
+        sub_path = os.path.join(path, self.name)
+        if not os.path.isdir(sub_path):
+            os.makedirs(sub_path)
+
+        dialog = QFileDialog()
+        dialog.setAcceptMode(QFileDialog.AcceptSave)
+        dialog.setFileMode(QFileDialog.AnyFile)
+        dialog.setDirectory(sub_path)
+        dialog.setNameFilter("{} (*{})".format(self._file_info,
+                                               self._file_type))
+        dialog.selectFile(result_name + self._file_type)
+
+        if dialog.exec_():
+            file_path = dialog.selectedFiles()[0]
+        else:
+            self._logger.warning("Export Aborted")
+            return
+
+        new_path = os.path.sep.join(file_path.split(os.path.sep)[:-2])
+        if new_path != self._settings.value(self._path_name):
+            box = QMessageBox()
+            box.setText("Use this path as new default?")
+            box.setInformativeText("{}".format(new_path))
+            box.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
+            box.setDefaultButton(QMessageBox.Yes)
+            ret = box.exec_()
+            if ret == QMessageBox.Yes:
+                self._settings.setValue(self._path_name, new_path)
+
         if output:
-            with open(file_name + ".pof", "wb") as f:
+            with open(file_path, "wb") as f:
                 dump(output, f, protocol=4)
 
         if figure:
             for export_format in self._export_formats:
-                figure.savefig(file_name + export_format, bbox_inches='tight')
+                figure.savefig(file_path.split(".")[0] + export_format,
+                               bbox_inches='tight')
                 # setting bbox_inches='tight' removes the white space around
                 # a saved image
 
@@ -143,6 +188,10 @@ class PostProcessingModule(ProcessingModule):
         self.axes = None
         self.label_counter = 0
         self.results = {}
+
+        self._path_name = "path/postprocessing_results"
+        self._file_info = "Processing Output Files"
+        self._file_type = ".pof"
 
     def process(self, files):
         """
@@ -229,7 +278,10 @@ class MetaProcessingModule(ProcessingModule):
 
     def __init__(self):
         ProcessingModule.__init__(self)
-        return
+
+        self._path_name = "path/metaprocessing_results"
+        self._file_info = "Meta Output Files"
+        self._file_type = ".mof"
 
     def set_plot_labeling(self, title="", grid=True, x_label="", y_label="", line_type="line"):
         """

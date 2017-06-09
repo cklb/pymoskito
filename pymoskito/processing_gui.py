@@ -3,9 +3,10 @@ import pickle
 import logging
 import os
 
-from PyQt5.QtCore import Qt, pyqtSignal, QSize
+from PyQt5.QtCore import Qt, pyqtSignal, QSize, QSettings
 from PyQt5.QtGui import QIcon, QKeySequence
-from PyQt5.QtWidgets import (QWidget, QAction, QMainWindow, QListWidget, QListWidgetItem,
+from PyQt5.QtWidgets import (QWidget, QAction, QMainWindow, QListWidget,
+                             QListWidgetItem,
                              QToolBar, QStatusBar, QLabel, QShortcut,
                              QFileDialog, QGridLayout, QSizePolicy)
 
@@ -23,6 +24,7 @@ class PostProcessor(QMainWindow):
 
     def __init__(self, parent=None):
         QMainWindow.__init__(self, parent)
+        self._settings = QSettings()
         self._logger = logging.getLogger(self.__class__.__name__)
 
         self.setWindowTitle("Processing")
@@ -160,7 +162,8 @@ class PostProcessor(QMainWindow):
         self.setStatusBar(self.statusBar)
 
     def load_result_files(self):
-        path = os.path.join(os.path.curdir, "results", "simulation")
+        path = self._settings.value("path/simulation_results")
+
         dialog = QFileDialog(self)
         dialog.setFileMode(QFileDialog.ExistingFiles)
         dialog.setDirectory(path)
@@ -194,7 +197,8 @@ class PostProcessor(QMainWindow):
             self.sim_result_list.takeItem(self.sim_result_list.currentRow())
 
     def load_post_result_files(self):
-        path = os.path.join(os.path.curdir, "results", "processing")
+        path = self._settings.value("path/processing_results")
+
         dialog = QFileDialog(self)
         dialog.setFileMode(QFileDialog.ExistingFiles)
         dialog.setDirectory(path)

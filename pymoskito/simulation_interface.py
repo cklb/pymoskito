@@ -312,17 +312,26 @@ class SimulatorInteractor(QObject):
         return False
 
     def set_regime(self, reg):
+        """
+        Load the given regimes settings into the target model.
+
+        Returns:
+            bool: `True` if successful, `False` if errors occurred.
+        """
         if reg is None:
             return
         if isinstance(reg, list):
             self._logger.error("setRegime(): only scalar input allowed!")
-            return
+            return False
 
-        self._apply_regime(reg)
+        return self._apply_regime(reg)
 
     def _apply_regime(self, reg):
         """
-        sets all module settings to those provided in the regime
+        Set all module settings to those provided in the regime.
+
+        Returns:
+            bool: `True` if successful, `False` if errors occurred.
         """
         if reg["clear previous"]:
             # delete all items
@@ -339,25 +348,34 @@ class SimulatorInteractor(QObject):
             # sanity check
             module_cls = getattr(simulation_modules, module_name)
             if not module_cls:
-                raise AttributeError("_apply_regime(): No module called {0}".format(module_name))
+                self._logger.error("_apply_regime(): No module called {0}"
+                                   "".format(module_name))
+                return False
 
             items = self.target_model.findItems(module_name)
-            # items = self.target_model.findItems(string.capwords(module_name))
             if not len(items):
-                raise ValueError("_apply_regime(): No item in List called {0}".format(module_name))
+                self._logger.error("_apply_regime(): No item in List called {0}"
+                                   "".format(module_name))
+                return False
+
             module_item = items.pop(0)
             module_type = value["type"]
 
             # sanity check
-            sub_module_cls = get_simulation_module_class_by_name(module_cls, module_type)
+            sub_module_cls = get_simulation_module_class_by_name(module_cls,
+                                                                 module_type)
 
             if not sub_module_cls:
-                raise AttributeError("_apply_regime(): No sub-module called {0}".format(module_type))
+                self._logger.error("_apply_regime(): No sub-module called {0}"
+                                   "".format(module_type))
+                return False
 
             module_index = module_item.index()
-            module_type_index = module_index.model().index(module_index.row(), 1)
+            module_type_index = module_index.model().index(module_index.row(),
+                                                           1)
             module_index.model().setData(module_type_index, module_type)
-            # due to signal connections, default settings are loaded automatically in the back
+            # due to signal connections, default settings are loaded
+            # automatically in the back
 
             # overwrite specific settings
             for key, val in value.items():
@@ -373,10 +391,12 @@ class SimulatorInteractor(QObject):
                         break
 
                 if not found:
-                    self._logger.error("_applyRegime(): setting: '{0}' not "
-                                       "available for module: '{1}'".format(
+                    self._logger.error("_applyRegime(): Setting: '{0}' not "
+                                       "available for Module: '{1}'".format(
                         key, module_type))
-                    continue
+                    return False
+
+        return True
 
     def run_simulation(self):
         """

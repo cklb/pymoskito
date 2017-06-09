@@ -13,9 +13,10 @@ import webbrowser
 import numpy as np
 
 # Qt
-from PyQt5.QtCore import Qt, QTimer, pyqtSignal, QSize
+from PyQt5.QtCore import (Qt, QTimer, pyqtSignal, QSize, QSettings,
+                          QCoreApplication)
 from PyQt5.QtGui import QIcon, QKeySequence
-from PyQt5.QtWidgets import (QWidget, QAction, QSlider, QDial, QMainWindow,
+from PyQt5.QtWidgets import (QWidget, QAction, QSlider, QMainWindow,
                              QTreeView, QListWidget, QAbstractItemView,
                              QToolBar, QStatusBar, QProgressBar, QLabel,
                              QShortcut, QLineEdit, QFileDialog, QInputDialog,
@@ -33,7 +34,8 @@ try:
 
     from vtk import vtkRenderer
     from vtk import qt
-    from .visualization import QVTKRenderWindowInteractor  # import patched class
+    # import patched class that fixes scroll problem
+    from .visualization import QVTKRenderWindowInteractor
     vtk_available = True
 except ImportError as e:
     vtk_available = False
@@ -60,11 +62,19 @@ class SimulationGui(QMainWindow):
     stopSimulation = pyqtSignal()
     playbackTimeChanged = pyqtSignal()
     regimeFinished = pyqtSignal()
-    finishedRegimeBatch = pyqtSignal()
+    finishedRegimeBatch = pyqtSignal(bool)
 
     def __init__(self):
         # constructor of the base class
         QMainWindow.__init__(self)
+
+        QCoreApplication.setOrganizationName("RST")
+        QCoreApplication.setOrganizationDomain("https://tu-dresden.de/rst")
+        QCoreApplication.setApplicationVersion(
+            pkg_resources.require("PyMoskito")[0].version)
+        QCoreApplication.setApplicationName(globals()["__package__"])
+        self._settings = QSettings()
+        self._read_settings()
 
         self._logger = logging.getLogger(self.__class__.__name__)
 
@@ -126,7 +136,8 @@ class SimulationGui(QMainWindow):
 
         # check if there is a registered visualizer
         available_vis = get_registered_visualizers()
-        self._logger.info("found visualizers: {}".format([name for cls, name in available_vis]))
+        self._logger.info("found visualizers: {}".format(
+            [name for cls, name in available_vis]))
         if available_vis:
             # instantiate the first visualizer
             self._logger.info("loading visualizer '{}'".format(available_vis[0][1]))
@@ -134,18 +145,21 @@ class SimulationGui(QMainWindow):
 
             if issubclass(available_vis[0][0], MplVisualizer):
                 self.animationWidget = QWidget()
-                self.visualizer = available_vis[0][0](self.animationWidget, self.animationLayout)
+                self.visualizer = available_vis[0][0](self.animationWidget,
+                                                      self.animationLayout)
                 self.animationDock.addWidget(self.animationWidget)
             elif issubclass(available_vis[0][0], VtkVisualizer):
                 if vtk_available:
                     # vtk window
                     self.animationFrame = QFrame()
-                    self.vtkWidget = QVTKRenderWindowInteractor(self.animationFrame)
+                    self.vtkWidget = QVTKRenderWindowInteractor(
+                        self.animationFrame)
                     self.animationLayout.addWidget(self.vtkWidget)
                     self.animationFrame.setLayout(self.animationLayout)
                     self.animationDock.addWidget(self.animationFrame)
                     self.vtk_renderer = vtkRenderer()
-                    self.vtkWidget.GetRenderWindow().AddRenderer(self.vtk_renderer)
+                    self.vtkWidget.GetRenderWindow().AddRenderer(
+                        self.vtk_renderer)
                     self.visualizer = available_vis[0][0](self.vtk_renderer)
                     self.vtkWidget.Initialize()
                 else:
@@ -177,9 +191,6 @@ class SimulationGui(QMainWindow):
         self.actSave.setDisabled(True)
         self.actSave.setShortcut(QKeySequence.Save)
         self.actSave.triggered.connect(self.export_simulation_data)
-        self._default_path = os.path.join(os.path.curdir,
-                                          "results",
-                                          "simulation")
 
         self.actLoadRegimes = QAction(self)
         self.actLoadRegimes.setText("Load Regimes from File")
@@ -214,7 +225,7 @@ class SimulationGui(QMainWindow):
         self.actSimulateAll.setIcon(QIcon(get_resource("execute_regimes.png")))
         self.actSimulateAll.setShortcut(QKeySequence("F6"))
         self.actSimulateAll.setDisabled(True)
-        self.actSimulateAll.triggered.connect(self.execute_regimes_clicked)
+        self.actSimulateAll.triggered.connect(self.start_regime_execution)
 
         # actions for animation control
         self.actPlayPause = QAction(self)
@@ -371,6 +382,31 @@ class SimulationGui(QMainWindow):
 
         self._logger.info("Simulation GUI is up and running.")
 
+    def _read_settings(self):
+
+        # add default settings if none are present
+        if not self._settings.contains("path/simulation_results"):
+            self._settings.setValue("path/simulation_results",
+                                    os.path.join(os.path.curdir,
+                                                 "results",
+                                                 "simulation"))
+        if not self._settings.contains("path/postprocessing_results"):
+            self._settings.setValue("path/postprocessing_results",
+                                    os.path.join(os.path.curdir,
+                                                 "results",
+                                                 "postprocessing"))
+        if not self._settings.contains("path/metaprocessing_results"):
+            self._settings.setValue("path/metaprocessing_results",
+                                    os.path.join(os.path.curdir,
+                                                 "results",
+                                                 "metaprocessing"))
+
+        # restore application state
+
+    def _write_settings(self):
+        """ Store the application state. """
+        pass
+
     def set_visualizer(self, vis):
         self.visualizer = vis
         self.vtkWidget.Initialize()
@@ -436,7 +472,9 @@ class SimulationGui(QMainWindow):
         self.actSimulateCurrent.triggered.disconnect(self.start_simulation)
         self.actSimulateCurrent.triggered.connect(self.stop_simulation)
 
-        self.actSimulateAll.setDisabled(True)
+        if not self.runningBatch:
+            self.actSimulateAll.setDisabled(True)
+
         self.guiProgress = QProgressBar(self)
         self.sim.simulationProgressChanged.connect(self.guiProgress.setValue)
         self.statusBar().addWidget(self.guiProgress)
@@ -447,70 +485,83 @@ class SimulationGui(QMainWindow):
 
     def export_simulation_data(self, ok):
         """
-        query the user for a custom name and export the current simulation results
+        Query the user for a custom name and export the current simulation
+        results.
 
         :param ok: unused parameter from QAction.triggered() Signal
         """
         self._save_data()
 
-    def _save_data(self, regime_name=None):
+    def _save_data(self, file_path=None):
         """
-        Save the result data for a given regime.
-        If *regime_name* is given, the result will be saved to a default path, 
-        making automated exporting easier.
+        Save the current simulation results.
 
-        :param regime_name: name of the regime to export
+        If *fie_name* is given, the result will be saved to the specified
+        location, making automated exporting easier.
+
+        Args:
+            file_path(str): Absolute path of the target file. If `None` the
+                use will be asked for a storage location.
         """
-        # specify default path
-        path = self._default_path
-
-        # create sample file name
         regime_name = self._regimes[self._current_regime_index]["Name"]
-        suggestion = (time.strftime("%Y%m%d-%H%M%S")
-                      + "_" + regime_name + ".pmr")
 
-        if not os.path.isdir(path):
-            box = QMessageBox()
-            box.setText("Default Export Folder does not exist yet.")
-            box.setInformativeText("Do you want to create it? \n"
-                                   "{}".format(os.path.abspath(path)))
-            box.setStandardButtons(QMessageBox.Ok | QMessageBox.No)
-            box.setDefaultButton(QMessageBox.Ok)
-            ret = box.exec_()
-            if ret == QMessageBox.Ok:
-                os.makedirs(path)
+        if file_path is None:
+            # get path
+            path = self._settings.value("path/simulation_results")
 
-            else:
-                dialog = QFileDialog(self)
-                dialog.setAcceptMode(QFileDialog.AcceptSave)
-                dialog.setFileMode(QFileDialog.AnyFile)
-                dialog.setDirectory(path)
-                dialog.setNameFilter("PyMoskito Results (*.pmr)")
-                dialog.selectFile(suggestion)
+            # create canonic file name
+            suggestion = self._simfile_name(regime_name)
 
-                if dialog.exec_():
-                    path = dialog.selectedFiles()[0]
-                else:
-                    self._logger.warning("Export Aborted")
-                    return
-
+            if not os.path.isdir(path):
                 box = QMessageBox()
-                box.setText("Use this path as new default?")
-                box.setInformativeText("{}".format(os.path.dirname(path)))
+                box.setText("Export Folder does not exist yet.")
+                box.setInformativeText("Do you want to create it? \n"
+                                       "{}".format(os.path.abspath(path)))
                 box.setStandardButtons(QMessageBox.Ok | QMessageBox.No)
                 box.setDefaultButton(QMessageBox.Ok)
                 ret = box.exec_()
                 if ret == QMessageBox.Ok:
-                    self._default_path = os.path.dirname(path)
-        else:
-            path = os.path.join(path, suggestion)
+                    os.makedirs(path)
+                else:
+                    path = os.path.curdir
+
+            dialog = QFileDialog(self)
+            dialog.setAcceptMode(QFileDialog.AcceptSave)
+            dialog.setFileMode(QFileDialog.AnyFile)
+            dialog.setDirectory(path)
+            dialog.setNameFilter("PyMoskito Results (*.pmr)")
+            dialog.selectFile(suggestion)
+
+            if dialog.exec_():
+                file_path = dialog.selectedFiles()[0]
+            else:
+                self._logger.warning("Export Aborted")
+                return
+
+            new_path = os.path.dirname(file_path)
+            if new_path != self._settings.value("path/simulation_results"):
+                box = QMessageBox()
+                box.setText("Use this path as new default?")
+                box.setInformativeText("{}".format(os.path.dirname(new_path)))
+                box.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
+                box.setDefaultButton(QMessageBox.Yes)
+                ret = box.exec_()
+                if ret == QMessageBox.Yes:
+                    self._settings.setValue("path/simulation_results", new_path)
 
         self.currentDataset.update({"regime name": regime_name})
-        with open(path, "wb") as f:
+        with open(file_path, "wb") as f:
             pickle.dump(self.currentDataset, f, protocol=4)
 
-        self.statusLabel.setText("results saved to {}".format(path))
-        self._logger.info("results saved to {}".format(path))
+        self.statusLabel.setText("results saved to {}".format(file_path))
+        self._logger.info("results saved to {}".format(file_path))
+
+    def _simfile_name(self, regime_name):
+        """ Create a canonical name for a simulation result file
+        """
+        suggestion = (time.strftime("%Y%m%d-%H%M%S")
+                      + "_" + regime_name + ".pmr")
+        return suggestion
 
     def load_regime_dialog(self):
         regime_path = os.path.join(os.curdir)
@@ -566,21 +617,34 @@ class SimulationGui(QMainWindow):
     def apply_regime_by_name(self, regime_name):
         """
         Apply the regime given by `regime_name` und update the regime index.
+
+        Returns:
+            bool: `True` if successful, `False` if errors occurred.
         """
         # get regime idx
         try:
             idx = list(map(itemgetter("Name"), self._regimes)).index(regime_name)
         except ValueError as e:
-            self._logger.error("apply_regime_by_name(): Error no regime called {0}".format(regime_name))
-            return
+            self._logger.error("apply_regime_by_name(): Error no regime called "
+                               "'{0}'".format(regime_name))
+            return False
 
         # apply
-        self._apply_regime_by_idx(idx)
+        return self._apply_regime_by_idx(idx)
 
     def _apply_regime_by_idx(self, index=0):
+        """
+        Apply the given regime.
+
+        Args:
+            index(int): Index of the regime in the `RegimeList` .
+
+        Returns:
+            bool: `True` if successful, `False` if errors occurred.
+        """
         if index >= len(self._regimes):
             self._logger.error("applyRegime: index error! ({})".format(index))
-            return
+            return False
 
         reg_name = self._regimes[index]["Name"]
         self.statusBar().showMessage("regime {} applied.".format(reg_name),
@@ -589,12 +653,18 @@ class SimulationGui(QMainWindow):
 
         self._current_regime_index = index
         self._current_regime_name = reg_name
-        self.sim.set_regime(self._regimes[index])
 
-    def execute_regimes_clicked(self):
+        return self.sim.set_regime(self._regimes[index])
+
+    def start_regime_execution(self):
         """
-        execute all regimes in the current list
+        Simulate all regimes in the regime list.
         """
+        self.actSimulateAll.setText("Stop Simulating &All Regimes")
+        self.actSimulateAll.setIcon(QIcon(get_resource("stop_batch.png")))
+        self.actSimulateAll.triggered.disconnect(self.start_regime_execution)
+        self.actSimulateAll.triggered.connect(self.stop_regime_excecution)
+
         self.runningBatch = True
         self._current_regime_index = -1
         self.regimeFinished.emit()
@@ -605,17 +675,37 @@ class SimulationGui(QMainWindow):
         """
         # are we finished?
         if self._current_regime_index == len(self._regimes)-1:
-            self.finishedRegimeBatch.emit()
+            self.finishedRegimeBatch.emit(True)
             return
 
-        self._apply_regime_by_idx(self._current_regime_index + 1)
+        suc = self._apply_regime_by_idx(self._current_regime_index + 1)
+        if not suc:
+            self.finishedRegimeBatch.emit(False)
+            return
+
         self.start_simulation()
 
-    def regime_batch_finished(self):
+    def stop_regime_excecution(self):
+        """ Stop the batch process.
+        """
+        self.stopSimulation.emit()
+        self.finishedRegimeBatch.emit(False)
+
+    def regime_batch_finished(self, status):
         self.runningBatch = False
         self.actSimulateAll.setDisabled(False)
-        self.statusLabel.setText("All regimes have been simulated!")
         self.actSave.setDisabled(True)
+
+        self.actSimulateAll.setText("Simulate &All Regimes")
+        self.actSimulateAll.setIcon(QIcon(get_resource("execute_regimes.png")))
+        self.actSimulateAll.triggered.disconnect(self.stop_regime_excecution)
+        self.actSimulateAll.triggered.connect(self.start_regime_execution)
+
+        if status:
+            self.statusLabel.setText("All regimes have been simulated")
+            self._logger.info("All Regimes have been simulated")
+        else:
+            self._logger.info("Batch simulation has been aborted")
 
     def simulation_finished(self, data):
         """
@@ -654,7 +744,10 @@ class SimulationGui(QMainWindow):
 
         if self.runningBatch:
             regime_name = self._regimes[self._current_regime_index]["Name"]
-            self._save_data(regime_name)
+            file_name = self._simfile_name(regime_name)
+            self._save_data(os.path.join(
+                self._settings.value("path/simulation_results"),
+                file_name))
             self.regimeFinished.emit()
         else:
             self.actSimulateAll.setDisabled(False)
