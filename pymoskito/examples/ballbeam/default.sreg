@@ -26,6 +26,7 @@
   # Class name and settings for the solver
   Solver:
    type: ODEInt
+   # the measure rate controls how dense the returned data will be
    measure rate: 10
    end time: 10
 
@@ -59,10 +60,13 @@
    type: ODEInt
 
   Controller:
+   # A Linear State Space Controller, linearized with the Ball at r=3 meters.
    type: LSSController
-   r0: 3
+   steady state: [3, 0, 0, 0]
 
   Trajectory:
+   # A setpoint trajectory that will perform a step on the 0th component of the
+   # models state and set it to 3.
    type: Setpoint
    State: [0]
    Setpoint: [3]
