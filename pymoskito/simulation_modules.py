@@ -1,5 +1,5 @@
 import logging
-from abc import ABCMeta, abstractmethod, abstractproperty
+from abc import ABCMeta, abstractmethod
 from collections import OrderedDict
 
 from PyQt5.QtCore import QObject
@@ -35,7 +35,8 @@ class SimulationModule(QObject, metaclass=SimulationModuleMeta):
         self._settings = settings
         del self._settings["modules"]
 
-    @abstractproperty
+    @property
+    @abstractmethod
     def public_settings(self):
         pass
 
@@ -170,11 +171,13 @@ class Solver(SimulationModule):
     def integrate(self, t):
         pass
 
-    @abstractproperty
+    @property
+    @abstractmethod
     def t(self):
         pass
 
-    @abstractproperty
+    @property
+    @abstractmethod
     def successful(self):
         pass
 
