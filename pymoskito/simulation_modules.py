@@ -5,8 +5,6 @@ from collections import OrderedDict
 from PyQt5.QtCore import QObject
 pyqtWrapperType = type(QObject)
 
-__author__ = 'stefan'
-
 
 class SimulationModuleMeta(ABCMeta, pyqtWrapperType):
     pass
@@ -19,8 +17,10 @@ class SimulationException(Exception):
 class SimulationModule(QObject, metaclass=SimulationModuleMeta):
     """
     Smallest Unit in Simulation Process.
-    Provides necessary functions like output calculation and holds
-    all settings is 'settings' all available settings have to be added
+
+    This class provides necessary functions like output calculation and holds
+    all settings that can be accessed by the user.
+    öis 'settings' all available settings have to be added
     to this dict and have to be known a priori.
     """
 
@@ -92,10 +92,14 @@ class Model(SimulationModule):
     @abstractmethod
     def state_function(self, t, x, args):
         """
-        function that calculates the state derivatives of a system with state x at time t.
-        :param x: system state
-        :param t: system time
-        :return: derivatives of system state at time t
+        Calculate the state derivatives of a system with state x at time t.
+
+        Args:
+            x(Array-like): System state.
+            t(float): System time.
+
+        Returns:
+            Temporal derivative of the system state at time t.
         """
         pass
 
@@ -148,7 +152,7 @@ class Solver(SimulationModule):
         settings.update({"tick divider": 1})
         assert isinstance(settings["modules"]["Model"], Model)
         self._model = settings["modules"]["Model"]
-        self._next_output = None
+        self.next_output = None
         SimulationModule.__init__(self, settings)
 
     def calc_output(self, input_vector):

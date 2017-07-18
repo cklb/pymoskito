@@ -9,6 +9,8 @@ import numpy as np
 # real test station on the institute of control theory at the
 # TU-Dresden
 
+initial_state = [0, 0, 0, 0]
+
 T = 0.24757155405           # s - time constant of the motor
 d = 0.733277219979          # - damping ratio of the motor
 k_s = 10.0291812304         # 1/Vs - gain motor

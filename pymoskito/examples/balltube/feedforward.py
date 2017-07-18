@@ -10,9 +10,10 @@ from . import settings as st
 
 class BallInTubeFeedforward(pm.Feedforward):
     """
-    calculate feedforward, based on the flatness of the system
-    the flat output is the ball position (x3)
-    x1_flat and x2_flat are the system states expressed in flat coordinates
+    Calculate flatness based feedforward.
+
+    The flat output is given by the ball position (x3)
+    x1_flat and x2_flat are the system states expressed in flat coordinates.
     """
     public_settings = OrderedDict([("tick divider", 1)])
 
@@ -23,12 +24,16 @@ class BallInTubeFeedforward(pm.Feedforward):
 
     def _feedforward(self, time, trajectory_values):
 
-        yd = trajectory_values[0]
-        x1_flat = (np.sqrt((yd[2] + st.g)*st.m*st.A_Sp**2/st.k_L) + st.A_B*yd[1])/st.k_V
-        x2_flat = yd[3]*st.m*st.A_Sp**2/(2*st.k_V*st.k_L*(st.k_V*x1_flat - st.A_B*yd[1])) + st.A_B*yd[2]/st.k_V
+        yd = trajectory_values
+        x1_flat = (np.sqrt((yd[2] + st.g)*st.m*st.A_Sp**2/st.k_L)
+                   + st.A_B*yd[1])/st.k_V
+        x2_flat = (yd[3]*st.m*st.A_Sp**2/(2*st.k_V*st.k_L*(st.k_V*x1_flat
+                                                           - st.A_B*yd[1]))
+                   + st.A_B*yd[2]/st.k_V)
 
         # feed forward control
-        u = (st.T**2*(yd[4]*st.m*st.A_Sp**2 - 2*st.k_L*(st.k_V*x2_flat - st.A_B*yd[2])**2)
+        u = (st.T**2*(yd[4]*st.m*st.A_Sp**2 - 2*st.k_L*(st.k_V*x2_flat
+                                                        - st.A_B*yd[2])**2)
              / (2*st.k_s*st.k_V*st.k_L*(st.k_V*x1_flat - st.A_B*yd[1]))
              + (st.T**2*st.A_B*yd[3])/(st.k_s*st.k_V)
              + (2*st.d*st.T*x2_flat)/st.k_s
