@@ -1,4 +1,5 @@
 import logging
+from copy import copy
 from abc import ABCMeta, abstractmethod
 from collections import OrderedDict
 
@@ -22,18 +23,23 @@ class SimulationModule(QObject, metaclass=SimulationModuleMeta):
     all settings that can be accessed by the user.
     öis 'settings' all available settings have to be added
     to this dict and have to be known a priori.
+
+    Args:
+        settings(OrderedDict): Settings for this simulation module.
+            These entries will be shown in the properties view and can be
+            changed by the user.
     """
 
     def __init__(self, settings):
         QObject.__init__(self, None)
         self._logger = logging.getLogger(self.__class__.__name__)
 
-        assert isinstance(settings, OrderedDict)
+        assert isinstance(settings, dict)
+        self._settings = copy(settings)
 
-        settings["tick divider"] = settings.get("tick divider", 1)
-        settings["step width"] = None
-        self._settings = settings
-        del self._settings["modules"]
+        self._settings["tick divider"] = settings.get("tick divider", 1)
+        self._settings["step width"] = None
+        self._settings.pop("modules", None)
 
     @property
     @abstractmethod
@@ -68,13 +74,19 @@ class ModelException(SimulationException):
 class Model(SimulationModule):
     """
     Base class for all user defined system models in state-space form.
-    
-    To be used in the simulation loop the user has the specify certain
-    parameters of his implementation. See assertions in _init__.
-    
-    
+
     Args:
-        settings(dict): Dictionary holding the config options for this module.
+        settings (dict): Dictionary holding the config options for this module.
+            It must contain the following keys:
+
+            `input_count`
+                The length of the input vector for this model.
+
+            `state_count`
+                The length of the state vector for this model.
+
+            `initial state`
+                The initial state vector for this model.
     """
 
     def __init__(self, settings):
@@ -103,7 +115,6 @@ class Model(SimulationModule):
         """
         pass
 
-    @abstractmethod
     def root_function(self, x):
         """
         Check whether a reinitialisation of the integrator should be performed.
@@ -117,13 +128,12 @@ class Model(SimulationModule):
             
         Returns: 
             tuple: 
-                * bool: True if reset is advised.
+                * bool: `True` if reset is advised.
                 * array-like: State to continue with.
                 
         """
-        pass
+        return False, x
 
-    @abstractmethod
     def check_consistency(self, x):
         """
         Check whether the assumptions, made in the modelling process are 
