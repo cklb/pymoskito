@@ -8,6 +8,7 @@ import logging
 import sys
 import ast
 from collections import OrderedDict
+import numpy as np
 
 from PyQt5.QtCore import (
     Qt, QObject, pyqtSignal, pyqtSlot, QModelIndex, QSize, QThread
