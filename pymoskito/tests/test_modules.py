@@ -10,6 +10,11 @@ Tests for simulation modules.
 
 import unittest
 from collections import OrderedDict
+import pickle
+import os
+
+import scipy.signal as sig
+import numpy as np
 
 import pymoskito as pm
 from pymoskito.simulation_modules import (
@@ -87,7 +92,7 @@ class TestSimulationModule(unittest.TestCase):
         settings["step width"] = 13.26  # this _CANNOT_ be known a priori
         m = DummyModule(settings)
 
-        input_data = dict(foo="bar")  # later dict of module-type: output
+        input_data = dict(foo="bar")  # later dict of pairs module-type: output
         out = m.calc_output(input_data)
 
 
@@ -96,21 +101,74 @@ class DummyModel(Model):
     public_settings = OrderedDict([("initial state", [1, 2, 3, 4])])
 
     def __init__(self, settings):
-        settings["input"] = 1
-        settings["state_count"] = 4
         super().__init__(settings)
 
     def state_function(self, t, x, args):
-        pass
+        return np.zeros((4,))
 
     def calc_output(self, input_vector):
-        pass
+        return 0
 
 
 class TestModel(unittest.TestCase):
 
     def test_init(self):
+        settings = OrderedDict([("initial state", [1, 2, 3, 4])])
 
+        # input_count and state_count are missing
+        with self.assertRaises(AssertionError):
+            DummyModel(settings)
+
+        settings["input_count"] = 1
+        settings["state_count"] = 3
+
+        # state count oes not match initial state
+        with self.assertRaises(AssertionError):
+            DummyModel(settings)
+
+        settings["state_count"] = 4
+        m = DummyModel(settings)
+
+    def test_properties(self):
+        settings = OrderedDict([("initial state", [1, 2, 3, 4])])
+        settings["input_count"] = 1
+        settings["state_count"] = 4
+        m = DummyModel(settings)
+
+        self.assertEqual(m.initial_state, [1, 2, 3, 4])
+
+
+class StateSpaceModelTest(unittest.TestCase):
+
+    def setUp(self):
+        # generate StateSpace model
+        self.sys = sig.TransferFunction([5], [10, 1]).to_ss()
+
+        if not os.path.exists("test_sys.dat"):
+            with open("test_sys.dat", "wb") as f:
+                pickle.dump(self.sys, f)
+
+    def test_init(self):
+        settings = pm.LinearStateSpaceModel.public_settings
+
+        # path should point to a real file
+        settings["config file"] = "A: [2, 3], B = 1"
+        with self.assertRaises(AssertionError):
+            pm.LinearStateSpaceModel(settings)
+
+        # neither initial state nor initial output present
+        settings["config file"] = "test_sys.dat"
+        with self.assertRaises(ValueError):
+            pm.LinearStateSpaceModel(settings)
+
+        x0 = np.array([12])
+        settings["initial state"] = x0
+        m = pm.LinearStateSpaceModel(settings)
+        self.assertEqual(m.initial_state, x0)
+
+        settings["initial ouput"] = self.sys.C @ x0
+        m = pm.LinearStateSpaceModel(settings)
+        self.assertEqual(m.initial_state, x0)
 
 
 if __name__ == '__main__':

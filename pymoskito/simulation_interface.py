@@ -7,16 +7,21 @@ import copy
 import logging
 import sys
 import ast
-import traceback
+from collections import OrderedDict
 
-from PyQt5.QtCore import Qt, QObject, pyqtSignal, pyqtSlot, QModelIndex, QSize, QThread
+from PyQt5.QtCore import (
+    Qt, QObject, pyqtSignal, pyqtSlot, QModelIndex, QSize, QThread
+)
 from PyQt5.QtGui import QStandardItemModel, QStandardItem
 from PyQt5.QtWidgets import QItemDelegate, QComboBox, QTreeView
 
 from . import simulation_modules
-from .generic_simulation_modules import *
-from .registry import get_registered_simulation_modules, get_simulation_module_class_by_name
-from .simulation_core import Simulator, SimulationSettings, SimulationStateChange
+from .registry import (
+    get_registered_simulation_modules, get_simulation_module_class_by_name
+)
+from .simulation_core import (
+    Simulator, SimulationSettings, SimulationStateChange
+)
 
 
 class SimulatorModel(QStandardItemModel):

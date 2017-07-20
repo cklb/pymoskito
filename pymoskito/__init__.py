@@ -11,10 +11,7 @@ os.environ["PYQTGRAPH_QT_LIB"] = "PyQt5"
 
 from .generic_processing_modules import StepResponse, PlotAll,\
     XYMetaProcessor, construct_result_dict
-from .generic_simulation_modules import ODEInt, SmoothTransition, \
-    HarmonicTrajectory, Setpoint, PIDController, \
-    AdditiveMixer, ModelInputLimiter, DeadTimeSensor, \
-    GaussianNoise
+from .generic_simulation_modules import *
 from .processing_core import PostProcessingModule, MetaProcessingModule
 from .processing_gui import PostProcessor as PostProcessor
 from .registry import register_simulation_module, register_processing_module, \
@@ -39,6 +36,7 @@ with open(get_resource("logging.yaml", ""), "r") as f:
 logging.config.dictConfig(log_conf)
 
 # register all generic modules
+register_simulation_module(Model, LinearStateSpaceModel)
 register_simulation_module(Solver, ODEInt)
 register_simulation_module(Trajectory, SmoothTransition)
 register_simulation_module(Trajectory, HarmonicTrajectory)

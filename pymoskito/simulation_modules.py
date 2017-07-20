@@ -95,6 +95,7 @@ class Model(SimulationModule):
         assert ("state_count" in settings)
         assert ("input_count" in settings)
         assert ("initial state" in settings)
+        assert len(settings["initial state"]) == settings["state_count"]
 
     @property
     def initial_state(self):

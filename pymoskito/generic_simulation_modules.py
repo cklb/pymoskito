@@ -1,24 +1,79 @@
 from collections import OrderedDict
+import os
+import pickle
+
 from scipy.integrate import ode
+from scipy.signal import StateSpace
 import sympy as sp
 import numpy as np
 
-from .simulation_modules import Solver, \
-    SolverException, \
-    Trajectory, \
-    TrajectoryException, \
-    Controller, \
-    Feedforward, \
-    SignalMixer, \
-    ModelMixer, \
-    ObserverMixer, \
-    Limiter, \
-    Sensor, \
+from .simulation_modules import (
+    Model, Solver, SolverException, Trajectory, TrajectoryException, Controller,
+    Feedforward, SignalMixer, ModelMixer, ObserverMixer, Limiter, Sensor,
     Disturbance
+)
+
+__all__ = ["LinearStateSpaceModel", "ODEInt", "ModelInputLimiter",
+           "Setpoint", "HarmonicTrajectory", "SmoothTransition",
+           "PIDController",
+           "DeadTimeSensor", "GaussianNoise",
+           "AdditiveMixer"]
 
 """
-ready to go implementations of simulation modules
+Ready to go implementations of simulation modules.
 """
+
+
+class LinearStateSpaceModel(Model):
+    """
+    The state space model of a linear system.
+
+    The parameters of this model can be provided in form of a file (see
+    `config file` in :py:attribute`public_settings`) in which either
+    a tuple of (`num`, `den`) pairs or a pickled StateSpace object is expected.
+    (See :py:class:`StateSpace` for details.)
+    """
+    public_settings = OrderedDict([
+        ("config file", None),
+        ("initial state", None),
+        ("initial output", None),
+    ])
+
+    def __init__(self, settings):
+        file = settings["config file"]
+        assert os.path.isfile(file)
+
+        with open(file, "rb") as f:
+            data = pickle.load(f)
+
+        if isinstance(data, StateSpace):
+            self.ss = data
+        elif isinstance(data, list):
+            self.ss = StateSpace(*data)
+        else:
+            raise ValueError("Content of configuration file not understood.")
+
+        # no feedthrough possible
+        np.testing.assert_array_equal(self.ss.D, np.zeros_like(self.ss.D))
+
+        settings["state_count"] = self.ss.B.shape[0]
+        settings["input_count"] = self.ss.B.shape[1]
+
+        if settings["initial state"] is None:
+            if "initial output" not in settings:
+                raise ValueError("Either 'initial state' or 'initial output' "
+                                 "have to be provided!")
+
+            settings["initial state"] = np.squeeze(
+                np.linalg.pinv(self.ss.C) @ settings["initial output"])
+
+        super().__init__(settings)
+
+    def state_function(self, t, x, args):
+        return np.squeeze(self.ss.A @ x + self.ss.B @ args[0])
+
+    def calc_output(self, input_vector):
+        return self.ss.C @ input_vector
 
 
 class ODEInt(Solver):
