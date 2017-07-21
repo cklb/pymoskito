@@ -27,6 +27,9 @@ class BallInTubeModel(pm.Model):
         # add specific "private" settings
         settings.update(state_count=4)
         settings.update(input_count=1)
+        settings.update({"output_info": {
+            0: {"Name": "ball elevation", "Unit": "m"},
+        }})
         pm.Model.__init__(self, settings)
 
         # shortcuts for readability

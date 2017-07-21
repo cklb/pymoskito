@@ -66,7 +66,7 @@ class Simulator(QObject):
     state_changed = pyqtSignal(SimulationStateChange)
 
     # list of modules that have to appear in every run
-    _static_module_list = [
+    static_module_list = [
         "Model",
         "Solver"
     ]
@@ -85,7 +85,7 @@ class Simulator(QObject):
         "Limiter",
     ]
 
-    module_list = _static_module_list + _dynamic_module_list
+    module_list = static_module_list + _dynamic_module_list
 
     def __init__(self, settings, modules):
         QObject.__init__(self, None)
@@ -132,7 +132,8 @@ class Simulator(QObject):
         """ Calculates the output of a simulation module
         """
         if module_name in self._simulation_modules.keys():
-            if self._counter[module_name] == self._simulation_modules[module_name].tick_divider:
+            if self._counter[module_name] == \
+                    self._simulation_modules[module_name].tick_divider:
                 self._current_outputs[module_name] = np.atleast_1d(
                     self._simulation_modules[module_name].calc_output(
                         self._input_vector))
@@ -292,8 +293,15 @@ class Simulator(QObject):
     @property
     def output(self):
         # convert storage entries
-        out = {}
-        for module, results in self._storage.items():
+        out = dict(modules={}, simulation={}, results={})
+
+        for mod, results in self._storage.items():
+            # grab module settings
+            if mod in self._simulation_modules:
+                out["modules"].update(
+                    {mod: self._simulation_modules[mod].settings})
+
+            # grab module data
             if not isinstance(results, list):
                 # flag or string -> nothing to convert
                 entry = results
@@ -303,9 +311,10 @@ class Simulator(QObject):
             else:
                 # convert list of scalars into 1d-array
                 entry = np.array(results)
-            out.update({module: entry})
+            out["results"].update({mod: entry})
 
-        out.update({"Simulation": self._settings.to_dict()})
+        # grab simulator settings
+        out.update({"simulation": self._settings.to_dict()})
         return out
 
     @property

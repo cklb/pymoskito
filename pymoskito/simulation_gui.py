@@ -765,8 +765,9 @@ class SimulationGui(QMainWindow):
         self.simulation_finished(data)
 
     def _read_results(self):
-        self.currentStepSize = 1.0/self.currentDataset["results"]["Simulation"]['measure rate']
-        self.currentEndTime = self.currentDataset["results"]["Simulation"]["end time"]
+        self.currentStepSize = 1.0/self.currentDataset["simulation"][
+            "measure rate"]
+        self.currentEndTime = self.currentDataset["simulation"]["end time"]
         self.validData = True
 
     def add_plot_to_dock(self, plot_widget):
@@ -873,28 +874,105 @@ class SimulationGui(QMainWindow):
 
     def _update_data_list(self):
         self.dataList.clear()
-        for module, results in self.currentDataset["results"].items():
+        for module_name, results in self.currentDataset["results"].items():
             if not isinstance(results, np.ndarray):
                 continue
             if len(results.shape) == 1:
-                self.dataList.insertItem(0, "{0}".format(module))
+                self.dataList.insertItem(0, module_name)
             elif len(results.shape) == 2:
                 for col in range(results.shape[1]):
-                    self.dataList.insertItem(0, "{0}.{1}".format(module, col))
+                    self.dataList.insertItem(
+                        0,
+                        self._build_entry_name(module_name, (col, ))
+                    )
             elif len(results.shape) == 3:
                 for col in range(results.shape[1]):
                     for der in range(results.shape[2]):
-                        self.dataList.insertItem(0, "{0}.{1}.{2}".format(
-                            module, col, der))
+                        self.dataList.insertItem(
+                            0,
+                            self._build_entry_name(module_name, (col, der))
+                        )
+
+    def _build_entry_name(self, module_name, idx):
+        """
+        Construct an identifier for a given entry of a module.
+        Args:
+            module_name (str): name of the module the entry belongs to.
+            idx (tuple): Index of the entry.
+
+        Returns:
+            str: Identifier to use for display.
+        """
+        # save the user from defining 1d entries via tuples
+        if len(idx) == 1:
+            m_idx = idx[0]
+        else:
+            m_idx = idx
+
+        mod_settings = self.currentDataset["modules"]
+        info = mod_settings.get(module_name, {}).get("output_info", None)
+        if info:
+            if m_idx in info:
+                return ".".join([module_name, info[m_idx]["Name"]])
+
+        return ".".join([module_name] + [str(i) for i in idx])
+
+    def _get_index_from_suffix(self, module_name, suffix):
+        info = self.currentDataset["modules"].get(module_name, {}).get(
+            "output_info", None)
+        idx = next((i for i in info if info[i]["Name"] == suffix), None)
+        return idx
+
+    def _get_units(self, entry):
+        """
+        Return the unit that corresponds to a given entry.
+
+        If no information is available, None is returned.
+
+        Args:
+            entry (str): Name of the entry. This can either be "Model.a.b" where
+                a and b are numbers or if information is available "Model.Signal"
+                where signal is the name of that part.
+
+        Returns:
+
+        """
+        args = entry.split(".")
+        module_name = args.pop(0)
+        info = self.currentDataset["modules"].get(module_name, {}).get(
+            "output_info", None)
+        if info is None:
+            return None
+
+        if len(args) == 1:
+            try:
+                idx = int(args[0])
+            except ValueError:
+                idx = next((i for i in info if info[i]["Name"] == args[0]),
+                           None)
+        else:
+            idx = (int(a) for a in args)
+
+        return info[idx]["Unit"]
 
     def create_plot(self, item):
         """
-        creates a plot widget corresponding to the ListItem
+        Creates a plot widget based on the given item.
 
-        :param item: ListItem
+        If a plot for this item is already open no new plot is created but the
+        existing one is raised up again.
+
+        Args:
+            item(Qt.ListItem): Item to plot.
         """
-
         title = str(item.text())
+
+        # check if plot has already been opened
+        for p in self.plotDocks:
+            if p.title() == title:
+                p.raiseDock()
+                return
+
         data = self._get_data_by_name(title)
         t = self.currentDataset["results"]["time"]
 
@@ -903,8 +981,16 @@ class SimulationGui(QMainWindow):
 
         widget = pg.PlotWidget(title=title)
         widget.plot(x=t, y=data)
+        widget.getPlotItem().getAxis("bottom").setLabel(text="Time", units="s")
 
-        time_line = pg.InfiniteLine(self.playbackTime, angle=90, movable=False, pen=pg.mkPen("#FF0000", width=2.0))
+        unit = self._get_units(title)
+        name = title.split(".")[1]
+        widget.getPlotItem().getAxis("left").setLabel(text=name, units=unit)
+
+        time_line = pg.InfiniteLine(self.playbackTime,
+                                    angle=90,
+                                    movable=False,
+                                    pen=pg.mkPen("#FF0000", width=2.0))
         widget.getPlotItem().addItem(time_line)
 
         # enable grid
@@ -922,8 +1008,12 @@ class SimulationGui(QMainWindow):
         if len(tmp) == 1:
             data = np.array(self.currentDataset["results"][module_name])
         elif len(tmp) == 2:
-            idx = int(tmp[1])
-            data = self.currentDataset["results"][module_name][..., idx]
+            try:
+                idx = int(tmp[1])
+            except ValueError:
+                idx = self._get_index_from_suffix(module_name, tmp[1])
+            finally:
+                data = self.currentDataset["results"][module_name][..., idx]
         elif len(tmp) == 3:
             idx = int(tmp[1])
             der = int(tmp[2])

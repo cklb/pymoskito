@@ -147,7 +147,7 @@ class SimulatorInteractor(QObject):
         self._sim_settings = None
         self.simThread = QThread()
         self._sim_modules = {}
-        self._sim_data = {'modules': {}}
+        self._sim_data = None
         self._sim_state = None
 
     def _setup_model(self):
@@ -309,10 +309,10 @@ class SimulatorInteractor(QObject):
             self._sim_modules.update({module_name: slot})
 
             # store settings
-            self._sim_data['modules'].update({module_name: settings})
+            # self._sim_data['modules'].update({module_name: settings})
 
-        if all([mod in self._sim_data["modules"]
-                for mod in ["Solver", "Model"]]):
+        if all([mod in self._sim_modules
+                for mod in Simulator.static_module_list]):
             return True
 
         return False
@@ -460,7 +460,7 @@ class SimulatorInteractor(QObject):
 
         elif state_change.type == "abort":
             self._sim_state = "aborted"
-            self._sim_data.update({'results': copy.deepcopy(state_change.data)})
+            self._sim_data = copy.deepcopy(state_change.data)
             if isinstance(state_change.info, str):
                 self._logger.info(state_change.info)
             else:
@@ -471,12 +471,12 @@ class SimulatorInteractor(QObject):
 
         elif state_change.type == "finish":
             self._sim_state = "finished"
-            self._sim_data.update({'results': copy.deepcopy(state_change.data)})
+            self._sim_data = copy.deepcopy(state_change.data)
 
         else:
-            self._logger.error("simulation_state_changed(): "
-                               "ERROR Unknown state {0}".format(
-                state_change.type))
+            self._logger.error(
+                "simulation_state_changed(): ERROR Unknown state {0}".format(
+                    state_change.type))
 
     def stop_simulation(self):
         self._sim.stop()
@@ -484,7 +484,7 @@ class SimulatorInteractor(QObject):
     def _sim_aftercare(self):
         # reset internal states
         self._sim_settings = None
-        self._sim_data = {'modules': {}}
+        self._sim_data = None
 
         # delete modules
         for module in self._sim_modules.keys():
@@ -519,12 +519,12 @@ class SimulatorInteractor(QObject):
                                     for idx in range(m_data.shape[1])]).T
             else:
                 raise ValueError("Unknown Trajectory Format.")
-            self._sim_data['results'].update(control_error=c_error)
+            self._sim_data["results"].update(control_error=c_error)
 
         if "Observer" in self._sim_data["results"]:
             o_error = (self._get_result_by_name("Solver")
                        - self._get_result_by_name("Observer"))
-            self._sim_data['results'].update(observer_error=o_error)
+            self._sim_data["results"].update(observer_error=o_error)
 
     def _get_result_by_name(self, name):
         return self._sim_data["results"][name]

@@ -25,6 +25,10 @@ class BallBeamModel(pm.Model):
         # add specific "private" settings
         settings.update(state_count=4)
         settings.update(input_count=1)
+        settings.update({"output_info": {
+            0: {"Name": "ball position", "Unit": "m"},
+            1: {"Name": "beam angle", "Unit": "rad"},
+        }})
         pm.Model.__init__(self, settings)
 
         # shortcuts for readability

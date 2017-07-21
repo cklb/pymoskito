@@ -28,10 +28,23 @@ class SimulationModule(QObject, metaclass=SimulationModuleMeta):
     öis 'settings' all available settings have to be added
     to this dict and have to be known a priori.
 
+
     Args:
         settings(OrderedDict): Settings for this simulation module.
             These entries will be shown in the properties view and can be
-            changed by the user.
+            changed by the user. The important entries for this base class are:
+
+            `tick divider`:
+                todo
+
+            `output info`:
+                Dict holding an information dictionaries with keys `Name` and
+                `Unit` for each element in the output data.
+                If available, these information are used to display reasonable names
+                in the result view and to display the corresponding units for the
+                result plots.
+                Attention: Do NOT use '.' in the name field.
+
     """
 
     def __init__(self, settings):
@@ -49,6 +62,10 @@ class SimulationModule(QObject, metaclass=SimulationModuleMeta):
     @abstractmethod
     def public_settings(self):
         pass
+
+    @property
+    def settings(self):
+        return self._settings
 
     @property
     def tick_divider(self):

@@ -34,6 +34,14 @@ class TwoPendulumModel(pm.Model):
         # add specific "private" settings
         settings.update(state_count=6)
         settings.update(input_count=1)
+        settings.update({"output_info": {
+            0: {"Name": "cart-position", "Unit": "m"},
+            1: {"Name": "cart-velocity", "Unit": "m"},
+            2: {"Name": "long-pendulum-angle", "Unit": "rad/s"},
+            3: {"Name": "long-pendulum-angular-velocity", "Unit": "rad/s"},
+            4: {"Name": "short-pendulum-angle", "Unit": "rad"},
+            5: {"Name": "short-pendulum-angular-velocity", "Unit": "rad/s"},
+        }})
         pm.Model.__init__(self, settings)
 
         # shortcuts for readability
@@ -132,6 +140,14 @@ class TwoPendulumRigidBodyModel(pm.Model):
         # add specific "private" settings
         settings.update(state_count=6)
         settings.update(input_count=1)
+        settings.update({"output_info": {
+            0: {"Name": "cart-position", "Unit": "m"},
+            1: {"Name": "cart-velocity", "Unit": "m"},
+            2: {"Name": "long-pendulum-angle", "Unit": "rad/s"},
+            3: {"Name": "long-pendulum-angular-velocity", "Unit": "rad/s"},
+            4: {"Name": "short-pendulum-angle", "Unit": "rad"},
+            5: {"Name": "short-pendulum-angular-velocity", "Unit": "rad/s"},
+        }})
         pm.Model.__init__(self, settings)
 
         print(self._settings)
@@ -246,6 +262,14 @@ class TwoPendulumModelParLin(pm.Model):
         # add specific "private" settings
         settings.update(state_count=6)
         settings.update(input_count=1)
+        settings.update({"output_info": {
+            0: {"Name": "cart-position", "Unit": "m"},
+            1: {"Name": "cart-velocity", "Unit": "m"},
+            2: {"Name": "long-pendulum-angle", "Unit": "rad/s"},
+            3: {"Name": "long-pendulum-angular-velocity", "Unit": "rad/s"},
+            4: {"Name": "short-pendulum-angle", "Unit": "rad"},
+            5: {"Name": "short-pendulum-angular-velocity", "Unit": "rad/s"},
+        }})
         pm.Model.__init__(self, settings)
 
         # shortcuts for readability

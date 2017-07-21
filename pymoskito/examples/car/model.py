@@ -22,6 +22,13 @@ class CarModel(pm.Model):
         # add specific "private" settings
         settings.update(state_count=5)
         settings.update(input_count=2)
+        settings.update({"output_info": {
+            0: {"Name": "x-position", "Unit": "m"},
+            1: {"Name": "y-position", "Unit": "m"},
+            2: {"Name": "car-angle", "Unit": "rad"},
+            3: {"Name": "1st-trailer-angle", "Unit": "rad"},
+            4: {"Name": "2nd-trailer-angle", "Unit": "rad"},
+        }})
         pm.Model.__init__(self, settings)
 
         # shortcuts for readability
