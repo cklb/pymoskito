@@ -76,12 +76,16 @@ class TestSimulationModule(unittest.TestCase):
         settings = DummyModule.public_settings
         settings["tick divider"] = 1234
         settings["step width"] = 13.26  # this _CANNOT_ be known a priori
+        info = {0: dict(Name="Centripetal Force",
+                        Unit="Newton [N]")}
+        settings["output info"] = info
         m = DummyModule(settings)
 
         self.assertTrue(isinstance(m.public_settings, OrderedDict))
 
         self.assertEqual(m.tick_divider, 1234)
         self.assertEqual(m.step_width, None)
+        self.assertEqual(m.output_info, info)
 
         m.step_width = 13.37
         self.assertEqual(m.step_width, 13.37)
@@ -166,7 +170,8 @@ class StateSpaceModelTest(unittest.TestCase):
         m = pm.LinearStateSpaceModel(settings)
         self.assertEqual(m.initial_state, x0)
 
-        settings["initial ouput"] = self.sys.C @ x0
+        settings["initial state"] = None
+        settings["initial output"] = self.sys.C @ x0
         m = pm.LinearStateSpaceModel(settings)
         self.assertEqual(m.initial_state, x0)
 

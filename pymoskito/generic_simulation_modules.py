@@ -60,12 +60,12 @@ class LinearStateSpaceModel(Model):
         settings["input_count"] = self.ss.B.shape[1]
 
         if settings["initial state"] is None:
-            if "initial output" not in settings:
+            if settings["initial output"] is None:
                 raise ValueError("Either 'initial state' or 'initial output' "
                                  "have to be provided!")
 
-            settings["initial state"] = np.squeeze(
-                np.linalg.pinv(self.ss.C) @ settings["initial output"])
+            settings["initial state"] = \
+                np.linalg.pinv(self.ss.C) @ settings["initial output"]
 
         super().__init__(settings)
 
