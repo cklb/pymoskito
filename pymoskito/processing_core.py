@@ -10,10 +10,11 @@ pyqtWrapperType = type(QObject)
 
 from .tools import get_sub_value
 
+__all__ = ["PostProcessingModule", "MetaProcessingModule"]
+
 """
 Base Classes for modules in the result-processing environment
 """
-__author__ = 'stefan'
 
 
 class ProcessingModuleMeta(ABCMeta, pyqtWrapperType):

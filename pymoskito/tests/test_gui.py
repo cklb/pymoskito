@@ -21,7 +21,7 @@ class TestGUI(unittest.TestCase):
         self.app = QApplication([])
 
     def test_sim_gui(self):
-        g = pm.Simulator()
+        g = pm.SimulationGui()
 
     # TODO more ...
 

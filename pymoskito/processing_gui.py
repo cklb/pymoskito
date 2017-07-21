@@ -14,6 +14,8 @@ from . import registry as pm
 from .processing_core import PostProcessingModule, MetaProcessingModule
 from .tools import get_resource, QPlainTextEditLogger, PostFilter
 
+__all__ = ["PostProcessor"]
+
 
 class PostProcessor(QMainWindow):
 

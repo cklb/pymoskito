@@ -21,7 +21,7 @@ if __name__ == '__main__':
     # create an Application instance (needed)
     app = QApplication([])
     prog = None
-    sim = pm.Simulator()
+    sim = pm.SimulationGui()
 
     # load defaults
     sim.load_regimes_from_file(os.path.join(parent_dir,

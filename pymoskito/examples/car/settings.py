@@ -9,6 +9,8 @@ l2 = 0.19
 d2 = 0.08
 l3 = 0.19
 
+initial_state = [0, 0, 0, 0, 0]
+
 # animation parameters
 dia = 0.1
 car_radius = dia/2

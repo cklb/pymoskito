@@ -9,21 +9,16 @@ import yaml
 mpl.use('Qt5Agg')
 os.environ["PYQTGRAPH_QT_LIB"] = "PyQt5"
 
-from .generic_processing_modules import StepResponse, PlotAll,\
-    XYMetaProcessor, construct_result_dict
+from .registry import *
+from .generic_processing_modules import *
 from .generic_simulation_modules import *
-from .processing_core import PostProcessingModule, MetaProcessingModule
-from .processing_gui import PostProcessor as PostProcessor
-from .registry import register_simulation_module, register_processing_module, \
-    register_visualizer, \
-    get_registered_simulation_modules, get_registered_processing_modules
-from .simulation_gui import SimulationGui as Simulator
-from .simulation_modules import Solver, Trajectory, Model, ModelException, \
-    Feedforward, Controller, ModelMixer, Observer, \
-    ObserverMixer, Disturbance, Sensor, Limiter
+from .processing_core import *
+from .processing_gui import *
+from .simulation_gui import *
+from .simulation_modules import *
 from .tools import *
 from .controltools import *
-from .visualization import VtkVisualizer, MplVisualizer
+from .visualization import *
 
 __author__ = 'Stefan Ecklebe'
 __email__ = 'stefan.ecklebe@tu-dresden.de'

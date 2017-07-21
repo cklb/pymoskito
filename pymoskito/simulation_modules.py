@@ -6,6 +6,10 @@ from collections import OrderedDict
 from PyQt5.QtCore import QObject
 pyqtWrapperType = type(QObject)
 
+__all__ = ["Trajectory", "Feedforward", "Controller", "Limiter",
+           "ModelMixer", "Model", "ModelException",
+           "Solver", "Disturbance", "Sensor", "ObserverMixer", "Observer"]
+
 
 class SimulationModuleMeta(ABCMeta, pyqtWrapperType):
     pass

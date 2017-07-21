@@ -11,6 +11,8 @@ from .processing_core import PostProcessingModule, MetaProcessingModule
 from .tools import sort_tree
 from .resources import colors
 
+__all__ = ["StepResponse", "PlotAll", "XYMetaProcessor"]
+
 
 def get_figure_size(scale):
     """

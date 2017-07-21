@@ -3,6 +3,8 @@ from abc import ABCMeta, abstractmethod
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT, FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 
+__all__ = ["VtkVisualizer", "MplVisualizer"]
+
 try:
     import vtk
     from vtk.qt.QVTKRenderWindowInteractor import *

@@ -24,7 +24,7 @@ if __name__ == '__main__':
 
     if 1:
         # create simulator
-        prog = pm.Simulator()
+        prog = pm.SimulationGui()
 
         # load default config
         prog.load_regimes_from_file(os.path.join(parent_dir,

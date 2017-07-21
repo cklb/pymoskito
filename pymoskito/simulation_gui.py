@@ -51,6 +51,9 @@ from .processing_gui import PostProcessor
 from .tools import get_resource, PostFilter, QPlainTextEditLogger
 
 
+__all__ = ["SimulationGui"]
+
+
 class SimulationGui(QMainWindow):
     """
     class for the graphical user interface
