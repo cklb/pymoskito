@@ -22,19 +22,27 @@ From the repository::
 For Windows
 -----------
 
-PyMoskito depends on Qt5 and VTK.
-Qt5 is already included in the most python distributions, e.g. ::
+PyMoskito depends on Qt5 and VTK .
 
-    $ Winpyzthon
+Qt5 is already included in the most python distributions, to have an easy start
+we recommend to use Winpython_ .
 
-VTK can be obtained from::
+The wheel for the *VTK* package (Version >= 7) can be obtained from
+http://www.lfd.uci.edu/~gohlke/pythonlibs/#vtk .
+It can be installed using the Winpython Control Panel or directly via::
 
-    $ VTK Link
+    $ pip install VTK-VERSION_NAME_HERE.whl
 
+from your winpython shell.
+
+.. _Winpython: https://winpython.github.io/
 
 Troubleshooting
 ---------------
-If importing ``vtk`` fails with::
+
+**Missing vtk libraries (linux)**
+
+If importing ``vtk`` fails with something similar to::
 
     >>> Import Error: vtkIOAMRPython module not found
 
