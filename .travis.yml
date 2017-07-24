@@ -6,19 +6,20 @@ python:
   - "3.5"
   - "3.6"
 
-#  - sudo apt-get update
-#  - wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
-#  - bash miniconda.sh -b -p $HOME/miniconda
-#  - export PATH="$HOME/miniconda/bin:$PATH"
-#  - hash -r
-#  - conda config --set always_yes yes --set changeps1 no
-#  - conda update -q conda
+install:
+  - sudo apt-get update
+  - wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
+  - bash miniconda.sh -b -p $HOME/miniconda
+  - export PATH="$HOME/miniconda/bin:$PATH"
+  - hash -r
+  - conda config --set always_yes yes --set changeps1 no
+  - conda update -q conda
   # Useful for debugging any issues with conda
-#  - conda info -a
-#  - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION --file requirements.txt
-#  - source activate test-environment
-
-install: python setup.py install
+  - conda info -a
+  - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION --file requirements.txt
+  - conda install pyqt
+  - source activate test-environment
+  - python setup.py install
 
 before_script:
   # Start x virtual framebuffer for gui
@@ -26,4 +27,5 @@ before_script:
   - "sh -e /etc/init.d/xvfb start"
   - sleep 3 # give xvfb some time to start
 
-script: python setup.py test
+script:
+  - python setup.py test
