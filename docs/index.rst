@@ -9,8 +9,8 @@ Contents:
   introduction
   installation
   examples/index
-  modules/index
   usage
+  modules/index
   contributing
   authors
   history

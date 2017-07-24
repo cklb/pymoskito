@@ -8,7 +8,7 @@ control theory. To run an example just enter::
 
   $ python -m pymoskito.examples.NAME
 
-where ``NAME`` is the name of the example.
+where ``NAME`` is the name, given in parenthesis behind the example titles.
 
 
 List of Examples:
