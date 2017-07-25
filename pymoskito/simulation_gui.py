@@ -1024,7 +1024,11 @@ class SimulationGui(QMainWindow):
         widget.getPlotItem().getAxis("bottom").setLabel(text="Time", units="s")
 
         unit = self._get_units(title)
-        name = title.split(".")[1]
+        if "." in title:
+            name = title.split(".")[1]
+        else:
+            name = title
+
         widget.getPlotItem().getAxis("left").setLabel(text=name, units=unit)
 
         time_line = pg.InfiniteLine(self.playbackTime,
