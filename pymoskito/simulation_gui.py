@@ -204,6 +204,15 @@ class SimulationGui(QMainWindow):
         self.actLoadRegimes.setShortcut(QKeySequence.Open)
         self.actLoadRegimes.triggered.connect(self.load_regime_dialog)
 
+        self.actExitOnBatchCompletion = QAction(self)
+        self.actExitOnBatchCompletion.setText("&Exit On Batch Completion")
+        self.actExitOnBatchCompletion.setCheckable(True)
+        self.actExitOnBatchCompletion.setChecked(
+            self._settings.value("control/exit_on_batch_completion") == "True"
+        )
+        self.actExitOnBatchCompletion.changed.connect(
+            self.update_exit_on_batch_completion_setting)
+
         # regime management
         self.runningBatch = False
         self._current_regime_index = None
@@ -233,6 +242,14 @@ class SimulationGui(QMainWindow):
         self.actSimulateAll.triggered.connect(self.start_regime_execution)
 
         # actions for animation control
+        self.actAutoPlay = QAction(self)
+        self.actAutoPlay.setText("&Autoplay Simulation")
+        self.actAutoPlay.setCheckable(True)
+        self.actAutoPlay.setChecked(
+            self._settings.value("control/autoplay_animation") == "True"
+        )
+        self.actAutoPlay.changed.connect(self.update_autoplay_setting)
+
         self.actPlayPause = QAction(self)
         self.actPlayPause.setText("Play Animation")
         self.actPlayPause.setIcon(QIcon(get_resource("play.png")))
@@ -352,19 +369,11 @@ class SimulationGui(QMainWindow):
         fileMenu.addAction("&Quit", self.close)
 
         editMenu = self.menuBar().addMenu("&Edit")
-        editMenu.addAction(self.actDeleteRegimes
-                           )
+        editMenu.addAction(self.actDeleteRegimes)
 
         simMenu = self.menuBar().addMenu("&Simulation")
         simMenu.addAction(self.actSimulateCurrent)
         simMenu.addAction(self.actSimulateAll)
-        self.actExitOnBatchCompletion = QAction("&Exit On Batch Completion")
-        self.actExitOnBatchCompletion.setCheckable(True)
-        self.actExitOnBatchCompletion.setChecked(
-            self._settings.value("control/exit_on_batch_completion") == "True"
-        )
-        self.actExitOnBatchCompletion.changed.connect(
-            self.update_exit_on_batch_completion_setting)
         simMenu.addAction(self.actExitOnBatchCompletion)
         simMenu.addAction(self.actPostprocessing)
 
@@ -379,12 +388,6 @@ class SimulationGui(QMainWindow):
         animMenu.addAction("&Reset Playback Speed",
                            self.reset_playback_speed,
                            QKeySequence(Qt.CTRL + Qt.Key_0))
-        self.actAutoPlay = QAction("&Autoplay Simulation")
-        self.actAutoPlay.setCheckable(True)
-        self.actAutoPlay.setChecked(
-            self._settings.value("control/autoplay_animation") == "True"
-        )
-        self.actAutoPlay.changed.connect(self.update_autoplay_setting)
         animMenu.addAction(self.actAutoPlay)
         animMenu.addAction(self.actResetCamera)
 
