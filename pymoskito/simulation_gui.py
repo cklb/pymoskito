@@ -181,7 +181,7 @@ class SimulationGui(QMainWindow):
         self._regimes = []
         self.regime_file_name = ""
 
-        self.actDeleteRegimes = QAction(parent=self.regime_list)
+        self.actDeleteRegimes = QAction(self.regime_list)
         self.actDeleteRegimes.setText("&Delete Selected Regimes")
         # TODO shortcut works always, not only with focus on the regime list
         # self.actDeleteRegimes.setShortcutContext(Qt.WindowShortcut)

@@ -16,6 +16,7 @@ from PyQt5.QtWidgets import QApplication
 from pymoskito.processing_gui import PostProcessor
 
 
+@unittest.skip  # TODO find a way to generate test data
 class TestProcessing(unittest.TestCase):
 
     def setUp(self):

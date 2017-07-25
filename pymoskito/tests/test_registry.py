@@ -27,7 +27,7 @@ from pymoskito.generic_processing_modules import *
 from pymoskito.examples.ballbeam.model import BallBeamModel
 from pymoskito.examples.ballbeam.control import FController
 from pymoskito.examples.ballbeam.postprocessing import EvalA1
-from pymoskito.examples.ballbeam.visualization import BallBeamVisualizer
+from pymoskito.examples.ballbeam.visualization import MplBallBeamVisualizer
 
 
 class TestRegisterCalls(unittest.TestCase):
@@ -56,9 +56,9 @@ class TestRegisterCalls(unittest.TestCase):
 
         # register a visualizer in wrong module category
         self.assertRaises(TypeError, register_simulation_module,
-                          Model, BallBeamVisualizer)
+                          Model, MplBallBeamVisualizer)
         self.assertRaises(TypeError, register_processing_module,
-                          PostProcessingModule, BallBeamVisualizer)
+                          PostProcessingModule, MplBallBeamVisualizer)
 
         # check registration
         # (the modules are registered if the import was successful)
@@ -69,11 +69,11 @@ class TestRegisterCalls(unittest.TestCase):
         self.assertTrue(
             (EvalA1, "EvalA1")
             in get_registered_processing_modules(PostProcessingModule))
+        # self.assertTrue(
+        #     (XYMetaProcessor, "XYMetaProcessor")
+        #     in get_registered_processing_modules(MetaProcessingModule))
         self.assertTrue(
-            (XYMetaProcessor, "XYMetaProcessor")
-            in get_registered_processing_modules(MetaProcessingModule))
-        self.assertTrue(
-            (BallBeamVisualizer, "BallBeamVisualizer")
+            (MplBallBeamVisualizer, "MplBallBeamVisualizer")
             in get_registered_visualizers())
 
         # test for automatic duplicate recognition
@@ -83,10 +83,10 @@ class TestRegisterCalls(unittest.TestCase):
                           Controller, FController)
         self.assertRaises(ValueError, register_processing_module,
                           PostProcessingModule, EvalA1)
-        self.assertRaises(ValueError, register_processing_module,
-                          MetaProcessingModule, XYMetaProcessor)
+        # self.assertRaises(ValueError, register_processing_module,
+        #                   MetaProcessingModule, XYMetaProcessor)
         self.assertRaises(ValueError, register_visualizer,
-                          BallBeamVisualizer)
+                          MplBallBeamVisualizer)
 
 
 class TestGetterCalls(unittest.TestCase):
@@ -147,9 +147,9 @@ class TestGetterCalls(unittest.TestCase):
                         in get_registered_modules(ProcessingModule,
                                                   PostProcessingModule))
         # meta-processors
-        self.assertTrue((XYMetaProcessor, "XYMetaProcessor")
-                        in get_registered_modules(ProcessingModule,
-                                                  MetaProcessingModule))
+        # self.assertTrue((XYMetaProcessor, "XYMetaProcessor")
+        #                 in get_registered_modules(ProcessingModule,
+        #                                           MetaProcessingModule))
 
     def test_special_call(self):
         """
@@ -176,9 +176,9 @@ class TestGetterCalls(unittest.TestCase):
         self.assertTrue(
             (PlotAll, "PlotAll")
             in get_registered_processing_modules(PostProcessingModule))
-        self.assertTrue(
-            (XYMetaProcessor, "XYMetaProcessor")
-            in get_registered_processing_modules(MetaProcessingModule))
+        # self.assertTrue(
+        #     (XYMetaProcessor, "XYMetaProcessor")
+        #     in get_registered_processing_modules(MetaProcessingModule))
 
     def test_string_call(self):
         """
@@ -198,7 +198,7 @@ class TestGetterCalls(unittest.TestCase):
         """
         test interface for visualizer
         """
-        self.assertTrue((BallBeamVisualizer, "BallBeamVisualizer")
+        self.assertTrue((MplBallBeamVisualizer, "MplBallBeamVisualizer")
                         in get_registered_visualizers())
 
     def tearDown(self):
