@@ -93,6 +93,7 @@ class ComboDelegate(QItemDelegate):
     def setModelData(self, editor, model, index):
         model.setData(index, editor.currentText())
 
+    @pyqtSlot(int)
     def current_index_changed(self, idx):
         self.commitData.emit(self.sender())
 
@@ -131,8 +132,7 @@ class SimulatorInteractor(QObject):
     """
 
     # signals
-    simulation_finished = pyqtSignal(dict)
-    simulation_failed = pyqtSignal(dict)
+    simulation_finalized = pyqtSignal(str, dict)
     simulationProgressChanged = pyqtSignal(int)
 
     def __init__(self, parent=None):
@@ -143,7 +143,7 @@ class SimulatorInteractor(QObject):
         self.end_time = 0
         self._setup_model()
 
-        self._sim = None
+        self._worker = None
         self._sim_settings = None
         self.simThread = QThread()
         self._sim_modules = {}
@@ -404,6 +404,7 @@ class SimulatorInteractor(QObject):
 
         return True
 
+    @pyqtSlot()
     def run_simulation(self):
         """
         entry hook for time step simulation
@@ -419,18 +420,18 @@ class SimulatorInteractor(QObject):
             return
 
         # setup simulator
-        self._sim = Simulator(self._sim_settings, self._sim_modules)
-        self._sim.moveToThread(self.simThread)
+        self._worker = Simulator(self._sim_settings, self._sim_modules)
+        self._worker.moveToThread(self.simThread)
 
         # setup simulation modules
         for _module in self._sim_modules.values():
             _module.moveToThread(self.simThread)
 
         # setup signal connections
-        self.simThread.started.connect(self._sim.run)
-        self._sim.state_changed.connect(self.simulation_state_changed)
-        self._sim.finished.connect(self.simThread.quit)
-        self.simThread.finished.connect(self.sim_finished)
+        self.simThread.started.connect(self._worker.run)
+        self._worker.state_changed.connect(self.simulation_state_changed)
+        self._worker.work_done.connect(self.simThread.quit)
+        self.simThread.finished.connect(self.thread_finished)
         self.end_time = self._sim_settings.end_time
 
         # run
@@ -478,13 +479,13 @@ class SimulatorInteractor(QObject):
                 "simulation_state_changed(): ERROR Unknown state {0}".format(
                     state_change.type))
 
+    @pyqtSlot()
     def stop_simulation(self):
-        self._sim.stop()
+        self._worker.stop()
 
     def _sim_aftercare(self):
         # reset internal states
         self._sim_settings = None
-        self._sim_data = None
 
         # delete modules
         for module in self._sim_modules.keys():
@@ -493,13 +494,14 @@ class SimulatorInteractor(QObject):
 
         # don't disconnect signals in debug-mode
         if sys.gettrace() is None:
-            self.simThread.started.disconnect(self._sim.run)
-            self._sim.state_changed.disconnect(self.simulation_state_changed)
-            self._sim.finished.disconnect(self.simThread.quit)
-            self.simThread.finished.disconnect(self.sim_finished)
+            self.simThread.started.disconnect(self._worker.run)
+            self._worker.state_changed.disconnect(self.simulation_state_changed)
+            self._worker.work_done.disconnect(self.simThread.quit)
+            self.simThread.finished.disconnect(self.thread_finished)
 
         # delete simulator
-        del self._sim
+        self._logger.info("deleting simulator")
+        del self._worker
 
     def _postprocessing(self):
         """
@@ -529,17 +531,19 @@ class SimulatorInteractor(QObject):
     def _get_result_by_name(self, name):
         return self._sim_data["results"][name]
 
-    def sim_finished(self):
+    @pyqtSlot()
+    def thread_finished(self):
         """
-        slot to be called when the simulator reached the target time or aborted
-        simulation due to an error
+        Slot to be called when the simulation thread is finished.
         """
+        assert self._sim_state == "finished" or self._sim_state == "aborted"
+
+        # Add some error prone calculations (TODO move this somewhere else)
         self._postprocessing()
 
-        assert self._sim_state == "finished" or self._sim_state == "aborted"
-        if self._sim_state == "finished":
-            self.simulation_finished.emit(self._sim_data)
-        else:
-            self.simulation_failed.emit(self._sim_data)
-
+        # Rest internal states and disconnect signal connections
         self._sim_aftercare()
+
+        # Signal gui that new data is available
+        self.simulation_finalized.emit(self._sim_state, self._sim_data)
+

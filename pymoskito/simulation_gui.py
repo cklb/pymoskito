@@ -13,11 +13,12 @@ import webbrowser
 import numpy as np
 
 # Qt
-from PyQt5.QtCore import (Qt, QTimer, pyqtSignal, QSize, QSettings,
-                          QCoreApplication)
+from PyQt5.QtCore import (pyqtSignal, pyqtSlot, Qt, QTimer, QSize, QSettings,
+                          QCoreApplication, QModelIndex)
 from PyQt5.QtGui import QIcon, QKeySequence
 from PyQt5.QtWidgets import (QWidget, QAction, QSlider, QMainWindow,
-                             QTreeView, QListWidget, QAbstractItemView,
+                             QTreeView, QListWidget, QListWidgetItem,
+                             QAbstractItemView,
                              QToolBar, QStatusBar, QProgressBar, QLabel,
                              QShortcut, QLineEdit, QFileDialog, QInputDialog,
                              QAbstractSlider, QFrame, QVBoxLayout, QMenu,
@@ -59,7 +60,6 @@ class SimulationGui(QMainWindow):
     class for the graphical user interface
     """
     # TODO enable closing plot docks by right-clicking their name
-    # TODO add ability to stop regime execution
 
     runSimulation = pyqtSignal()
     stopSimulation = pyqtSignal()
@@ -76,9 +76,12 @@ class SimulationGui(QMainWindow):
         QCoreApplication.setApplicationVersion(
             pkg_resources.require("PyMoskito")[0].version)
         QCoreApplication.setApplicationName(globals()["__package__"])
+
+        # load settings
         self._settings = QSettings()
         self._read_settings()
 
+        # initialize logger
         self._logger = logging.getLogger(self.__class__.__name__)
 
         # Create Simulation Backend
@@ -87,8 +90,7 @@ class SimulationGui(QMainWindow):
         self.sim = SimulatorInteractor(self)
         self.runSimulation.connect(self.sim.run_simulation)
         self.stopSimulation.connect(self.sim.stop_simulation)
-        self.sim.simulation_finished.connect(self.simulation_finished)
-        self.sim.simulation_failed.connect(self.simulation_failed)
+        self.sim.simulation_finalized.connect(self.new_simulation_data)
         self.currentDataset = None
 
         # sim setup viewer
@@ -356,6 +358,14 @@ class SimulationGui(QMainWindow):
         simMenu = self.menuBar().addMenu("&Simulation")
         simMenu.addAction(self.actSimulateCurrent)
         simMenu.addAction(self.actSimulateAll)
+        self.actExitOnBatchCompletion = QAction("&Exit On Batch Completion")
+        self.actExitOnBatchCompletion.setCheckable(True)
+        self.actExitOnBatchCompletion.setChecked(
+            self._settings.value("control/exit_on_batch_completion") == "True"
+        )
+        self.actExitOnBatchCompletion.changed.connect(
+            self.update_exit_on_batch_completion_setting)
+        simMenu.addAction(self.actExitOnBatchCompletion)
         simMenu.addAction(self.actPostprocessing)
 
         animMenu = self.menuBar().addMenu("&Animation")
@@ -369,6 +379,13 @@ class SimulationGui(QMainWindow):
         animMenu.addAction("&Reset Playback Speed",
                            self.reset_playback_speed,
                            QKeySequence(Qt.CTRL + Qt.Key_0))
+        self.actAutoPlay = QAction("&Autoplay Simulation")
+        self.actAutoPlay.setCheckable(True)
+        self.actAutoPlay.setChecked(
+            self._settings.value("control/autoplay_animation") == "True"
+        )
+        self.actAutoPlay.changed.connect(self.update_autoplay_setting)
+        animMenu.addAction(self.actAutoPlay)
         animMenu.addAction(self.actResetCamera)
 
         helpMenu = self.menuBar().addMenu("&Help")
@@ -404,16 +421,32 @@ class SimulationGui(QMainWindow):
                                                  "results",
                                                  "metaprocessing"))
 
-        # restore application state
+        if not self._settings.contains("control/autoplay_animation"):
+            self._settings.setValue("control/autoplay_animation", "False")
+
+        if not self._settings.contains("control/exit_on_batch_completion"):
+            self._settings.setValue("control/exit_on_batch_completion", "False")
 
     def _write_settings(self):
         """ Store the application state. """
         pass
 
+    @pyqtSlot()
+    def update_autoplay_setting(self):
+        self._settings.setValue("control/autoplay_animation",
+                                str(self.actAutoPlay.isChecked()))
+
+    @pyqtSlot()
+    def update_exit_on_batch_completion_setting(self, state=None):
+        if state is None:
+            state = self.actExitOnBatchCompletion.isChecked()
+        self._settings.setValue("control/exit_on_batch_completion", str(state))
+
     def set_visualizer(self, vis):
         self.visualizer = vis
         self.vtkWidget.Initialize()
 
+    @pyqtSlot()
     def play_animation(self):
         """
         play the animation
@@ -430,6 +463,7 @@ class SimulationGui(QMainWindow):
         self.actPlayPause.triggered.connect(self.pause_animation)
         self.playbackTimer.start(self.playbackTimeout)
 
+    @pyqtSlot()
     def pause_animation(self):
         """
         pause the animation
@@ -443,7 +477,7 @@ class SimulationGui(QMainWindow):
 
     def stop_animation(self):
         """
-        pause the animation
+        Stop the animation if it is running and reset the playback time.
         """
         self._logger.debug("Stopping Playback")
         if self.actPlayPause.text() == "Pause Animation":
@@ -456,6 +490,7 @@ class SimulationGui(QMainWindow):
 
         self.timeSlider.setValue(0)
 
+    @pyqtSlot()
     def start_simulation(self):
         """
         start the simulation and disable start button
@@ -483,6 +518,7 @@ class SimulationGui(QMainWindow):
         self.statusBar().addWidget(self.guiProgress)
         self.runSimulation.emit()
 
+    @pyqtSlot()
     def stop_simulation(self):
         self.stopSimulation.emit()
 
@@ -611,6 +647,7 @@ class SimulationGui(QMainWindow):
                 del self._regimes[self.regime_list.row(item)]
                 self.regime_list.takeItem(self.regime_list.row(item))
 
+    @pyqtSlot(QListWidgetItem)
     def regime_dclicked(self, item):
         """
         Apply the selected regime to the current target.
@@ -659,6 +696,7 @@ class SimulationGui(QMainWindow):
 
         return self.sim.set_regime(self._regimes[index])
 
+    @pyqtSlot()
     def start_regime_execution(self):
         """
         Simulate all regimes in the regime list.
@@ -674,10 +712,10 @@ class SimulationGui(QMainWindow):
 
     def run_next_regime(self):
         """
-        executes the next regime
+        Execute the next regime in the regime batch.
         """
         # are we finished?
-        if self._current_regime_index == len(self._regimes)-1:
+        if self._current_regime_index == len(self._regimes) - 1:
             self.finishedRegimeBatch.emit(True)
             return
 
@@ -688,6 +726,7 @@ class SimulationGui(QMainWindow):
 
         self.start_simulation()
 
+    @pyqtSlot()
     def stop_regime_excecution(self):
         """ Stop the batch process.
         """
@@ -708,17 +747,26 @@ class SimulationGui(QMainWindow):
             self.statusLabel.setText("All regimes have been simulated")
             self._logger.info("All Regimes have been simulated")
         else:
-            self._logger.info("Batch simulation has been aborted")
+            self._logger.error("Batch simulation has been aborted")
 
-    def simulation_finished(self, data):
-        """
-        main hook to be called by the simulation interface if integration is finished
-        integration finished, enable play button and update plots
+        if self._settings.value("control/exit_on_batch_completion") == "True":
+            self._logger.info("Shutting down SimulationGUI")
+            self.close()
 
-        :param data: dict with simulation data
+    @pyqtSlot(str, dict, name="new_simulation_data")
+    def new_simulation_data(self, status, data):
         """
-        self._logger.info("Simulation Finished")
-        self.statusLabel.setText("Simulation Finished.")
+        Slot to be called when the simulation interface has completed the
+        current jpb and new data is available.
+
+        Args:
+            status (str): Status of the simulation, either
+                - `finished` : Simulation has been finished successfully or
+                - `failed` : Simulation has failed.
+            data (dict): Dictionary, holding the simulation data.
+        """
+        self._logger.info("Simulation {}".format(status))
+        self.statusLabel.setText("Simulation {}".format(status))
 
         self.actSimulateCurrent.setText("&Simulate Current Regime")
         self.actSimulateCurrent.setIcon(QIcon(get_resource("simulate.png")))
@@ -734,7 +782,7 @@ class SimulationGui(QMainWindow):
         self.sim.simulationProgressChanged.disconnect(self.guiProgress.setValue)
         self.statusBar().removeWidget(self.guiProgress)
 
-        self.timeSlider.triggerAction(QAbstractSlider.SliderToMinimum)
+        self.stop_animation()
 
         self.currentDataset = data
         if data:
@@ -742,8 +790,8 @@ class SimulationGui(QMainWindow):
             self._update_data_list()
             self._update_plots()
 
-        self.stop_animation()
-        # self.playAnimation()
+        if self._settings.value("control/autoplay_animation") == "True":
+            self.actPlayPause.trigger()
 
         if self.runningBatch:
             regime_name = self._regimes[self._current_regime_index]["Name"]
@@ -754,15 +802,6 @@ class SimulationGui(QMainWindow):
             self.regimeFinished.emit()
         else:
             self.actSimulateAll.setDisabled(False)
-
-    def simulation_failed(self, data):
-        """
-        integration failed, enable play button and update plots
-
-        :param data:
-        """
-        self._logger.info("Simulation Failed")
-        self.simulation_finished(data)
 
     def _read_results(self):
         self.currentStepSize = 1.0/self.currentDataset["simulation"][
@@ -800,6 +839,7 @@ class SimulationGui(QMainWindow):
         maximum = self.speedControl.maximum()
         self.playbackGain = 10**(3.0 * (val - maximum / 2) / maximum)
 
+    @pyqtSlot()
     def increment_playback_time(self):
         """
         go one time step forward in playback
@@ -1046,6 +1086,7 @@ class SimulationGui(QMainWindow):
                     y_data = self._get_data_by_name(dock.name())
                     widget.getPlotItem().plot(x=x_data, y=y_data)
 
+    @pyqtSlot(QModelIndex)
     def target_view_changed(self, index):
         self.targetView.resizeColumnToContents(0)
 

@@ -62,7 +62,7 @@ class Simulator(QObject):
         Calculated values will be stored every 1 / measure rate seconds.
     """
 
-    finished = pyqtSignal()
+    work_done = pyqtSignal()
     state_changed = pyqtSignal(SimulationStateChange)
 
     # list of modules that have to appear in every run
@@ -283,9 +283,9 @@ class Simulator(QObject):
         self.state_changed.emit(SimulationStateChange(type=end_state,
                                                       data=self.output,
                                                       info="Success"))
-        self.finished.emit()
+        self.work_done.emit()
 
-    @pyqtSlot(bool)
+    @pyqtSlot(name="stop")
     def stop(self):
         """ Stop the simulation. """
         self._run = False
