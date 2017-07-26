@@ -176,5 +176,52 @@ class StateSpaceModelTest(unittest.TestCase):
         self.assertEqual(m.initial_state, x0)
 
 
+class ModelInputLimiterTestCase(unittest.TestCase):
+
+    def setUp(self):
+        self.scalar_limits = [-5, 5]
+        self.scalar_sample = np.linspace(-10, 10)
+        self.vectorial_limits = [[-2, 2], [0, None], [-10, None]]
+        self.vectorial_sample = np.hstack([self.scalar_sample,
+                                          self.scalar_sample * 10,
+                                          self.scalar_sample - 10])
+
+    def test_init(self):
+        st = pm.ModelInputLimiter.public_settings
+
+        # check default args
+        l = pm.ModelInputLimiter(st)
+        self.assertEqual(l._settings["input_signal"], "ModelMixer")
+        self.assertEqual(l._settings["Limits"], [None, None])
+
+        # check attributes
+        self.assertEqual(l.limits, [None, None])
+
+    def test_scalar_case(self):
+        # no limits
+        l = pm.ModelInputLimiter(pm.ModelInputLimiter.public_settings)
+        out = np.array([l.calc_output(dict(ModelMixer=val))
+                        for val in self.scalar_sample])
+        np.array_equal(out, self.scalar_sample)
+
+        l = pm.ModelInputLimiter(dict(Limits=self.scalar_limits))
+        np.testing.assert_array_equal(l.limits,
+                                      np.atleast_2d(self.scalar_limits))
+        out = np.array([l.calc_output(dict(ModelMixer=val))
+                        for val in self.scalar_sample])
+        self.assertTrue(out.min() >= self.scalar_limits[0])
+        self.assertTrue(out.max() <= self.scalar_limits[1])
+
+    def test_vectorial_case(self):
+        l = pm.ModelInputLimiter(dict(Limits=self.vectorial_limits))
+        np.testing.assert_array_equal(l.limits,
+                                      np.atleast_2d(self.vectorial_limits))
+
+        out = np.array([l.calc_output(dict(ModelMixer=vals))
+                        for vals in self.vectorial_sample])
+        for idx, col in enumerate(out.T):
+            self.assertTrue(col.min() >= self.vectorial_limits[idx][0])
+            self.assertTrue(col.max() <= self.vectorial_limits[idx][1])
+
 if __name__ == '__main__':
     unittest.main()

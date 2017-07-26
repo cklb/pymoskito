@@ -79,8 +79,8 @@ class Simulator(QObject):
         "ObserverMixer",
         "Observer",
         "Trajectory",
-        "Controller",
         "Feedforward",
+        "Controller",
         "ModelMixer",
         "Limiter",
     ]

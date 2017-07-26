@@ -390,24 +390,28 @@ class ObserverMixer(SignalMixer):
 
 class Limiter(SimulationModule):
     """
-    Base class for all limiter variants
+    Base class for all limiter variants.
     """
 
     def __init__(self, settings):
-        assert "input signal" in settings
+        assert "input_signal" in settings
         settings.update({"tick divider": 1})
         SimulationModule.__init__(self, settings)
 
     def calc_output(self, input_dict):
-        return self._limit(input_dict[self._settings["input signal"]])
+        return self._limit(input_dict[self._settings["input_signal"]])
 
-    def _limit(self, value):
+    def _limit(self, values):
         """
-        placeholder for limiter calculation
-        :param value: values to limit
-        :return: limiter output
+        Placeholder for actual limit calculations.
+
+        Args:
+            values(array-like): Values to limit.
+
+        Returns:
+            Array: Limited output.
         """
-        return value
+        return values
 
 
 class Sensor(SimulationModule):

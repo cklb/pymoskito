@@ -37,6 +37,8 @@ class LinearStateSpaceModel(Model):
         ("config file", None),
         ("initial state", None),
         ("initial output", None),
+        ("operational input offset", None),
+        ("operational output offset", None),
     ])
 
     def __init__(self, settings):
@@ -67,13 +69,32 @@ class LinearStateSpaceModel(Model):
             settings["initial state"] = \
                 np.linalg.pinv(self.ss.C) @ settings["initial output"]
 
+        if settings["operational input offset"] is None:
+            settings["operational input offset"] = np.zeros(
+                (self.ss.B.shape[1], ))
+        if len(settings["operational input offset"]) != self.ss.B.shape[1]:
+            raise ValueError("Provided input offset does not match input "
+                             "dimensions.")
+
+        if settings["operational output offset"] is None:
+            settings["operational output offset"] = np.zeros(
+                (self.ss.C.shape[0], ))
+        if len(settings["operational output offset"]) != self.ss.C.shape[0]:
+            raise ValueError("Length of provided output offset does not match "
+                             "output dimensions ({} != {}).".format(
+                len(settings["operational output offset"]),
+                self.ss.C.shape[0]
+            ))
+
         super().__init__(settings)
 
     def state_function(self, t, x, args):
-        return np.squeeze(self.ss.A @ x + self.ss.B @ args[0])
+        return np.squeeze(self.ss.A @ x + self.ss.B @ (
+            args[0] - self.settings["operational input offset"]))
 
     def calc_output(self, input_vector):
-        return self.ss.C @ input_vector
+        return (self.ss.C @ input_vector
+                + self.settings["operational output offset"])
 
 
 class ODEInt(Solver):
@@ -360,28 +381,34 @@ class AdditiveMixer(SignalMixer):
 
 class ModelInputLimiter(Limiter):
     """
-    ModelInputLimiter that limits the model input value
+    ModelInputLimiter that limits the model input values.
+
+    Settings:
+        `Limits`: (List of) list(s) that hold (min, max) pairs for the
+        corresponding input.
     """
 
-    public_settings = OrderedDict([("Limits", [0, 240])])
+    public_settings = OrderedDict([("Limits", [None, None])])
 
     def __init__(self, settings):
-        settings.update([("input signal", "ModelMixer")])
+        settings.update([("input_signal", "ModelMixer")])
         Limiter.__init__(self, settings)
+        self.limits = np.atleast_2d(settings["Limits"])
 
-    def _limit(self, value):
-        if value < self._settings["Limits"][0]:
-            # convert number into numpy (1,1) array
-            value = np.array(self._settings["Limits"][0])
-        if value > self._settings["Limits"][1]:
-            # convert number into numpy (1,1) array
-            value = np.array(self._settings["Limits"][1])
+    def _limit(self, values):
+        val = np.atleast_1d(values)
+        out = np.zeros_like(val)
+        for idx, v in enumerate(val):
+            lim = self.limits[idx]
+            if lim[0] is None and lim[1] is None:
+                out[idx] = v
+            else:
+                out[idx] = np.clip(v, *lim)
 
-        # TODO restructure to something like this:
-        # value = np.max(value, self._settings["Limits"][0])
-        # value = np.min(value, self._settings["Limits"][1])
-
-        return value
+        if len(values.shape) == 1:
+            return out.flatten()
+        else:
+            return out
 
 
 class DeadTimeSensor(Sensor):
