@@ -195,7 +195,8 @@ class ModelInputLimiterTestCase(unittest.TestCase):
         self.assertEqual(l._settings["Limits"], [None, None])
 
         # check attributes
-        self.assertEqual(l.limits, [None, None])
+        np.testing.assert_array_equal(l.limits,
+                                      np.atleast_2d([None, None]))
 
     def test_scalar_case(self):
         # no limits
