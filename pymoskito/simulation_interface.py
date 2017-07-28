@@ -72,9 +72,13 @@ class PropertyItem(QStandardItem):
         self.emitDataChanged()
 
     def data(self, role=None, *args, **kwargs):
-        if role == Qt.DisplayRole or role == Qt.EditRole:
+        if role == Qt.DisplayRole:
             return self._text
-
+        elif role == Qt.EditRole:
+            if isinstance(self._data, str):
+                return "'" + self._text + "'"
+            else:
+                return self._text
         elif role == self.RawDataRole:
             return self._data
 
