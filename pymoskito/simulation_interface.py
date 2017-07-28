@@ -137,7 +137,9 @@ class ComboDelegate(QItemDelegate):
         editor.blockSignals(False)
 
     def setModelData(self, editor, model, index):
-        model.setData(index, editor.currentText())
+        model.setData(index,
+                      editor.currentText(),
+                      role=PropertyItem.RawDataRole)
 
     @pyqtSlot(int)
     def current_index_changed(self, idx):
