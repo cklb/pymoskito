@@ -79,6 +79,7 @@ class TestGUI(unittest.TestCase):
 
     def test_sim_gui(self):
         g = pm.SimulationGui()
+        g.close()
 
     # TODO more ...
 

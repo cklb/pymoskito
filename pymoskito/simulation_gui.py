@@ -20,7 +20,7 @@ from PyQt5.QtWidgets import (QWidget, QAction, QSlider, QMainWindow,
                              QTreeView, QListWidget, QListWidgetItem,
                              QAbstractItemView,
                              QToolBar, QStatusBar, QProgressBar, QLabel,
-                             QShortcut, QLineEdit, QFileDialog, QInputDialog,
+                             QPlainTextEdit, QLineEdit, QFileDialog, QInputDialog,
                              QAbstractSlider, QFrame, QVBoxLayout, QMenu,
                              QMessageBox, QDialogButtonBox)
 
@@ -49,7 +49,7 @@ from .visualization import MplVisualizer, VtkVisualizer
 from .registry import get_registered_visualizers
 from .simulation_interface import SimulatorInteractor, SimulatorView
 from .processing_gui import PostProcessor
-from .tools import get_resource, PostFilter, QPlainTextEditLogger
+from .tools import get_resource, PlainTextLogger
 
 
 __all__ = ["SimulationGui"]
@@ -348,19 +348,14 @@ class SimulationGui(QMainWindow):
         self.postprocessor = None
 
         # log dock
-        self.logBox = QPlainTextEditLogger(self)
-        self.logBox.setLevel(logging.INFO)
+        self.logBox = QPlainTextEdit(self)
+        self.logBox.setReadOnly(True)
+        self.logDock.addWidget(self.logBox)
 
-        formatter = logging.Formatter(
-            fmt="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-            datefmt="%H:%M:%S")
-        self.logBox.setFormatter(formatter)
-
-        self.log_filter = PostFilter(invert=True)
-        self.logBox.addFilter(self.log_filter)
-
-        logging.getLogger().addHandler(self.logBox)
-        self.logDock.addWidget(self.logBox.widget)
+        # init logger for logging box
+        self.textLogger = PlainTextLogger(logging.INFO)
+        self.textLogger.set_target_cb(self.logBox.appendPlainText)
+        logging.getLogger().addHandler(self.textLogger)
 
         # menu bar
         fileMenu = self.menuBar().addMenu("&File")
@@ -1130,3 +1125,8 @@ class SimulationGui(QMainWindow):
 
     def show_online_docs(self):
         webbrowser.open("https://pymoskito.readthedocs.org")
+
+    def closeEvent(self, QCloseEvent):
+        self._logger.info("Close Event received, shutting down.")
+        logging.getLogger().removeHandler(self.textLogger)
+        super().closeEvent(QCloseEvent)

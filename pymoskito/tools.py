@@ -164,21 +164,33 @@ def rotation_matrix_xyz(axis, angle, angle_dim):
     return rotation_matrix
 
 
-class QPlainTextEditLogger(logging.Handler):
+class PlainTextLogger(logging.Handler):
     """
-    Logging handler that displays log-data in the gui
+    Logging handler hat formats log data for line display
     """
-    def __init__(self, parent):
-        logging.Handler.__init__(self)
-        self.widget = QPlainTextEdit(parent)
-        self.widget.setReadOnly(True)
-        # self.widget.setStyleSheet(
-        #     """ QLineEdit { background-color: grey} """
-        # )
+    def __init__(self, level=None):
+        logging.Handler.__init__(self, level)
+        self.name = "PlainTextLogger"
+
+        formatter = logging.Formatter(
+            fmt="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+            datefmt="%H:%M:%S")
+        self.setFormatter(formatter)
+
+        log_filter = PostFilter(invert=True)
+        self.addFilter(log_filter)
+
+        self.cb = None
+
+    def set_target_cb(self, cb):
+        self.cb = cb
 
     def emit(self, record):
         msg = self.format(record)
-        self.widget.appendPlainText(msg)
+        if self.cb:
+            self.cb(msg)
+        else:
+            logging.getLogger().error("No callback configured!")
 
 
 class PostFilter(logging.Filter):
