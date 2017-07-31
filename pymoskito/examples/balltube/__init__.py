@@ -1,4 +1,4 @@
 from . import model
-from . import control
+from . import controller
 from . import feedforward
 from . import visualization

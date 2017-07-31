@@ -142,17 +142,28 @@ class TestModel(unittest.TestCase):
         self.assertEqual(m.initial_state, [1, 2, 3, 4])
 
 
-class StateSpaceModelTest(unittest.TestCase):
+class StateSpaceModulesTest(unittest.TestCase):
 
     def setUp(self):
         # generate StateSpace model
         self.sys = sig.TransferFunction([5], [10, 1]).to_ss()
 
-        if not os.path.exists("test_sys.dat"):
-            with open("test_sys.dat", "wb") as f:
-                pickle.dump(self.sys, f)
+        # generate extra data
+        self.ss_inputs = [1]
+        self.ss_outputs = [4]
 
-    def test_init(self):
+        data = dict(system=self.sys,
+                    op_inputs=self.ss_inputs,
+                    op_outputs=self.ss_outputs
+                    )
+
+        self.config_path = os.sep.join([os.path.dirname(__file__),
+                                       "test_sys.pkl"])
+        if not os.path.exists(self.config_path):
+            with open(self.config_path, "wb") as f:
+                pickle.dump(data, f)
+
+    def test_model_init(self):
         settings = pm.LinearStateSpaceModel.public_settings
 
         # path should point to a real file
@@ -161,7 +172,7 @@ class StateSpaceModelTest(unittest.TestCase):
             pm.LinearStateSpaceModel(settings)
 
         # neither initial state nor initial output present
-        settings["config file"] = "test_sys.dat"
+        settings["config file"] = self.config_path
         with self.assertRaises(ValueError):
             pm.LinearStateSpaceModel(settings)
 
@@ -171,9 +182,26 @@ class StateSpaceModelTest(unittest.TestCase):
         self.assertEqual(m.initial_state, x0)
 
         settings["initial state"] = None
-        settings["initial output"] = self.sys.C @ x0
+        settings["initial output"] = self.sys.C @ x0 + self.ss_outputs
         m = pm.LinearStateSpaceModel(settings)
         self.assertEqual(m.initial_state, x0)
+
+    def test_controller_init(self):
+        """ Same thing goes for the statespace controller
+        """
+        settings = pm.LinearStateSpaceController.public_settings
+
+        # path should point to a real file
+        settings["config file"] = "A: [2, 3], B = 1"
+        with self.assertRaises(AssertionError):
+            pm.LinearStateSpaceController(settings)
+
+        # check if poles are placed as intended
+        settings["config file"] = self.config_path
+        settings["poles"] = [-5]
+        c = pm.LinearStateSpaceController(settings)
+        eig_vals = np.linalg.eigvals(c.ss.A - c.ss.B @ c.feedback)
+        np.testing.assert_array_almost_equal(settings["poles"], eig_vals)
 
 
 class ModelInputLimiterTestCase(unittest.TestCase):

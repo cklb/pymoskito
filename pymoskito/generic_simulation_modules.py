@@ -6,16 +6,18 @@ from scipy.integrate import ode
 from scipy.signal import StateSpace
 import sympy as sp
 import numpy as np
+import control
 
 from .simulation_modules import (
     Model, Solver, SolverException, Trajectory, TrajectoryException, Controller,
     Feedforward, SignalMixer, ModelMixer, ObserverMixer, Limiter, Sensor,
     Disturbance
 )
+from .controltools import calc_prefilter, place_siso
 
 __all__ = ["LinearStateSpaceModel", "ODEInt", "ModelInputLimiter",
            "Setpoint", "HarmonicTrajectory", "SmoothTransition",
-           "PIDController",
+           "PIDController", "LinearStateSpaceController",
            "DeadTimeSensor", "GaussianNoise",
            "AdditiveMixer"]
 
@@ -28,17 +30,23 @@ class LinearStateSpaceModel(Model):
     """
     The state space model of a linear system.
 
-    The parameters of this model can be provided in form of a file (see
-    `config file` in :py:attribute`public_settings`) in which either
-    a tuple of (`num`, `den`) pairs or a pickled StateSpace object is expected.
-    (See :py:class:`StateSpace` for details.)
+    The parameters of this model can be provided in form of a file whose path is
+    given by the setting ``config file`` .
+    This path should point to a pickled dict holding the following keys:
+
+        `system`:
+            An Instance of :py:class:`scipy.signal.StateSpace` (from scipy)
+            representing the system,
+        `op_inputs`:
+            An array-like object holding the operational point's inputs,
+        `op_outputs`:
+            An array-like object holding the operational point's outputs.
+
     """
     public_settings = OrderedDict([
         ("config file", None),
         ("initial state", None),
         ("initial output", None),
-        ("operational input offset", None),
-        ("operational output offset", None),
     ])
 
     def __init__(self, settings):
@@ -48,12 +56,10 @@ class LinearStateSpaceModel(Model):
         with open(file, "rb") as f:
             data = pickle.load(f)
 
-        if isinstance(data, StateSpace):
-            self.ss = data
-        elif isinstance(data, list):
-            self.ss = StateSpace(*data)
-        else:
-            raise ValueError("Content of configuration file not understood.")
+        if "system" not in data:
+            raise ValueError("Config file lacks mandatory settings.")
+
+        self.ss = data["system"]
 
         # no feedthrough possible
         np.testing.assert_array_equal(self.ss.D, np.zeros_like(self.ss.D))
@@ -61,40 +67,39 @@ class LinearStateSpaceModel(Model):
         settings["state_count"] = self.ss.B.shape[0]
         settings["input_count"] = self.ss.B.shape[1]
 
-        if settings["initial state"] is None:
-            if settings["initial output"] is None:
-                raise ValueError("Either 'initial state' or 'initial output' "
-                                 "have to be provided!")
-
-            settings["initial state"] = \
-                np.linalg.pinv(self.ss.C) @ settings["initial output"]
-
-        if settings["operational input offset"] is None:
-            settings["operational input offset"] = np.zeros(
-                (self.ss.B.shape[1], ))
-        if len(settings["operational input offset"]) != self.ss.B.shape[1]:
+        self.input_offset = data.get("op_inputs",
+                                     np.zeros((self.ss.B.shape[1], )))
+        if len(self.input_offset) != self.ss.B.shape[1]:
             raise ValueError("Provided input offset does not match input "
                              "dimensions.")
 
-        if settings["operational output offset"] is None:
-            settings["operational output offset"] = np.zeros(
-                (self.ss.C.shape[0], ))
-        if len(settings["operational output offset"]) != self.ss.C.shape[0]:
+        self.output_offset = data.get("op_outputs",
+                                      np.zeros((self.ss.C.shape[0], )))
+        if len(self.output_offset) != self.ss.C.shape[0]:
             raise ValueError("Length of provided output offset does not match "
                              "output dimensions ({} != {}).".format(
-                len(settings["operational output offset"]),
+                len(self.output_offset),
                 self.ss.C.shape[0]
             ))
+
+        if settings["initial state"] is None:
+            if settings["initial output"] is None:
+                raise ValueError("Neither 'initial state' nor 'initial output'"
+                                 "given.")
+
+            settings["initial state"] = \
+                np.linalg.pinv(self.ss.C) @ (settings["initial output"]
+                                             - self.output_offset)
 
         super().__init__(settings)
 
     def state_function(self, t, x, args):
         return np.squeeze(self.ss.A @ x + self.ss.B @ (
-            args[0] - self.settings["operational input offset"]))
+            args[0] - self.input_offset))
 
     def calc_output(self, input_vector):
         return (self.ss.C @ input_vector
-                + self.settings["operational output offset"])
+                + self.output_offset)
 
 
 class ODEInt(Solver):
@@ -291,6 +296,97 @@ class Setpoint(Trajectory):
             yd[idx, 0] = val
 
         return yd
+
+
+class LinearStateSpaceController(Controller):
+    """
+    A controller that is based on a state space model of a linear system.
+
+    This controller needs a linear statespace model, just as the
+    :py:class:`LinearStateSpaceModel` . The file provided in ``config file``
+    should therefore contain a dict holding the entries: ``model``,
+    ``op_inputs`` and ``op_outputs`` .
+
+    If poles is given (differing from `None` ) the state-feedback will be
+    computed using :py:func:`pymoskito.place_siso` .
+    Furthermore an appropriate prefilter is calculated, which establishes
+    stationary attainment of the desired output values.
+
+    Note:
+        If a SIMO or MIMO system is given, the control_ package as well as the
+        slycot_ package are needed the perform the pole placement.
+
+
+    .. _control: https://github.com/python-control/python-control
+    .. _slycot: https://github.com/python-control/Slycot
+    """
+
+    public_settings = OrderedDict([
+        ("input source", "system_state"),
+        ("config file", None),
+        ("poles", None),
+    ])
+
+    def __init__(self, settings):
+        file = settings["config file"]
+        assert os.path.isfile(file)
+
+        with open(file, "rb") as f:
+            data = pickle.load(f)
+
+        if "system" not in data:
+            raise ValueError("Config file lacks mandatory settings.")
+
+        self.ss = data["system"]
+
+        self.input_offset = data.get("op_inputs", None)
+        self.output_offset = data.get("op_outputs", None)
+
+        if self.input_offset is None:
+            self.input_offset = np.zeros((self.ss.B.shape[1], ))
+        if len(self.input_offset) != self.ss.B.shape[1]:
+            raise ValueError("Provided input offset does not match input "
+                             "dimensions.")
+
+        if self.output_offset is None:
+            self.output_offset = np.zeros((self.ss.C.shape[0], ))
+        if len(self.output_offset) != self.ss.C.shape[0]:
+            raise ValueError("Length of provided output offset does not match "
+                             "output dimensions ({} != {}).".format(
+                len(self.output_offset),
+                self.ss.C.shape[0]
+            ))
+
+        # add specific "private" settings
+        settings.update(input_order=0)
+        settings.update(output_dim=self.ss.C.shape[0])
+        settings.update(input_type=settings["input source"])
+        super().__init__(settings)
+
+        if settings.get("poles", None) is None:
+            # pretty useless but hey why not.
+            self.feedback = np.zeros((self.ss.B.shape[1], self.ss.A.shape[0]))
+        else:
+            if self.ss.B.shape[1] == 1:
+                # save the control/slycot dependency
+                self.feedback = place_siso(self.ss.A,
+                                           self.ss.B,
+                                           self.settings["poles"])
+            else:
+                import control
+                self.feedback = control.place(self.ss.A,
+                                              self.ss.B,
+                                              self.settings["poles"])
+
+        self.prefilter = calc_prefilter(self.ss.A, self.ss.B, self.ss.C,
+                                        self.feedback)
+
+    def _control(self, time, trajectory_values=None, feedforward_values=None,
+                 input_values=None, **kwargs):
+        return (-self.feedback @ input_values
+                + self.prefilter @ (trajectory_values[:, 0] -
+                                    self.output_offset)
+                + self.input_offset)
 
 
 class PIDController(Controller):

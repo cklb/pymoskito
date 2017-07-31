@@ -1,5 +1,5 @@
 from . import model
 from . import feedforward
-from . import control
+from . import controller
 from . import observer
 from . import visualization

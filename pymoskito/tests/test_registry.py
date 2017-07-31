@@ -25,7 +25,7 @@ from pymoskito.processing_core import (ProcessingModule, PostProcessingModule,
 from pymoskito.generic_processing_modules import *
 
 from pymoskito.examples.ballbeam.model import BallBeamModel
-from pymoskito.examples.ballbeam.control import FController
+from pymoskito.examples.ballbeam.controller import FController
 from pymoskito.examples.ballbeam.postprocessing import EvalA1
 from pymoskito.examples.ballbeam.visualization import MplBallBeamVisualizer
 

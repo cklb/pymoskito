@@ -18,6 +18,7 @@ access any PyInduct module, or use this contents:
 
     simulation_gui
     simulation_modules
+    generic_simulation_modules
     simulation_core
     processing_gui
     processing_core
