@@ -11,7 +11,7 @@ from collections import OrderedDict
 import numpy as np
 
 from PyQt5.QtCore import (
-    Qt, QObject, pyqtSignal, pyqtSlot, QModelIndex, QSize, QThread
+    Qt, QObject, pyqtSignal, pyqtSlot, QModelIndex, QSize, QThread, QVariant,
 )
 from PyQt5.QtGui import QStandardItemModel, QStandardItem
 from PyQt5.QtWidgets import QItemDelegate, QComboBox, QTreeView
@@ -34,6 +34,56 @@ class SimulatorModel(QStandardItemModel):
             return Qt.ItemIsEditable | Qt.ItemIsEnabled
         else:
             return Qt.ItemIsEnabled
+
+
+class PropertyItem(QStandardItem):
+
+    RawDataRole = Qt.UserRole + 1
+
+    def __init__(self, data):
+        QStandardItem.__init__(self)
+        self._logger = logging.getLogger(self.__class__.__name__)
+        self._data = data
+        self._text = self._get_text(data)
+
+    def type(self):
+        return QStandardItem.UserType
+
+    def _get_text(self, data):
+        return str(data)
+
+    def setData(self, Any, role=None, *args, **kwargs):
+        if role == Qt.EditRole:
+            try:
+                self._data = ast.literal_eval(Any)
+            except (SyntaxError, ValueError) as e:
+                print(e)
+                self._logger.exception(e)
+                return
+            self._text = str(self._data)
+
+        elif role == self.RawDataRole:
+            self._data = Any
+            self._text = self._get_text(Any)
+
+        else:
+            raise NotImplementedError
+
+        self.emitDataChanged()
+
+    def data(self, role=None, *args, **kwargs):
+        if role == Qt.DisplayRole:
+            return self._text
+        elif role == Qt.EditRole:
+            if isinstance(self._data, str):
+                return "'" + self._text + "'"
+            else:
+                return self._text
+        elif role == self.RawDataRole:
+            return self._data
+
+        else:
+            return super().data(role, *args, **kwargs)
 
 
 class PropertyDelegate(QItemDelegate):
@@ -91,7 +141,9 @@ class ComboDelegate(QItemDelegate):
         editor.blockSignals(False)
 
     def setModelData(self, editor, model, index):
-        model.setData(index, editor.currentText())
+        model.setData(index,
+                      editor.currentText(),
+                      role=PropertyItem.RawDataRole)
 
     @pyqtSlot(int)
     def current_index_changed(self, idx):
@@ -169,15 +221,15 @@ class SimulatorInteractor(QObject):
         # build initialisation list
         setup_list = Simulator.module_list
 
-        # TODO remove the next lines
-        # complete sorting therefore add observer, sensor and so on again
+        # push init of Trajectory module to the end because it needs the
+        # derivative orders of controller and feedforward
         setup_list.append("Trajectory")
         setup_list.remove("Trajectory")
 
         # insert main items
-        for module in setup_list:
-            name = QStandardItem(module)
-            value = QStandardItem('None')
+        for sim_module in setup_list:
+            name = PropertyItem(sim_module)
+            value = PropertyItem(None)
             new_items = [name, value]
             self.target_model.appendRow(new_items)
 
@@ -188,23 +240,25 @@ class SimulatorInteractor(QObject):
 
     def _add_settings(self, index):
         parent = index.model().itemFromIndex(index)
-        module_name = str(parent.text())
-        sub_module_name = str(index.model().item(index.row(), 1).text())
-        if sub_module_name == 'None':
+        child = index.model().item(index.row(), 1)
+        module_name = parent.data(role=PropertyItem.RawDataRole)
+        sub_module_name = child.data(role=PropertyItem.RawDataRole)
+        if sub_module_name is None:
             return
 
         settings = self._read_settings(module_name, sub_module_name)
         for key, val in settings.items():
-            setting_name = QStandardItem(key)
-            setting_value = QStandardItem(str(val))
+            setting_name = PropertyItem(key)
+            setting_value = PropertyItem(val)
             parent.appendRow([setting_name, setting_value])
 
     def _read_settings(self, module_name, sub_module_name):
         """
-        reads the public settings from a simulation module
+        Read the public settings from a simulation module
         """
         module_cls = getattr(simulation_modules, module_name)
-        sub_module_cls = get_simulation_module_class_by_name(module_cls, sub_module_name)
+        sub_module_cls = get_simulation_module_class_by_name(module_cls,
+                                                             sub_module_name)
         return sub_module_cls.public_settings
 
     def item_changed(self, item):
@@ -228,36 +282,10 @@ class SimulatorInteractor(QObject):
         # TODO this is not the good way --> switch to pyqtgraphs implementation
         settings = OrderedDict()
         for row in range(item.rowCount()):
-            property_name = str(item.child(row, 0).text())
-            property_val_str = str(item.child(row, 1).text())
-
-            # delete unnecessary quotes
-            property_val_str = property_val_str.replace("'", "")
-
-            if "np." in property_val_str or "numpy." in property_val_str:
-                self._logger.error(
-                    ("Property '{}' of module '{}' contains a numpy expression. "
-                     + "Only standard python types are supported for entries.").format(property_name, module_name))
-            elif "pi" in property_val_str or "Pi" in property_val_str or "PI" in property_val_str:
-                property_val = np.pi
-            elif (("exp(" in property_val_str and property_val_str[-1] == ")")
-                  or ("e^(" in property_val_str and property_val_str[-1] is ")")):
-                tmp = property_val_str[:-1]  # cut off last bracket
-                tmp = tmp.replace("exp(", "")
-                tmp = tmp.replace("e^(", "")
-                try:
-                    property_val = ast.literal_eval(tmp)
-                    property_val = np.exp(property_val)
-                except ValueError:
-                    property_val = property_val_str
-            else:
-                try:
-                    property_val = ast.literal_eval(property_val_str)
-                except ValueError:
-                    # property_val_str can not be parsed by literal_eval
-                    # save string in dict
-                    property_val = property_val_str
-
+            property_name = self.target_model.data(item.child(row, 0).index(),
+                                                   role=PropertyItem.RawDataRole)
+            property_val = self.target_model.data(item.child(row, 1).index(),
+                                                  role=PropertyItem.RawDataRole)
             settings.update({property_name: property_val})
 
         return settings
@@ -289,6 +317,8 @@ class SimulatorInteractor(QObject):
 
             # get public settings for module
             settings = self._get_settings(self.target_model, module_item.text())
+            if settings is None:
+                return False
             settings.update({"type": sub_module_name})
             settings.update({"modules": self._sim_modules})
 
@@ -379,7 +409,9 @@ class SimulatorInteractor(QObject):
             module_index = module_item.index()
             module_type_index = module_index.model().index(module_index.row(),
                                                            1)
-            module_index.model().setData(module_type_index, module_type)
+            module_index.model().setData(module_type_index,
+                                         module_type,
+                                         role=PropertyItem.RawDataRole)
             # due to signal connections, default settings are loaded
             # automatically in the back
 
@@ -390,9 +422,13 @@ class SimulatorInteractor(QObject):
 
                 found = False
                 for row in range(module_item.rowCount()):
-                    if str(module_item.child(row, 0).text()) == key:
+                    if self.target_model.data(
+                            module_item.child(row, 0).index()) == key:
+                    # if str(module_item.child(row, 0).text()) == key:
                         value_idx = self.target_model.index(row, 1, module_index)
-                        self.target_model.setData(value_idx, str(val))
+                        self.target_model.setData(value_idx,
+                                                  val,
+                                                  role=PropertyItem.RawDataRole)
                         found = True
                         break
 
@@ -416,7 +452,7 @@ class SimulatorInteractor(QObject):
         suc = self._setup_sim_modules(self.target_model)
         if not suc:
             self._logger.error("Simulation Setup failed. Check Configuration.")
-            self.simulation_failed.emit(None)
+            self.simulation_finalized.emit("aborted", dict())
             return
 
         # setup simulator

@@ -12,7 +12,7 @@ from PyQt5.QtWidgets import (QWidget, QAction, QMainWindow, QListWidget,
 
 from . import registry as pm
 from .processing_core import PostProcessingModule, MetaProcessingModule
-from .tools import get_resource, QPlainTextEditLogger, PostFilter
+from .tools import get_resource, PlainTextLogger, PostFilter
 
 __all__ = ["PostProcessor"]
 
@@ -131,7 +131,7 @@ class PostProcessor(QMainWindow):
         self.delShortPost.activated.connect(self.remove_post_result_item)
 
         # log window
-        self.log_list = QPlainTextEditLogger(self)
+        self.log_list = PlainTextLogger(self)
         self.log_list.setLevel(logging.INFO)
         formatter = logging.Formatter(
             fmt="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
