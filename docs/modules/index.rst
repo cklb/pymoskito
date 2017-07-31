@@ -21,6 +21,7 @@ access any PyInduct module, or use this contents:
     simulation_core
     processing_gui
     processing_core
+    controltools
     tools
 
 

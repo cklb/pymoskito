@@ -2,9 +2,9 @@
 This file contains some functions that are quite helpful when designing feedback
 laws.
 This collection is not complete and does not aim to be so. 
-For a more sophisticated collection have a look at the `symbtools` package 
-(https://github.com/TUD-RST/symbtools), which is not used in this package to
-keep a small footprint.
+For a more sophisticated collection have a look at the `symbtools`
+(https://github.com/TUD-RST/symbtools) or `control` package which are not used
+in this package to keep a small footprint.
 """
 import warnings
 
@@ -226,16 +226,16 @@ def calc_prefilter(a_mat, b_mat, c_mat, k_mat=None):
 
     .. math::
         \\boldsymbol{V} = - \\left[\\boldsymbol{C} \\left(\\boldsymbol{A} -
-        \\boldsymbol{B}\\boldsymbol{K}\\right)^{-1}\\right]^{-1}
+        \\boldsymbol{B}\\boldsymbol{K}\\right)^{-1}\\boldsymbol{B}\\right]^{-1}
 
     Args:
         a_mat (:obj:`numpy.ndarray`): system matrix
-        b_mat (:obj:`numpy.ndarray`): manipulating matrix
+        b_mat (:obj:`numpy.ndarray`): input matrix
         c_mat (:obj:`numpy.ndarray`): output matrix
         k_mat (:obj:`numpy.ndarray`): control matrix
 
     Return:
-        :obj:`numpy.ndarray`: prefilter matrix
+        :obj:`numpy.ndarray`: Prefilter matrix
     """
     a_mat = np.atleast_2d(a_mat)
     b_mat = np.atleast_2d(b_mat)
@@ -257,9 +257,9 @@ def calc_prefilter(a_mat, b_mat, c_mat, k_mat=None):
     if k_mat[0, 0] is not None:
         try:
             # prefilter: V = -[C(A-BK)^-1*B]^-1
-            v = -mat_inv(c_mat @ (mat_inv(a_mat - b_mat * k_mat) @ b_mat))
+            v = -mat_inv(c_mat @ (mat_inv(a_mat - b_mat @ k_mat) @ b_mat))
         except np.linalg.linalg.LinAlgError:
-            raise ValueError("Can not calculate V, due to singular matrix")
+            raise ValueError("Cannot calculate V due to singularity.")
     else:
         v = np.array([[1]])
 
