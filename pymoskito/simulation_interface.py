@@ -57,7 +57,7 @@ class PropertyItem(QStandardItem):
             try:
                 self._data = ast.literal_eval(Any)
             except (SyntaxError, ValueError) as e:
-                print(e)
+                # print(e)
                 self._logger.exception(e)
                 return
             self._text = str(self._data)
@@ -141,9 +141,10 @@ class ComboDelegate(QItemDelegate):
         editor.blockSignals(False)
 
     def setModelData(self, editor, model, index):
-        model.setData(index,
-                      editor.currentText(),
-                      role=PropertyItem.RawDataRole)
+        model.setData(
+            index,
+            editor.currentText() if editor.currentText() != "None" else None,
+            role=PropertyItem.RawDataRole)
 
     @pyqtSlot(int)
     def current_index_changed(self, idx):
@@ -154,7 +155,7 @@ class ComboDelegate(QItemDelegate):
         """
         extract all possible choices for the selected SimulationModule
         """
-        entries = ['None']
+        entries = ["None"]
         idx = index.model().index(index.row(), 0, QModelIndex())
         sim_module_name = str(index.model().itemFromIndex(idx).text())
         sim_module = getattr(simulation_modules, sim_module_name)
