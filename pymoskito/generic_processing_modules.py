@@ -244,7 +244,6 @@ class StepResponse(PostProcessingModule):
         :param output:
         :param data:
         """
-        # TODO check those they produce crap -> see output
         l1_norm_itae = self.calc_l1_norm_itae(*self.get_metric_values(data))
         l1_norm_abs = self.calc_l1_norm_abs(*self.get_metric_values(data))
 
@@ -256,16 +255,16 @@ class StepResponse(PostProcessingModule):
     @staticmethod
     def get_metric_values(data):
         """
-        helper function to extract data needed to calculate metrics for this
-        postprocessor.
+        Extract needed data to calculate metrics for this postprocessor.
 
         Note:
             Overload to fit custom model.
 
         Params:
             data: simulation data
+
         Returns:
-             (tuple): (is_values, desired_values, step_width)
+             (tuple): (measured_values, desired_values, step_width)
         """
         metric_values = (data["results"]["Model"],
                          data["results"]["Trajectory"],

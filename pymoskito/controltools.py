@@ -8,6 +8,8 @@ in this package to keep a small footprint.
 """
 
 import warnings
+import sympy as sp
+import numpy as np
 from numpy.linalg import inv as mat_inv
 
 __all__ = ["char_coefficients", "place_siso", "calc_prefilter",

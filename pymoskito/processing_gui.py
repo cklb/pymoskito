@@ -5,10 +5,11 @@ import os
 
 from PyQt5.QtCore import Qt, pyqtSignal, QSize, QSettings
 from PyQt5.QtGui import QIcon, QKeySequence
-from PyQt5.QtWidgets import (QWidget, QAction, QMainWindow, QListWidget,
-                             QListWidgetItem,
-                             QToolBar, QStatusBar, QLabel, QShortcut,
-                             QFileDialog, QGridLayout, QSizePolicy)
+from PyQt5.QtWidgets import (
+    QWidget, QAction, QMainWindow, QListWidget, QListWidgetItem, QToolBar,
+    QStatusBar, QLabel, QShortcut, QFileDialog, QGridLayout, QSizePolicy,
+    QPlainTextEdit
+)
 
 from . import registry as pm
 from .processing_core import PostProcessingModule, MetaProcessingModule
@@ -130,16 +131,14 @@ class PostProcessor(QMainWindow):
                                       self.post_result_list)
         self.delShortPost.activated.connect(self.remove_post_result_item)
 
-        # log window
-        self.log_list = PlainTextLogger(self)
-        self.log_list.setLevel(logging.INFO)
-        formatter = logging.Formatter(
-            fmt="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-            datefmt="%H:%M:%S")
-        self.filter = PostFilter()
-        self.log_list.addFilter(self.filter)
-        self.log_list.setFormatter(formatter)
-        logging.getLogger().addHandler(self.log_list)
+        # log dock
+        self.logBox = QPlainTextEdit(self)
+        self.logBox.setReadOnly(True)
+
+        # init logger for logging box
+        self.textLogger = PlainTextLogger(logging.INFO)
+        self.textLogger.set_target_cb(self.logBox.appendPlainText)
+        logging.getLogger().addHandler(self.textLogger)
 
         self.grid.addWidget(QLabel("Result Files:"), 0, 0)
         self.grid.addWidget(self.sim_result_list, 1, 0)
@@ -154,7 +153,7 @@ class PostProcessor(QMainWindow):
         self.grid.addWidget(self.metaMethodList, 3, 2)
         self.grid.addWidget(QLabel("Figures:"), 4, 2)
         self.grid.addWidget(self.meta_figure_list, 5, 2)
-        self.grid.addWidget(self.log_list.widget, 6, 0, 1, 3)
+        self.grid.addWidget(self.logBox, 6, 0, 1, 3)
 
         self.mainFrame.setLayout(self.grid)
         self.setCentralWidget(self.mainFrame)

@@ -4,8 +4,9 @@ from abc import ABCMeta, abstractmethod
 from pickle import dump
 
 import numpy as np
+from scipy.integrate import simps
 from PyQt5.QtCore import QObject, QSettings
-from PyQt5.QtWidgets import QMessageBox, QFileDialog, QApplication
+from PyQt5.QtWidgets import QMessageBox, QFileDialog
 pyqtWrapperType = type(QObject)
 
 from .tools import get_sub_value
@@ -234,42 +235,47 @@ class PostProcessingModule(ProcessingModule):
                          (values[1] - np.min(values[1])) / 4)
 
     @staticmethod
-    def calc_l1_norm_itae(is_values, desired_values, step_width):
+    def calc_l1_norm_itae(meas_values, desired_values, step_width):
         """
-        this function calculates the L1 Norm with an additional time weighting between is and desired value
-        unit: m*s**2
-        :param step_width:
-        :param desired_values:
-        :param is_values:
+        Calculate the L1-Norm of the ITAE (Integral of Time-multiplied Absolute
+        value of Error).
+
+        Args:
+            step_width (float): Time difference between measurements.
+            desired_values (array-like): Desired values.
+            meas_values (array-like): Measured values.
         """
-        l1norm_itae = 0
-        for idx, val in enumerate(is_values):
-            # version 1
-            l1norm_itae += abs(desired_values[idx] - val) * step_width * (idx * step_width)
+        def e_func(_t):
+            _idx = np.floor_divide(_t, step_width).astype(int)
+            e = t * np.abs(desired_values[_idx, ..., 0]
+                           - meas_values[_idx, ..., 0])
+            return e
 
-            # version 2 see also wikipedia
-            # L1NormITAE += abs(yd[idx] - val - (y[-1] - yd[-1]))*dt*(idx*dt)
-
+        t = np.array([x * step_width for x in range(len(desired_values))])
+        err = e_func(t)
+        l1norm_itae = simps(err, t)
         return l1norm_itae
 
     @staticmethod
-    def calc_l1_norm_abs(is_values, desired_values, step_width):
+    def calc_l1_norm_abs(meas_values, desired_values, step_width):
         """
-        this function calculates the L1 Norm (absolute criterion) of a given dataset
-        unit: m*s
-        :param step_width:
-        :param desired_values:
-        :param is_values:
+        Calculate the L1-Norm of the absolute error.
+
+        Args:
+            step_width (float): Time difference between measurements.
+            desired_values (array-like): Desired values.
+            meas_values (array-like): Measured values.
         """
-        l1_norm_abs = 0
-        for idx, val in enumerate(is_values):
-            # version 1
-            l1_norm_abs += abs(desired_values[idx] - val) * step_width
+        def e_func(_t):
+            _idx = np.floor_divide(_t, step_width).astype(int)
+            e = np.abs(desired_values[_idx, ..., 0]
+                       - meas_values[_idx, ..., 0])
+            return e
 
-            # version 2 see also wikipedia
-            # L1NormAbs += abs(yd[idx] - val - (y[-1] - yd[-1]))*dt
-
-        return l1_norm_abs
+        t = np.array([x * step_width for x in range(len(desired_values))])
+        err = e_func(t)
+        l1norm_abs = simps(err, t)
+        return l1norm_abs
 
 
 class MetaProcessingModule(ProcessingModule):
@@ -304,13 +310,13 @@ class MetaProcessingModule(ProcessingModule):
         if line_type != "bar":
             self.axes.legend(loc=0, fontsize='small', prop={'size': 8})
 
-    def plot_family(self, family, x_path, y_path, typ, x_index=-1, y_index=-1):
+    def plot_family(self, family, x_path, y_path, mode, x_index=-1, y_index=-1):
         """
         plots y over x for all members that can be found in family sources
         :param family:
         :param x_path:
         :param y_path:
-        :param typ:
+        :param mode:
         :param x_index:
         :param y_index:
         :return:
@@ -334,9 +340,9 @@ class MetaProcessingModule(ProcessingModule):
                 if val not in x_all:
                     x_all.append(val)
 
-            if typ == 'line':
+            if mode == 'line':
                 self.axes.plot(x_list, y_list, 'o-', label=member)  # , color=st.color_cycle[member])
-            elif typ == 'bar':
+            elif mode == 'bar':
                 # remove all None from yList
                 x_list[:] = [x for x, y in zip(x_list, y_list) if y]
                 y_list[:] = [i for i in y_list if i]
@@ -347,7 +353,7 @@ class MetaProcessingModule(ProcessingModule):
                 self.axes.bar(x_list, y_list, width, label=member)  # , color=st.color_cycle[controller])
                 counter += 1
 
-        if (typ == 'bar') and (len(x_all) > 1):
+        if (mode == 'bar') and (len(x_all) > 1):
             # remove all None from x_all
             x_all.sort()
             x_all[:] = [i for i in x_all if i]
@@ -360,7 +366,7 @@ class MetaProcessingModule(ProcessingModule):
 
             x_all_label = [r'$' + str(i) + '$' for i in x_all]
             counter -= 1
-            if typ == 'bar':
+            if mode == 'bar':
                 x_all[:] = [i + width * counter for i in x_all]
 
             self.axes.set_xticks(x_all)

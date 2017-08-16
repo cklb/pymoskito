@@ -168,7 +168,7 @@ class PlainTextLogger(logging.Handler):
     """
     Logging handler hat formats log data for line display
     """
-    def __init__(self, level=None):
+    def __init__(self, level=logging.NOTSET):
         logging.Handler.__init__(self, level)
         self.name = "PlainTextLogger"
 
