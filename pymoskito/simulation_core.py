@@ -54,12 +54,12 @@ class SimulationSettings(object):
 
 class Simulator(QObject):
     """ 
-        This Class executes the time-step integration.
-        
-        It forms the Core of the physical simulation and interacts with the GUI
-        vie the :py:class:''SimulationInterface`
-        
-        Calculated values will be stored every 1 / measure rate seconds.
+    This Class executes the time-step integration.
+
+    It forms the Core of the physical simulation and interacts with the GUI
+    via the :py:class:''SimulationInterface`
+
+    Calculated values will be stored every 1 / measure rate seconds.
     """
 
     work_done = pyqtSignal()
@@ -120,8 +120,6 @@ class Simulator(QObject):
     def _init_settings(self):
         """ Initialize module settings that depend on other modules.
         """
-        # TODO special init for other blocks
-
         # calculate the correct step width for every block
         for mod_name, obj in self._simulation_modules.items():
             obj.step_width = obj.tick_divider * self._settings.step_size

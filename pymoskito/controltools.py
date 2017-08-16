@@ -6,10 +6,8 @@ For a more sophisticated collection have a look at the `symbtools`
 (https://github.com/TUD-RST/symbtools) or `control` package which are not used
 in this package to keep a small footprint.
 """
-import warnings
 
-import numpy as np
-import sympy as sp
+import warnings
 from numpy.linalg import inv as mat_inv
 
 __all__ = ["char_coefficients", "place_siso", "calc_prefilter",
@@ -177,17 +175,18 @@ def place_siso(a_mat, b_mat, poles):
     """
     Place poles for single input single output (SISO) systems:
 
-        - pol placement for state feedback: A and B
-        - pol placement for observer: transpose A and C, you will get a 
-        transposed gain matrix
+        - pol placement for state feedback: :math:`A` and :math:`b`
+        - pol placement for observer: :math:`A^T` and :math:`c`
 
     Args:
-        a_mat (:obj:`numpy.ndarray`): System matrix.
-        b_mat (:obj:`numpy.ndarray`): Input matrix.
+        a_mat (:obj:`numpy.ndarray`): System matrix.:math:`A`
+        b_mat (:obj:`numpy.ndarray`): Input vector :math:`b` or Output matrix
+            :math:`c` .
         poles (list or :obj:`numpy.ndarray`): Desired poles.
 
     Return:
-        :obj:`numpy.ndarray`: Feedback matrix.
+        :obj:`numpy.ndarray`: Feedback vector or :math:`k` or observer gain
+        :math:`l^T` .
     """
 
     # check consistency

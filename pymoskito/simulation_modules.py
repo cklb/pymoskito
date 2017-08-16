@@ -22,21 +22,25 @@ class SimulationException(Exception):
 
 class SimulationModule(QObject, metaclass=SimulationModuleMeta):
     """
-    Smallest Unit in Simulation Process.
+    Smallest unit pof the simulation framework.
 
     This class provides necessary functions like output calculation and holds
     all settings that can be accessed by the user.
-    öis 'settings' all available settings have to be added
-    to this dict and have to be known a priori.
+    The :py:attr:`public_settings` are read by the
+    :py:class:`.SimulationInterface` and the rendered by the GUI. All entries
+    stated in this dictionary will be available as changeable settings for the
+    module.
+    On initialization, a possibly modified (in terms of its values) version of
+    this dict will be passed back to this class and is thenceforward available
+    via the :py:attr:`settings` property.
 
+    The most important method is :py:func:`calc_output` which is called by the
+    :py:class:`Simulator` to retrieve this modules output.
 
     Args:
         settings(OrderedDict): Settings for this simulation module.
             These entries will be shown in the properties view and can be
             changed by the user. The important entries for this base class are:
-
-            `tick divider`:
-                todo
 
             `output info`:
                 Dict holding an information dictionaries with keys `Name` and
@@ -44,8 +48,12 @@ class SimulationModule(QObject, metaclass=SimulationModuleMeta):
                 If available, these information are used to display reasonable names
                 in the result view and to display the corresponding units for the
                 result plots.
-                Attention: Do NOT use '.' in the name field.
 
+    Warn:
+        Do NOT use '.' in the `output_info` name field.
+
+    TODO:
+        Get rif of the point restriction
     """
 
     def __init__(self, settings):
@@ -101,18 +109,17 @@ class Model(SimulationModule):
         settings (dict): Dictionary holding the config options for this module.
             It must contain the following keys:
 
-            `input_count`
+            :input_count:
                 The length of the input vector for this model.
 
-            `state_count`
+            :state_count:
                 The length of the state vector for this model.
 
-            `initial state`
+            :initial state:
                 The initial state vector for this model.
     """
 
     def __init__(self, settings):
-        settings.update({"tick divider": 1})
         SimulationModule.__init__(self, settings)
         assert ("state_count" in settings)
         assert ("input_count" in settings)
@@ -182,7 +189,6 @@ class Solver(SimulationModule):
     """
 
     def __init__(self, settings):
-        settings.update({"tick divider": 1})
         assert isinstance(settings["modules"]["Model"], Model)
         self._model = settings["modules"]["Model"]
         self.next_output = None
@@ -225,14 +231,21 @@ class ControllerException(SimulationException):
 
 class Controller(SimulationModule):
     """
-    Base class for all user defined controllers.
-    Use input_order to define order of required derivatives from the trajectory 
-    generator.
-    Via 'input_type' you may choose one of the sources listed in 'input_sources'
-    for the feedback calculation.
+    Base class for controllers.
+
+    Args:
+        settings (dict): Dictionary holding the config options for this module.
+            It must contain the following keys:
+
+            :input_order:
+                The order of required derivatives from the trajectory generator.
+
+            :input_type:
+                Source for the feedback calculation and one of the following:
+                `system_state` , `system_output` , `Observer` or `Sensor` .
     """
     # selectable input sources for controller
-    input_sources = ["system_state", "system_output", "Observer"]
+    input_sources = ["system_state", "system_output", "Observer", "Sensor"]
 
     def __init__(self, settings):
         SimulationModule.__init__(self, settings)
@@ -259,20 +272,28 @@ class Controller(SimulationModule):
     def _control(self, time, trajectory_values=None, feedforward_values=None,
                  input_values=None, **kwargs):
         """
-        placeholder for control law, for more sophisticated implementations
-        overload calc_output.
-        :param trajectory_values: desired values from trajectory generator
-        :param feedforward_values: output of feed-forward block
-        :param input_values: the input values selected by the *input_type* setting
-        :param **kwargs: placeholder for custom parameters
-        :return: control output
+        Placeholder for control law calculations.
+
+        For more sophisticated implementations overload :py:func:`calc_output` .
+
+        Args:
+            time (float): Current time.
+            trajectory_values (array-like): Desired values from the trajectory
+                generator.
+            feedforward_values (array-like): Output of feedforward block.
+            input_values (array-like): The input values selected by
+                ``input_type`` .
+            **kwargs: Placeholder for custom parameters.
+
+        Returns:
+            Array: Control output.
         """
         pass
 
 
 class Observer(SimulationModule):
     """
-    Base class for all user defined observers.
+    Base class for observers
     """
 
     def __init__(self, settings):
@@ -295,9 +316,9 @@ class Observer(SimulationModule):
         Placeholder for observer law.
         
         Args:
-            time: Current time
-            system_input: Current system input
-            system_output: Current system output
+            time: Current time.
+            system_input: Current system input.
+            system_output: Current system output.
 
         Returns:
             Estimated system state
@@ -307,7 +328,7 @@ class Observer(SimulationModule):
 
 class Feedforward(SimulationModule):
     """
-    Base class for all user defined feedforward
+    Base class for all feedforward implementations
     """
 
     def __init__(self, settings):
@@ -325,9 +346,17 @@ class Feedforward(SimulationModule):
     @abstractmethod
     def _feedforward(self, time, trajectory_values):
         """
-        placeholder for feedforward calculation
-        :param trajectory_values: values from trajectory with there derivation
-        :return: feedforward output
+        Placeholder for feedforward calculations.
+
+        Args:
+            time (float): Current time.
+            trajectory_values(array-like): Desired values from the trajectory
+                generator.
+
+        Returns:
+            Array: Feedforward output. This signal can be added to the
+            controllers output via the :py:class:`.ModelMixer` and is also
+            directly passed to the controller.
         """
         pass
 
@@ -342,7 +371,6 @@ class Trajectory(SimulationModule):
     """
 
     def __init__(self, settings):
-        settings.update({"tick divider": 1})
         control_order = 0
         feedforward_order = 0
         if "Controller" in settings["modules"].keys():
@@ -358,6 +386,17 @@ class Trajectory(SimulationModule):
 
     @abstractmethod
     def _desired_values(self, t):
+        """
+        Placeholder for calculations of desired values.
+
+        Args:
+            t (float): Time.
+
+        Returns:
+            Array: Trajectory output. This should always be a two-dimensional
+            array holding the components in to 0th and their derivatives in
+            the 1th axis.
+        """
         pass
 
 
@@ -371,7 +410,6 @@ class SignalMixer(SimulationModule):
     """
     def __init__(self, settings):
         assert "input signals" in settings
-        settings.update({"tick divider": 1})
         SimulationModule.__init__(self, settings)
 
     def calc_output(self, input_vector):
@@ -390,12 +428,11 @@ class ObserverMixer(SignalMixer):
 
 class Limiter(SimulationModule):
     """
-    Base class for all limiter variants.
+    Base class for all limiter variants
     """
 
     def __init__(self, settings):
         assert "input_signal" in settings
-        settings.update({"tick divider": 1})
         SimulationModule.__init__(self, settings)
 
     def calc_output(self, input_dict):
@@ -421,7 +458,6 @@ class Sensor(SimulationModule):
 
     def __init__(self, settings):
         assert "input signal" in settings
-        settings.update({"tick divider": 1})
         SimulationModule.__init__(self, settings)
 
     def calc_output(self, input_dict):
@@ -429,11 +465,16 @@ class Sensor(SimulationModule):
 
     def _measure(self, value):
         """
-        placeholder for measurement calculation
-        in here you can select which state elements you want to measure or add measurement delays
+        Placeholder for measurement calculations.
 
-        :param value: values to measure
-        :return: sensor output
+        One may reorder or remove state elements or introduce measurement delays
+        here.
+
+        Args:
+            value (array-like float): Values from the source selected by the
+                ``input_signal`` property.
+        Returns:
+            array-like float: 'Measured' values.
         """
         return value
 
@@ -445,7 +486,6 @@ class Disturbance(SimulationModule):
 
     def __init__(self, settings):
         assert "input signal" in settings
-        settings.update({"tick divider": 1})
         SimulationModule.__init__(self, settings)
 
     def calc_output(self, input_dict):
@@ -454,10 +494,15 @@ class Disturbance(SimulationModule):
     @abstractmethod
     def _disturb(self, value):
         """
-        placeholder for disturbance calculation
-        if the noise shall be dependent on the measured signal use it to create noise
+        Placeholder for disturbance calculations.
 
-        :param value: values that was measured
-        :return: noise that is to be added to the signal later on
+        If the noise is to be dependent on the measured signal use its `value`
+        to create the noise.
+
+        Args:
+            value (array-like float): Values from the source selected by the
+                ``input_signal`` property.
+        Returns:
+            array-like float: Noise that will be mixed with a signal later on.
         """
         pass

@@ -545,7 +545,6 @@ class SimulatorInteractor(QObject):
         calculation of some basic metrics for quick judging of simulation results
         """
 
-        # TODO make this able to calc error for vector-like model output
         # TODO make the entries to compare selectable
         # control and observer error
         if "Trajectory" in self._sim_data["results"]:
