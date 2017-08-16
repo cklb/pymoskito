@@ -6,7 +6,6 @@ from scipy.integrate import ode
 from scipy.signal import StateSpace
 import sympy as sp
 import numpy as np
-import control
 
 from .simulation_modules import (
     Model, Solver, SolverException, Trajectory, TrajectoryException, Controller,
