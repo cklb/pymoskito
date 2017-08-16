@@ -1076,17 +1076,22 @@ class SimulationGui(QMainWindow):
         """
         plot the fresh simulation data
         """
+        docks_to_delete = []
         for dock in self.plotDocks:
             for widget in dock.widgets:
                 if not self.dataList.findItems(dock.name(), Qt.MatchExactly):
-                    # no data for this plot -> reset it
+                    # no data for this plot -> remove it
                     widget.getPlotItem().clear()
-                    # TODO remove tab from dock and del instance
+                    dock.close()
+                    docks_to_delete.append(dock)
                 else:
                     widget.getPlotItem().clear()
                     x_data = self.currentDataset["results"]["time"]
                     y_data = self._get_data_by_name(dock.name())
                     widget.getPlotItem().plot(x=x_data, y=y_data)
+
+        for dock in docks_to_delete:
+            self.plotDocks.remove(dock)
 
     @pyqtSlot(QModelIndex)
     def target_view_changed(self, index):
