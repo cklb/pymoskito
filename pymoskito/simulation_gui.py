@@ -541,25 +541,32 @@ class SimulationGui(QMainWindow):
         regime_name = self._regimes[self._current_regime_index]["Name"]
 
         if file_path is None:
-            # get path
+            # get default path
             path = self._settings.value("path/simulation_results")
 
             # create canonic file name
             suggestion = self._simfile_name(regime_name)
+        else:
+            path = os.path.dirname(file_path)
+            suggestion = os.path.basename(file_path)
 
-            if not os.path.isdir(path):
-                box = QMessageBox()
-                box.setText("Export Folder does not exist yet.")
-                box.setInformativeText("Do you want to create it? \n"
-                                       "{}".format(os.path.abspath(path)))
-                box.setStandardButtons(QMessageBox.Ok | QMessageBox.No)
-                box.setDefaultButton(QMessageBox.Ok)
-                ret = box.exec_()
-                if ret == QMessageBox.Ok:
-                    os.makedirs(path)
-                else:
-                    path = os.path.curdir
+        # check if path exists otherwise create it
+        if not os.path.isdir(path):
+            box = QMessageBox()
+            box.setText("Export Folder does not exist yet.")
+            box.setInformativeText("Do you want to create it? \n"
+                                   "{}".format(os.path.abspath(path)))
+            box.setStandardButtons(QMessageBox.Ok | QMessageBox.No)
+            box.setDefaultButton(QMessageBox.Ok)
+            ret = box.exec_()
+            if ret == QMessageBox.Ok:
+                os.makedirs(path)
+            else:
+                path = os.path.abspath(os.path.curdir)
+                file_path = None
 
+        # If no path was given, present the default and let the user choose
+        if file_path is None:
             dialog = QFileDialog(self)
             dialog.setAcceptMode(QFileDialog.AcceptSave)
             dialog.setFileMode(QFileDialog.AnyFile)
@@ -571,18 +578,19 @@ class SimulationGui(QMainWindow):
                 file_path = dialog.selectedFiles()[0]
             else:
                 self._logger.warning("Export Aborted")
-                return
+                return -1
 
-            new_path = os.path.dirname(file_path)
-            if new_path != self._settings.value("path/simulation_results"):
-                box = QMessageBox()
-                box.setText("Use this path as new default?")
-                box.setInformativeText("{}".format(os.path.dirname(new_path)))
-                box.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
-                box.setDefaultButton(QMessageBox.Yes)
-                ret = box.exec_()
-                if ret == QMessageBox.Yes:
-                    self._settings.setValue("path/simulation_results", new_path)
+        # ask whether this should act as new default
+        path = os.path.abspath(os.path.dirname(file_path))
+        if path != self._settings.value("path/simulation_results"):
+            box = QMessageBox()
+            box.setText("Use this path as new default?")
+            box.setInformativeText("{}".format(path))
+            box.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
+            box.setDefaultButton(QMessageBox.Yes)
+            ret = box.exec_()
+            if ret == QMessageBox.Yes:
+                self._settings.setValue("path/simulation_results", path)
 
         self.currentDataset.update({"regime name": regime_name})
         with open(file_path, "wb") as f:
