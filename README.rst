@@ -4,28 +4,34 @@ PyMoskito
 
 .. image:: https://img.shields.io/travis/cklb/pymoskito.svg
     :target: https://travis-ci.org/cklb/pymoskito
+    :alt: Status of continuous integration
 
 .. image:: https://img.shields.io/pypi/v/pymoskito.svg
     :target: https://pypi.python.org/pypi/pymoskito
+    :alt: Link to PyPi
 
-.. image:: https://readthedocs.org/projects/pymoskito/badge/?version=latest
-    :target: http://pymoskito.readthedocs.io/en/latest/?badge=latest
+.. image:: https://readthedocs.org/projects/pymoskito/badge/?version=stable
+    :target: http://pymoskito.readthedocs.io/en/master/?badge=master
     :alt: Documentation Status
 
-PyMoskito stands for *Python based modular simulation & postprocessing kickass toolbox* and is **Free software** (GPLv3)
+PyMoskito stands for *Python based modular simulation & postprocessing kickass
+toolbox* and is **Free software** (GPLv3)
 
-PyMoskito is targeted at students and researchers working in control engineering. It takes care of all structure related
-programming a let's you focus on the important things in life: **control design**
-It features a modular control loop structure that already contains most of the needed blocks a control engineer needs.
-Basically you implement your systems dynamics as well as a fancy control law and you are ready to go.
-On top PyMoskito also contains a GUI which let's you easily fine-tune the parameters of your simulation.
+PyMoskito is targeted at students and researchers working in control
+engineering. It takes care of all structure related programming a let's you
+focus on the important things in life: **control design**
+It features a modular control loop structure that already contains most of the
+needed blocks a control engineer needs. Basically you implement your systems
+dynamics as well as a fancy control law and you are ready to go.
+On top PyMoskito also contains a GUI which let's you easily fine-tune the
+parameters of your simulation.
 
 **Go ahead and give it a try!**
 
 Documentation can be found at https://pymoskito.readthedocs.org.
 
-Pictures of the GUI:
---------------------
+PyMoskito at work:
+------------------
 The main application simulating the **Ball and Beam** system:
 
 .. image:: ./docs/pictures/pm_2.png
