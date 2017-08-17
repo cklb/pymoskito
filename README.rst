@@ -10,7 +10,7 @@ PyMoskito
     :target: https://pypi.python.org/pypi/pymoskito
     :alt: Link to PyPi
 
-.. image:: https://readthedocs.org/projects/pymoskito/badge/?version=stable
+.. image:: https://readthedocs.org/projects/pymoskito/badge/?version=master
     :target: http://pymoskito.readthedocs.io/en/master/?badge=master
     :alt: Documentation Status
 
