@@ -120,18 +120,16 @@ class SimulationGui(QMainWindow):
         self.regimeDock = pg.dockarea.Dock("Regimes")
         self.dataDock = pg.dockarea.Dock("Data")
         self.logDock = pg.dockarea.Dock("Log")
-        self.plotDocks = []
-        self.plotDocks.append(pg.dockarea.Dock("Placeholder"))
-        self.plotWidgets = []
-        self.timeLines = []
+        self.plotDockPlaceholder = pg.dockarea.Dock("Placeholder")
 
         # arrange docks
         self.area.addDock(self.animationDock, "right")
         self.area.addDock(self.regimeDock, "left", self.animationDock)
         self.area.addDock(self.propertyDock, "bottom", self.regimeDock)
         self.area.addDock(self.dataDock, "bottom", self.propertyDock)
-        self.area.addDock(self.plotDocks[-1], "bottom", self.animationDock)
+        self.area.addDock(self.plotDockPlaceholder, "bottom", self.animationDock)
         self.area.addDock(self.logDock, "bottom", self.dataDock)
+        self.non_plotting_docks = list(self.area.findAll()[1].keys())
 
         # add widgets to the docks
         self.propertyDock.addWidget(self.targetView)
@@ -807,9 +805,6 @@ class SimulationGui(QMainWindow):
         self.currentEndTime = self.currentDataset["simulation"]["end time"]
         self.validData = True
 
-    def add_plot_to_dock(self, plot_widget):
-        self.d3.addWidget(plot_widget)
-
     def increment_playback_speed(self):
         self.speedControl.setValue(self.speedControl.value()
                                    + self.speedControl.singleStep())
@@ -877,7 +872,7 @@ class SimulationGui(QMainWindow):
         self.timeLabel.setText("current time: %4f" % self.playbackTime)
 
         # update time cursor in plots
-        self._update_time_cursor()
+        self._update_time_cursors()
 
         # update state of rendering
         if self.visualizer:
@@ -1004,45 +999,47 @@ class SimulationGui(QMainWindow):
             item(Qt.ListItem): Item to plot.
         """
         title = str(item.text())
+        if title in self.non_plotting_docks:
+            self._logger.error("Title '{}' not allowed for a plot window since"
+                               "it would shadow on of the reserved "
+                               "names".format(title))
 
         # check if plot has already been opened
-        for p in self.plotDocks:
-            if p.title() == title:
-                p.raiseDock()
-                return
+        if title in self.area.findAll()[1]:
+            self.area.docks[title].raiseDock()
+            return
 
+        # collect data
         data = self._get_data_by_name(title)
         t = self.currentDataset["results"]["time"]
-
-        dock = pg.dockarea.Dock(title)
-        self.area.addDock(dock, "above", self.plotDocks[-1])
-
-        widget = pg.PlotWidget(title=title)
-        widget.plot(x=t, y=data)
-        widget.getPlotItem().getAxis("bottom").setLabel(text="Time", units="s")
-
         unit = self._get_units(title)
         if "." in title:
             name = title.split(".")[1]
         else:
             name = title
 
+        # create plot widget
+        widget = pg.PlotWidget(title=title)
+        widget.showGrid(True, True)
+        widget.plot(x=t, y=data)
+        widget.getPlotItem().getAxis("bottom").setLabel(text="Time", units="s")
         widget.getPlotItem().getAxis("left").setLabel(text=name, units=unit)
 
+        # add a time line
         time_line = pg.InfiniteLine(self.playbackTime,
                                     angle=90,
                                     movable=False,
                                     pen=pg.mkPen("#FF0000", width=2.0))
         widget.getPlotItem().addItem(time_line)
 
-        # enable grid
-        widget.showGrid(True, True)
-
+        # create dock container and add it to dock area
+        dock = pg.dockarea.Dock(title, closable=True)
         dock.addWidget(widget)
+        self.area.addDock(dock, "above", self.plotDockPlaceholder)
 
-        self.plotDocks.append(dock)
-        self.plotWidgets.append(widget)
-        self.timeLines.append(time_line)
+        # self.plotDocks.append(dock)
+        # self.plotWidgets.append(widget)
+        # self.timeLines.append(time_line)
 
     def _get_data_by_name(self, name):
         tmp = name.split(".")
@@ -1065,33 +1062,34 @@ class SimulationGui(QMainWindow):
 
         return data
 
-    def _update_time_cursor(self):
+    def _update_time_cursors(self):
         """
-        updates the time lines of all plot windows
+        Update the time lines of all plot windows
         """
-        for line in self.timeLines:
-            line.setValue(self.playbackTime)
+        for title, dock in self.area.findAll()[1].items():
+            if title in self.non_plotting_docks:
+                continue
+            for widget in dock.widgets:
+                for item in widget.getPlotItem().items:
+                    if isinstance(item, pg.InfiniteLine):
+                        item.setValue(self.playbackTime)
 
     def _update_plots(self):
         """
-        plot the fresh simulation data
+        Update the data in all plot windows
         """
-        docks_to_delete = []
-        for dock in self.plotDocks:
+        for title, dock in self.area.docks.items():
+            if title in self.non_plotting_docks:
+                continue
             for widget in dock.widgets:
                 if not self.dataList.findItems(dock.name(), Qt.MatchExactly):
                     # no data for this plot -> remove it
-                    widget.getPlotItem().clear()
                     dock.close()
-                    docks_to_delete.append(dock)
                 else:
                     widget.getPlotItem().clear()
                     x_data = self.currentDataset["results"]["time"]
                     y_data = self._get_data_by_name(dock.name())
                     widget.getPlotItem().plot(x=x_data, y=y_data)
-
-        for dock in docks_to_delete:
-            self.plotDocks.remove(dock)
 
     @pyqtSlot(QModelIndex)
     def target_view_changed(self, index):
