@@ -1037,10 +1037,6 @@ class SimulationGui(QMainWindow):
         dock.addWidget(widget)
         self.area.addDock(dock, "above", self.plotDockPlaceholder)
 
-        # self.plotDocks.append(dock)
-        # self.plotWidgets.append(widget)
-        # self.timeLines.append(time_line)
-
     def _get_data_by_name(self, name):
         tmp = name.split(".")
         module_name = tmp[0]
@@ -1078,18 +1074,21 @@ class SimulationGui(QMainWindow):
         """
         Update the data in all plot windows
         """
-        for title, dock in self.area.docks.items():
+        for title, dock in self.area.findAll()[1].items():
             if title in self.non_plotting_docks:
                 continue
+
+            if not self.dataList.findItems(dock.name(), Qt.MatchExactly):
+                # no data for this plot -> remove it
+                dock.close()
+                continue
+
             for widget in dock.widgets:
-                if not self.dataList.findItems(dock.name(), Qt.MatchExactly):
-                    # no data for this plot -> remove it
-                    dock.close()
-                else:
-                    widget.getPlotItem().clear()
-                    x_data = self.currentDataset["results"]["time"]
-                    y_data = self._get_data_by_name(dock.name())
-                    widget.getPlotItem().plot(x=x_data, y=y_data)
+                for item in widget.getPlotItem().items:
+                    if isinstance(item, pg.PlotDataItem):
+                        x_data = self.currentDataset["results"]["time"]
+                        y_data = self._get_data_by_name(dock.name())
+                        item.setData(x=x_data, y=y_data)
 
     @pyqtSlot(QModelIndex)
     def target_view_changed(self, index):
