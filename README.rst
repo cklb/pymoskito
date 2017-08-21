@@ -10,8 +10,8 @@ PyMoskito
     :target: https://pypi.python.org/pypi/pymoskito
     :alt: Link to PyPi
 
-.. image:: https://readthedocs.org/projects/pymoskito/badge/?version=master
-    :target: http://pymoskito.readthedocs.io/en/master/?badge=master
+.. image:: https://readthedocs.org/projects/pymoskito/badge/?version=latest
+    :target: http://pymoskito.readthedocs.io/en/latest/?badge=latest
     :alt: Documentation Status
 
 .. image:: https://zenodo.org/badge/49145679.svg
