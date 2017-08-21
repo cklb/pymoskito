@@ -14,6 +14,10 @@ PyMoskito
     :target: http://pymoskito.readthedocs.io/en/master/?badge=master
     :alt: Documentation Status
 
+.. image:: https://zenodo.org/badge/49145679.svg
+   :target: https://zenodo.org/badge/latestdoi/49145679
+   :alt: DOI index 49145679
+
 PyMoskito stands for *Python based modular simulation & postprocessing kickass
 toolbox* and is **Free software** (GPLv3)
 
