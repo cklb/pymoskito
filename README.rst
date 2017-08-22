@@ -10,9 +10,13 @@ PyMoskito
     :target: https://pypi.python.org/pypi/pymoskito
     :alt: Link to PyPi
 
-.. image:: https://readthedocs.org/projects/pymoskito/badge/?version=master
-    :target: http://pymoskito.readthedocs.io/en/master/?badge=master
+.. image:: https://readthedocs.org/projects/pymoskito/badge/?version=latest
+    :target: http://pymoskito.readthedocs.io/en/latest/?badge=latest
     :alt: Documentation Status
+
+.. image:: https://zenodo.org/badge/49145679.svg
+   :target: https://zenodo.org/badge/latestdoi/49145679
+   :alt: DOI index 49145679
 
 PyMoskito stands for *Python based modular simulation & postprocessing kickass
 toolbox* and is **Free software** (GPLv3)
