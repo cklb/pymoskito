@@ -9,7 +9,7 @@ Contents:
   introduction
   installation
   examples/index
-  usage
+  tutorial/index
   modules/index
   contributing
   authors
