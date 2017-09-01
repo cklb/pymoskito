@@ -10,6 +10,7 @@ Contents:
   installation
   examples/index
   tutorial/index
+  full_users_guide/index
   modules/index
   contributing
   authors
