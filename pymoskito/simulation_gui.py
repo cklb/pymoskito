@@ -11,6 +11,7 @@ import pkg_resources
 import webbrowser
 
 import numpy as np
+from scipy.interpolate import interp1d
 
 # Qt
 from PyQt5.QtCore import (pyqtSignal, pyqtSlot, Qt, QTimer, QSize, QSettings,
@@ -92,6 +93,7 @@ class SimulationGui(QMainWindow):
         self.stopSimulation.connect(self.sim.stop_simulation)
         self.sim.simulation_finalized.connect(self.new_simulation_data)
         self.currentDataset = None
+        self.interpolator = None
 
         # sim setup viewer
         self.targetView = SimulatorView(self)
@@ -761,7 +763,7 @@ class SimulationGui(QMainWindow):
     def new_simulation_data(self, status, data):
         """
         Slot to be called when the simulation interface has completed the
-        current jpb and new data is available.
+        current job and new data is available.
 
         Args:
             status (str): Status of the simulation, either
@@ -808,6 +810,12 @@ class SimulationGui(QMainWindow):
             self.actSimulateAll.setDisabled(False)
 
     def _read_results(self):
+        state = self.currentDataset["results"]["Solver"]
+        self.interpolator = interp1d(self.currentDataset["results"]["time"],
+                                     state,
+                                     axis=0,
+                                     bounds_error=False,
+                                     fill_value=(state[0], state[-1]))
         self.currentStepSize = 1.0/self.currentDataset["simulation"][
             "measure rate"]
         self.currentEndTime = self.currentDataset["simulation"]["end time"]
@@ -884,34 +892,12 @@ class SimulationGui(QMainWindow):
 
         # update state of rendering
         if self.visualizer:
-            state = self.interpolate(self.currentDataset["results"]["Solver"])
+            state = self.interpolator(self.playbackTime)
             self.visualizer.update_scene(state)
             if isinstance(self.visualizer, MplVisualizer):
                 pass
             elif isinstance(self.visualizer, VtkVisualizer):
                 self.vtkWidget.GetRenderWindow().Render()
-
-    def interpolate(self, data):
-        """
-        find corresponding item in data-set that fits the current playback time
-
-        :param data: data-set in which the correct datum has to be found
-        :return: datum fitting the current playback time
-        """
-        idx = next((index for index, val in enumerate(self.currentDataset["results"]["time"])
-                    if val >= self.playbackTime), None)
-
-        if idx is None:
-            self._logger.info("interpolate(): Error no entry found for t={0}".format(self.playbackTime))
-            return None
-        else:
-            if len(data.shape) == 1:
-                return data[idx]
-            elif len(data.shape) == 2:
-                return data[idx, :]
-            else:
-                self._logger.info("interpolate(): Error Dimension {0} not understood.".format(data.shape))
-                return None
 
     def _update_data_list(self):
         self.dataList.clear()

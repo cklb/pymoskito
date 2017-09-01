@@ -15,7 +15,7 @@ Feedforward implementations for the ball and beam system
 
 class LinearFeedforward(pm.Feedforward):
     """
-    A Feedfoward that compensates the linear part of the system dynamics.
+    A Feedforward that compensates the linear part of the system dynamics.
     """
 
     public_settings = OrderedDict([
