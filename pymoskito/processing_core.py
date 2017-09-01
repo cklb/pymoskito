@@ -9,7 +9,7 @@ from PyQt5.QtCore import QObject, QSettings
 from PyQt5.QtWidgets import QMessageBox, QFileDialog
 pyqtWrapperType = type(QObject)
 
-from .tools import get_sub_value
+from .tools import get_sub_value, sort_lists
 
 __all__ = ["PostProcessingModule", "MetaProcessingModule"]
 
@@ -325,10 +325,10 @@ class MetaProcessingModule(ProcessingModule):
         counter = 0
         x_all = []
 
-        for member in family:
-            x_list = get_sub_value(member, x_path)
-            y_list = get_sub_value(member, y_path)
-            x_list, y_list = self.sort_lists(x_list, y_list)
+        for member, data in family.items():
+            x_list = get_sub_value(data, x_path)
+            y_list = get_sub_value(data, y_path)
+            x_list, y_list = sort_lists(x_list, y_list)
 
             if x_index >= 0:
                 x_list[:] = [x[x_index] for x in x_list]

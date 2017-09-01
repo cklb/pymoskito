@@ -329,11 +329,11 @@ class XYMetaProcessor(MetaProcessingModule):
     create XY-diagrams for the given key to be compared
     """
 
-    def __init__(self, sort_key, x_path, y_path):
+    def __init__(self, x_path, y_path, sort_key):
         MetaProcessingModule.__init__(self)
-        self.sort_key = sort_key
         self.x_path = x_path
         self.y_path = y_path
+        self.sort_key = sort_key
 
         self.fig = None
         self.axes = None
