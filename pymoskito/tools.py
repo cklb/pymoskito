@@ -86,7 +86,7 @@ def _remove_deepest(top_dict, keys=None):
     if not keys:
         keys = []
 
-    for key in top_dict.keys():
+    for key in list(top_dict.keys()):
         val = top_dict[key]
         if isinstance(val, dict):
             if val:
