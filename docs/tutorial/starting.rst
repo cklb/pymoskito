@@ -19,4 +19,4 @@ or::
 
     $ python __main__.py
 
-All of these commands will do the same thing and start your example.
+All of these commands will do the same thing and start the example "Ball and Beam".

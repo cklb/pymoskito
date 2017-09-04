@@ -1,6 +1,6 @@
-=========================
-Creating your own example
-=========================
+==========================
+Simulating your own System
+==========================
 
 If you find yourself in need to simulate your own system, 
 you will need to implement at least a model and a controller.

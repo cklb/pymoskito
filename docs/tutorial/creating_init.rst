@@ -1,5 +1,5 @@
 
-the __init__ file
+The __init__ File
 ---------------------
 
 In the same directory as your main file, there should be an initializing file called::

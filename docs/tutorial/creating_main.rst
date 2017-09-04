@@ -1,5 +1,5 @@
 
-the __main__ file
+The __main__ File
 ---------------------
 
 Every program needs a main. Therefore, the first file you create should be called::
@@ -16,7 +16,7 @@ Please note that line 26-29 refer to another file, which is yet to be created,
 but not essential to the program. You can either delete these lines, or read more about 
 the default file here_.
 
-.. _here: 
+.. _here: https://pymoskito.readthedocs.io/en/stable/Tutorial/creating_default_regimes.html
 
 .. literalinclude:: ../../pymoskito/examples/ballbeam/__main__.py
 	:language: python

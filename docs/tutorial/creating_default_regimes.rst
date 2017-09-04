@@ -1,5 +1,5 @@
 
-the default file
+The default File
 ---------------------
 
 A regime is a preset of settings. 
@@ -15,7 +15,7 @@ and work with the default file from here::
 	pymoskito/docs/tutorial/basic_files/default.sreg
 	
 This file will be loaded by the code in lines 26-29 of the `main file 
-<https://pymoskito.readthedocs.io/en/stable/Tutorial/creating_own_example/creating_main.html>`_.
+<https://pymoskito.readthedocs.io/en/stable/Tutorial/creating_main.html>`_.
 
 To create a file with multiple regimes, just add the following code at the 
 bottom of your existing default file again:
