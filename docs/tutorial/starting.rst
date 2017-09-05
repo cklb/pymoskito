@@ -1,5 +1,5 @@
 ========================
-starting the programm
+Starting the Program
 ========================
 
 PyMoskito can not be started itself, instead you need to start an example. 

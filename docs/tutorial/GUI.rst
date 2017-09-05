@@ -12,7 +12,7 @@ and clicking on simulate (3), PyMoskito should look somewhat like this:
 
 In this Window, you have the following options:
 
-(1) Load a .sreg file containing regimes.	
+(1) Load a *.sreg* file containing regimes.	
 
 (2) Save the results of the current simulation to a .pof file. 
     This file can be evaluated by the postprocessor.
