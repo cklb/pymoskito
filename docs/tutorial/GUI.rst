@@ -1,8 +1,6 @@
 ========================
-GUI
+The Interface
 ========================
-
-In need of a different title.
 
 After `starting the 'Ball and Beam' example
 <https://pymoskito.readthedocs.io/en/stable/tutorial/starting.html>`_ 

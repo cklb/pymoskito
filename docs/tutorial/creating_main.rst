@@ -12,7 +12,7 @@ For a Quickstart, you can copy the following code, taken from the `'Ball and Bea
 
 Alternatively, copying the file itself from the ballbeam directory is a quick and easy option.
 
-Please note that line 26-29 refer to another file, which is yet to be created, 
+Please note that the highlighted lines 29-33 refer to another file, which is yet to be created, 
 but not essential to the program. You can either delete these lines, or read more about 
 the default file here_.
 
@@ -20,5 +20,6 @@ the default file here_.
 
 .. literalinclude:: ../../pymoskito/examples/ballbeam/__main__.py
 	:language: python
+	:emphasize-lines: 29-33
 	:linenos:
 

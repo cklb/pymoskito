@@ -13,7 +13,7 @@ For more detailed descriptions, please see the `Full Users Guide`_ or the `Refer
   :maxdepth: 2
 
   starting
-  structure
+  ctrl_loop
   GUI
   creating_own_example
   postprocessing
