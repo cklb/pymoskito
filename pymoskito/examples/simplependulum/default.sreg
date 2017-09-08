@@ -1,0 +1,137 @@
+ # default regime file that is loaded when the simulation environment starts up
+ # use this to create your own files
+
+- Name: test
+  clear previous: !!python/bool True # decide whether previous settings should remain or not
+
+  Model:
+   type: RodPendulumModel
+   initial state: [0, 180, 0, 0]
+
+  Solver:
+   type: ODEInt
+   measure rate: 500
+   step size: 0.001
+   end time: 10
+
+  ModelMixer:
+   type: AdditiveMixer
+   Input A: Controller
+   Input B: Feedforward
+
+- Name: LinearStateFeedback_u
+  clear previous: !!python/bool True # decide whether previous settings should remain or not
+
+  Model:
+   type: RodPendulumModel
+   initial state: [0, 180, 0, 0]
+
+  Solver:
+   type: ODEInt
+   measure rate: 500
+   step size: 0.001
+   end time: 10
+
+  Controller:
+   type: LinearStateFeedback
+   # poles: [-3.5+1.2j, -3.5-1.2j, -3.3 + 3.4j, -3.3 - 3.4j]
+   poles: [-3.5, -3.5, -3.3, -3.3]
+   eq_state: [0, 180, 0, 0]
+
+  Trajectory:
+   type: Setpoint
+   State: [0]
+   Setpoint: [-0.5]
+
+  ModelMixer:
+   type: AdditiveMixer
+   Input A: Controller
+   Input B: Feedforward
+
+- Name: LinearStateFeedback_o
+  clear previous: !!python/bool True # decide whether previous settings should remain or not
+
+  Model:
+   type: RodPendulumModel
+   initial state: [0, 0, 0, 0]
+
+  Solver:
+   type: ODEInt
+   measure rate: 500
+   step size: 0.001
+   end time: 10
+
+  Controller:
+   type: LinearStateFeedback
+   # poles: [-3.5+1.2j, -3.5-1.2j, -3.3+0.4j, -3.3-0.4j]
+   # poles: [-3.5, -3.5, -2, -2]
+   poles: [-3.5, -3.5, -2+1j, -2-1j]
+   eq_state: [0, 0, 0, 0]
+
+  Trajectory:
+   type: Setpoint
+   State: [0]
+   Setpoint: [-0.5]
+
+  ModelMixer:
+   type: AdditiveMixer
+   Input A: Controller
+   Input B: Feedforward
+
+- Name: SwingUpLjapunov
+  clear previous: !!python/bool True # decide whether previous settings should remain or not
+
+  Model:
+   type: RodPendulumModel
+   initial state: [0, 170, 0, 0]
+   d1: 0
+
+  Solver:
+   type: ODEInt
+   measure rate: 500
+   step size: 0.001
+   end time: 20
+
+  Controller:
+   type: SwingUpController
+   k: 9
+   poles: [-3.5, -3.5, -2+1j, -2-1j]
+
+  Trajectory:
+   type: Setpoint
+   State: [0]
+   Setpoint: [0]
+
+  ModelMixer:
+   type: AdditiveMixer
+   Input A: Controller
+   Input B: Feedforward
+
+- Name: SwingUpSine
+  clear previous: !!python/bool True # decide whether previous settings should remain or not
+
+  Model:
+   type: RodPendulumModel
+   initial state: [0, 180, 0, 0]
+
+  Solver:
+   type: ODEInt
+   measure rate: 500
+   step size: 0.001
+   end time: 20
+
+  Controller:
+   type: SwingUpSlaveController
+   poles: [-3.5, -3.5, -2+1j, -2-1j]
+
+  Trajectory:
+   type: HarmonicTrajectory
+   Amplitude: 0.3
+   Frequency: 0.49
+   Offset: 0
+   Phase in degree: 0
+
+  ModelMixer:
+   type: AdditiveMixer
+   Input A: Controller
+   Input B: Feedforward
