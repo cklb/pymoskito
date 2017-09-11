@@ -8,13 +8,11 @@ To close the loop, we need a file called::
 
 Besides the same libraries and classes as in the model,
 this specific controller imports pymoskito.controltools,
-a package of `useful functions`_.
+a package of :doc:`useful functions <../modules/controltools>`.
 If you would like to outsource functions to another file,
 you need to reimport them as done with linearise_system:
 
-.. _`useful functions`: https://pymoskito.readthedocs.io/en/stable/modules/controltools.html
-
-.. literalinclude:: basic_files/controller_example.py
+.. literalinclude:: ../../pymoskito/examples/ballbeam/controller.py
 	:end-before: #import end
 	:lineno-match:
 
@@ -23,7 +21,7 @@ Create public_settings like before in your model.
 As you can guess from the line numbers, there is no restriction
 to the amount of different controllers you can store in this file:
 
-.. literalinclude:: basic_files/controller_example.py
+.. literalinclude:: ../../pymoskito/examples/ballbeam/controller.py
 	:start-after: #class begin
 	:end-before: #init
 	:lineno-match:
@@ -34,11 +32,10 @@ Valid input types are *system_state*, *system_output*, *Observer* and *Sensor*.
 Initialising the output is recommended.
 
 To initialize the parameters K and V, which will later be used in the 
-control law, functions from the earlier imported `package`__ are used:
+control law, functions from the earlier imported 
+:doc:`package <../modules/controltools>` are used:
 
-__ `useful functions`_
-
-.. literalinclude:: basic_files/controller_example.py
+.. literalinclude:: ../../pymoskito/examples/ballbeam/controller.py
 	:start-after: #init
 	:end-before: #control
 	:lineno-match:
@@ -47,7 +44,7 @@ The only method to implement contains the control law.
 The parameters of this method are fix, but `**kwargs` can be substituted
 by a parameter of your choice:
 	
-.. literalinclude:: basic_files/controller_example.py
+.. literalinclude:: ../../pymoskito/examples/ballbeam/controller.py
 	:start-after: #control
 	:end-before: #class end
 	:lineno-match:
@@ -55,6 +52,6 @@ by a parameter of your choice:
 Do not forget to link all your controllers to the toolbox at the 
 very bottom of your code:
 	
-.. literalinclude:: basic_files/controller_example.py
+.. literalinclude:: ../../pymoskito/examples/ballbeam/controller.py
 	:start-after: #register
 	:lineno-match:
