@@ -30,7 +30,7 @@ class FController(pm.Controller):
         # run pole placement
         self.K = pymoskito.controltools.char_coefficients(self._settings["poles"])
 
-	def _control(self, time, trajectory_values=None, feedforward_values=None,
+    def _control(self, time, trajectory_values=None, feedforward_values=None,
                  input_values=None, **kwargs):
         # input abbreviations
         x1, x2, x3, x4 = input_values
