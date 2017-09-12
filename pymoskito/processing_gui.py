@@ -276,7 +276,7 @@ class PostProcessor(QMainWindow):
         figs = []
         try:
             self._logger.info("executing processor '{0}'".format(name))
-            figs = processor.process(self.results)
+            figs = processor.process(result_files)
         except Exception as err:
             self._logger.exception("Error in processor")
 

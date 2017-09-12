@@ -1,12 +1,13 @@
 .. :changelog:
 
+=======
 History
--------
-
-0.1.0 (2015-01-11)
+=======
+0.2.1 (2017-09-07)
 ------------------
 
-* First release on PyPI.
+* Fixed issue when installing via pip
+* Fixed issue with metaprocessors and added example metaprocessor for ballbeam
 
 0.2.0 (2017-08-18)
 ------------------
@@ -28,3 +29,9 @@ History
 * Large improvements concerning the sphinx-build documentation
 * Fixed issue concerning possible data types for simulation module properties
 * Introduced new generic modules that directly work on scipy StateSpace objects.
+
+0.1.0 (2015-01-11)
+------------------
+
+* First release on PyPI.
+

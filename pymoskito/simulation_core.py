@@ -253,7 +253,7 @@ class Simulator(QObject):
                 except Exception as e:
                     # catch all to avoid loosing data
                     self._abort(sys.exc_info())
-                    break
+                    return
 
                 dt = solver.t - t
                 if dt < rate and first_run:
@@ -274,6 +274,7 @@ class Simulator(QObject):
         self.state_changed.emit(SimulationStateChange(type=end_state,
                                                       data=self.output,
                                                       info=info))
+        self.work_done.emit()
 
     def _finish(self):
         self._storage.update(finished=True)
