@@ -12,7 +12,7 @@ Alternatively, copying the file itself from the ballbeam directory is a quick an
 
 Please note that the highlighted lines 29-33 refer to another file, which is yet to be created, 
 but not essential to the program. You can either delete these lines, or read more about 
-the default file :doc:`here <creating_default_regimes>`.
+the default file :doc:`here <new_default>`.
 
 .. literalinclude:: ../../pymoskito/examples/ballbeam/__main__.py
 	:language: python

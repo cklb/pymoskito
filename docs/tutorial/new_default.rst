@@ -14,7 +14,7 @@ and work with the default file from here::
 
 	pymoskito/docs/tutorial/basic_files/default.sreg
 	
-This file will be loaded by the code in lines 29-33 of the :doc:`main file <creating_main>`.
+This file will be loaded by the code in lines 29-33 of the :doc:`main file <new_main>`.
 
 To create a file with multiple regimes, just add the following code at the 
 bottom of your existing default file again:

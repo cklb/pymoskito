@@ -13,5 +13,5 @@ For more detailed descriptions, please see the `Full Users Guide` or the
   starting
   ctrl_loop
   GUI
-  creating_own_example
+  new_example
   postprocessing

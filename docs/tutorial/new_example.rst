@@ -18,8 +18,8 @@ your knowledge about this language, see the `Python Tutorial`_.
 .. toctree::
   :maxdepth: 2
 
-  creating_main
-  creating_init
-  creating_model
-  creating_controller
-  creating_default_regimes
+  new_main
+  new_init
+  new_model
+  new_controller
+  new_default
