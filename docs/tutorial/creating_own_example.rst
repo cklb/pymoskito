@@ -6,9 +6,7 @@ If you find yourself in need to simulate your own system,
 you will need to implement at least a model and a controller.
 
 The toolbox offers a lot more, please find the instructions to
-all modules `here`_.
-
-.. _`here`: https://pymoskito.readthedocs.io/en/stable/full_users_guide/creating_own_example.html
+all modules `here`.
 
 All code is written in Python. If you want to refresh or expand 
 your knowledge about this language, see the `Python Tutorial`_. 

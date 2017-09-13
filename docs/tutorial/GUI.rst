@@ -2,8 +2,7 @@
 The Interface
 ========================
 
-After `starting the 'Ball and Beam' example
-<https://pymoskito.readthedocs.io/en/stable/tutorial/starting.html>`_ 
+After :doc:`starting the 'Ball and Beam' example <starting>` 
 and clicking on simulate (3), PyMoskito should look somewhat like this:
  
 .. image:: BnB_rNos.*
