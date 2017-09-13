@@ -18,7 +18,7 @@ Open the Post-Processor using the second button from the right
 in the top right corner of the interface. It appears in an
 additional interface:
 
-.. image:: postpr.*
+.. image:: ../pictures/postpr.*
 
 Click on the button in the top left to load the three .pmr files.
 Double-click on the postprocessor 'StepResponse' and cancel creating
@@ -36,4 +36,4 @@ the button in the top right corner of the interface.
 Start the MetaProcessor by clicking on its name.
 As a result, you receive a metric over mass diagram:
 
-.. image:: postpr_result.*
+.. image:: ../pictures/postpr_result.*

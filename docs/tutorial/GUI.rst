@@ -5,7 +5,7 @@ The Interface
 After :doc:`starting the 'Ball and Beam' example <starting>` 
 and clicking on simulate (3), PyMoskito should look somewhat like this:
  
-.. image:: BnB_rNos.*
+.. image:: ../pictures/BnB_rNos.*
 
 In this Window, you have the following options:
 
@@ -51,7 +51,7 @@ In this Window, you have the following options:
 
      In case you did not install VTK, the animation will be in 2D instead:
 
-     .. image:: BnB_2D.*
+     .. image:: ../pictures/BnB_2D.*
 
 (16) Opened diagrams will appear in the same dock as the 'Placeholder'. 
      Switch between them by clicking on their tab.

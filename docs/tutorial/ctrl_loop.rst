@@ -4,7 +4,7 @@ The Control Loop of PyMoskito
 PyMoskito simulates the control loop as seen in the schematics
 below:
 
-.. image:: schematics.*
+.. image:: ../pictures/schematics.*
 
 Some of these elements are considered general and are therefore
 implemented already. Others, like the model or the controller
