@@ -45,12 +45,8 @@ examples/results/processing*
 # Python egg metadata, regenerated from source files by setuptools.
 /*.egg-info
 /*.egg
+
+# log files, created during runtime of PyMoskito
 pymoskito.log.1
 pymoskito.log.2
 pymoskito.log.3
-pymoskito/examples/empty/__init__.py
-pymoskito/examples/empty/__main__.py
-pymoskito/resources/models/PT1Model.pkl
-pymoskito/examples/Neuer Ordner/__main__.py
-requirements.txt
-requirements.txt
