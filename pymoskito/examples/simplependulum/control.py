@@ -5,7 +5,8 @@ from collections import OrderedDict
 
 import pymoskito as pm
 
-from python.rod_pendulum import model_parameter as mp
+#from python.rod_pendulum import model_parameter as mp
+from . import settings as mp
 from . import symbolic_calculation as symcalc
 
 

@@ -6,8 +6,8 @@ import pymoskito as pm
 
 # from . import model_parameter as mp
 # from .. import model_parameter as mp
-from python.rod_pendulum import model_parameter as mp
-
+#from python.rod_pendulum import model_parameter as mp
+from . import settings as mp
 
 class RodPendulumModel(pm.Model):
     """

@@ -6,7 +6,8 @@ import matplotlib as mpl
 import matplotlib.patches
 import matplotlib.transforms
 
-from python.rod_pendulum import model_parameter as mp
+#from python.rod_pendulum import model_parameter as mp
+from . import settings as mp
 
 # try:
 #     import vtk
