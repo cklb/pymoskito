@@ -22,4 +22,3 @@ your knowledge about this language, see the `Python Tutorial`_.
   new_init
   new_model
   new_controller
-  new_default
