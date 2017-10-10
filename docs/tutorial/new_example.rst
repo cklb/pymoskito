@@ -1,8 +1,12 @@
-==========================
-Simulating your own System
-==========================
+============================
+Simulating a simple pendulum
+============================
 
-If you find yourself in need to simulate your own system, 
+`short description pendulum`
+
+`picture (maybe screenshot?) <- fehlende Datei auftreiben, sodass Graphik richtig`
+
+
 you will need to implement at least a model and a controller.
 
 The toolbox offers a lot more, please find the instructions to
