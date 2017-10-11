@@ -30,7 +30,7 @@ if __name__ == '__main__':
         prog.load_regimes_from_file(os.path.join(parent_dir,
                                                  pkg_name,
                                                  "default.sreg"))
-        prog.apply_regime_by_name("SwingUpSine")
+        prog.apply_regime_by_name("LinearStateFeedback_u")
     else:
         prog = pm.PostProcessor()
 

@@ -33,8 +33,8 @@ class LinearStateFeedback(pm.Controller):
         self.A = symcalc.A_func(list(self.eq_state), parameter)
         self.B = symcalc.B_func(list(self.eq_state), parameter)
         self.C = symcalc.C
-        self.K = pm.tools.place_siso(self.A, self.B, self._settings['poles'])
-        self.V = pm.tools.calc_prefilter(self.A, self.B, self.C, self.K)
+        self.K = pm.controltools.place_siso(self.A, self.B, self._settings['poles'])
+        self.V = pm.controltools.calc_prefilter(self.A, self.B, self.C, self.K)
         # eig = np.linalg.eig(self.A - np.dot(self.B, self.K))
 
         self._logger.info("Equilibrium: {}".format(self.eq_state))
@@ -54,7 +54,8 @@ class LinearStateFeedback(pm.Controller):
         x = x - np.atleast_2d(eq).T
 
         # u corresponds to a acceleration [m/s**2]
-        u = - np.dot(self.K, x) + np.dot(self.V, yd[0, 0])
+        u = - np.dot(self.K, x) + np.dot(self.V, yd[0])
+        #u = np.dot(self.V, yd[0, 0])
 
         return u
 
