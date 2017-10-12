@@ -27,7 +27,7 @@ class LinearStateFeedback(pm.Controller):
 
         settings["eq_state"][1] = np.deg2rad(settings["eq_state"][1])
         settings["eq_state"][3] = np.deg2rad(settings["eq_state"][3])
-        self.eq_state = settings["eq_state"]
+        self.eq_state = np.array(settings["eq_state"])
         # pole placement
         parameter = [mp.m0, mp.m1, mp.a1, mp.l1, mp.J1, mp.d1, mp.g]
         self.A = symcalc.A_func(list(self.eq_state), parameter)
@@ -44,18 +44,16 @@ class LinearStateFeedback(pm.Controller):
 
     def _control(self, time, trajectory_values=None, feedforward_values=None, input_values=None, **kwargs):
         # input abbreviations
-        x = copy.deepcopy(input_values)
         yd = trajectory_values
-        eq = kwargs.get("eq", None)
 
-        if eq is None:
-            eq = calc_closest_eq_state(self._settings, input_values)
+        # looking for the closest equilibrium
+        eq = calc_closest_eq_state(self._settings, input_values)
 
-        x = x - np.atleast_2d(eq).T
+        # normalize / unwind the state vector
+        x = np.copy(input_values) - eq
 
         # u corresponds to a acceleration [m/s**2]
         u = - np.dot(self.K, x) + np.dot(self.V, yd[0])
-        #u = np.dot(self.V, yd[0, 0])
 
         return u
 
