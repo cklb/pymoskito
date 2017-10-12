@@ -63,9 +63,6 @@ class RodPendulumModel(pm.Model):
         dx4 = (self.a1*self.g*self.m1*np.sin(phi) - self.d1*dphi)/(self.J1 + self.a1**2*self.m1) \
               + self.a1*self.m1*np.cos(phi)*acc/(self.J1 + self.a1**2*self.m1)
 
-        print('==')
-        print(dx4)
-        print('==')
         dx = np.array([[dx1],
                        [dx2],
                        [dx3],
