@@ -6,7 +6,7 @@ Every program needs a main. Therefore, the first file you create should be calle
 
 	__main__.py
 
-For a Quickstart, you can copy the following code, taken from the :doc:`'Ball and Beam' example <../examples/ballbeam>` . 
+Copy the following code into your main file: 
 
 .. literalinclude:: ../../pymoskito/examples/ballbeam/__main__.py
 	:language: python

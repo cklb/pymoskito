@@ -5,9 +5,8 @@ Simulating a Simple Pendulum
 The system we will work with is a pendulum, fixed on a movable
 cart. System input is the force F, system output the 
 position s of the cart. 
-[better graphic needed]
 
-.. image:: ../pictures/rodPend.jpg
+.. image:: ../pictures/rodPendulum.png
 
 The state vector x is given as:
 
@@ -45,10 +44,16 @@ The model equations are given as:
 	\begin{pmatrix}
 		\dot{s} \\
 		\dot{\varphi} \\
-		acc \\
+		a \\
 		\frac{a_{1}gm_{1}\sin(\varphi) - d_{1}\dot{\varphi}}
-		{J_1 + a_1^2 m_1} + \frac{a_{1}m_{1}\cos(\varphi)}{J_1 + a_1^2 m_1}acc
+		{J_1 + a_1^2 m_1} + \frac{a_{1}m_{1}\cos(\varphi)}{J_1 + a_1^2 m_1} \cdot a
 	\end{pmatrix} 
+
+whereas 
+
+.. math::
+
+	a = \frac {F}{m_0}
 
 The position `s` of the cart is the output of the system: 
 	
@@ -57,8 +62,9 @@ The position `s` of the cart is the output of the system:
 	y = x_1 = s
 
 
-	
-To implement this system in PyMoskito, the mimimum to do is:
+Create a folder with a path of your choice and name it simplePendulum.
+All files created during this tutorial need to be stored here.	
+To implement the presented system in PyMoskito, the mimimum to do is:
 
 .. toctree::
   :maxdepth: 2
