@@ -26,11 +26,11 @@ if __name__ == '__main__':
         # create simulator
         prog = pm.SimulationGui()
 
-        # load default config
-        prog.load_regimes_from_file(os.path.join(parent_dir,
-                                                 pkg_name,
-                                                 "default.sreg"))
-        prog.apply_regime_by_name("LinearStateFeedback_u")
+        # # load default config
+        # prog.load_regimes_from_file(os.path.join(parent_dir,
+                                                 # pkg_name,
+                                                 # "default.sreg"))
+        # prog.apply_regime_by_name("test")
     else:
         prog = pm.PostProcessor()
 
