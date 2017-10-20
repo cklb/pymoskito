@@ -15,4 +15,3 @@ To learn the basics about PyMoskito, we recommend reading the following lessons:
   new_example
   starting
   GUI
-  postprocessing

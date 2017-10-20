@@ -13,8 +13,9 @@ add the following line to __init__.py::
 
 	from . import FILE_NAME
 
-We will shortly  create files named model and controller.
-Add these two lines to register them::
+We will shortly  create a file named model.
+Add this line to register it:
 	
-	from . import model
-	from . import controller
+.. literalinclude:: minimalSystem/__init__.py
+	:lines: 1
+	:lineno-match:

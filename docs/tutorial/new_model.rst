@@ -6,70 +6,77 @@ Now, we can start by creating a file called::
 
 	model.py
 
-The first lines should import the library NumPy_, the ordered
-dictionary class and PyMoskito itself. It is highly recommended to
-store the initial values of your classes in an extra file called
-settings.py and import it, as well:
+The first lines should import the library NumPy_, the OrderedDictionary
+class and PyMoskito itself:
 
 .. _NumPy: http://www.numpy.org/
 
-.. literalinclude:: ../../pymoskito/examples/ballbeam/model.py
-	:end-before: #class
+.. literalinclude:: minimalSystem/model.py
+	:end-before: #settings
 	:lineno-match:
 
+Store the initial values of your model in variables at the beginning
+of your code:
+
+.. literalinclude:: minimalSystem/model.py
+	:start-after: #settings
+	:end-before: #class
+	:lineno-match:
+	
 Name your class and make pm.Model its base class.
 Create an OrderedDict called public_settings. All entries in this
-dictionary will be displayed in the 'Properties' window of PyMoskito:
+dictionary will be accessable in the graphical interface of PyMoskito
+during runtime.
+While you have the freedom to name these entries as you like,
+the entry "initial state" is obligatory and must contain the
+initial state vector 
+:
 	
-.. literalinclude:: ../../pymoskito/examples/ballbeam/model.py
+.. literalinclude:: minimalSystem/model.py
 	:start-after: #class
 	:end-before: #init
 	:lineno-match:
 
-Within the constuctor, you can add settings that are not supposed
-to be changed during runtime using settings.update(). This way,
-it is possible to add information to the output diagram/s.
-The last line of the constructor must call the constructor of
-the base class:
+Within the constructor, you must update the settings with the number of 
+states and the number of inputs as seen in lines 36 and 37. 
+It also is obligatory to call the constructor of the base class at the end.
+To update the output information as seen in lines 38-41 is optional,
+this will be added to the output diagrams:
 	
-.. literalinclude:: ../../pymoskito/examples/ballbeam/model.py
+.. literalinclude:: minimalSystem/model.py
 	:start-after: #init
 	:end-before: # shortcuts
+	:lineno-match:
+
+To prevent the model equations from resulting in huge lines of code, 
+we highly recommend storing the model values in variables with short names:
+
+.. literalinclude:: minimalSystem/model.py
+	:start-after: # shortcuts
+	:end-before: #state
 	:lineno-match:
 	
 The calculation of the state derivatives takes place in a method,
 that returns the results as an array:
 	
-.. literalinclude:: ../../pymoskito/examples/ballbeam/model.py
+.. literalinclude:: minimalSystem/model.py
 	:start-after: #state
 	:end-before: #root
 	:lineno-match:
 	
-In case your model contains discontinuities, the solver needs
-to be reseted. The method root_function() must return true 
-and the state to continue with if a switching point is reached.
-In this example, their are no discontinuities. If you are interested
-in this method, please take a look at the 'Ball in Tube' example.
-
-.. literalinclude:: ../../pymoskito/examples/ballbeam/model.py
+To create a valid derivation of the model base class, add these lines to your code:
+	
+.. literalinclude:: minimalSystem/model.py
 	:start-after: #root
-	:end-before: #consistency
-	:lineno-match:
-	
-Every model needs boundary conditions. 
-In case they are violated, the following method must throw
-an exception and the simulation will be stopped:
-	
-.. literalinclude:: ../../pymoskito/examples/ballbeam/model.py
-	:start-after: #consistency
 	:end-before: #output
 	:lineno-match:
 
-Everything the method calc_output returns will be displayed
-in PyMoskito in an extra diagram,
-including the information you added in the constructor:
+Everything the method calc_output returns will be defined as model output
+and will therefore be displayed in an additional diagram Model.NAME.
+In case you added information to the output vector in the constructor, 
+NAME will be whatever you chose here:
 	
-.. literalinclude:: ../../pymoskito/examples/ballbeam/model.py
+.. literalinclude:: minimalSystem/model.py
 	:start-after: #output
 	:end-before: #register
 	:lineno-match:
@@ -77,6 +84,6 @@ including the information you added in the constructor:
 Do not forget to link your model to the toolbox at the 
 very bottom of your code:
 	
-.. literalinclude:: ../../pymoskito/examples/ballbeam/model.py
+.. literalinclude:: minimalSystem/model.py
 	:start-after: #register
 	:lineno-match:

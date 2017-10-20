@@ -11,4 +11,6 @@ of the tutorial because they were not considered basic anymore.
 
   ../usage
   ../tutorial/new_default
+  ../tutorial/new_model2
+  ../tutorial/postprocessing
   visualization
