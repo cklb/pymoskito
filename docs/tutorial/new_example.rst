@@ -42,20 +42,16 @@ The model equations are given as:
 	\end{pmatrix} 
 	=
 	\begin{pmatrix}
-		\dot{s} \\
-		\dot{\varphi} \\
-		a \\
-		\frac{a_{1}gm_{1}\sin(\varphi) - d_{1}\dot{\varphi}}
-		{J_1 + a_1^2 m_1} + \frac{a_{1}m_{1}\cos(\varphi)}{J_1 + a_1^2 m_1} \cdot a
+		x_3 \\
+		x_4 \\
+		\frac{JF - JDx_3 - mlJ{x_4}^2 \sin(x_2) + m^2 l^2 g \sin(x_2)\cos(x_2) - mldx_4\cos(x_2)}
+			{(M+m)J - (ml\cos(x_2))^2} \\
+		\frac{ml\cos(x_2)F - mlDx_3\cos(x_2) - (mlx_4)^2 \sin(x_2)\cos(x_2) + (M+m)mlg\sin(x_2) - (M+m)dx_4}
+			{(M+m)J - (ml\cos(x_2))^2}
 	\end{pmatrix} 
 
-whereas 
 
-.. math::
-
-	a = \frac {F}{m_0}
-
-The position `s` of the cart is the output of the system: 
+The position :math:`s` of the cart is the output of the system: 
 	
 .. math::
 
