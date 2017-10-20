@@ -14,4 +14,6 @@ To learn the basics about PyMoskito, we recommend reading the following lessons:
   intro
   new_example
   starting
-  GUI
+  test_model
+  new_controller
+  test_controller

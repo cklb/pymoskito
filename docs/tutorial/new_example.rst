@@ -1,5 +1,5 @@
 ============================
-Simulating a Simple Pendulum
+Simulating a Pendulum
 ============================
 
 The system we will work with is a pendulum, fixed on a movable
@@ -68,7 +68,6 @@ To implement the presented system in PyMoskito, the mimimum to do is:
   new_main
   new_init
   new_model
-  new_controller
   
 All code is written in Python. If you want to refresh or expand 
 your knowledge about this language, see the `Python Tutorial`_. 

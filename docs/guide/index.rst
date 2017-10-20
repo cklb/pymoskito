@@ -13,4 +13,5 @@ of the tutorial because they were not considered basic anymore.
   ../tutorial/new_default
   ../tutorial/new_model2
   ../tutorial/postprocessing
+  ../tutorial/GUI
   visualization
