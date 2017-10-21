@@ -14,3 +14,24 @@
   ModelMixer:
    type: AdditiveMixer
 
+- Name: test_controller
+  clear previous: !!python/bool True
+
+  Model:
+   type: RodPendulumModel
+   initial state: [0, 180, 0, 0]
+
+  Solver:
+   type: ODEInt
+   end time: 20
+
+  ModelMixer:
+   type: AdditiveMixer
+   Input A: Controller
+   
+  Controller:
+   type: BasicController
+   
+  Trajectory:
+   type: SmoothTransition
+   delta t: 10
