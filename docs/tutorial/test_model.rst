@@ -24,3 +24,6 @@ After a succesful simulation, all created diagrams will be listed in the Data Wi
 Double click on one to display it:
 
 .. image:: ../pictures/ModelTest3.jpg
+
+Feel free to experiment with the settings and see, 
+if the model reacts the way you would have predicted.

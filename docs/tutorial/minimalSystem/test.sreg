@@ -19,11 +19,10 @@
 
   Model:
    type: RodPendulumModel
-   initial state: [0, 180, 0, 0]
 
   Solver:
    type: ODEInt
-   end time: 20
+   end time: 10
 
   ModelMixer:
    type: AdditiveMixer
@@ -34,4 +33,4 @@
    
   Trajectory:
    type: SmoothTransition
-   delta t: 10
+   delta t: 5

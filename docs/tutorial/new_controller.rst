@@ -79,3 +79,9 @@ very bottom of your code:
 .. literalinclude:: minimalSystem/controller.py
 	:start-after: #register
 	:lineno-match:
+	
+Finally, register the controller file by importing it in the __init__.py file:
+
+.. literalinclude:: minimalSystem/__init__.py
+	:lines: 2
+	:lineno-match:
