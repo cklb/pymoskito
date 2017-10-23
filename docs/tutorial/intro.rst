@@ -2,7 +2,7 @@
 Understanding the Structure
 =============================
 PyMoskito simulates the control loop as seen in the schematics
-below. This tutorial will focus on the part highlighted in green,
+below. This tutorial will focus on the part highlighted in blue,
 since these modules are essential to run the toolbox:
 
 .. image:: ../pictures/ctrl_loop_intro.png
