@@ -1,75 +1,70 @@
 ============================
-Simulating a Pendulum
+System: Pendulum on Cart
 ============================
 
-The system we will work with is a pendulum, fixed on a movable
-cart. System input is the force F, system output the 
-position s of the cart. 
+A pendulum is fixed on a movable cart.
+
+The cart has a mass :math:`M`. 
+The friction between the cart and the surface causes
+a frictional force :math:`F_R = D \cdot \dot{s}`,
+in opposite direction as the velocity :math:`\dot{s}` of the cart.
+
+The pendulum has a mass :math:`m`, a moment of intertia :math:`J`,
+a length :math:`l` and an angle of deflection :math:`\varphi`.
+The friction in the joint where the pendulum is mounted on the cart 
+causes a frictional torque :math:`M_R = d \cdot \dot{\varphi}`,
+in opposite direction as the speed of rotation :math:`\dot{\varphi}`.
+
+The task is to control the position :math:`s` of the cart.
+Actuating variable is the force :math:`F`.
 
 .. image:: ../pictures/rodPendulum.png
 
-The state vector x is given as:
+The state vector :math:`\boldsymbol{x}` is given as:
 
 .. math::
-	
-	\boldsymbol{x} 
-	=
-	\begin{pmatrix}
-		x_1 \\
-		x_2 \\
-		x_3 \\
-		x_4
-	\end{pmatrix} 
-	=
-	\begin{pmatrix}
-		s \\
-		\varphi \\
-		\dot{s} \\
-		\dot{\varphi}
-	\end{pmatrix} 
+    
+    \boldsymbol{x} 
+    =
+    \begin{pmatrix}
+        x_1 \\
+        x_2 \\
+        x_3 \\
+        x_4
+    \end{pmatrix} 
+    =
+    \begin{pmatrix}
+        s \\
+        \varphi \\
+        \dot{s} \\
+        \dot{\varphi}
+    \end{pmatrix} 
 
 The model equations are given as:
 
 .. math:: 
 
-	\boldsymbol{\dot{x}} 
-	=
-	\begin{pmatrix}
-		\dot{x_1} \\
-		\dot{x_2} \\
-		\dot{x_3} \\
-		\dot{x_4}
-	\end{pmatrix} 
-	=
-	\begin{pmatrix}
-		x_3 \\
-		x_4 \\
-		\frac{JF - JDx_3 - mlJ{x_4}^2 \sin(x_2) + m^2 l^2 g \sin(x_2)\cos(x_2) - mldx_4\cos(x_2)}
-			{(M+m)J - (ml\cos(x_2))^2} \\
-		\frac{ml\cos(x_2)F - mlDx_3\cos(x_2) - (mlx_4)^2 \sin(x_2)\cos(x_2) + (M+m)mlg\sin(x_2) - (M+m)dx_4}
-			{(M+m)J - (ml\cos(x_2))^2}
-	\end{pmatrix} 
+    \boldsymbol{\dot{x}} 
+    =
+    \begin{pmatrix}
+        \dot{x_1} \\
+        \dot{x_2} \\
+        \dot{x_3} \\
+        \dot{x_4}
+    \end{pmatrix} 
+    =
+    \begin{pmatrix}
+        x_3 \\
+        x_4 \\
+        \frac{JF - JDx_3 - mlJ{x_4}^2 \sin(x_2) + m^2 l^2 g \sin(x_2)\cos(x_2) - mldx_4\cos(x_2)}
+            {(M+m)J - (ml\cos(x_2))^2} \\
+        \frac{ml\cos(x_2)F - mlDx_3\cos(x_2) - (mlx_4)^2 \sin(x_2)\cos(x_2) + (M+m)mlg\sin(x_2) - (M+m)dx_4}
+            {(M+m)J - (ml\cos(x_2))^2}
+    \end{pmatrix} 
 
 
 The position :math:`s` of the cart is the output of the system: 
-	
+
 .. math::
 
-	y = x_1 = s
-
-
-Create a folder with a path of your choice and name it simplePendulum.
-All files created during this tutorial need to be stored here.	
-To implement the presented system in PyMoskito, the mimimum to do is:
-
-.. toctree::
-  :maxdepth: 2
-
-  new_main
-  new_init
-  new_model
-  
-All code is written in Python. If you want to refresh or expand 
-your knowledge about this language, see the `Python Tutorial`_. 
-
-.. _`Python Tutorial`: https://docs.python.org/3/tutorial/index.html
+    y = x_1 = s

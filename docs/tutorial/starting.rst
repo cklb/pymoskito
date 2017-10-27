@@ -2,22 +2,21 @@
 Starting the Program
 ========================
 
-PyMoskito can not be started itself, instead you need to start an example. 
-The files created in the :doc:`previous chapter <new_example>` 
-are the mimimum of what the toolbox needs.
-Use the command line to navigate to the directory, where the folder 'simplePendulum' is located.
+For PyMoskito to start, an application needs to launch the toolbox and execute it.
 
-You can now start the example by entering::
+To do so, create a file in the same directory as the model and name it::
 
-    $ python -m simplePendulum
+    __main__.py
 
+Copy the following code into your main file: 
 
-or from inside the directory by calling::
+.. literalinclude:: minimalSystem/__main__.py
+    :language: python
+    :lines: 1-6,8-21
+    :linenos:
 
-    $ python .
-
-or::
+Use the command line to navigate to the directory of the main file and the model file
+and start the toolbox with the command::
 
     $ python __main__.py
 
-All of these commands will do the same thing and start the example "simple Pendulum".

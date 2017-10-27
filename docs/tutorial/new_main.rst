@@ -8,8 +8,7 @@ Every program needs a main. Therefore, the first file you create should be calle
 
 Copy the following code into your main file: 
 
-.. literalinclude:: ../../pymoskito/examples/ballbeam/__main__.py
+.. literalinclude:: minimalSystem/__main__.py
 	:language: python
-	:lines: 1-28,34-41
 	:linenos:
 
