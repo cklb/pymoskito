@@ -31,7 +31,7 @@ class BasicController(pm.Controller):
         settings.update(input_type=settings["source"])
 
         pm.Controller.__init__(self, settings)
-		
+    
 #matrices
         # the system matrices after linearization in phi=PI
         z = (M+m)*J - (m*l)**2
@@ -46,9 +46,8 @@ class BasicController(pm.Controller):
                             [-l*m/z]
                            ])
         self._C = np.array([[1, 0, 0, 0]])
-        # the equilibrium state and the output as vectors
+        # the equilibrium state as a vector
         self._eq_state = np.array([0,np.pi,0,0])
-        self._output = np.zeros((1, ))
 
 #calculations
         # pole placement of linearized state feedback
@@ -60,8 +59,8 @@ class BasicController(pm.Controller):
 
         x = np.copy(input_values) - self._eq_state
         yd = trajectory_values
-        self._output = - np.dot(self._K, x) + np.dot(self._V, yd[0])
+        output = - np.dot(self._K, x) + np.dot(self._V, yd[0])
         
-        return self._output
+        return output
 #register
 pm.register_simulation_module(pm.Controller, BasicController)
