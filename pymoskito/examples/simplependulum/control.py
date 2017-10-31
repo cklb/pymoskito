@@ -6,19 +6,7 @@ from collections import OrderedDict
 import pymoskito as pm
 
 #from python.rod_pendulum import model_parameter as mp
-
 from . import settings as mp
-
-# pendulum
-m1 = 358.3 / 1000.0  # kg
-a1 = 0.43  # m --> determined by experiments
-J1 = 0.0379999429  # Nms**2
-#d1 = 0.0058885212  # Nms
-
-m0 = 3.340  # kg - weight of the cart
-
-g = 9.81  # m/s**2 - gravity
-
 from . import symbolic_calculation as symcalc
 
 
@@ -70,58 +58,58 @@ class LinearStateFeedback(pm.Controller):
         return u
 
 
-# class LjapunovController(pm.Controller):
+class LjapunovController(pm.Controller):
 
-    # public_settings = OrderedDict([
-        # ("k", 1),
-        # ("k1", 0),
-        # ("k2", 0),
-        # ("eps", 1e-2),
-        # ("tick divider", 1)])
+    public_settings = OrderedDict([
+        ("k", 1),
+        ("k1", 0),
+        ("k2", 0),
+        ("eps", 1e-2),
+        ("tick divider", 1)])
 
-    # term_old = 0
-    # u_old = 0
+    term_old = 0
+    u_old = 0
 
-    # def __init__(self, settings):
-        # settings.update(input_order=0)
-        # settings.update(output_order=1)
-        # settings.update(input_type="system_state")
-        # pm.Controller.__init__(self, settings)
+    def __init__(self, settings):
+        settings.update(input_order=0)
+        settings.update(output_order=1)
+        settings.update(input_type="system_state")
+        pm.Controller.__init__(self, settings)
 
-    # def _control(self, time, trajectory_values=None, feedforward_values=None, input_values=None, **kwargs):
-        # s, varphi1, sdot, varphidot1 = input_values
+    def _control(self, time, trajectory_values=None, feedforward_values=None, input_values=None, **kwargs):
+        s, varphi1, sdot, varphidot1 = input_values
 
-        # # # paper variant
-        # # Eo = mp.a1*mp.g*mp.m1
-        # # E = 0.5*mp.J1*varphidot1**2 \
-        # #     + 0.5*mp.a1**2*mp.m1*varphidot1**2 \
-        # #     + mp.a1*mp.g*mp.m1*np.cos(varphi1) \
-        # #     - mp.a1*mp.m1*sdot*varphidot1*np.cos(varphi1) \
-        # #     + 0.5*mp.m0*sdot**2 \
-        # #     + 0.5*mp.m1*sdot**2
-        # #
-        # # term = (E-Eo)*((mp.m0 + mp.m1)*sdot
-        # #                - mp.a1*mp.m1*varphidot1*np.cos(varphi1)
-        # #                - mp.m1*mp.a1*np.cos(varphi1)
-        # #                + (mp.a1**2*mp.m1**2*sdot*np.cos(varphi1)**2)/(mp.J1 + mp.a1**2*mp.m1)) \
-        # #        - self._settings["kd"]*sdot
+        # # paper variant
+        # Eo = mp.a1*mp.g*mp.m1
+        # E = 0.5*mp.J1*varphidot1**2 \
+        #     + 0.5*mp.a1**2*mp.m1*varphidot1**2 \
+        #     + mp.a1*mp.g*mp.m1*np.cos(varphi1) \
+        #     - mp.a1*mp.m1*sdot*varphidot1*np.cos(varphi1) \
+        #     + 0.5*mp.m0*sdot**2 \
+        #     + 0.5*mp.m1*sdot**2
+        #
+        # term = (E-Eo)*((mp.m0 + mp.m1)*sdot
+        #                - mp.a1*mp.m1*varphidot1*np.cos(varphi1)
+        #                - mp.m1*mp.a1*np.cos(varphi1)
+        #                + (mp.a1**2*mp.m1**2*sdot*np.cos(varphi1)**2)/(mp.J1 + mp.a1**2*mp.m1)) \
+        #        - self._settings["kd"]*sdot
 
-        # # own variant
-        # E0 = 0.5*mp.m0*sdot**2 + 0.5*self._settings["k1"]*s**2
-        # E1 = 0.5*(mp.J1 + mp.a1**2*mp.m1)*varphidot1**2 + mp.a1*mp.g*mp.m1*(np.cos(varphi1) - 1)
+        # own variant
+        E0 = 0.5*mp.m0*sdot**2 + 0.5*self._settings["k1"]*s**2
+        E1 = 0.5*(mp.J1 + mp.a1**2*mp.m1)*varphidot1**2 + mp.a1*mp.g*mp.m1*(np.cos(varphi1) - 1)
 
-        # term = E0*mp.m0*sdot + E1*mp.a1*mp.m1*varphidot1*np.cos(varphi1)
+        term = E0*mp.m0*sdot + E1*mp.a1*mp.m1*varphidot1*np.cos(varphi1)
 
-        # # trial to swing-up the pendulum with friction
-        # # if abs(term) >= self._settings["eps"]:
-        # #     u_lja = -self._settings["k"]*term + (E1*mp.d1*varphidot1**2 - E0*self._settings["k1"]*s*sdot)/term
-        # #     self.u_old = u_lja
-        # # else:
-        # #     u_lja = self.u_old
+        # trial to swing-up the pendulum with friction
+        # if abs(term) >= self._settings["eps"]:
+        #     u_lja = -self._settings["k"]*term + (E1*mp.d1*varphidot1**2 - E0*self._settings["k1"]*s*sdot)/term
+        #     self.u_old = u_lja
+        # else:
+        #     u_lja = self.u_old
 
-        # u_lja = -self._settings["k"]*term
+        u_lja = -self._settings["k"]*term
 
-        # return u_lja
+        return u_lja
 
 
 class SwingUpController(pm.Controller):

@@ -4,39 +4,22 @@ import numpy as np
 
 import pymoskito as pm
 
-#from . import settings as mp
-
-initial_state = [0, 180.0, 0, 0]
-
-# pendulum
-m1 = 358.3 / 1000.0  # kg
-a1 = 0.43  # m --> determined by experiments
-J1 = 0.0379999429  # Nms**2
-d1 = 0.0058885212  # Nms
-
-m0 = 3.340  # kg - weight of the cart
-
-g = 9.81  # m/s**2 - gravity
+# from . import model_parameter as mp
+# from .. import model_parameter as mp
+#from python.rod_pendulum import model_parameter as mp
+from . import settings as mp
 
 class RodPendulumModel(pm.Model):
     """
     Implementation of the rod pendulum on a cart system
     """
-#    public_settings = OrderedDict([("initial state", mp.initial_state),
-#                                   ("m0", mp.m0),
-#                                   ("m1", mp.m1),
-#                                   ("a1", mp.a1),
-#                                   ("J1", mp.J1),
-#                                   ("d1", mp.d1),
-#                                   ("g", mp.g),
-#                                   ])
-    public_settings = OrderedDict([("initial state", initial_state),
-                                   ("m0", m0),
-                                   ("m1", m1),
-                                   ("a1", a1),
-                                   ("J1", J1),
-                                   ("d1", d1),
-                                   ("g", g),
+    public_settings = OrderedDict([("initial state", mp.initial_state),
+                                   ("m0", mp.m0),
+                                   ("m1", mp.m1),
+                                   ("a1", mp.a1),
+                                   ("J1", mp.J1),
+                                   ("d1", mp.d1),
+                                   ("g", mp.g),
                                    ])
 
     def __init__(self, settings):
