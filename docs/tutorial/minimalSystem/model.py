@@ -57,8 +57,9 @@ class RodPendulumModel(pm.Model):
 
 #output
     def calc_output(self, input_vector):
-    
-        return input_vector[0]
+        
+        s = input_vector[0]
+        return s
 #register
 #-> move this to starting
 pm.register_simulation_module(pm.Model, RodPendulumModel)

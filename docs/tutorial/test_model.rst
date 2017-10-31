@@ -11,16 +11,16 @@ you will see the interface of the toolbox:
 
 .. image:: ../pictures/ModelTest1.jpg
 
-Within the Properties Window (1), double clicking on a value (all None by default)
+Within the Properties Window (1), double clicking on a value (all :py:data:`None` by default)
 activates a drop down menu.
 Clicking again presents all eligible options.
 One of these options as an eligible model is the class RodPendulumModel,
 since it was registered and linked to PyMoskito earlier.
 Choose it now and press enter to confirm your choice.
 
-By clicking on the arrow that appeared on the left of 'Model',
-all model paramters and the initial state are displayed. 
-These are taken from the public part of ordered dictionary defined earlier in the model.
+By clicking on the arrow that appeared on the left of :py:data:`Model`,
+all model parameters and the initial state are displayed. 
+These are taken from the public part of the ordered dictionary defined earlier in the model.
 Double click on a value to change it manually.
 Press enter to confirm the input.
 

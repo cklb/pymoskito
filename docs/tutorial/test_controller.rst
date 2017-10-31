@@ -5,9 +5,12 @@ Closing the Control Loop
 Start PyMoskito loading the created files.
 
 Choose the RodPendulum as model, the ODEInt as solver,
-the BasicController as Conntroller, the AdditiveMixer as ModelMixer
+the BasicController as Controller, the AdditiveMixer as ModelMixer
 and the SmoothTransition as Trajectory.
+
 Change the solver's end time to 10 and Input A of ModelMixer to Controller.
+To enter string values, type :py:data:`'Controller'` or :py:data:`"Controller"`
+and press enter to confirm the input:
 
 .. image:: ../pictures/ControllerTest1.jpg
 
@@ -18,3 +21,7 @@ i.e. the control error:
 
 Feel free to experiment with the settings and see, 
 if the control loop reacts the way you would have predicted.
+
+Keep in mind that the controller is implemented static.
+The control law does not adapt to changes in the model parameters 
+due to the linearized model used to calculate the controller gain.

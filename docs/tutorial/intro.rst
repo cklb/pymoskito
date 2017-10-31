@@ -1,5 +1,5 @@
 =============================
-The Minimum of PyMoskito
+Minimal PyMoskito
 =============================
 PyMoskito simulates the control loop as seen in the schematics
 below. This tutorial will focus on the part highlighted in blue,

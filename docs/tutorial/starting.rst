@@ -15,6 +15,9 @@ Copy the following code into your main file:
     :lines: 1-6,8-21
     :linenos:
 
+Note the :py:data:`import` command in line :py:data:`6`, 
+which includes the earlier implemented model file in the application.
+    
 Use the command line to navigate to the directory of the main file and the model file
 and start the toolbox with the command::
 

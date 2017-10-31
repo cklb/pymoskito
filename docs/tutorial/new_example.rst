@@ -15,7 +15,8 @@ The friction in the joint where the pendulum is mounted on the cart
 causes a frictional torque :math:`M_R = d \cdot \dot{\varphi}`,
 in opposite direction as the speed of rotation :math:`\dot{\varphi}`.
 
-The task is to control the position :math:`s` of the cart.
+The task is to control the position :math:`s` of the cart 
+and the deflection angle :math:`\varphi` of the pendulum.
 Actuating variable is the force :math:`F`.
 
 .. image:: ../pictures/rodPendulum.png
