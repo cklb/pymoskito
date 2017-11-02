@@ -3,6 +3,9 @@ Testing the Model
 --------------------------------------------
 To test your source code, but also the equations of your model,
 use PyMoskito to simulate your system with no input or controller.
+For the toolbox to run, 
+a :py:data:`Model`, a :py:data:`Solver` and a :py:data:`ModelMixer`
+need to be selected.
 Choose initial states that make the prediction of the systems
 reaction easy and compare them with the simulation results.
 
@@ -10,6 +13,9 @@ After succesfully starting the program,
 you will see the interface of the toolbox:
 
 .. image:: ../pictures/ModelTest1.jpg
+
+For a successful simulation, choices for :py:data:`Model`,
+:py:data:`Solver` and :py:data:`ModelMixer` need to be made.
 
 Within the Properties Window (1), double clicking on a value (all :py:data:`None` by default)
 activates a drop down menu.

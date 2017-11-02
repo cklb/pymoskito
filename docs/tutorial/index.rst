@@ -18,11 +18,12 @@ your knowledge about this language, see the `Python Tutorial`_.
   :maxdepth: 2
 
   intro
-  new_example
+  system
   new_model
   starting
   test_model
   new_controller
   test_controller
+  outro
 
 .. _`Python Tutorial`: https://docs.python.org/3/tutorial/index.html

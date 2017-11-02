@@ -9,7 +9,41 @@ which acts as the actuating variable for the model.
 
 In this scenario, the controller is linear. 
 The linearization of the nonlinear model needs to be done beforehand
-and is considered given in this tutorial.
+and is given in this tutorial as:
+
+.. math::
+    
+    \boldsymbol{A} =
+    \begin{pmatrix}
+        0 & 0 & 1 & 0\\
+        0 & 0 & 0 & 1\\
+        0 & \frac{m^{2}l^{2}g}{z} & -\frac{JD}{z} & \frac{mld}{z}\\
+        0 & -\frac{(M+m)mlg}{z} & \frac{mlD}{z} & -\frac{(M+m)d}{z}\\
+    \end{pmatrix} 
+    \ \
+    \boldsymbol{B} =
+    \begin{pmatrix}
+        0\\
+        0\\
+        \frac{J}{z}\\
+        -\frac{ml}{z}\\
+    \end{pmatrix} 
+    \ \
+    \boldsymbol{C} =
+    \begin{pmatrix}
+        1 & 0 & 0 & 0\\
+    \end{pmatrix} 
+    
+.. math::
+    
+    z = (M+m)\cdot J - m^{2}l^{2}
+    
+The linear control law is given with the control gain :math:`\boldsymbol{K}`
+and the prefilter :math:`\boldsymbol{V}` as:
+
+.. math::
+    
+    u = -\boldsymbol{K} \boldsymbol{x} + \boldsymbol{V} \boldsymbol{y_d}
 
 Start by creating a file called::
 
@@ -39,7 +73,8 @@ Store the linearized system matrices and the equilibrium state.
 To make matrix operations possible, use the array type provided by NumPy.
 
 PyMoskito's :doc:`Controltools <../modules/controltools>` provide functions
-to calculate the values of a linear state feedback and a prefilter:
+to calculate the values of a linear state feedback and a prefilter,
+which can be used as seen in lines :py:data:`49-50`:
 
 .. literalinclude:: minimalSystem/controller.py
     :start-after: #init

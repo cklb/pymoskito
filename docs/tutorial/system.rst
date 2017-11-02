@@ -2,12 +2,13 @@
 System: Pendulum on Cart
 ============================
 
-A pendulum is fixed on a movable cart.
+A pendulum is fixed on a cart, which can move in the horizontal direction.
 
 The cart has a mass :math:`M`. 
 The friction between the cart and the surface causes
 a frictional force :math:`F_R = D \cdot \dot{s}`,
 in opposite direction as the velocity :math:`\dot{s}` of the cart.
+
 
 The pendulum has a mass :math:`m`, a moment of intertia :math:`J`,
 a length :math:`l` and an angle of deflection :math:`\varphi`.

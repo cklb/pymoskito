@@ -7,7 +7,7 @@ At first, a new class derived from the abstract class
 Its basic functions will be calculating the state derivatives and the output,
 dependant on the model parameters, the current state and the input values.
 
-Create a folder with a path of your choice.
+Create a folder within a path of your choice.
 All files created during this tutorial need to be stored here.
 Create a file called::
 
