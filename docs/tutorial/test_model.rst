@@ -20,13 +20,13 @@ For a successful simulation, choices for :py:data:`Model`,
 Within the Properties Window (1), double clicking on a value (all :py:data:`None` by default)
 activates a drop down menu.
 Clicking again presents all eligible options.
-One of these options as an eligible model is the class RodPendulumModel,
-since it was registered and linked to PyMoskito earlier.
+One of these options now is :py:class:`RodPendulumModel`,
+since it was registered to PyMoskito earlier.
 Choose it now and press enter to confirm your choice.
 
 By clicking on the arrow that appeared on the left of :py:data:`Model`,
 all model parameters and the initial state are displayed. 
-These are taken from the public part of the ordered dictionary defined earlier in the model.
+These are taken from the :py:class:`public_settings` which have been defined earlier in the model.
 Double click on a value to change it manually.
 Press enter to confirm the input.
 

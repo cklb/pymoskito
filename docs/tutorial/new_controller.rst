@@ -94,7 +94,7 @@ the subtraction of the equilibrium from the state vector is necessary:
     :end-before: #register
     :lineno-match:
 
-Do not forget to link your controller to the toolbox at the 
+Do not forget to register your controller to the toolbox at the 
 bottom of your code:
 
 .. literalinclude:: minimalSystem/controller.py

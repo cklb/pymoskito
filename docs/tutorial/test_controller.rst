@@ -22,6 +22,6 @@ i.e. the control error:
 Feel free to experiment with the settings and see, 
 if the control loop reacts the way you would have predicted.
 
-Keep in mind that the controller is implemented static.
-The control law does not adapt to changes in the model parameters 
-due to the linearized model used to calculate the controller gain.
+Keep in mind that the implemented controller is static.
+The control law does not adapt to changes to the model parameters,
+since the controller gain is calculated from values stored in the controller class.
