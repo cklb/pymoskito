@@ -10,4 +10,4 @@ but also ways to transition them between those states. (e.g. swinging them up)
 Besides a rigid body model, this example features a pout mass model and also
 a partially linearized version.
 
-.. image:: pendulum.*
+.. image:: ../pictures/pendulum.*
