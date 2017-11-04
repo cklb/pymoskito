@@ -14,9 +14,6 @@ you will see the interface of the toolbox:
 
 .. image:: ../pictures/ModelTest1.jpg
 
-For a successful simulation, choices for :py:data:`Model`,
-:py:data:`Solver` and :py:data:`ModelMixer` need to be made.
-
 Within the Properties Window (1), double clicking on a value (all :py:data:`None` by default)
 activates a drop down menu.
 Clicking again presents all eligible options.

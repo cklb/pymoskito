@@ -39,8 +39,9 @@ Within the constructor, you must define the number of inputs and states.
 Do so by storing these values in settings as seen in lines :py:data:`24` and :py:data:`25`. 
 Adding output information as seen in line :py:data:`26` is optional,
 this will change the appearance of the output diagram.
-It is obligatory to call the constructor of the base class at the end
-:
+It is obligatory to call the constructor of the base class at the end. 
+The constructor's argument :py:data:`settings` is a copy of :py:data:`public_settings`
+with all changes the user made in the interface:
 
 .. literalinclude:: minimalSystem/model.py
     :start-after: #init

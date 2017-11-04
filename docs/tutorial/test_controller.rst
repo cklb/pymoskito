@@ -25,3 +25,6 @@ if the control loop reacts the way you would have predicted.
 Keep in mind that the implemented controller is static.
 The control law does not adapt to changes to the model parameters,
 since the controller gain is calculated from values stored in the controller class.
+You can use this effect to simulate the situation,
+that the controller was designed based on model parameters 
+that differ from the real parameters of the process.

@@ -7,15 +7,13 @@ import pymoskito as pm
 #class begin
 class BasicController(pm.Controller):
 
-     public_settings = OrderedDict([("poles",[-1,-2,-3,-4]),
-                                    ("source","system_state"),
-                                    ("tick divider", 1)
+     public_settings = OrderedDict([("poles",[-1,-2,-3,-4])
                                     ])
 
 #init
      def __init__(self,settings):
         settings.update(input_order=0)
-        settings.update(input_type=settings["source"])
+        settings.update(input_type="system_state")
 
         pm.Controller.__init__(self, settings)
         
@@ -58,5 +56,6 @@ class BasicController(pm.Controller):
         output = - np.dot(self._K, x) + np.dot(self._V, yd[0])
         
         return output
+
 #register
 pm.register_simulation_module(pm.Controller, BasicController)
