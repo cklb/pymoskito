@@ -2,10 +2,24 @@
 Ball and Beam (ballbeam)
 ========================
 
-This example is a simulation study of the "Ball and Beam" system, as it is
-described in [Hauser92]_ .
+A beam is pivoted on a bearing in its middle.
+The position of a ball on the beam is controlable by applying a torque into the bearing.
 
-Model equations:
+The ball has a mass :math:`M`, a radius :math:`R` and a moment of inertia :math:`J_b`.
+Its distance :math:`r` to the beam center is counted positively to the right.
+For the purpose of simplification, the ball can only move in the horizontal direction.
+
+The beam has a length :math:`L`, a moment of inertia :math:`J`
+and its deflection from the horizontal line is the angle :math:`\theta`.
+
+The task is to control the position  :math:`r` of the ball.
+Actuating variable is the torque :math:`\tau`.
+
+The system is taken from the publication [Hauser92]_ .
+
+.. image:: ../pictures/ballbeam.*
+
+The state vector :math:`\boldsymbol{x}` is chosen as:
 
 .. math::
     
@@ -24,6 +38,10 @@ Model equations:
         \theta \\
         \dot{\theta}
     \end{pmatrix} 
+
+The nonlinear model equations are given as:
+
+.. math::
     
     \boldsymbol{\dot{x}} 
     =
@@ -36,31 +54,29 @@ Model equations:
     =
     \begin{pmatrix}
         x_2 \\
-        B (x_1 x_4^2 - G \sin(x_3)) \\
+        \frac{M R^2}{J_b + M R^2} (x_1 x_4^2 - g \sin(x_3)) \\
         x_4 \\
-        \frac{\tau - M \cdot (2x_1 x_2 x_4 + G x_1 \cos(x_3))}{M x_1^2 + J + J_b}
+        \frac{\tau - M \cdot (2x_1 x_2 x_4 + g x_1 \cos(x_3))}{M x_1^2 + J + J_b}
     \end{pmatrix} 
-
-    B = \frac{M}{\frac{J_b}{R^2} + M}
     
-Consistency Checks ("Check if the ball remains on the beam"):
+Violations of the model's boundary conditions are the ball leaving the beam
+or the beam's deflection reaching the vertical line:
 
 .. math::
 
-    x_1 > \frac{beam \ length}{2}, "Ball \ fell \ down"
-    
-    x_3 > \frac{\pi}{2}, "Beam \ reached \ critical \ angle"
-    
-Input: :math:`\tau` as Torque (?)
-
-Output:
+    |x_1| > \frac{L}{2}
 
 .. math::
 
-    y = x_1 = r, Ball \ Position
+    |x_3| > \frac{\pi}{2}
 
-    
-.. image:: ../pictures/ballbeam.*
+The ball position is chosen as output:
+
+.. math::
+
+    y = x_1 = r
+
+
 
 .. [Hauser92] Hauser, J.; Sastry, S.; Kokotovic, P.
     Nonlinear Control Via Approximate
