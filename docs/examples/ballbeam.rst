@@ -46,10 +46,10 @@ The nonlinear model equations are given as:
     \boldsymbol{\dot{x}} 
     =
     \begin{pmatrix}
-        \dot{x_1} \\
-        \dot{x_2} \\
-        \dot{x_3} \\
-        \dot{x_4}
+        \dot{x}_1 \\
+        \dot{x}_2 \\
+        \dot{x}_3 \\
+        \dot{x}_4
     \end{pmatrix} 
     =
     \begin{pmatrix}
@@ -70,7 +70,7 @@ or the beam's deflection reaching the vertical line:
 
     |x_3| > \frac{\pi}{2}
 
-The ball position is chosen as output:
+The ball's position is chosen as output:
 
 .. math::
 
