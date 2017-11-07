@@ -17,7 +17,7 @@ Actuating variable is the torque :math:`\tau`.
 
 The system is taken from the publication [Hauser92]_ .
 
-.. image:: ../pictures/ballbeam.*
+.. image:: ../pictures/ballbeam.png
 
 The state vector :math:`\boldsymbol{x}` is chosen as:
 

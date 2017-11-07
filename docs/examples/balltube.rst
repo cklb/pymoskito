@@ -25,7 +25,7 @@ The tube has a height :math:`h`.
 The task is to control the ball's position :math:`z`.
 Actuating variable is the motor's control signal :math:`u_{pwm}`.
 
-.. image:: ../pictures/balltube.*
+.. image:: ../pictures/balltube.png
 
 The example comes with two models, which differ in the reaction to the ball falling down.
 The :py:class:`BallInTubeModel` sets the ball's position and speed to zero once the ball touches the ground.
