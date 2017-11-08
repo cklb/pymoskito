@@ -56,6 +56,3 @@ class BasicController(pm.Controller):
         output = - np.dot(self._K, x) + np.dot(self._V, yd[0])
         
         return output
-
-#register
-pm.register_simulation_module(pm.Controller, BasicController)

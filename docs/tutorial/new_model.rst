@@ -69,12 +69,4 @@ so extracting it from the state vector and returning it as a scalar is sufficien
 
 .. literalinclude:: minimalSystem/model.py
     :start-after: #output
-    :end-before: #register
-    :lineno-match:
-
-Do not forget to register your model to the toolbox at the bottom of your code.
-This command lets PyMoskito know that this module is available:
-
-.. literalinclude:: minimalSystem/model.py
-    :start-after: #register
     :lineno-match:

@@ -12,11 +12,14 @@ Copy the following code into your main file:
 
 .. literalinclude:: minimalSystem/__main__.py
     :language: python
-    :lines: 1-6,8-21
+    :lines: 1-6,8-11,13-21
     :linenos:
 
 Note the :py:data:`import` command in line :py:data:`6`, 
 which includes the earlier implemented model file in the application.
+The command in line :py:data:`10` registers the model to the toolbox.
+This lets PyMoskito know that this module is available 
+and adds it to the eligible options in the interface.
     
 Use the command line to navigate to the directory of the main file and the model file
 and start the toolbox with the command::

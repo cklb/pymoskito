@@ -91,18 +91,16 @@ the subtraction of the equilibrium from the state vector is necessary:
 
 .. literalinclude:: minimalSystem/controller.py
     :start-after: #control
-    :end-before: #register
     :lineno-match:
 
-Do not forget to register your controller to the toolbox at the 
-bottom of your code:
-
-.. literalinclude:: minimalSystem/controller.py
-    :start-after: #register
-    :lineno-match:
-
-Finally, import the controller file by adding one line to the __main__.py file:
+Finally, import the controller file and register the controller class to PyMoskito
+by adding two lines to the __main__.py file:
 
 .. literalinclude:: minimalSystem/__main__.py
     :lines: 7
     :lineno-match:
+    
+.. literalinclude:: minimalSystem/__main__.py
+    :lines: 12
+    :lineno-match:
+    

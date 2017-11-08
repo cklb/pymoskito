@@ -60,6 +60,3 @@ class RodPendulumModel(pm.Model):
         
         s = input_vector[0]
         return s
-#register
-#-> move this to starting
-pm.register_simulation_module(pm.Model, RodPendulumModel)
