@@ -5,7 +5,7 @@ Car with Trailers (car)
 A car pulls multiple trailers. All parts of the vehicle have one axis for simplification.
 
 The car moves forward with a velocity :math:`v` and turns with a ratotional speed :math:`\omega`.
-The coordinates :math:`x` and :math:`y` describe the car's distance to the <Ursprung> of a stationary coordinate system.
+The coordinates :math:`x` and :math:`y` describe the car's distance to the origin of a stationary coordinate system.
 
 The car's and the trailer's deflections regarding the horizontal line are :math:`\varphi_1`, :math:`\varphi_2` and :math:`\varphi_3`.
 
@@ -69,3 +69,8 @@ They are potential actuating variables to control the system.
     
 There is no output defined.
     
+The example comes with no controller, 
+with a 2D visualization,
+an external :py:data:`settings` file containing all initial values for the parameters
+and one regime loaded from the file :py:data:`default.sreg` by the main at program start.
+   
