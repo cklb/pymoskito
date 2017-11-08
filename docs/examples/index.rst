@@ -17,7 +17,7 @@ List of Examples:
   :maxdepth: 1
 
   ballbeam
-  balltube
-  BallTube2
+  balltube/balltube
+  balltube/BallTube2
   pendulum
   car

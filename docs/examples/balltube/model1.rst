@@ -25,7 +25,7 @@ The tube has a height :math:`h`.
 The task is to control the ball's position :math:`z`.
 Actuating variable is the motor's control signal :math:`u_{pwm}`.
 
-.. image:: ../pictures/balltube.png
+.. image:: ../../pictures/balltube.png
 
 The state vector :math:`\boldsymbol{x}` is chosen as:
 

@@ -2,7 +2,7 @@
 Ball in Tube Spring Model
 =========================
 
-This model contains all equations of the :doc:`Ball in Tube Model <BT_model1>`
+This model contains all equations of the :doc:`Ball in Tube Model <model1>`
 except for one single change:
 The dynamics of the ball bouncing back up once it falls to the ground.
 
