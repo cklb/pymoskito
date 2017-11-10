@@ -16,8 +16,8 @@ Actuating variable is the force F.
 
 .. image:: ../pictures/pendulum.png
 
-The example comes with three models,
-<short decscription models>
+The example comes with three models.
+A point mass model, a rigid body model and a partially linearized model.
 
 The state vector :math:`\boldsymbol{x}` is chosen in all three models as:
 
@@ -146,8 +146,13 @@ All three models define the cart's position as the output of the system:
     y = x_1 = s
     
 The example comes with five controllers.
-<Regeler beschreiben?>
-<The example also provides a package for symbolic calculation.>
+Two controllers using linear state feedback, 
+both using the package :py:data:`symbolic_calculation` to calculate their gain and prefilter.
+A linear quadratic regulator,
+calculating its gain and prefilter by solving the continuous algebraic Riccati equation.
+A Ljapunov controller, designed with the method of Ljapunov to stabilize the pendulums in the upward position.
+And finally a swing up controller, especially designed to swing the pendulums up using linear state feedback
+and stabilizing the system by switching to a Ljapunov controller once the pendulums point upwards.
 
 A 3D visualizer is implemented.
 In case of missing libraries, a 2D visualization can be used instead.
@@ -155,12 +160,11 @@ In case of missing libraries, a 2D visualization can be used instead.
 An external :py:data:`settings` file contains all parameters.
 All implemented classes import their initial values from here.
 
-Regimes are stored in a file.
 At program start, the main loads eleven regimes from the file :py:data:`default.sreg`.
 The provided regimes not only show the stabilization of the system in different
-steady-states. (e.g. both pendulums pointing downwards or both pointing upwards)
-but also ways to transition them between those states. (e.g. swinging them up).
+steady-states (e.g. both pendulums pointing downwards or both pointing upwards)
+but also ways to transition them between those states (e.g. swinging them up).
 
-The example also provides two modules for post processing. 
+The example also provides two modules for postprocessing. 
 They plot different combinations of results in two formats, one of them being :py:data:`.pdf`.
 The second format of files can be given to a metaprocessor.
