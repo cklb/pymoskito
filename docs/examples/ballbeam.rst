@@ -5,6 +5,8 @@ Ball and Beam (ballbeam)
 A beam is pivoted on a bearing in its middle.
 The position of a ball on the beam is controlable by applying a torque into the bearing.
 
+<i-wo erwähnen, dass System in der Mitte nicht wohldefiniert!>
+
 The ball has a mass :math:`M`, a radius :math:`R` and a moment of inertia :math:`J_b`.
 Its distance :math:`r` to the beam center is counted positively to the right.
 For the purpose of simplification, the ball can only move in the horizontal direction.
@@ -76,8 +78,40 @@ The ball's position is chosen as output:
 
     y = x_1 = r
 
+The example comes with five controllers.
+<controllers>
+<fcontroller>
+<gcontroller>
+<jcontroller>
+<lsscontroller>
+<pixcontroller>
 
+<feedforward><compensates linear part of system>
 
+<Four different observer classes>
+<3 Luenberger>
+<1 high gain for nonlinear systems>
+
+A 3D visualizer is implemented.
+In case of missing VTK, a 2D visualization can be used instead.
+  
+An external :py:data:`settings` file contains all parameters.
+All implemented classes import their initial values from here.
+
+At program start, the main loads two regimes from the file :py:data:`default.sreg`.
+<regimes>
+<This regime shows a transition of the ball from the left to the right side
+of the beam using a nonlinear controller>
+<This regimes shows a typical step response of a linear controller>
+
+The example also provides ten different modules for postprocessing. 
+They plot different combinations of results in two formats, one of them being :py:data:`.pdf`.
+The second format of files can be given to a metaprocessor.
+<10x postprocessing>
+
+The structure of :py:data:`__main__.py` allows starting the example without navigating to the directory
+and using an :py:data:`__init__.py` file to outsource the import commands for additional files.
+    
 .. [Hauser92] Hauser, J.; Sastry, S.; Kokotovic, P.
     Nonlinear Control Via Approximate
     Input-Output-Linearization: The Ball and Beam Example. IEEE Trans. on

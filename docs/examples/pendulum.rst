@@ -155,7 +155,7 @@ And finally a swing up controller, especially designed to swing the pendulums up
 and stabilizing the system by switching to a Ljapunov controller once the pendulums point upwards.
 
 A 3D visualizer is implemented.
-In case of missing libraries, a 2D visualization can be used instead.
+In case of missing VTK, a 2D visualization can be used instead.
   
 An external :py:data:`settings` file contains all parameters.
 All implemented classes import their initial values from here.
@@ -168,3 +168,6 @@ but also ways to transition them between those states (e.g. swinging them up).
 The example also provides two modules for postprocessing. 
 They plot different combinations of results in two formats, one of them being :py:data:`.pdf`.
 The second format of files can be given to a metaprocessor.
+   
+The structure of :py:data:`__main__.py` allows starting the example without navigating to the directory
+and using an :py:data:`__init__.py` file to outsource the import commands for additional files.

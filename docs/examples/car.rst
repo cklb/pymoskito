@@ -74,3 +74,5 @@ with a 2D visualization,
 an external :py:data:`settings` file containing all initial values for the parameters
 and one regime loaded from the file :py:data:`default.sreg` by the main at program start.
    
+The structure of :py:data:`__main__.py` allows starting the example without navigating to the directory
+and using an :py:data:`__init__.py` file to outsource the import commands for additional files.

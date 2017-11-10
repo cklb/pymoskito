@@ -18,6 +18,5 @@ List of Examples:
 
   ballbeam
   balltube/balltube
-  balltube/BallTube2
   pendulum
   car
