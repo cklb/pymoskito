@@ -27,4 +27,4 @@ and start the toolbox with the command::
     $ python __main__.py
 
 The upstarting interface of PyMoskito
-gives you the possibility to test the implemented model, which is the next step to do.
+gives you the possibility to test the implemented model, which is the next step.

@@ -6,9 +6,8 @@ To close the loop a controller has to be added.
 This can easily be done by deriving from the :py:class:`~pymoskito.simulation_modules.Controller` class.
 Its task is to stabilize the pendulum by calculating a suitable input for the model.
 
-In this scenario, the controller is linear. 
-The linearization of the nonlinear model needs to be done beforehand
-and is given in this tutorial as:
+To keep things simple, the controller is linear in this scenario
+and it is based on the linearized system which is given by
 
 .. math::
     
@@ -33,17 +32,23 @@ and is given in this tutorial as:
         1 & 0 & 0 & 0\\
     \end{pmatrix} 
     
+with
+    
 .. math::
     
-    z = (M+m)\cdot J - m^{2}l^{2}
+    z = J (M+m) - m^{2}l^{2}.
     
-The linear control law is given with the control gain :math:`\boldsymbol{K}`
-and the prefilter :math:`\boldsymbol{V}` as:
+The linear control law is given by
 
 .. math::
     
     u = -\boldsymbol{K} \boldsymbol{x} + \boldsymbol{V} \boldsymbol{y_d}
 
+with the control gain :math:`\boldsymbol{K}`
+and the prefilter :math:`\boldsymbol{V}`.
+One possibility to calculate the control gain is by using the Ackermann formula.
+    
+With all necessary equations, the implementation of the controller class can begin.
 Start by creating a file called::
 
     controller.py
@@ -73,7 +78,8 @@ To make matrix operations possible, use the array type provided by NumPy.
 
 PyMoskito's :doc:`Controltools <../modules/controltools>` provide functions
 to calculate the values of a linear state feedback and a prefilter,
-which can be used as seen in lines :py:data:`49-50`:
+which can be used as seen in lines :py:data:`49-50`. 
+The method :py:data:`place_siso()` is an implementation of the Ackermann formula:
 
 .. literalinclude:: minimalSystem/controller.py
     :start-after: #init
@@ -85,15 +91,15 @@ Its parameters are the current time, the current values of trajectory,
 feedforward and controller input.
 The parameter :py:data:`**kwargs` is free to be used as needed, 
 in this case it is ignored.
-Since the controller stabilizes the system in [0,0,0,0],
-the subtraction of the equilibrium from the state vector is necessary:
+Since this controller will be stabilizing the system in the steady state [0,0,0,0],
+it has to be subtracted to work on the small signal scale.
 
 .. literalinclude:: minimalSystem/controller.py
     :start-after: #control
     :lineno-match:
 
 Finally, import the controller file and register the controller class to PyMoskito
-by adding two lines to the __main__.py file:
+by adding two lines to the __main__.py file as done before for the model class:
 
 .. literalinclude:: minimalSystem/__main__.py
     :lines: 7
