@@ -21,7 +21,9 @@ and stabilizing the pendulum in its downside position.
 The possibility of stabilizing the pendulum in its upside position is not implemented in this tutorial.
 Actuating variable is the force :math:`F`.
 
-.. image:: ../pictures/rodPendulum.png
+.. figure:: ../pictures/rodPendulum.png
+    :align: center
+    :alt: Image of Rod Pendulum System
 
 With the state vector :math:`\boldsymbol{x}` is given as
 
