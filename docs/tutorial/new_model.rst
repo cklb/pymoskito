@@ -5,7 +5,7 @@ Implementing a Model
 At first, a new class derived from the abstract class 
 :py:class:`~pymoskito.simulation_modules.Model` is necessary.
 Its basic functions will be calculating the state derivatives and the output,
-dependant on the model parameters, the current state and the input values.
+depending on the model parameters, the current state and the input values.
 
 Create a folder within a path of your choice.
 All files created during this tutorial need to be stored here.
@@ -48,7 +48,7 @@ with all changes the user made in the interface:
     :end-before: #state
     :lineno-match:
 
-The calculation of the state derivatives takes place in a method,
+The calculation of the state derivatives takes place in a method
 that returns the results as an array.
 The method's parameters are the current time :py:data:`t`, the current state vector :py:data:`x`,
 and the parameter :py:data:`args`. The later is free to be defined as you need it,

@@ -2,10 +2,9 @@
 Implementing a Controller
 -------------------------
 
-A controller closes the loop, a class derived from the abstract class
-:py:class:`~pymoskito.simulation_modules.Controller`.
-Its only function calculates the controller output,
-which acts as the actuating variable for the model.
+To close the loop a controller has to be added. 
+This can easily be done by deriving from the :py:class:`~pymoskito.simulation_modules.Controller` class.
+Its task is to stabilize the pendulum by calculating a suitable input for the model.
 
 In this scenario, the controller is linear. 
 The linearization of the nonlinear model needs to be done beforehand

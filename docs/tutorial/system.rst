@@ -17,12 +17,13 @@ causes a frictional torque :math:`M_R = d \cdot \dot{\varphi}`,
 in opposite direction as the speed of rotation :math:`\dot{\varphi}`.
 
 The task is to control the position :math:`s` of the cart 
-and the deflection angle :math:`\varphi` of the pendulum.
+and stabilizing the pendulum in its downside position.
+The possibility of stabilizing the pendulum in its upside position is not implemented in this tutorial.
 Actuating variable is the force :math:`F`.
 
 .. image:: ../pictures/rodPendulum.png
 
-The state vector :math:`\boldsymbol{x}` is given as:
+With the state vector :math:`\boldsymbol{x}` is given as
 
 .. math::
     
@@ -42,7 +43,7 @@ The state vector :math:`\boldsymbol{x}` is given as:
         \dot{\varphi}
     \end{pmatrix} 
 
-The model equations are given as:
+the model equations are given by
 
 .. math:: 
 
@@ -65,8 +66,12 @@ The model equations are given as:
     \end{pmatrix} 
 
 
-The position :math:`s` of the cart is the output of the system: 
+and the cart's position :math:`s` being chosen as output 
 
 .. math::
 
     y = x_1 = s
+
+of the system.
+
+With this model given, the next step is to implement a class containing all equations.
