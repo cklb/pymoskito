@@ -19,7 +19,11 @@ Actuating variable is the torque :math:`\tau`.
 
 The system is taken from the publication [Hauser92]_ .
 
-.. image:: ../pictures/ballbeam.png
+.. figure:: ../pictures/ballbeam.png
+    :align: center
+    :alt: Image of Ball and Beam System
+    
+    The ball and beam system
 
 With the state vector 
 

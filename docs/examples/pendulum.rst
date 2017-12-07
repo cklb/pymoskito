@@ -4,17 +4,21 @@ Tandem Pendulum (pendulum)
 
 Two pendulums are fixed on a cart, which can move in the horizontal direction.
 
-The cart has a mass :math:`m_0`. The friction between the cart and the surface causes a frictional force :math:`F_R = d_0 \cdot \dot{s}`,
+The cart has a mass :math:`m_0`. The friction between the cart and the surface causes a frictional force :math:`F_r = d_0 \cdot \dot{s}`,
 in opposite direction as the velocity :math:`\dot{s}` of the cart.
 
 Each pendulum has a mass :math:`m_i`, a moment of intertia :math:`J_i`, a length :math:`l_i` and an angle of deflection :math:`\varphi_i`.
 The friction in the joint where the pendulums are mounted on the cart causes a frictional torque :math:`M_{ir} = d_i \cdot \dot{\varphi}_i`,
 in opposite direction as the speed of rotation :math:`\dot{\varphi}_i`.
 
-The task is to control the position :math:`s` of the cart and the deflection angles :math:`\varphi_i` of the pendulums. 
+The task is to control the position :math:`s` of the cart and to stabilize the pendulums in either the upward or downward position. 
 Actuating variable is the force F.
 
-.. image:: ../pictures/pendulum.png
+.. figure:: ../pictures/pendulum.png
+    :align: center
+    :alt: Image of Pendulum System
+    
+    The pendulum system
 
 The example comes with three models.
 A point mass model, a rigid body model and a partially linearized model.
@@ -109,8 +113,14 @@ each pendulum has a moment of inertia :math:`J_{DPi}`:
     term4 &= F - d_0 x_2 - m_1^* l_1^* x_4^2 \sin(x_3) - m_2^* l_2^* x_6^2 \sin(x_5) \\
     
 The class :py:class:`TwoPendulumModelParLin` is the implementation of a the partially linearized point mass model.
-The input is transformed to :math:`u_{tr}`,
-which simplifies the model equations: 
+The input is chosen as
+
+.. math::
+
+    u_{tr} = \frac{1}{M} \left( F_1 + F_2 + F - d_0 x_2 - \frac{d_1 x_4}{l_1} \cos(x_3) - \frac{d_2 x_6}{l_2} \cos(x_5) \right),
+
+with :math:`M`, :math:`F_1` and :math:`F_2` as before in :py:class:`TwoPendulumModel`. 
+This transforms the model equations into the input afine form
 
 .. math::
 
@@ -127,32 +137,40 @@ which simplifies the model equations:
     =
     \begin{pmatrix}
         x_2 \\
-        u_{tr} \\
+        0 \\
         x_4 \\
-        \frac{g}{l_1}\sin(x_3) - \frac {d_1 x_4}{m_1 l_1^2} + \frac{\cos(x_3)}{l_1} u_{tr} \\
+        \frac{g}{l_1}\sin(x_3) - \frac {d_1 x_4}{m_1 l_1^2} \\
         x_6 \\
-        \frac{g}{l_2}\sin(x_5) - \frac {d_2 x_6}{m_2 l_2^2} + \frac{\cos(x_5)}{l_2} u_{tr} 
+        \frac{g}{l_2}\sin(x_5) - \frac {d_2 x_6}{m_2 l_2^2}
     \end{pmatrix}
-    
-.. math::
+    +
+    \begin{pmatrix}
+        0 \\
+        1 \\
+        0 \\
+        \frac{\cos(x_3)}{l_1}\\
+        0\\
+        \frac{\cos(x_5)}{l_2}
+    \end{pmatrix}
+    u_{tr}
 
-    u_{tr} = \frac{1}{M} \left( F_1 + F_2 + F - d_0 x_2 - \frac{d_1 x_4}{l_1} \cos(x_3) - \frac{d_2 x_6}{l_2} \cos(x_5) \right)\\
-
     
-All three models define the cart's position as the output of the system:
+All three models define the cart's position
 
 .. math::
 
     y = x_1 = s
+
+as the output of the system.
     
 The example comes with five controllers.
-Two controllers using linear state feedback, 
+Two of them, :py:class:`LinearStateFeedback` and :py:class:`LinearStateFeedbackParLin`, implement linear state feedback, 
 both using the package :py:data:`symbolic_calculation` to calculate their gain and prefilter.
-A linear quadratic regulator,
-calculating its gain and prefilter by solving the continuous algebraic Riccati equation.
-A Ljapunov controller, designed with the method of Ljapunov to stabilize the pendulums in the upward position.
-And finally a swing up controller, especially designed to swing the pendulums up using linear state feedback
-and stabilizing the system by switching to a Ljapunov controller once the pendulums point upwards.
+The :py:class:`LinearQuadraticRegulator`
+calculates its gain and prefilter by solving the continuous algebraic Riccati equation.
+The :py:class:`LjapunovController` is designed with the method of Ljapunov to stabilize the pendulums in the upward position.
+And finally the :py:class:`SwingUpController`, especially designed to swing up the pendulums using linear state feedback
+and to stabilize the system by switching to a Ljapunov controller once the pendulums point upwards.
 
 A 3D visualizer is implemented.
 In case of missing VTK, a 2D visualization can be used instead.
@@ -167,7 +185,7 @@ but also ways to transition them between those states (e.g. swinging them up).
 
 The example also provides two modules for postprocessing. 
 They plot different combinations of results in two formats, one of them being :py:data:`.pdf`.
-The second format of files can be given to a metaprocessor.
+The second format of files can be passed to a metaprocessor.
    
 The structure of :py:data:`__main__.py` allows starting the example without navigating to the directory
 and using an :py:data:`__init__.py` file to outsource the import commands for additional files.
