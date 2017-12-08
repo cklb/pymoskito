@@ -10,10 +10,12 @@ in opposite direction as the velocity :math:`\dot{s}` of the cart.
 Each pendulum has a mass :math:`m_i`, a moment of intertia :math:`J_i`, a length :math:`l_i` and an angle of deflection :math:`\varphi_i`.
 The friction in the joint where the pendulums are mounted on the cart causes a frictional torque :math:`M_{ir} = d_i \cdot \dot{\varphi}_i`,
 in opposite direction as the speed of rotation :math:`\dot{\varphi}_i`.
+The system is shown in :numref:`fig-pendulum` .
 
 The task is to control the position :math:`s` of the cart and to stabilize the pendulums in either the upward or downward position. 
 Actuating variable is the force F.
 
+.. _fig-pendulum:
 .. figure:: ../pictures/pendulum.png
     :align: center
     :alt: Image of Pendulum System
