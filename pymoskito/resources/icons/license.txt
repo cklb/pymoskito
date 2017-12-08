@@ -1,6 +1,7 @@
 <div>
-    Icons made by <a href="http://www.freepik.com" title="Freepik">Freepik</a>
-    and <a href="http://www.flaticon.com/authors/vaadin" title="Vaadin">Vaadin</a>
+    Icons made by <a href="http://www.freepik.com" title="Freepik">Freepik</a>,
+    <a href="http://www.flaticon.com/authors/vaadin" title="Vaadin">Vaadin</a>
+    and <a href="https://www.flaticon.com/authors/luigi-console" title="Luigi Console">Luigi Console</a>
     from <a href="http://www.flaticon.com" title="Flaticon">www.flaticon.com</a>
     (licensed under <a href="http://creativecommons.org/licenses/by/3.0/" title="Creative Commons BY 3.0" target="_blank">CC 3.0 BY</a>)
 </div>
