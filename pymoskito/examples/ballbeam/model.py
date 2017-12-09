@@ -27,7 +27,7 @@ class BallBeamModel(pm.Model):
         settings.update(input_count=1)
         settings.update({"output_info": {
             0: {"Name": "ball position", "Unit": "m"},
-            1: {"Name": "beam angle", "Unit": "rad"},
+            2: {"Name": "beam angle", "Unit": "rad"},
         }})
         pm.Model.__init__(self, settings)
 
