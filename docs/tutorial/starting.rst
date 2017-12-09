@@ -3,14 +3,13 @@ Starting the Program
 ========================
 
 For PyMoskito to start, an application needs to launch the toolbox and execute it.
-
 To do so, create a file in the same directory as the model and name it::
 
-    __main__.py
+    main.py
 
 Copy the following code into your main file: 
 
-.. literalinclude:: minimalSystem/__main__.py
+.. literalinclude:: minimalSystem/main.py
     :language: python
     :lines: 1-6,8-11,13-21
     :linenos:
@@ -24,7 +23,7 @@ and adds it to the eligible options in the interface.
 Use the command line to navigate to the directory of the main file and the model file
 and start the toolbox with the command::
 
-    $ python __main__.py
+    $ python main.py
 
 The upstarting interface of PyMoskito
-gives you the possibility to test the implemented model, which is the next step.
+gives you the possibility to test the implemented model in the next step.

@@ -52,7 +52,7 @@ class BasicController(pm.Controller):
                  input_values=None, **kwargs):
 
         x = input_values - self._eq_state
-        yd = trajectory_values
+        yd = trajectory_values - self._eq_state
         output = - np.dot(self._K, x) + np.dot(self._V, yd[0])
         
         return output

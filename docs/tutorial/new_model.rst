@@ -2,10 +2,8 @@
 Implementing a Model
 --------------------
 
-At first, a new class derived from the abstract class 
-:py:class:`~pymoskito.simulation_modules.Model` is necessary.
-Its basic functions will be calculating the state derivatives and the output,
-depending on the model parameters, the current state and the input values.
+At first, a new class derived from the abstract class :py:class:`~pymoskito.simulation_modules.Model` is necessary.
+Its basic functions will be calculating the state derivatives and the output from the model parameters, the current state and the input values.
 
 Create a folder within a path of your choice.
 All files created during this tutorial need to be stored here.
@@ -38,7 +36,7 @@ All values entered will be the initial values for the model parameters
 Within the constructor, you must define the number of inputs and states.
 Do so by storing these values in settings as seen in lines :py:data:`24` and :py:data:`25`. 
 Adding output information as seen in line :py:data:`26` is optional,
-this will change the appearance of the output diagram.
+this will make it easier to distinguish between several outputs of bigger systems.
 It is obligatory to call the constructor of the base class at the end. 
 The constructor's argument :py:data:`settings` is a copy of :py:data:`public_settings`
 with all changes the user made in the interface:
@@ -70,3 +68,6 @@ so extracting it from the state vector and returning it as a scalar is sufficien
 .. literalinclude:: minimalSystem/model.py
     :start-after: #output
     :lineno-match:
+    
+This now fully implemented model class has a yet unknown behavior. 
+To test it, the next step is to start PyMoskito for simulation purposes.

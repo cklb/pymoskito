@@ -3,29 +3,27 @@ System: Pendulum on Cart
 ============================
 
 A pendulum is fixed on a cart, which can move in the horizontal direction.
-
 The cart has a mass :math:`M`. 
-The friction between the cart and the surface causes
-a frictional force :math:`F_R = D \cdot \dot{s}`,
-in opposite direction as the velocity :math:`\dot{s}` of the cart.
-
-
-The pendulum has a mass :math:`m`, a moment of intertia :math:`J`,
-a length :math:`l` and an angle of deflection :math:`\varphi`.
-The friction in the joint where the pendulum is mounted on the cart 
-causes a frictional torque :math:`M_R = d \cdot \dot{\varphi}`,
-in opposite direction as the speed of rotation :math:`\dot{\varphi}`.
+The friction between the cart and the surface causes a frictional force :math:`F_R = D \cdot \dot{s}`, in opposite direction to the movement of the cart.
+The pendulum has a mass :math:`m`, a moment of intertia :math:`J`, a length :math:`l` and an angle of deflection :math:`\varphi`.
+The friction in the joint where the pendulum is mounted on the cart causes a frictional torque :math:`M_R = d \cdot \dot{\varphi}`, 
+in opposite direction to the rotational speed of the pendululm.
+The system is illustrated in :numref:`fig-rodpend`.
 
 The task is to control the position :math:`s` of the cart 
-and stabilizing the pendulum in its downside position.
+and to stabilize the pendulum in its downside position.
 The possibility of stabilizing the pendulum in its upside position is not implemented in this tutorial.
 Actuating variable is the force :math:`F`.
 
+.. _fig-rodpend:
 .. figure:: ../pictures/rodPendulum.png
     :align: center
+    :width: 90%
     :alt: Image of Rod Pendulum System
+    
+    The rod pendulum system
 
-With the state vector :math:`\boldsymbol{x}` is given as
+With the state vector
 
 .. math::
     
@@ -43,7 +41,7 @@ With the state vector :math:`\boldsymbol{x}` is given as
         \varphi \\
         \dot{s} \\
         \dot{\varphi}
-    \end{pmatrix} 
+    \end{pmatrix} ,
 
 the model equations are given by
 
@@ -65,15 +63,14 @@ the model equations are given by
             {(M+m)J - (ml\cos(x_2))^2} \\
         \frac{ml\cos(x_2)F - mlDx_3\cos(x_2) - (mlx_4)^2 \sin(x_2)\cos(x_2) + (M+m)mlg\sin(x_2) - (M+m)dx_4}
             {(M+m)J - (ml\cos(x_2))^2}
-    \end{pmatrix} 
+    \end{pmatrix} .
 
 
-and the cart's position :math:`s` being chosen as output 
+The cart's position 
 
 .. math::
 
     y = x_1 = s
 
-of the system.
-
-With this model given, the next step is to implement a class containing all equations.
+is chosen as output of the system.
+With this model given, the next step is to implement a class containing these equations.

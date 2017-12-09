@@ -5,7 +5,6 @@ Implementing a Controller
 To close the loop a controller has to be added. 
 This can easily be done by deriving from the :py:class:`~pymoskito.simulation_modules.Controller` class.
 Its task is to stabilize the pendulum by calculating a suitable input for the model.
-
 To keep things simple, the controller is linear in this scenario
 and it is based on the linearized system which is given by
 
@@ -61,21 +60,20 @@ Import the same classes as in the model class:
 
 Name your controller and make :py:class:`~pymoskito.simulation_modules.Controller` its base class.
 Create :py:data:`public_settings` like before in your model.
-Its entries will be accessable in the graphical interface of PyMoskito during runtime:
+Its entries will be accessable in the graphical interface of PyMoskito during runtime.
+This time, the only parameters will be the desired poles of the closed loop, which the controller shall establish:
 
 .. literalinclude:: minimalSystem/controller.py
     :start-after: #class begin
     :end-before: #init
     :lineno-match:
 
-Within the constructor, it is obligatory to set the input order and an input type. 
-The input order determines, how many derivatives of the trajectory will be required.
-Valid input types are *system_state*, *system_output*, *Observer* and *Sensor*.
+Within the constructor, it is obligatory to set the :py:class:`input order` and an :py:class:`input type`. 
+The :py:class:`input order` determines, how many derivatives of the trajectory will be required.
+Valid entreis for :py:data:`input type` are *system_state*, *system_output*, *Observer* and *Sensor*.
 After all necessary updates, call the constructor of the base class as seen in line :py:data:`20`.
-
 Store the linearized system matrices and the equilibrium state.
 To make matrix operations possible, use the array type provided by NumPy.
-
 PyMoskito's :doc:`Controltools <../modules/controltools>` provide functions
 to calculate the values of a linear state feedback and a prefilter,
 which can be used as seen in lines :py:data:`49-50`. 
@@ -89,8 +87,8 @@ The method :py:data:`place_siso()` is an implementation of the Ackermann formula
 The only method to implement contains the control law and will be called by the solver during runtime.
 Its parameters are the current time, the current values of trajectory,
 feedforward and controller input.
-The parameter :py:data:`**kwargs` is free to be used as needed, 
-in this case it is ignored.
+The parameter :py:data:`**kwargs` holds further information, which is explained in :doc:`the Full Users Guide <../guide/controller>`.
+In this case it is ignored.
 Since this controller will be stabilizing the system in the steady state [0,0,0,0],
 it has to be subtracted to work on the small signal scale.
 
@@ -99,13 +97,11 @@ it has to be subtracted to work on the small signal scale.
     :lineno-match:
 
 Finally, import the controller file and register the controller class to PyMoskito
-by adding two lines to the __main__.py file as done before for the model class:
+by adding two lines to the main.py file as done before for the model class.
+It should now look like this, with the changed lines highlighted:
 
-.. literalinclude:: minimalSystem/__main__.py
-    :lines: 7
+.. literalinclude:: minimalSystem/main.py
     :lineno-match:
-    
-.. literalinclude:: minimalSystem/__main__.py
-    :lines: 12
-    :lineno-match:
-    
+    :emphasize-lines: 7,12
+
+As done before with the model, the controller class needs to be tested in the next step.

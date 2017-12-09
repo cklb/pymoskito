@@ -7,13 +7,13 @@ import pymoskito as pm
 #class
 class RodPendulumModel(pm.Model):
     public_settings = OrderedDict([("initial state", [0, 180.0, 0, 0]),
-                                   ("cart mass", 4.2774),           # [kg]
-                                   ("cart friction",10),            # [Ns/m]
-                                   ("pendulum mass", 0.3211),       # [kg]
-                                   ("pendulum inertia", 0.072),     # [kg*m^2]
-                                   ("pendulum friction", 0.023),    # [Nms]
-                                   ("pendulum length",0.3533),      # [m]
-                                   ("gravity", 9.81)])              # [m/s^2]
+                                   ("cart mass", 4.3),            # [kg]
+                                   ("cart friction",10),          # [Ns/m]
+                                   ("pendulum mass", 0.32),       # [kg]
+                                   ("pendulum inertia", 0.07),    # [kg*m^2]
+                                   ("pendulum friction", 0.03),   # [Nms]
+                                   ("pendulum length",0.35),      # [m]
+                                   ("gravity", 9.81)])            # [m/s^2]
 #init
     def __init__(self, settings):
         # conversion from degree to radiant
