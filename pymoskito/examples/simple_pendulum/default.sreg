@@ -1,0 +1,35 @@
+- Name: model_test
+  clear previous: !!python/bool True # decide whether previous settings should remain or not
+
+  Model:
+   type: PendulumModel
+   initial state: [0, 100, 0, 0]
+
+  Solver:
+   type: ODEInt
+   end time: 10
+
+  ModelMixer:
+   type: AdditiveMixer
+
+- Name: control_test
+  clear previous: !!python/bool True # decide whether previous settings should remain or not
+
+  Model:
+   type: PendulumModel
+
+  Solver:
+   type: ODEInt
+   end time: 20
+
+  ModelMixer:
+    type: AdditiveMixer
+    Input A: Controller
+
+  Controller:
+    type: BasicController
+
+  Trajectory:
+    type: Setpoint
+    Setpoint: [0]
+

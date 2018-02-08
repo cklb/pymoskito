@@ -1,6 +1,6 @@
-============================
-System: Pendulum on Cart
-============================
+
+A Pendulum on Cart
+------------------
 
 A pendulum is fixed on a cart, which can move in the horizontal direction.
 The cart has a mass :math:`M`. 
@@ -16,12 +16,12 @@ The possibility of stabilizing the pendulum in its upside position is not implem
 Actuating variable is the force :math:`F`.
 
 .. _fig-rodpend:
-.. figure:: ../pictures/rodPendulum.png
+.. figure:: pictures/rodPendulum.png
     :align: center
     :width: 90%
-    :alt: Image of Rod Pendulum System
+    :alt: Image of the Pendulum on a Cart System
     
-    The rod pendulum system
+    The pendulum on an cart system
 
 With the state vector
 

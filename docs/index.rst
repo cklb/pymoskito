@@ -8,7 +8,7 @@ Contents:
 
   introduction
   installation
-  tutorial/index
+  tutorials/index
   examples/index
   guide/index
   modules/index

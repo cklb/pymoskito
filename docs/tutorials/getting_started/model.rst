@@ -16,19 +16,18 @@ the OrderedDictionary class and PyMoskito itself:
 
 .. _NumPy: http://www.numpy.org/
 
-.. literalinclude:: minimalSystem/model.py
+.. literalinclude:: ../../../pymoskito/examples/simple_pendulum/model.py
     :end-before: #class
     :lineno-match:
 
-Name your class and make :py:class:`~pymoskito.simulation_modules.Model` its base class.
-Create an :py:class:`OrderedDict` called :py:data:`public_settings`. 
-All entries in this dictionary will be accessable in the graphical interface of PyMoskito during runtime.
+Derive your class from :py:class:`~pymoskito.simulation_modules.Model`.
+Next, create an :py:class:`OrderedDict` called :py:data:`public_settings`.
+All entries in this dictionary will be accessible in the graphical interface of PyMoskito during runtime.
 While you have the freedom to name these entries as you like,
 the entry ``initial state`` is obligatory and must contain the initial state vector.
-All values entered will be the initial values for the model parameters
-:
+All values entered will be the initial values for the model parameters:
 
-.. literalinclude:: minimalSystem/model.py
+.. literalinclude:: poc_system/model.py
     :start-after: #class
     :end-before: #init
     :lineno-match:
@@ -41,7 +40,7 @@ It is obligatory to call the constructor of the base class at the end.
 The constructor's argument :py:data:`settings` is a copy of :py:data:`public_settings`
 with all changes the user made in the interface:
 
-.. literalinclude:: minimalSystem/model.py
+.. literalinclude:: poc_system/model.py
     :start-after: #init
     :end-before: #state
     :lineno-match:
@@ -51,10 +50,10 @@ that returns the results as an array.
 The method's parameters are the current time :py:data:`t`, the current state vector :py:data:`x`,
 and the parameter :py:data:`args`. The later is free to be defined as you need it,
 in this case it will be the force :py:data:`F` as the model input.
-To prevent the model equations from resulting in huge lines of code, 
+To keep the model equations compact and readable,
 it is recommended to store the model values in variables with short names:
 
-.. literalinclude:: minimalSystem/model.py
+.. literalinclude:: poc_system/model.py
     :start-after: #state
     :end-before: #output
     :lineno-match:
@@ -65,7 +64,7 @@ But in this case, the output is simply the position :py:data:`s` of the cart,
 so extracting it from the state vector and returning it as a scalar is sufficient
 :
 
-.. literalinclude:: minimalSystem/model.py
+.. literalinclude:: poc_system/model.py
     :start-after: #output
     :lineno-match:
     
