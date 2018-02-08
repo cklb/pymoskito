@@ -2,16 +2,27 @@
 Closing the Control Loop
 ------------------------
 
-Firtly, start PyMoskito from the commandline.
-Now again choose our :py:class:`PendulumModel` as :py:data:`Model`,
-the :py:data:`ODEInt` as :py:data:`Solver`,
-our :py:data:`BasicController` as :py:data:`Controller`,
-the :py:data:`AdditiveMixer` as :py:data:`ModelMixer`
-and the :py:data:`SmoothTransition` as :py:data:`Trajectory`.
-Change the end time of :py:data:`Solver` to 10 and Input A of
-:py:data:`ModelMixer` to our new Controller.
+Firstly, start PyMoskito from the commandline and reapply the previous
+steps:
+
+- select :py:class:`PendulumModel` as :py:data:`Model`
+- change the initial state of :py:data:`PendulumModel` to ``[0, 100, 0, 0]``
+- select :py:data:`ODEInt` as :py:data:`Solver`
+- change the end time of :py:data:`Solver` to 10
+- select :py:data:`AdditiveMixer` as :py:data:`ModelMixer`
+
+Now, it gets interesting, select:
+
+- the new :py:data:`BasicController` as :py:data:`Controller`
+- change ``Input A`` of :py:data:`ModelMixer` to ``Controller`` and
+- select :py:data:`Setpoint` as :py:data:`Trajectory`
+
+to generate desired values for out new setup. The setpoint ``0`` demands that
+the cart position (the output defined by our model) should be kept at zero.
+
 To enter string values, type :py:data:`'Controller'` or :py:data:`"Controller"`
-and press enter to confirm the input.
+and remember to press enter to confirm the input.
+
 The Properties window should now look like :numref:`fig-ControllerTest1`
 
 .. _fig-ControllerTest1:
