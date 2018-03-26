@@ -6,10 +6,10 @@
 \usepackage{dsfont}
 \parindent0cm
 \usepackage{graphicx}			%Importieren von Grafiken
-\usepackage[ngerman]{babel}		%für deutsches Dokument mit Inhaltsverzeichnis
+\usepackage[ngerman]{babel}		%fï¿½r deutsches Dokument mit Inhaltsverzeichnis
 \usepackage{amssymb}
-\usepackage{pdflscape}			%für Querformat
-\usepackage{subfigure}			%für mehrere Bilder nebeneinander
+\usepackage{pdflscape}			%fï¿½r Querformat
+\usepackage{subfigure}			%fï¿½r mehrere Bilder nebeneinander
 \usepackage{enumerate}
 
 \usepackage{tikz}
@@ -25,14 +25,14 @@
 
 \section*{PyMoskito}
 
-PyMoskito steht für \textbf{Py}thon based \textbf{Mo}dular \textbf{S}imulation \& Postprocessing \textbf{Ki}ckass \textbf{To}olbox und kann als universelles Werkzeug zur Simulation von typischen Problemen in der Regelungstechnik und anderen Bereichen eingesetzt werden. Die stärken liegen bei der Simulation von vielen Konfigurationen mit diversen Variationen in der Struktur oder in den Parametern.
+PyMoskito steht fï¿½r \textbf{Py}thon based \textbf{Mo}dular \textbf{S}imulation \& Postprocessing \textbf{Ki}ckass \textbf{To}olbox und kann als universelles Werkzeug zur Simulation von typischen Problemen in der Regelungstechnik und anderen Bereichen eingesetzt werden. Die stï¿½rken liegen bei der Simulation von vielen Konfigurationen mit diversen Variationen in der Struktur oder in den Parametern.
 
 
-Der Grundstein für PyMoskito wurde im Wintersemester 2014/2015 in Form eines Oberseminars zum Thema "`Untersuchung der Ball and Beam Problematik"' gelegt. Dieses Oberseminar beinhaltete unter anderem die Aufgabe das System mit Python zu simulieren. Daraus entwickelte sich Stück für Stück die hier vorliegende Toolbox.
+Der Grundstein fï¿½r PyMoskito wurde im Wintersemester 2014/2015 in Form eines Oberseminars zum Thema "`Untersuchung der Ball and Beam Problematik"' gelegt. Dieses Oberseminar beinhaltete unter anderem die Aufgabe das System mit Python zu simulieren. Daraus entwickelte sich Stï¿½ck fï¿½r Stï¿½ck die hier vorliegende Toolbox.
 
-% aufheben für Getting Started
+% aufheben fï¿½r Getting Started
 % Python 2.7
-%PyMoskito ist als Paket konzipiert und kann durch die setup.py installiert werden. Weiterhin sind Abhängigkeiten zu anderen Paketen zu nennen, die für PyMoskito benötigt.
+%PyMoskito ist als Paket konzipiert und kann durch die setup.py installiert werden. Weiterhin sind Abhï¿½ngigkeiten zu anderen Paketen zu nennen, die fï¿½r PyMoskito benï¿½tigt.
 %\begin{itemize}
 %	\item numpy
 %	\item sympy
@@ -42,24 +42,24 @@ Der Grundstein für PyMoskito wurde im Wintersemester 2014/2015 in Form eines Obe
 %	\item vtk
 %\end{itemize}
 
-Zur Übersicht und einfachen Bedienung der Simulation enthält PyMoskito eine Benutzeroberfläche (GUI). Mit Hilfe der GUI werden folgende Funktionen abgedeckt:
+Zur ï¿½bersicht und einfachen Bedienung der Simulation enthï¿½lt PyMoskito eine Benutzeroberflï¿½che (GUI). Mit Hilfe der GUI werden folgende Funktionen abgedeckt:
 \begin{itemize}
 	\item einfache Konfiguration des Regelkreises
 	\item Simulation einer eingestellten Regelkreisstruktur
 	\item Laden von gespeicherten Simulationskonfigurationen
-	\item automatische Simulation von Simulationssätzen
-	\item Speichern von Simulationsergebnissen zur späteren Bearbeitung
+	\item automatische Simulation von Simulationssï¿½tzen
+	\item Speichern von Simulationsergebnissen zur spï¿½teren Bearbeitung
 	\item Schnittstelle zur 3D-Visualisierung des physikalischen Systems mit Hilfe von VTK
-	\item Playback Funktion für die 3D-Visualisierung
+	\item Playback Funktion fï¿½r die 3D-Visualisierung
 	\item Darstellung aller Simulationsergebnisse direkt und ohne Umwege
-	\item Möglichkeit zur individuellen Weiterbearbeitung von Simulationsergebnissen durch Postprozessoren
+	\item Mï¿½glichkeit zur individuellen Weiterbearbeitung von Simulationsergebnissen durch Postprozessoren
 \end{itemize}
 
-PyMoskito bietet einen Simulationskern zur Ausführung der in Abbildung \ref{abb:schema_des_systemmodells} dargestellten Regelkreisstruktur und eine Nachbearbeitung von Simulationsergebnissen an. Die Module dieses Regelkreises sind hierbei einzeln konfigurierbar und bieten so die Möglichkeit verschiedenste Szenarien gleichzeitig abzudecken. Sie unterteilen sich dabei in zwei verschiedene Gruppen:
+PyMoskito bietet einen Simulationskern zur Ausfï¿½hrung der in Abbildung \ref{abb:schema_des_systemmodells} dargestellten Regelkreisstruktur und eine Nachbearbeitung von Simulationsergebnissen an. Die Module dieses Regelkreises sind hierbei einzeln konfigurierbar und bieten so die Mï¿½glichkeit verschiedenste Szenarien gleichzeitig abzudecken. Sie unterteilen sich dabei in zwei verschiedene Gruppen:
 \begin{enumerate}[I.]
-	\item generische, daher vom konkreten System unabhängige Blöcke die damit auch für
-	andere Systeme Verwendung finden können und
-	\item systemabhängige, speziell zugeschnittene Blöcke, die für jedes System neu implementiert werden müssen.
+	\item generische, daher vom konkreten System unabhï¿½ngige Blï¿½cke die damit auch fï¿½r
+	andere Systeme Verwendung finden kï¿½nnen und
+	\item systemabhï¿½ngige, speziell zugeschnittene Blï¿½cke, die fï¿½r jedes System neu implementiert werden mï¿½ssen.
 \end{enumerate}
 
 \begin{figure}
@@ -103,36 +103,36 @@ PyMoskito bietet einen Simulationskern zur Ausführung der in Abbildung \ref{abb:
 		
 		\caption[Schema des Regelkreises]{Schematische Darstellung des Regelkreises. Blau hinterlegte Komponenten
 			sind an das jeweilige System anzupassen, alle anderen
-			Blöcke sind generisch verwendbar.}
+			Blï¿½cke sind generisch verwendbar.}
 		\label{abb:schema_des_systemmodells}
 	\end{center}
 \end{figure}
 
-Das System ist Modular aufgebaut, sodass Blöcke ausgetauscht oder weggelassen werden können. Neben dem eigentlichen Simulationssteuerung werden generische Klassen zur Verfügung gestellt, welche häufig benutzte Simulationselemente enthalten. Dazu zählen:
+Das System ist Modular aufgebaut, sodass Blï¿½cke ausgetauscht oder weggelassen werden kï¿½nnen. Neben dem eigentlichen Simulationssteuerung werden generische Klassen zur Verfï¿½gung gestellt, welche hï¿½ufig benutzte Simulationselemente enthalten. Dazu zï¿½hlen:
 \begin{itemize}
-	\item ODEInt, ein Integrator zur Lösung von Differentialgleichungssystemen 1. Ordnung
-	\item SmoothTransition, ein Trajektoriengenerator zur Erzeugung von glatten Übergängen zwischen gegebenen Zuständen und Zeitpunkten
+	\item ODEInt, ein Integrator zur Lï¿½sung von Differentialgleichungssystemen 1. Ordnung
+	\item SmoothTransition, ein Trajektoriengenerator zur Erzeugung von glatten ï¿½bergï¿½ngen zwischen gegebenen Zustï¿½nden und Zeitpunkten
 	\item HarmonicTrajectory, ein Trajektoriengenerator zur Erzeugung von harmonischen Sollwerten mit gegebener Frequenz und Amplitude
 	\item PIDController, ein Standard Regler in der Regelungstechnik
-	% später eventuell Implementierung als Basisklasse um dann von dieser abzuleiten (in Konflikt mit blauer Box)
+	% spï¿½ter eventuell Implementierung als Basisklasse um dann von dieser abzuleiten (in Konflikt mit blauer Box)
 %	\item Limitierung (noch zu implementieren)
 %	\item Sensor (noch zu implementieren)
 \end{itemize}
 
 PyMoskito kommt mit einer Vielzahl von bekannten Beispielen aus der Regelunsgtechnik die als Anleitung und Hilfe bei der Implementierung eigener Problemstellung dienen. Ein Beispiel:
 
-Es handelt sich um das in der Regelungstechnik beliebte "`Ball and Beam"' System. Bei der "`Ball and Beam"' Problematik geht es darum, einen Ball auf einem in der Mitte drehbar gelagerten Balken auf eine bestimmte Position zu regeln. Aus diesem Beispiel ist auch ersichtlich, welche Module bzw. Dateien bei einer neuen Problemstellung zu erstellen sind. Hierfür existieren in PyMoskito verschiedene Basisklassen, auf die aufgebaut werden kann. 
-% Dies stellt sicher das alle für die Simulation benötigten Bestandteile implementiert werden. 
+Es handelt sich um das in der Regelungstechnik beliebte "`Ball and Beam"' System. Bei der "`Ball and Beam"' Problematik geht es darum, einen Ball auf einem in der Mitte drehbar gelagerten Balken auf eine bestimmte Position zu regeln. Aus diesem Beispiel ist auch ersichtlich, welche Module bzw. Dateien bei einer neuen Problemstellung zu erstellen sind. Hierfï¿½r existieren in PyMoskito verschiedene Basisklassen, auf die aufgebaut werden kann. 
+% Dies stellt sicher das alle fï¿½r die Simulation benï¿½tigten Bestandteile implementiert werden. 
 Die folgende Aufstellung zeigt was konkret zu tun ist:
 \begin{itemize}
 	\item Implementierung der Systemdynamik als Zustandsraummodell (right hand side)
-	\item in der auszuführenden Datei muss die Benutzeroberfläche erstellt und initialisiert werden
+	\item in der auszufï¿½hrenden Datei muss die Benutzeroberflï¿½che erstellt und initialisiert werden
 	\item Regelgesetze zur Stabilisierung des Regelkreises
 	\item Entwurf einer Standardsimulationskonfiguration
 	\item Optional: 3D-Visualisierung mit Hilfe von VTK
-	%	\item main.py, beinhaltet die Erstellung der grafischen Oberfläche
-	%	\item visualization.py, dient zur VTK basierten Visualisierung
-	%	\item settings.py, enthält die Parameter und Konstanten des Systems
+	%	\item main.py, beinhaltet die Erstellung der grafischen Oberflï¿½che
+	%	\item visualizer_mpl.py, dient zur VTK basierten Visualisierung
+	%	\item settings.py, enthï¿½lt die Parameter und Konstanten des Systems
 	%	\item model.py, hier wird das Modell als Zustandsraummodell implementiert
 	%	\item controll.py, dient zur Implementierung von eigenen Reglergesetzen
 	%	\item default.sreg, kann zur Konfiguration einer Simulation benutzt werden

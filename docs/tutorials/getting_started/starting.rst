@@ -9,13 +9,13 @@ To do so, create a file in the same directory as the model and name it::
 
 Copy the following code into your main file: 
 
-.. literalinclude:: poc_system/main.py
+.. literalinclude:: /../pymoskito/examples/simple_pendulum/main.py
     :language: python
-    :lines: 1-6,8-11,13-21
+    :lines: 1-5,9-13,21-24
     :linenos:
-    :emphasize-lines: 6,10
+    :emphasize-lines: 5,10,13
 
-Note the :py:data:`import` command in line :py:data:`6`, 
+Note the :py:data:`import` command in line :py:data:`5`,
 which includes the earlier implemented model file in the application.
 The command in line :py:data:`10` registers the model to the toolbox.
 This lets PyMoskito know that this module is available 

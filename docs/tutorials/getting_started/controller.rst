@@ -54,20 +54,20 @@ Start by creating a file called::
 
 Import the same classes as in the model class:
 
-.. literalinclude:: poc_system/controller.py
-    :end-before: #class begin
+.. literalinclude:: /../pymoskito/examples/simple_pendulum/controller.py
+    :end-before: # class begin
     :lineno-match:
 
 Derive your controller from
-:py:class:`~pymoskito.simulation_modules.Controller`.
+:py:class:`~pymoskito.simulation_modules.Controller`
 Next, create :py:data:`public_settings` as before in the model.
 Its entries will be accessable in the graphical interface of PyMoskito during runtime.
 This time, the only parameters will be the desired poles of the closed loop,
 which the controller shall establish:
 
-.. literalinclude:: poc_system/controller.py
-    :start-after: #class begin
-    :end-before: #init
+.. literalinclude:: /../pymoskito/examples/simple_pendulum/controller.py
+    :start-after: # class begin
+    :end-before: # init
     :lineno-match:
 
 Within the constructor, it is obligatory to set the :py:class:`input order` and
@@ -85,9 +85,9 @@ to calculate the values of a linear state feedback and a prefilter,
 which can be used as seen in lines :py:data:`49-50`. 
 The method :py:data:`place_siso()` is an implementation of the Ackermann formula:
 
-.. literalinclude:: poc_system/controller.py
-    :start-after: #init
-    :end-before: #control
+.. literalinclude:: /../pymoskito/examples/simple_pendulum/controller.py
+    :start-after: # init
+    :end-before: # control
     :lineno-match:
 
 That would be all for the constructor.
@@ -100,16 +100,18 @@ in :class:`pymoskito.simulation_modules.Controller`. For our example, we will ju
 Since this controller will be stabilizing the system in the steady state [0,0,0,0],
 it has to be subtracted to work on the small signal scale.
 
-.. literalinclude:: poc_system/controller.py
-    :start-after: #control
+.. literalinclude:: /../pymoskito/examples/simple_pendulum/controller.py
+    :start-after: # control
     :lineno-match:
 
 Finally, import the controller file and register the controller class to PyMoskito
 by adding two lines to the main.py file as done before with the model class.
 Your `main.py` should now look like this, with the changed lines highlighted:
 
-.. literalinclude:: poc_system/main.py
-    :lineno-match:
-    :emphasize-lines: 7,12
+.. literalinclude:: /../pymoskito/examples/simple_pendulum/main.py
+    :language: python
+    :lines: 1-6,9-16,21-24
+    :emphasize-lines: 6,14
+    :linenos:
 
 Having put all pieces together, we are now ready to run our scenario.

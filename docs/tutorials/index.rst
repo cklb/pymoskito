@@ -10,6 +10,7 @@ Beginner:
   :maxdepth: 1
 
   getting_started/index
+  visualization/index
 
 Intermediate:
 

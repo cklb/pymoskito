@@ -1,6 +1,5 @@
-============================
-Tutorial - Switching Systems
-============================
+Switching Systems
+=================
 
 *TODO*
 

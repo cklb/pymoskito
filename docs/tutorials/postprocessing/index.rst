@@ -1,6 +1,5 @@
-=========================
-Tutorial - Postprocessing
-=========================
+Postprocessing
+==============
 
 *TODO*
 

@@ -3,11 +3,18 @@
 =======
 History
 =======
+
+0.2.2 (2018-03-28)
+------------------
+
+* Added extensive beginners guide (thanks to Jonas) and tutorial section
+
 0.2.1 (2017-09-07)
 ------------------
 
 * Fixed issue when installing via pip
 * Fixed issue with metaprocessors and added example metaprocessor for ballbeam
+* Downgraded requirements
 
 0.2.0 (2017-08-18)
 ------------------

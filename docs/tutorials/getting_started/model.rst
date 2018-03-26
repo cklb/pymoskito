@@ -16,8 +16,8 @@ the OrderedDictionary class and PyMoskito itself:
 
 .. _NumPy: http://www.numpy.org/
 
-.. literalinclude:: ../../../pymoskito/examples/simple_pendulum/model.py
-    :end-before: #class
+.. literalinclude:: /../pymoskito/examples/simple_pendulum/model.py
+    :end-before: # class
     :lineno-match:
 
 Derive your class from :py:class:`~pymoskito.simulation_modules.Model`.
@@ -27,9 +27,9 @@ While you have the freedom to name these entries as you like,
 the entry ``initial state`` is obligatory and must contain the initial state vector.
 All values entered will be the initial values for the model parameters:
 
-.. literalinclude:: poc_system/model.py
-    :start-after: #class
-    :end-before: #init
+.. literalinclude:: /../pymoskito/examples/simple_pendulum/model.py
+    :start-after: # class
+    :end-before: # init
     :lineno-match:
 
 Within the constructor, you must define the number of inputs and states.
@@ -40,9 +40,9 @@ It is obligatory to call the constructor of the base class at the end.
 The constructor's argument :py:data:`settings` is a copy of :py:data:`public_settings`
 with all changes the user made in the interface:
 
-.. literalinclude:: poc_system/model.py
-    :start-after: #init
-    :end-before: #state
+.. literalinclude:: /../pymoskito/examples/simple_pendulum/model.py
+    :start-after: # init
+    :end-before: # state
     :lineno-match:
 
 The calculation of the state derivatives takes place in a method
@@ -53,9 +53,9 @@ in this case it will be the force :py:data:`F` as the model input.
 To keep the model equations compact and readable,
 it is recommended to store the model values in variables with short names:
 
-.. literalinclude:: poc_system/model.py
-    :start-after: #state
-    :end-before: #output
+.. literalinclude:: /../pymoskito/examples/simple_pendulum/model.py
+    :start-after: # state
+    :end-before: # output
     :lineno-match:
 
 The output of the system is calculated in a method with the current state vector as parameter.
@@ -64,8 +64,8 @@ But in this case, the output is simply the position :py:data:`s` of the cart,
 so extracting it from the state vector and returning it as a scalar is sufficient
 :
 
-.. literalinclude:: poc_system/model.py
-    :start-after: #output
+.. literalinclude:: /../pymoskito/examples/simple_pendulum/model.py
+    :start-after: # output
     :lineno-match:
     
 This now fully implemented model class has a yet unknown behavior. 

@@ -58,4 +58,5 @@ These were all the fundamental functions of PyMoskito considered necessary to wo
 One more important, but also more advanced feature is the system's visualization in 2D or 3D.
 This animation appears in the window at the top right, which remained grey during this tutorial 
 (see :numref:`fig-ModelTest1`, :numref:`fig-ModelTest3`, :numref:`fig-ControllerTest2`).
-For more information on this topic, see the :doc:`lection on visualization <../guide/visualization>`.
+For more information on this topic, see the
+:doc:`lesson on visualization <../visualization/index>`.

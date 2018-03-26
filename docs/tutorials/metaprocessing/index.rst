@@ -1,6 +1,5 @@
-=========================
-Tutorial - Metaprocessing
-=========================
+Metaprocessing
+==============
 
 *TODO*
 
