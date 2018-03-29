@@ -5,8 +5,6 @@ Ball and Beam (ballbeam)
 A beam is pivoted on a bearing in its middle.
 The position of a ball on the beam is controlable by applying a torque into the bearing.
 
-<i-wo erwähnen, dass System in der Mitte nicht wohldefiniert!>
-
 The ball has a mass :math:`M`, a radius :math:`R` and a moment of inertia :math:`J_b`.
 Its distance :math:`r` to the beam center is counted positively to the right.
 For the purpose of simplification, the ball can only move in the horizontal direction.
@@ -14,10 +12,11 @@ For the purpose of simplification, the ball can only move in the horizontal dire
 The beam has a length :math:`L`, a moment of inertia :math:`J`
 and its deflection from the horizontal line is the angle :math:`\theta`.
 
-The task is to control the position  :math:`r` of the ball.
-Actuating variable is the torque :math:`\tau`.
-
-The system is taken from the publication [Hauser92]_ .
+The task is to control the position  :math:`r` of the ball with the actuation
+variable being the torque :math:`\tau`. The interesting part in this particular
+system is that while being nonlinear and intrinsically unstable, it's relative
+degree is not well-defined. This makes it an exciting but yet still clear lab
+example. The description used here is taken from the publication [Hauser92]_ .
 
 .. figure:: ../pictures/ballbeam.png
     :align: center
