@@ -40,6 +40,22 @@ from your winpython shell.
 Troubleshooting
 ---------------
 
+**Missing dependencies (windows)**
+
+If the provided packages on your system are to old, pip may feel obligated to
+update them. Since the majority of packages now provide ready to use wheels
+for windows on pypi_ this should work automatically.
+If for some reason this process fails, you will most certainly find an
+appropriate wheel here_ . After downloading just navigate your shell into the
+directory and call::
+
+    $ pip install PACKAGE_NAME.whl
+
+to install it.
+
+.. _pypi: https://pypi.python.org/pypi
+.. _here: https://www.lfd.uci.edu/~gohlke/pythonlibs/
+
 **Missing vtk libraries (linux)**
 
 If importing ``vtk`` fails with something similar to::
