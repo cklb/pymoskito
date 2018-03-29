@@ -8,6 +8,7 @@ History
 ------------------
 
 * Added extensive beginners guide (thanks to Jonas) and tutorial section
+* Added extended documentation for examples (again, thanks to Jonas)
 
 0.2.1 (2017-09-07)
 ------------------
