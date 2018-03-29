@@ -14,9 +14,9 @@ where ``NAME`` is the name, given in parenthesis behind the example titles.
 List of Examples:
 
 .. toctree::
-  :maxdepth: 2
+  :maxdepth: 1
 
   ballbeam
-  balltube
+  balltube/balltube
   pendulum
   car

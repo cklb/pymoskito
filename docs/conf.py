@@ -48,6 +48,8 @@ extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.imgmath',
               ]
 
+numfig = True
+
 # Add napoleon to the extension (to write/precompile google style docstrings)
 
 if sphinx.version_info[0] <= 1 and sphinx.version_info[1] <= 2:
@@ -121,6 +123,8 @@ pygments_style = 'sphinx'
 # documents.
 # keep_warnings = False
 
+# Enable numbered references
+numfig = True
 
 # -- Options for HTML output -------------------------------------------
 
@@ -158,7 +162,7 @@ if not on_rtd:  # only import and set the theme if we're building docs locally
 # The name of an image file (within the static path) to use as favicon
 # of the docs.  This file should be a Windows icon file (.ico) being
 # 16x16 or 32x32 pixels large.
-# html_favicon = None
+html_favicon = "../pymoskito/resources/icons/mosquito_small.ico"
 
 # Add any paths that contain custom static files (such as style sheets)
 # here, relative to this directory. They are copied after the builtin
@@ -237,7 +241,7 @@ latex_documents = [
 
 # The name of an image file (relative to this directory) to place at
 # the top of the title page.
-# latex_logo = None
+latex_logo = "../pymoskito/resources/icons/no-mosquito.pdf"
 
 # For "manual" documents, if this is true, then toplevel headings
 # are parts, not chapters.

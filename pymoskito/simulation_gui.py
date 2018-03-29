@@ -23,7 +23,7 @@ from PyQt5.QtWidgets import (QWidget, QAction, QSlider, QMainWindow,
                              QToolBar, QStatusBar, QProgressBar, QLabel,
                              QPlainTextEdit, QLineEdit, QFileDialog, QInputDialog,
                              QAbstractSlider, QFrame, QVBoxLayout, QMenu,
-                             QMessageBox, QDialogButtonBox)
+                             QMessageBox, QDialogButtonBox, QApplication)
 
 # pyqtgraph
 import pyqtgraph as pg
@@ -53,7 +53,16 @@ from .processing_gui import PostProcessor
 from .tools import get_resource, PlainTextLogger
 
 
-__all__ = ["SimulationGui"]
+__all__ = ["SimulationGui", "run"]
+
+
+def run():
+    """ Helper function to launch the PyMoskito GUI
+    """
+    app = QApplication([])
+    prog = SimulationGui()
+    prog.show()
+    app.exec_()
 
 
 class SimulationGui(QMainWindow):
