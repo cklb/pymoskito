@@ -1,0 +1,59 @@
+- Name: test_model
+  clear previous: !!python/bool True # decide whether previous settings should remain or not
+
+  Model:
+   type: PendulumModel
+   initial state: [0, 100, 0, 0]
+
+  Solver:
+   type: ODEInt
+   end time: 10
+
+  ModelMixer:
+   type: AdditiveMixer
+
+# Stabilization of the pendulum
+- Name: test_stab
+  clear previous: !!python/bool True # decide whether previous settings should remain or not
+
+  Model:
+   type: PendulumModel
+   initial state: [0, 150, 0, 0]
+
+  Solver:
+   type: ODEInt
+   end time: 20
+
+  ModelMixer:
+    type: AdditiveMixer
+    Input A: Controller
+
+  Controller:
+    type: BasicController
+
+  Trajectory:
+    type: Setpoint
+    Setpoint: [0]
+
+# transfer of the cart from left to right while keeping the pendulum straight
+- Name: test_transfer
+  clear previous: !!python/bool True # decide whether previous settings should remain or not
+
+  Model:
+   type: PendulumModel
+   initial state: [-0.5, 180, 0, 0]
+
+  Solver:
+   type: ODEInt
+   end time: 20
+
+  ModelMixer:
+    type: AdditiveMixer
+    Input A: Controller
+
+  Controller:
+    type: BasicController
+
+  Trajectory:
+    type: Setpoint
+    Setpoint: [.5]

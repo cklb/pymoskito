@@ -10,8 +10,8 @@ PyMoskito
     :target: https://pypi.python.org/pypi/pymoskito
     :alt: Link to PyPi
 
-.. image:: https://readthedocs.org/projects/pymoskito/badge/?version=latest
-    :target: http://pymoskito.readthedocs.io/en/latest/?badge=latest
+.. image:: https://readthedocs.org/projects/pymoskito/badge/?version=stable
+    :target: http://pymoskito.readthedocs.io/en/stable/
     :alt: Documentation Status
 
 .. image:: https://zenodo.org/badge/49145679.svg
@@ -63,11 +63,5 @@ Still here? So PyMoskito features:
 * playback functions for 3D visualization
 * ready-to-go graphs for all simulation signals
 
-Maintainers
------------
-* Stefan Ecklebe
-* Christoph Burggraf
 
-Contributors
-------------
-Marcus Riesmeier
+.. include:: AUTHORS.rst

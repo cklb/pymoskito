@@ -48,6 +48,8 @@ extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.imgmath',
               ]
 
+numfig = True
+
 # Add napoleon to the extension (to write/precompile google style docstrings)
 
 if sphinx.version_info[0] <= 1 and sphinx.version_info[1] <= 2:

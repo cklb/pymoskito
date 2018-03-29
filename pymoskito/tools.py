@@ -8,7 +8,8 @@ import os
 import re
 
 import numpy as np
-from PyQt5.QtWidgets import QPlainTextEdit
+from PyQt5.QtWidgets import QApplication
+
 
 logger = logging.getLogger(__name__)
 
@@ -225,3 +226,4 @@ def swap_rows(arr, frm, to):
     elif len(arr.shape) == 2:
         arr[[frm, to], :] = arr[[to, frm], :]
     return arr
+

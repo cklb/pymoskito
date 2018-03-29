@@ -12,3 +12,4 @@ Contributors
 ------------
 
 * Marcus Riesmeier
+* Jonas Hoffmann

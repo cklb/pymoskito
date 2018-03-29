@@ -7,7 +7,7 @@ import pymoskito.controltools
 
 from . import settings as st
 from .linearization import linearise_system
-
+#import end
 
 class FController(pm.Controller):
     """
@@ -63,7 +63,6 @@ class FController(pm.Controller):
                         + st.M*(2*x1*x2*x4 + st.G*x1*np.cos(x3)))
         
         return self._output
-
 
 class GController(pm.Controller):
     """
@@ -168,7 +167,7 @@ class JController(pm.Controller):
         u = (v-b)/a
         return u
 
-
+#class begin
 class LSSController(pm.Controller):
     r"""
     Linear state space controller
@@ -182,7 +181,7 @@ class LSSController(pm.Controller):
                                    ("steady tau", 0),
                                    ("tick divider", 1)
                                    ])
-
+	#init
     def __init__(self, settings):
         # add specific "private" settings
         settings.update(input_order=0)
@@ -198,6 +197,7 @@ class LSSController(pm.Controller):
         self.K = pm.place_siso(a_mat, b_mat, self._settings["poles"])
         self.V = pm.calc_prefilter(a_mat, b_mat, c_mat, self.K)
 
+	#control
     def _control(self, time, trajectory_values=None, feedforward_values=None,
                  input_values=None, **kwargs):
         # input abbreviations
@@ -205,7 +205,7 @@ class LSSController(pm.Controller):
 
         self._output = -self.K @ input_values + yd[0]*self.V
         return self._output
-
+#class end
 
 class PIXController(pm.Controller):
     r"""
@@ -258,6 +258,7 @@ class PIXController(pm.Controller):
         u = -self.K @ x + yd[0]*self.V + self._settings["Ki"] * self._error
         return u
 
+#register
 pm.register_simulation_module(pm.Controller, FController)
 pm.register_simulation_module(pm.Controller, GController)
 pm.register_simulation_module(pm.Controller, JController)

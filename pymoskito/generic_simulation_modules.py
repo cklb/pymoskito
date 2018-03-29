@@ -274,27 +274,29 @@ class HarmonicTrajectory(Trajectory):
 
 class Setpoint(Trajectory):
     """
-    provides a setpoint selection for arbitrary states
-    if a state is not selected it gets the setpoint 0
+    Provides setpoints for every output component.
+
+    If the output is not scalar, just add more entries to the list.
+    By querying the differential order from the controller (if available) the
+    required derivatives are given.
+
+    Note:
+        Keep in mind that while this class provides zeros for all derivatives
+        of the desired value, they actually strive to infinity for :math:`t=0` .
     """
 
-    public_settings = OrderedDict([("State", [2, 4]),
-                                   ("Setpoint", [0, 0])])
+    public_settings = OrderedDict([("Setpoint", [0])])
 
     def __init__(self, settings):
         Trajectory.__init__(self, settings)
-        if len(self._settings["State"]) != len(self._settings["Setpoint"]):
-            raise TrajectoryException("Dimension mismatch between selected "
-                                      "states and  the given setpoints.")
-
-    def _desired_values(self, t):
-        yd = np.zeros((len(self._settings["Setpoint"]),
-                       self._settings["differential_order"] + 1))
+        self.yd = np.zeros((len(self._settings["Setpoint"]),
+                            self._settings["differential_order"] + 1))
 
         for idx, val in enumerate(self._settings["Setpoint"]):
-            yd[idx, 0] = val
+            self.yd[idx, 0] = val
 
-        return yd
+    def _desired_values(self, t):
+        return self.yd
 
 
 class LinearStateSpaceController(Controller):
