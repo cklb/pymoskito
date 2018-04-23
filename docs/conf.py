@@ -123,6 +123,8 @@ pygments_style = 'sphinx'
 # documents.
 # keep_warnings = False
 
+# Enable numbered references
+numfig = True
 
 # -- Options for HTML output -------------------------------------------
 
