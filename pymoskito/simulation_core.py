@@ -168,7 +168,7 @@ class Simulator(QObject):
         self._input_vector.update(system_output=self._current_outputs["Model"])
 
         # compute all dynamic modules
-        for mod in self._dynamic_module_list[1:]:
+        for mod in self._dynamic_module_list:
             self._calc_module(mod)
 
         # integrate model
