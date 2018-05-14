@@ -140,9 +140,6 @@ class TestGetterCalls(unittest.TestCase):
         # processing
 
         # post-processors
-        self.assertTrue((StepResponse, "StepResponse")
-                        in get_registered_modules(ProcessingModule,
-                                                  PostProcessingModule))
         self.assertTrue((PlotAll, "PlotAll")
                         in get_registered_modules(ProcessingModule,
                                                   PostProcessingModule))
@@ -171,9 +168,6 @@ class TestGetterCalls(unittest.TestCase):
         # processing
 
         self.assertTrue(
-            (StepResponse, "StepResponse")
-            in get_registered_processing_modules(PostProcessingModule))
-        self.assertTrue(
             (PlotAll, "PlotAll")
             in get_registered_processing_modules(PostProcessingModule))
         # self.assertTrue(
@@ -187,9 +181,6 @@ class TestGetterCalls(unittest.TestCase):
         self.assertTrue(
             (ODEInt, "ODEInt")
             in get_registered_modules("SimulationModule", "Solver"))
-        self.assertTrue(
-            (StepResponse, "StepResponse")
-            in get_registered_processing_modules("PostProcessingModule"))
         self.assertTrue(
             (PlotAll, "PlotAll")
             in get_registered_processing_modules("PostProcessingModule"))
