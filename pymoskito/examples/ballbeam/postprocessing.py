@@ -12,6 +12,11 @@ from . import settings as st
 
 
 class BallBeamStepResponse(pm.StepResponse):
+    """
+    Postprocessor the creates Step Response Diagrams for the Ballbeam system.
+
+    Run the `pp_regimes.sreg` file to create the required simulation data.
+    """
 
     def __init__(self):
         super().__init__(model_idx=0, trajectory_idx=0)

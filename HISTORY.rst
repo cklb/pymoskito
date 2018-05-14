@@ -4,6 +4,13 @@
 History
 =======
 
+0.2.3 (2018-05-15)
+------------------
+
+* Added sensible examples for Post- and Meta processors in the Ball and Beam
+  exmaple
+*
+
 0.2.2 (2018-03-28)
 ------------------
 

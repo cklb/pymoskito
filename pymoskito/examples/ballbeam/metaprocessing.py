@@ -2,6 +2,13 @@ import pymoskito as pm
 
 
 class PolesITAEMetaProcessor(pm.XYMetaProcessor):
+    """
+    Metaprocessor to evaluate the ITAE error for different pole placements of
+    different controllers.
+
+    Run the `StepResponse` postprocessor with the results from the `pp_regimes`
+    file the create the required input data.
+    """
 
     def __init__(self):
         sort_key = ["modules", "Controller", "type"]
