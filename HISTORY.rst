@@ -11,6 +11,7 @@ History
   exmaple
 * Fixed Issue regarding the Disturbance Block
 * Removed error-prone pseudo post processing
+* Fixed problems due to changes in trajectory generators
 
 0.2.2 (2018-03-28)
 ------------------
