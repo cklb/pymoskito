@@ -4,12 +4,13 @@
 History
 =======
 
-0.2.3 (2018-05-15)
+0.2.3 (2018-05-14)
 ------------------
 
 * Added sensible examples for Post- and Meta processors in the Ball and Beam
   exmaple
 * Fixed Issue regarding the Disturbance Block
+* Removed error-prone pseudo post processing
 
 0.2.2 (2018-03-28)
 ------------------
