@@ -41,11 +41,13 @@ def get_resource(res_name, res_type="icons"):
 def sort_tree(data_list, sort_key_path):
     """
     Helper method for data sorting.
-    Takes a list of simulation results and sorts them into a tree whose index is given by the sort_key_path
+
+    Takes a list of simulation results and sorts them into a tree whose index is
+    given by the sort_key_path.
 
     Args:
-        data_list (list): list of simulation results
-        sort_key_path (str):
+        data_list(list): List of simulation results
+        sort_key_path(list): List of dictionary keys to sort for.
 
     Return:
         dict: sorted dictionary

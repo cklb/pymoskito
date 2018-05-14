@@ -84,6 +84,10 @@ class StepResponse(PostProcessingModule):
         - damping time (t_damp): time needed for the output to enter and remain
         in an epsilon region around the desired value
 
+    Args:
+        model_idx(int): Index of the model output to use.
+        trajectory_idx(int): Index of the trajectory output to use.
+
     """
     line_color = colors.HKS41K100
     line_width = 2
@@ -94,8 +98,10 @@ class StepResponse(PostProcessingModule):
     counter = 0
     eps = 1e-3
 
-    def __init__(self):
+    def __init__(self, model_idx=0, trajectory_idx=0):
         PostProcessingModule.__init__(self)
+        self.model_idx = model_idx
+        self.trajectory_idx = trajectory_idx
         self.label_positions = None
         return
 
@@ -109,12 +115,12 @@ class StepResponse(PostProcessingModule):
 
         # calculate data sets
         t = data["results"]["time"]
-        y = data["results"]["Model"][:, 0]
+        y = data["results"]["Model"][:, self.model_idx]
         traj_data = data["results"]["Trajectory"]
-        if len(traj_data.shape) == 2:
-            yd = data["results"]["Trajectory"][-1, 0]
-        elif len(traj_data.shape) == 3:
-            yd = data["results"]["Trajectory"][-1, 0, 0]
+        if traj_data.ndim == 2:
+            yd = data["results"]["Trajectory"][-1, self.trajectory_idx]
+        elif traj_data.ndim == 3:
+            yd = data["results"]["Trajectory"][-1, self.trajectory_idx, 0]
         else:
             raise ValueError("unknown Trajectory type.")
 
@@ -203,9 +209,6 @@ class StepResponse(PostProcessingModule):
         # calc stationary control deviation
         control_deviation = y[-1] - yd
         output.update({"stationary_error": control_deviation})
-
-        self.calc_metrics(data, output)
-
         # check for sim success
         if not data["results"]["finished"]:
             for key in output.keys():
@@ -213,7 +216,12 @@ class StepResponse(PostProcessingModule):
 
         # add settings and metrics to dictionary results
         results = {}
-        results.update({"metrics": output})
+        y_des = np.ones_like(y) * yd
+        step_width = 1 / data["modules"]["Solver"]["measure rate"]
+        results.update({"metrics": self.calc_metrics(y,
+                                                     y_des,
+                                                     step_width,
+                                                     output)})
         results.update({"modules": data["modules"]})
 
         canvas = FigureCanvas(fig)
@@ -238,39 +246,29 @@ class StepResponse(PostProcessingModule):
                       size=self.font_size)
             self.counter += 1
 
-    def calc_metrics(self, data, output):
+    def calc_metrics(self, measured_values, desired_values, step_width, output):
         """
-        calculate metrics for comparison
-        :param output:
-        :param data:
+        Calculate metrics
+
+        Args:
+            measured_values(array): Array holding the measured outputs.
+            desired_values(array): Array holding the desired outputs.
+            step_width(float): Simulation step width.
+
+        Returns:
+            dict: Calculated metrics.
         """
-        l1_norm_itae = self.calc_l1_norm_itae(*self.get_metric_values(data))
-        l1_norm_abs = self.calc_l1_norm_abs(*self.get_metric_values(data))
+        l1_norm_itae = self.calc_l1_norm_itae(measured_values,
+                                              desired_values,
+                                              step_width)
+        l1_norm_abs = self.calc_l1_norm_abs(measured_values,
+                                            desired_values,
+                                            step_width)
 
         self._logger.info("L1NormITAE: {}".format(l1_norm_itae))
         self._logger.info("L1NormAbs: {}".format(l1_norm_abs))
 
-        output.update({'L1NormITAE': l1_norm_itae, 'L1NormAbs': l1_norm_abs})
-
-    @staticmethod
-    def get_metric_values(data):
-        """
-        Extract needed data to calculate metrics for this postprocessor.
-
-        Note:
-            Overload to fit custom model.
-
-        Params:
-            data: simulation data
-
-        Returns:
-             (tuple): (measured_values, desired_values, step_width)
-        """
-        metric_values = (data["results"]["Model"],
-                         data["results"]["Trajectory"],
-                         1 / data["modules"]["Solver"]["measure rate"])
-
-        return metric_values
+        return {'L1NormITAE': l1_norm_itae, 'L1NormAbs': l1_norm_abs}
 
 
 class PlotAll(PostProcessingModule):
@@ -326,14 +324,33 @@ class PlotAll(PostProcessingModule):
 
 class XYMetaProcessor(MetaProcessingModule):
     """
-    create XY-diagrams for the given key to be compared
+    Create XY-diagrams for the given keys from metadata.
+
+    Args:
+        x_path(list): List of dictionary keys pointing to the desired values
+            of the x axis.
+        y_path(list): List of dictionary keys pointing to the desired values
+            of the y axis.
+        sort_key(list): List of dictionary keys used for grouping the meta data.
+        x_idx(int): If the *x_path* points to an array but only one component
+            is to be selected, its index can be given. [-1]
+        y_idx(int): If the *y_path* points to an array but only one component
+            is to be selected, its index can be given. [-1]
+        line_style(str): Either ``line`` or ``bar``.
     """
 
-    def __init__(self, x_path, y_path, sort_key):
+    def __init__(self, x_path, y_path, sort_key, x_idx=-1, y_idx=-1,
+                 line_style="line", title="", x_label="", y_label=""):
         MetaProcessingModule.__init__(self)
         self.x_path = x_path
+        self.x_idx = x_idx
         self.y_path = y_path
+        self.y_idx = y_idx
         self.sort_key = sort_key
+        self.line_style = line_style
+        self.title = title
+        self.x_lbl = x_label
+        self.y_lbl = y_label
 
         self.fig = None
         self.axes = None
@@ -348,8 +365,14 @@ class XYMetaProcessor(MetaProcessingModule):
         self.fig = Figure()
         self.axes = self.fig.add_subplot(111)
 
-        self.plot_family(source, self.x_path, self.y_path, "line")
-        self.set_plot_labeling()
+        self.plot_family(source,
+                         self.x_path,
+                         self.y_path,
+                         self.line_style,
+                         self.x_idx,
+                         self.y_idx)
+        self.set_plot_labeling(self.title, True, self.x_lbl, self.y_lbl,
+                               self.line_style)
 
         # extract member_names, therefore
         # (subtract common appendix like *Controller or *Feedforward)
