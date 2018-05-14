@@ -22,7 +22,7 @@ test_requirements = [
 
 setup(
     name="pymoskito",
-    version="0.2.2",
+    version="0.2.3",
     description="Python based modular simulation & postprocessing kickass "
                 "toolbox",
     long_description=readme + "\n\n" + history,
