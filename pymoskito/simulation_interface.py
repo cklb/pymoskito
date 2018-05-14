@@ -574,8 +574,9 @@ class SimulatorInteractor(QObject):
         """
         assert self._sim_state == "finished" or self._sim_state == "aborted"
 
-        # Add some error prone calculations (TODO move this somewhere else)
-        self._postprocessing()
+        # TODO move this somewhere else and support vectorial block outputs
+        # Add some error prone calculations
+        # self._postprocessing()
 
         # Rest internal states and disconnect signal connections
         self._sim_aftercare()
