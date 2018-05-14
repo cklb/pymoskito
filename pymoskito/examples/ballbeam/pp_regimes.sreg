@@ -1,0 +1,62 @@
+- Name: step_response_5
+  # This regimes shows a typical step response of a linear controller
+  clear previous: !!python/bool True
+
+  Model:
+   type: BallBeamModel
+
+  Solver:
+   type: ODEInt
+
+  Controller:
+   # A Linear State Space Controller, linearized with the Ball at r=3 meters.
+   type: LSSController
+   poles: [-5, -3.1, -3.1, -3.1]
+   steady state: [2, 0, 0, 0]
+
+  Trajectory:
+   # A setpoint trajectory that will perform a step on the 0th component of the
+   # models state and set it to 3.
+   type: Setpoint
+   Setpoint: [2]
+
+  ModelMixer:
+   type: AdditiveMixer
+   Input A: Controller
+   Input B: None
+
+- Name: step_response_10
+  clear previous: !!python/bool False
+  Controller:
+   # A Linear State Space Controller, linearized with the Ball at r=3 meters.
+   type: LSSController
+   poles: [-10, -3.1, -3.1, -3.1]
+   steady state: [2, 0, 0, 0]
+
+- Name: step_response_20
+  clear previous: !!python/bool False
+  Controller:
+   # A Linear State Space Controller, linearized with the Ball at r=3 meters.
+   type: LSSController
+   poles: [-20, -3.1, -3.1, -3.1]
+
+- Name: step_response_30
+  clear previous: !!python/bool False
+  Controller:
+   # A Linear State Space Controller, linearized with the Ball at r=3 meters.
+   type: LSSController
+   poles: [-30, -3.1, -3.1, -3.1]
+
+- Name: step_response_40
+  clear previous: !!python/bool False
+  Controller:
+   # A Linear State Space Controller, linearized with the Ball at r=3 meters.
+   type: LSSController
+   poles: [-40, -3.1, -3.1, -3.1]
+
+- Name: step_response_50
+  clear previous: !!python/bool False
+  Controller:
+   # A Linear State Space Controller, linearized with the Ball at r=3 meters.
+   type: LSSController
+   poles: [-50, -3.1, -3.1, -3.1]

@@ -24,7 +24,6 @@
 
   Trajectory:
    type: Setpoint
-   State: [2]
    Setpoint: [0.7]
 
   ModelMixer:
@@ -74,7 +73,7 @@
   Trajectory:
    type: SmoothTransition
    states: [0.0, 1.0]
-   start_time: 2
+   start time: 2
    delta t: 5
 
   ModelMixer:

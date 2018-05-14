@@ -171,12 +171,10 @@
    Kd: 230
 
   Trajectory:
-   type: PolynomialTrajectory
-   x0: 0.2
-   te: 10
-   t0: 5
-   degree: 9
-   xe: 1.0
+   type: SmoothTransition
+   states: [0.0, 1.0]
+   start time: 5
+   delta t: 5
 
   ModelMixer:
    type: AdditiveMixer

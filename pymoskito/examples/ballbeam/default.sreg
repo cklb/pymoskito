@@ -68,7 +68,6 @@
    # A setpoint trajectory that will perform a step on the 0th component of the
    # models state and set it to 3.
    type: Setpoint
-   State: [0]
    Setpoint: [3]
 
   ModelMixer:

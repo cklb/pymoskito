@@ -43,18 +43,18 @@ class LinearStateFeedback(pm.Controller):
                  input_values=None, **kwargs):
         # input abbreviations
         x = input_values
-        yd = trajectory_values
+        yd = trajectory_values[0, 0]
         eq = kwargs.get("eq", None)
 
         if eq is None:
             eq = calc_closest_eq_state(self._settings, input_values)
-        x = x - np.atleast_2d(eq).T
+        x = x - eq
 
         # this is a second version
         # x = calc_small_signal_state(self._settings, is_values)
 
         # u corresponds to a force [kg*m/s**2] = [N]
-        u = - np.dot(self.K, x) + np.dot(self.V, yd[0, 0])
+        u = - np.dot(self.K, x) + np.dot(self.V, yd)
 
         return u
 
@@ -102,18 +102,18 @@ class LinearStateFeedbackParLin(pm.Controller):
         """
         # input abbreviations
         x = input_values
-        yd = trajectory_values
+        yd = trajectory_values[0, 0]
         eq = kwargs.get("eq", None)
 
         if eq is None:
             eq = calc_closest_eq_state(self._settings, input_values)
-        x = x - np.atleast_2d(eq).T
+        x = x - eq
 
         # this is a second version
         # x = calc_small_signal_state(self._settings, is_values)
 
         # u corresponds to a acceleration [m/s**2]
-        u = - np.dot(self.K, x) + np.dot(self.V, yd[0, 0])
+        u = - np.dot(self.K, x) + np.dot(self.V, yd)
 
         return u
 
@@ -165,15 +165,15 @@ class LinearQuadraticRegulator(pm.Controller):
                  input_values=None, **kwargs):
         # input abbreviations
         x = input_values
-        yd = trajectory_values
+        yd = trajectory_values[0, 0]
         eq = kwargs.get("eq", None)
 
         if eq is None:
             eq = calc_closest_eq_state(self._settings, x)
-        x = x - np.atleast_2d(eq).T
+        x = x - eq
 
         # u corresponds to a force [kg*m/s**2] = [N]
-        u = - np.dot(self.K, x) + np.dot(self.V, yd[0, 0])
+        u = - np.dot(self.K, x) + np.dot(self.V, yd)
 
         return u
 
