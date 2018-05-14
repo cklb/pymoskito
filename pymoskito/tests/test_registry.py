@@ -26,7 +26,7 @@ from pymoskito.generic_processing_modules import *
 
 from pymoskito.examples.ballbeam.model import BallBeamModel
 from pymoskito.examples.ballbeam.controller import FController
-from pymoskito.examples.ballbeam.postprocessing import EvalA1
+from pymoskito.examples.ballbeam.postprocessing import BallBeamStepResponse
 from pymoskito.examples.ballbeam.visualization import MplBallBeamVisualizer
 
 
@@ -49,10 +49,10 @@ class TestRegisterCalls(unittest.TestCase):
 
         # register a postprocessor in wrong module category
         self.assertRaises(TypeError, register_simulation_module,
-                          PostProcessingModule, EvalA1)
+                          PostProcessingModule, BallBeamStepResponse)
         self.assertRaises(TypeError, register_processing_module,
-                          MetaProcessingModule, EvalA1)
-        self.assertRaises(TypeError, register_visualizer, EvalA1)
+                          MetaProcessingModule, BallBeamStepResponse)
+        self.assertRaises(TypeError, register_visualizer, BallBeamStepResponse)
 
         # register a visualizer in wrong module category
         self.assertRaises(TypeError, register_simulation_module,
@@ -67,7 +67,7 @@ class TestRegisterCalls(unittest.TestCase):
         self.assertTrue((FController, "FController")
                         in get_registered_simulation_modules(Controller))
         self.assertTrue(
-            (EvalA1, "EvalA1")
+            (BallBeamStepResponse, "BallBeamStepResponse")
             in get_registered_processing_modules(PostProcessingModule))
         # self.assertTrue(
         #     (XYMetaProcessor, "XYMetaProcessor")
@@ -82,7 +82,7 @@ class TestRegisterCalls(unittest.TestCase):
         self.assertRaises(ValueError, register_simulation_module,
                           Controller, FController)
         self.assertRaises(ValueError, register_processing_module,
-                          PostProcessingModule, EvalA1)
+                          PostProcessingModule, BallBeamStepResponse)
         # self.assertRaises(ValueError, register_processing_module,
         #                   MetaProcessingModule, XYMetaProcessor)
         self.assertRaises(ValueError, register_visualizer,
