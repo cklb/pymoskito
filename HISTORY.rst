@@ -8,7 +8,7 @@ History
 ------------------
 
 * Added sensible examples for Post- and Meta processors in the Ball and Beam
-  exmaple
+  example
 * Fixed Issue regarding the Disturbance Block
 * Removed error-prone pseudo post processing
 * Fixed problems due to changes in trajectory generators
