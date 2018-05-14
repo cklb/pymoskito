@@ -247,8 +247,8 @@ class PostProcessingModule(ProcessingModule):
         """
         def e_func(_t):
             _idx = np.floor_divide(_t, step_width).astype(int)
-            e = t * np.abs(desired_values[_idx, ..., 0]
-                           - meas_values[_idx, ..., 0])
+            e = t * np.abs(desired_values[_idx]
+                           - meas_values[_idx])
             return e
 
         t = np.array([x * step_width for x in range(len(desired_values))])
@@ -268,8 +268,8 @@ class PostProcessingModule(ProcessingModule):
         """
         def e_func(_t):
             _idx = np.floor_divide(_t, step_width).astype(int)
-            e = np.abs(desired_values[_idx, ..., 0]
-                       - meas_values[_idx, ..., 0])
+            e = np.abs(desired_values[_idx]
+                       - meas_values[_idx])
             return e
 
         t = np.array([x * step_width for x in range(len(desired_values))])

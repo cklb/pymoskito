@@ -45,5 +45,4 @@ register_simulation_module(Limiter, ModelInputLimiter)
 register_simulation_module(Sensor, DeadTimeSensor)
 register_simulation_module(Disturbance, GaussianNoise)
 
-register_processing_module(PostProcessingModule, StepResponse)
 register_processing_module(PostProcessingModule, PlotAll)

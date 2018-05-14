@@ -10,9 +10,17 @@ import pymoskito as pm
 
 from . import settings as st
 
+
+class BallBeamStepResponse(pm.StepResponse):
+
+    def __init__(self):
+        super().__init__(model_idx=0, trajectory_idx=0)
+
+
+pm.register_processing_module(pm.PostProcessingModule, BallBeamStepResponse)
+
+
 # TODO get those working again
-
-
 class EvalA1(pm.PostProcessingModule):
     """
     create diagrams for evaluation step A1
@@ -1281,4 +1289,4 @@ class EvalCObserver(pm.PostProcessingModule):
 
         return dict(name="_".join({data["regime name"], self.name}), figure=canvas)
 
-pm.register_processing_module(pm.PostProcessingModule, EvalA1)
+# pm.register_processing_module(pm.PostProcessingModule, EvalA1)
