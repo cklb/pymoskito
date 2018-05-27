@@ -56,11 +56,13 @@ from .tools import get_resource, PlainTextLogger
 __all__ = ["SimulationGui", "run"]
 
 
-def run():
+def run(regimes=None):
     """ Helper function to launch the PyMoskito GUI
     """
     app = QApplication([])
     prog = SimulationGui()
+    if regimes is not None:
+        prog.load_regimes_from_file(regimes)
     prog.show()
     app.exec_()
 
