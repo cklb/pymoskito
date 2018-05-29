@@ -711,6 +711,14 @@ class SimulationGui(QMainWindow):
         self._current_regime_index = index
         self._current_regime_name = reg_name
 
+        if 'data' in self._regimes[index]:
+            self.currentDataset = self._regimes[index]['data']
+            self._read_results()
+            self._update_data_list()
+            self._update_plots()
+        else:
+            self.dataList.clear()
+
         return self.sim.set_regime(self._regimes[index])
 
     @pyqtSlot()
@@ -801,6 +809,7 @@ class SimulationGui(QMainWindow):
 
         self.stop_animation()
 
+        self._regimes[self._current_regime_index]['data'] = data
         self.currentDataset = data
         if data:
             self._read_results()
