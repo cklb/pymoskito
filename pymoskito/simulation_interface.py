@@ -383,8 +383,8 @@ class SimulatorInteractor(QObject):
                 continue
 
             # sanity check
-            module_cls = getattr(simulation_modules, module_name)
-            if not module_cls:
+            module_cls = getattr(simulation_modules, module_name, None)
+            if module_cls is None:
                 self._logger.error("_apply_regime(): No module called {0}"
                                    "".format(module_name))
                 return False
