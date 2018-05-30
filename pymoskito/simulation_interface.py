@@ -383,11 +383,10 @@ class SimulatorInteractor(QObject):
                 continue
 
             # sanity check
-            try:
-                module_cls = getattr(simulation_modules, module_name)
-            except AttributeError:
-                # self._logger.error("_apply_regime(): No module called {0}"
-                #                    "".format(module_name))
+            module_cls = getattr(simulation_modules, module_name, None)
+            if module_cls is None:
+                self._logger.error("_apply_regime(): No module called {0}"
+                                   "".format(module_name))
                 return False
 
             items = self.target_model.findItems(module_name)
@@ -400,12 +399,12 @@ class SimulatorInteractor(QObject):
             module_type = value["type"]
 
             # sanity check
-            try:
-                sub_module_cls = get_simulation_module_class_by_name(module_cls,
-                                                                    module_type)
-            except AttributeError:
-                # self._logger.error("_apply_regime(): No sub-module called {0}"
-                #                    "".format(module_type))
+            sub_module_cls = get_simulation_module_class_by_name(module_cls,
+                                                                 module_type)
+
+            if not sub_module_cls:
+                self._logger.error("_apply_regime(): No sub-module called {0}"
+                                   "".format(module_type))
                 return False
 
             module_index = module_item.index()
