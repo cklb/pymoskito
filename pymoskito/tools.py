@@ -229,3 +229,16 @@ def swap_rows(arr, frm, to):
         arr[[frm, to], :] = arr[[to, frm], :]
     return arr
 
+
+class LengthList(object):
+    def __init__(self, maxLength):
+        self.maxLength = maxLength
+        self.ls = []
+
+    def push(self, st):
+        if len(self.ls) == self.maxLength:
+            self.ls.pop(0)
+        self.ls.append(st)
+
+    def get_list(self):
+        return self.ls

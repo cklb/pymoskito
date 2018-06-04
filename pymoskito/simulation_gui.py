@@ -51,7 +51,7 @@ from .visualization import MplVisualizer, VtkVisualizer
 from .registry import get_registered_visualizers
 from .simulation_interface import SimulatorInteractor, SimulatorView
 from .processing_gui import PostProcessor
-from .tools import get_resource, PlainTextLogger
+from .tools import get_resource, PlainTextLogger, LengthList
 
 
 __all__ = ["SimulationGui", "run"]
@@ -132,13 +132,15 @@ class SimulationGui(QMainWindow):
         self.propertyDock = pg.dockarea.Dock("Properties")
         self.animationDock = pg.dockarea.Dock("Animation")
         self.regimeDock = pg.dockarea.Dock("Regimes")
+        self.lastSimDock = pg.dockarea.Dock("Last Simulations")
         self.dataDock = pg.dockarea.Dock("Data")
         self.logDock = pg.dockarea.Dock("Log")
         # self.plotDockPlaceholder = pg.dockarea.Dock("Placeholder")
 
         # arrange docks
         self.area.addDock(self.animationDock, "right")
-        self.area.addDock(self.regimeDock, "left", self.animationDock)
+        self.area.addDock(self.lastSimDock, "left", self.animationDock)
+        self.area.addDock(self.regimeDock, "above", self.lastSimDock)
         self.area.addDock(self.propertyDock, "bottom", self.regimeDock)
         self.area.addDock(self.dataDock, "bottom", self.propertyDock)
         # self.area.addDock(self.plotDockPlaceholder, "bottom", self.animationDock)
@@ -229,10 +231,16 @@ class SimulationGui(QMainWindow):
         self.runningBatch = False
         self._current_regime_index = None
         self._current_regime_name = None
-        self._regimes = []
 
         self.regimeFinished.connect(self.run_next_regime)
         self.finishedRegimeBatch.connect(self.regime_batch_finished)
+
+        # last sim window
+        self.lastSimList = QListWidget(self)
+        self.lastSimDock.addWidget(self.lastSimList)
+        # TODO
+        # self.lastSimList.itemDoubleClicked.connect(self.loadLastSim)
+        self._lastSim = LengthList(10)
 
         # data window
         self.dataList = QListWidget(self)
@@ -411,6 +419,13 @@ class SimulationGui(QMainWindow):
         self.statusBar().addPermanentWidget(self.timeLabel)
 
         self._logger.info("Simulation GUI is up and running.")
+
+    def loadLastSim(self):
+        # TODO
+        # 1. set settings
+        # 1.1. is settings same as present, load datalist
+        # 2. set datalist
+        pass
 
     def _read_settings(self):
 
@@ -651,6 +666,12 @@ class SimulationGui(QMainWindow):
         self.statusBar().showMessage("loaded {} regimes.".format(len(self._regimes)), 1000)
         return
 
+    def _update_lastSimList(self):
+        self.lastSimList.clear()
+        for lastSim in self._lastSim.get_list():
+            self._logger.debug("adding '{}' to lastSim list".format(lastSim["name"]))
+            self.lastSimList.addItem(lastSim["name"])
+
     def _update_regime_list(self):
         self.regime_list.clear()
         for reg in self._regimes:
@@ -712,13 +733,14 @@ class SimulationGui(QMainWindow):
         self._current_regime_index = index
         self._current_regime_name = reg_name
 
-        if 'data' in self._regimes[index]:
-            self.currentDataset = self._regimes[index]['data']
-            self._read_results()
-            self._update_data_list()
-            self._update_plots()
-        else:
-            self.dataList.clear()
+        # TODO check if data is in self._lastSim, else clear
+        # if 'data' in self._regimes[index]:
+        #     self.currentDataset = self._regimes[index]['data']
+        #     self._read_results()
+        #     self._update_data_list()
+        #     self._update_plots()
+        # else:
+        self.dataList.clear()
 
         return self.sim.set_regime(self._regimes[index])
 
@@ -810,7 +832,13 @@ class SimulationGui(QMainWindow):
 
         self.stop_animation()
 
-        self._regimes[self._current_regime_index]['data'] = data
+        # self._regimes[self._current_regime_index]['data'] = data
+        lastSimData = {'modules': data['modules'],
+                       'results': data['results'],
+                       'name': self._current_regime_name}
+        self._lastSim.push(lastSimData)
+        self._update_lastSimList()
+
         self.currentDataset = data
         if data:
             self._read_results()
