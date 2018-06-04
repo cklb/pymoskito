@@ -15,8 +15,8 @@ from scipy.interpolate import interp1d
 
 # Qt
 from PyQt5.QtCore import (pyqtSignal, pyqtSlot, Qt, QTimer, QSize, QSettings,
-                          QCoreApplication, QModelIndex)
-from PyQt5.QtGui import QIcon, QKeySequence
+                          QCoreApplication, QModelIndex, QRectF)
+from PyQt5.QtGui import QIcon, QKeySequence, QColor
 from PyQt5.QtWidgets import (QWidget, QAction, QSlider, QMainWindow,
                              QTreeView, QListWidget, QListWidgetItem,
                              QAbstractItemView,
@@ -28,6 +28,7 @@ from PyQt5.QtWidgets import (QWidget, QAction, QSlider, QMainWindow,
 # pyqtgraph
 import pyqtgraph as pg
 from pyqtgraph.dockarea import DockArea
+from pyqtgraph import exporters
 
 # vtk
 vtk_error_msg = ""
@@ -372,7 +373,7 @@ class SimulationGui(QMainWindow):
         fileMenu = self.menuBar().addMenu("&File")
         fileMenu.addAction(self.actLoadRegimes)
         fileMenu.addAction(self.actSave)
-        fileMenu.addAction("&Quit", self.close)
+        fileMenu.addAction("&Quit", self.close, QKeySequence(Qt.CTRL + Qt.Key_W))
 
         editMenu = self.menuBar().addMenu("&Edit")
         editMenu.addAction(self.actDeleteRegimes)
@@ -1046,10 +1047,32 @@ class SimulationGui(QMainWindow):
                                     pen=pg.mkPen("#FF0000", width=2.0))
         widget.getPlotItem().addItem(time_line)
 
+        widget.scene().contextMenu = [QAction("Export png", self), QAction("Export csv", self)]
+        widget.scene().contextMenu[0].triggered.connect(lambda: self.exportPng(widget.getPlotItem(), title))
+        widget.scene().contextMenu[1].triggered.connect(lambda: self.exportCsv(widget.getPlotItem(), title))
+
         # create dock container and add it to dock area
         dock = pg.dockarea.Dock(title, closable=True)
         dock.addWidget(widget)
         self.area.addDock(dock, "above", self.plotDockPlaceholder)
+
+    def exportCsv(self, plotItem, name):
+        exporter = exporters.CSVExporter(plotItem)
+        exporter.export(name + '.csv')
+
+    def exportPng(self, plotItem, name):
+        # Notwendig da Fehler in PyQtGraph
+        exporter = exporters.ImageExporter(plotItem)
+        oldGeometry = plotItem.geometry()
+        plotItem.setGeometry(QRectF(0, 0, 1920, 1080))
+        # TODO Farben ändern Background, grid und pen
+        # exporter.parameters()['background'] = QColor(255, 255, 255)
+        exporter.params.param('width').setValue(1920, blockSignal=exporter.widthChanged)
+        exporter.params.param('height').setValue(1080, blockSignal=exporter.heightChanged)
+        # TODO file save dialog einblenden
+        exporter.export(name + '.png')
+        # restore old state
+        plotItem.setGeometry(QRectF(oldGeometry))
 
     def _get_data_by_name(self, name):
         tmp = name.split(".")
