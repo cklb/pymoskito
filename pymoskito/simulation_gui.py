@@ -134,14 +134,14 @@ class SimulationGui(QMainWindow):
         self.regimeDock = pg.dockarea.Dock("Regimes")
         self.dataDock = pg.dockarea.Dock("Data")
         self.logDock = pg.dockarea.Dock("Log")
-        self.plotDockPlaceholder = pg.dockarea.Dock("Placeholder")
+        # self.plotDockPlaceholder = pg.dockarea.Dock("Placeholder")
 
         # arrange docks
         self.area.addDock(self.animationDock, "right")
         self.area.addDock(self.regimeDock, "left", self.animationDock)
         self.area.addDock(self.propertyDock, "bottom", self.regimeDock)
         self.area.addDock(self.dataDock, "bottom", self.propertyDock)
-        self.area.addDock(self.plotDockPlaceholder, "bottom", self.animationDock)
+        # self.area.addDock(self.plotDockPlaceholder, "bottom", self.animationDock)
         self.area.addDock(self.logDock, "bottom", self.dataDock)
         self.non_plotting_docks = list(self.area.findAll()[1].keys())
 
@@ -1054,7 +1054,23 @@ class SimulationGui(QMainWindow):
         # create dock container and add it to dock area
         dock = pg.dockarea.Dock(title, closable=True)
         dock.addWidget(widget)
-        self.area.addDock(dock, "above", self.plotDockPlaceholder)
+        # self.area.addDock(dock, "above", self.plotDockPlaceholder)
+        plotWidgets = self.findAllPlotWidgets()
+
+        if plotWidgets:
+            self.area.addDock(dock, "above", plotWidgets[0])
+        else:
+            self.area.addDock(dock, "bottom", self.animationDock)
+
+    def findAllPlotWidgets(self):
+        list = []
+        for title, dock in self.area.findAll()[1].items():
+            if title in self.non_plotting_docks:
+                continue
+            else:
+                list.append(dock)
+
+        return list
 
     def exportCsv(self, plotItem, name):
         exporter = exporters.CSVExporter(plotItem)
