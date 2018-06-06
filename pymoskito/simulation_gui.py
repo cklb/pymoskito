@@ -147,6 +147,8 @@ class SimulationGui(QMainWindow):
         self.area.addDock(self.logDock, "bottom", self.dataDock)
         self.non_plotting_docks = list(self.area.findAll()[1].keys())
 
+        self.standardDockState = self.area.saveState()
+
         # add widgets to the docks
         self.propertyDock.addWidget(self.targetView)
 
@@ -385,6 +387,11 @@ class SimulationGui(QMainWindow):
 
         editMenu = self.menuBar().addMenu("&Edit")
         editMenu.addAction(self.actDeleteRegimes)
+
+        self.viewMenu = self.menuBar().addMenu('View')
+        self.actLoadStandardState = QAction('Restore Default View')
+        self.viewMenu.addAction(self.actLoadStandardState)
+        self.actLoadStandardState.triggered.connect(self.loadStandardDockState)
 
         simMenu = self.menuBar().addMenu("&Simulation")
         simMenu.addAction(self.actSimulateCurrent)
@@ -1083,14 +1090,14 @@ class SimulationGui(QMainWindow):
         dock = pg.dockarea.Dock(title, closable=True)
         dock.addWidget(widget)
         # self.area.addDock(dock, "above", self.plotDockPlaceholder)
-        plotWidgets = self.findAllPlotWidgets()
+        plotWidgets = self.findAllPlotDocks()
 
         if plotWidgets:
             self.area.addDock(dock, "above", plotWidgets[0])
         else:
             self.area.addDock(dock, "bottom", self.animationDock)
 
-    def findAllPlotWidgets(self):
+    def findAllPlotDocks(self):
         list = []
         for title, dock in self.area.findAll()[1].items():
             if title in self.non_plotting_docks:
@@ -1213,3 +1220,8 @@ class SimulationGui(QMainWindow):
         self._logger.info("Close Event received, shutting down.")
         logging.getLogger().removeHandler(self.textLogger)
         super().closeEvent(QCloseEvent)
+
+    def loadStandardDockState(self):
+        for docks in self.findAllPlotDocks():
+            docks.close()
+        self.area.restoreState(self.standardDockState)
