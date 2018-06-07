@@ -1056,7 +1056,8 @@ class SimulationGui(QMainWindow):
 
         # check if plot has already been opened
         if title in self.area.findAll()[1]:
-            self.area.docks[title].raiseDock()
+            if not isinstance(self.area.docks[title].container(), pg.dockarea.Container.VContainer):
+                self.area.docks[title].raiseDock()
             return
 
         # collect data
