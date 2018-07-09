@@ -23,7 +23,8 @@ from PyQt5.QtWidgets import (QWidget, QAction, QSlider, QMainWindow,
                              QToolBar, QStatusBar, QProgressBar, QLabel,
                              QPlainTextEdit, QLineEdit, QFileDialog, QInputDialog,
                              QAbstractSlider, QFrame, QVBoxLayout, QMenu,
-                             QMessageBox, QDialogButtonBox, QApplication)
+                             QMessageBox, QDialogButtonBox, QApplication, QTreeWidget,
+                             QHBoxLayout, QPushButton, QTreeWidgetItem)
 
 # pyqtgraph
 import pyqtgraph as pg
@@ -39,6 +40,7 @@ try:
     from vtk import qt
     # import patched class that fixes scroll problem
     from .visualization import QVTKRenderWindowInteractor
+
     vtk_available = True
 except ImportError as e:
     vtk_available = False
@@ -52,7 +54,6 @@ from .registry import get_registered_visualizers
 from .simulation_interface import SimulatorInteractor, SimulatorView
 from .processing_gui import PostProcessor
 from .tools import get_resource, PlainTextLogger, LengthList
-
 
 __all__ = ["SimulationGui", "run"]
 
@@ -245,9 +246,64 @@ class SimulationGui(QMainWindow):
         self._lastSim = LengthList(10)
 
         # data window
-        self.dataList = QListWidget(self)
-        self.dataDock.addWidget(self.dataList)
-        self.dataList.itemDoubleClicked.connect(self.create_plot)
+        self.dataWidget = QWidget()
+        self.dataLayout = QHBoxLayout()
+
+        self.dataPointListWidget = QListWidget()
+        self.dataPointListLayout = QVBoxLayout()
+        self.dataPointBuffers = []
+        self.plotCharts = []
+        # TODO
+        # if dataPointNames:
+        #     for data in dataPointNames:
+        #         self.dataPointBuffers.append(DataPointBuffer(data))
+        #     self.dataPointListWidget.addItems(dataPointNames)
+        self.dataPointListWidget.setLayout(self.dataPointListLayout)
+        self.dataLayout.addWidget(self.dataPointListWidget)
+
+        self.dataPointManipulationWidget = QWidget()
+        self.dataPointManipulationLayout = QVBoxLayout()
+        self.dataPointManipulationLayout.addStretch(0)
+        self.dataPointRightButtonWidget = QWidget()
+        self.dataPointRightButtonLayout = QVBoxLayout()
+        self.dataPointRightButton = QPushButton(chr(8594), self)
+        self.dataPointRightButton.clicked.connect(self.addDatapointToTree)
+        self.dataPointManipulationLayout.addWidget(self.dataPointRightButton)
+        self.dataPointLeftButtonWidget = QWidget()
+        self.dataPointLeftButtonLayout = QVBoxLayout()
+        self.dataPointLeftButton = QPushButton(chr(8592), self)
+        self.dataPointLeftButton.clicked.connect(self.removeDatapointFromTree)
+        self.dataPointManipulationLayout.addWidget(self.dataPointLeftButton)
+        self.dataPointManipulationLayout.addStretch(0)
+        self.dataPointPlotAddButtonWidget = QWidget()
+        self.dataPointPlotAddButtonLayout = QVBoxLayout()
+        self.dataPointPlotAddButton = QPushButton("+", self)
+        self.dataPointPlotAddButton.clicked.connect(self.addPlotTreeItem)
+        self.dataPointManipulationLayout.addWidget(self.dataPointPlotAddButton)
+        self.dataPointPlotRemoveButtonWidget = QWidget()
+        self.dataPointPlotRemoveButtonLayout = QVBoxLayout()
+        self.dataPointPlotRemoveButton = QPushButton("-", self)
+        self.dataPointPlotRemoveButton.clicked.connect(self.removePlotTreeItem)
+        self.dataPointManipulationLayout.addWidget(self.dataPointPlotRemoveButton)
+        self.dataPointManipulationWidget.setLayout(self.dataPointManipulationLayout)
+        self.dataLayout.addWidget(self.dataPointManipulationWidget)
+
+        self.dataPointTreeWidget = QTreeWidget()
+        self.dataPointTreeWidget.setHeaderLabels(["PlotTitle", "DataPoint"])
+        self.dataPointTreeWidget.itemDoubleClicked.connect(self.create_plot)
+        self.dataPointTreeWidget.setExpandsOnDoubleClick(0)
+        self.dataPointTreeLayout = QVBoxLayout()
+
+        self.dataPointTreeWidget.setLayout(self.dataPointTreeLayout)
+        self.dataLayout.addWidget(self.dataPointTreeWidget)
+
+        self.dataWidget.setLayout(self.dataLayout)
+        self.dataDock.addWidget(self.dataWidget)
+
+        # TODO hier am bauen
+        # self.dataList = QListWidget(self)
+        # self.dataDock.addWidget(self.dataList)
+        # self.dataList.itemDoubleClicked.connect(self.create_plot)
 
         # actions for simulation control
         self.actSimulateCurrent = QAction(self)
@@ -426,6 +482,84 @@ class SimulationGui(QMainWindow):
         self.statusBar().addPermanentWidget(self.timeLabel)
 
         self._logger.info("Simulation GUI is up and running.")
+
+    def addPlotTreeItem(self):
+        name, ok = QInputDialog.getText(self, "PlotTitle", "PlotTitle:")
+        if ok and name:
+            # check if name is in treewidget
+            root = self.dataPointTreeWidget.invisibleRootItem()
+            child_count = root.childCount()
+            for i in range(child_count):
+                item = root.child(i)
+                _name = item.text(0)
+                if _name == name:
+                    self._logger.error("Name '{}' already exists".format(name))
+                    return
+
+            toplevelitem = QTreeWidgetItem()
+            toplevelitem.setText(0, name)
+            self.dataPointTreeWidget.addTopLevelItem(toplevelitem)
+            toplevelitem.setExpanded(1)
+
+    def removePlotTreeItem(self):
+        if self.dataPointTreeWidget.selectedItems():
+            toplevelitem = self.dataPointTreeWidget.selectedItems()[0]
+            while toplevelitem.parent():
+                toplevelitem = toplevelitem.parent()
+
+            text = "The marked plot '" + self.dataPointTreeWidget.selectedItems()[0].text(0) + "' will deleted!"
+            buttonReply = QMessageBox.warning(self, "Plot delete", text, QMessageBox.Ok | QMessageBox.Cancel)
+            if buttonReply == QMessageBox.Ok:
+                openDocks = [dock.title() for dock in self.findAllPlotDocks()]
+                if toplevelitem.text(0) in openDocks:
+                    self.area.docks[toplevelitem.text(0)].close()
+
+                self.dataPointTreeWidget.takeTopLevelItem(self.dataPointTreeWidget.indexOfTopLevelItem(toplevelitem))
+
+    def addDatapointToTree(self):
+        if self.dataPointListWidget.selectedIndexes() and self.dataPointTreeWidget.selectedIndexes():
+            dataPoint = self.dataPointListWidget.currentItem().text()
+            toplevelitem = self.dataPointTreeWidget.selectedItems()[0]
+            while toplevelitem.parent():
+                toplevelitem = toplevelitem.parent()
+
+            for i in range(toplevelitem.childCount()):
+                if dataPoint == toplevelitem.child(i).text(1):
+                    return
+
+            child = QTreeWidgetItem()
+            child.setText(1, dataPoint)
+            toplevelitem.addChild(child)
+
+            # self.plots(toplevelitem)
+
+    def removeDatapointFromTree(self):
+        if self.dataPointTreeWidget.selectedItems():
+            toplevelitem = self.dataPointTreeWidget.selectedItems()[0]
+            while toplevelitem.parent():
+                toplevelitem = toplevelitem.parent()
+
+            toplevelitem.takeChild(toplevelitem.indexOfChild(self.dataPointTreeWidget.selectedItems()[0]))
+
+            # self.plots(toplevelitem)
+
+    def plots(self, item):
+        title = item.text(0)
+
+        # check if a top level item has been clicked
+        if not item.parent():
+            if title in self.nonPlottingDocks:
+                self._logger.error("Title '{}' not allowed for a plot window since"
+                                   "it would shadow on of the reserved "
+                                   "names".format(title))
+                return
+
+        # check if plot has already been opened
+        openDocks = [dock.title() for dock in self.findAllPlotDocks()]
+        if title in openDocks:
+            self.update_plot(item)
+        else:
+            self.create_plot(item)
 
     def loadLastSim(self):
         # TODO
@@ -747,7 +881,7 @@ class SimulationGui(QMainWindow):
         #     self._update_data_list()
         #     self._update_plots()
         # else:
-        self.dataList.clear()
+        # self.dataList.clear()
 
         return self.sim.set_regime(self._regimes[index])
 
@@ -872,7 +1006,7 @@ class SimulationGui(QMainWindow):
                                      axis=0,
                                      bounds_error=False,
                                      fill_value=(state[0], state[-1]))
-        self.currentStepSize = 1.0/self.currentDataset["simulation"][
+        self.currentStepSize = 1.0 / self.currentDataset["simulation"][
             "measure rate"]
         self.currentEndTime = self.currentDataset["simulation"]["end time"]
         self.validData = True
@@ -887,7 +1021,7 @@ class SimulationGui(QMainWindow):
 
     def reset_playback_speed(self):
         self.speedControl.setValue((self.speedControl.maximum()
-                                    - self.speedControl.minimum())/2)
+                                    - self.speedControl.minimum()) / 2)
 
     def set_slowest_playback_speed(self):
         self.speedControl.setValue(self.speedControl.minimum())
@@ -902,7 +1036,7 @@ class SimulationGui(QMainWindow):
         :param val:
         """
         maximum = self.speedControl.maximum()
-        self.playbackGain = 10**(3.0 * (val - maximum / 2) / maximum)
+        self.playbackGain = 10 ** (3.0 * (val - maximum / 2) / maximum)
 
     @pyqtSlot()
     def increment_playback_time(self):
@@ -927,7 +1061,7 @@ class SimulationGui(QMainWindow):
         """
         adjust playback time to slider value
         """
-        self.playbackTime = self.timeSlider.value()/self.timeSliderRange*self.currentEndTime
+        self.playbackTime = self.timeSlider.value() / self.timeSliderRange * self.currentEndTime
         self.playbackTimeChanged.emit()
         return
 
@@ -956,23 +1090,23 @@ class SimulationGui(QMainWindow):
                 self.vtkWidget.GetRenderWindow().Render()
 
     def _update_data_list(self):
-        self.dataList.clear()
+        # self.dataList.clear()
+        self.dataPointListWidget.clear()
+        # TODO remove all from treewidget, close all plots
         for module_name, results in self.currentDataset["results"].items():
             if not isinstance(results, np.ndarray):
                 continue
             if len(results.shape) == 1:
-                self.dataList.insertItem(0, module_name)
+                self.dataPointListWidget.addItem(module_name)
             elif len(results.shape) == 2:
                 for col in range(results.shape[1]):
-                    self.dataList.insertItem(
-                        0,
-                        self._build_entry_name(module_name, (col, ))
+                    self.dataPointListWidget.addItem(
+                        self._build_entry_name(module_name, (col,))
                     )
             elif len(results.shape) == 3:
                 for col in range(results.shape[1]):
                     for der in range(results.shape[2]):
-                        self.dataList.insertItem(
-                            0,
+                        self.dataPointListWidget.addItem(
                             self._build_entry_name(module_name, (col, der))
                         )
 
@@ -1038,6 +1172,18 @@ class SimulationGui(QMainWindow):
 
         return info[idx]["Unit"]
 
+    def update_plot(self, item):
+        title = item.text(0)
+
+        # get the new datapoints
+        newDataPoints = []
+        for indx in range(item.childCount()):
+            data = self._get_data_by_name(item.child(indx).text(1))
+            newDataPoints.append(data)
+
+        # clear plot
+        # create_plot
+
     def create_plot(self, item):
         """
         Creates a plot widget based on the given item.
@@ -1048,33 +1194,19 @@ class SimulationGui(QMainWindow):
         Args:
             item(Qt.ListItem): Item to plot.
         """
-        title = str(item.text())
-        if title in self.non_plotting_docks:
-            self._logger.error("Title '{}' not allowed for a plot window since"
-                               "it would shadow on of the reserved "
-                               "names".format(title))
-
-        # check if plot has already been opened
-        if title in self.area.findAll()[1]:
-            if not isinstance(self.area.docks[title].container(), pg.dockarea.Container.VContainer):
-                self.area.docks[title].raiseDock()
-            return
+        title = str(item.text(0))
 
         # collect data
-        data = self._get_data_by_name(title)
         t = self.currentDataset["results"]["time"]
-        unit = self._get_units(title)
-        if "." in title:
-            name = title.split(".")[1]
-        else:
-            name = title
 
         # create plot widget
         widget = pg.PlotWidget(title=title)
         widget.showGrid(True, True)
-        widget.plot(x=t, y=data)
         widget.getPlotItem().getAxis("bottom").setLabel(text="Time", units="s")
-        widget.getPlotItem().getAxis("left").setLabel(text=name, units=unit)
+
+        for indx in range(item.childCount()):
+            data = self._get_data_by_name(item.child(indx).text(1))
+            widget.plot(x=t, y=data)
 
         # add a time line
         time_line = pg.InfiniteLine(self.playbackTime,
@@ -1167,10 +1299,10 @@ class SimulationGui(QMainWindow):
             if title in self.non_plotting_docks:
                 continue
 
-            if not self.dataList.findItems(dock.name(), Qt.MatchExactly):
+                # if not self.dataList.findItems(dock.name(), Qt.MatchExactly):
                 # no data for this plot -> remove it
                 dock.close()
-                continue
+                # continue
 
             for widget in dock.widgets:
                 for item in widget.getPlotItem().items:
