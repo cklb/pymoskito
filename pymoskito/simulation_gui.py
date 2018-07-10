@@ -74,6 +74,18 @@ class SimulationGui(QMainWindow):
     class for the graphical user interface
     """
     # TODO enable closing plot docks by right-clicking their name
+    TABLEAU_COLORS = (
+        ('blue', '#1f77b4'),
+        ('orange', '#ff7f0e'),
+        ('green', '#2ca02c'),
+        ('red', '#d62728'),
+        ('purple', '#9467bd'),
+        ('brown', '#8c564b'),
+        ('pink', '#e377c2'),
+        ('gray', '#7f7f7f'),
+        ('olive', '#bcbd22'),
+        ('cyan', '#17becf'),
+    )
 
     runSimulation = pyqtSignal()
     stopSimulation = pyqtSignal()
@@ -290,7 +302,7 @@ class SimulationGui(QMainWindow):
 
         self.dataPointTreeWidget = QTreeWidget()
         self.dataPointTreeWidget.setHeaderLabels(["PlotTitle", "DataPoint"])
-        self.dataPointTreeWidget.itemDoubleClicked.connect(self.create_plot)
+        self.dataPointTreeWidget.itemDoubleClicked.connect(self.plots)
         self.dataPointTreeWidget.setExpandsOnDoubleClick(0)
         self.dataPointTreeLayout = QVBoxLayout()
 
@@ -548,18 +560,18 @@ class SimulationGui(QMainWindow):
 
         # check if a top level item has been clicked
         if not item.parent():
-            if title in self.nonPlottingDocks:
+            if title in self.non_plotting_docks:
                 self._logger.error("Title '{}' not allowed for a plot window since"
                                    "it would shadow on of the reserved "
                                    "names".format(title))
                 return
 
-        # check if plot has already been opened
-        openDocks = [dock.title() for dock in self.findAllPlotDocks()]
-        if title in openDocks:
-            self.update_plot(item)
-        else:
-            self.create_plot(item)
+            # check if plot has already been opened
+            openDocks = [dock.title() for dock in self.findAllPlotDocks()]
+            if title in openDocks:
+                self.update_plot(item)
+            else:
+                self.create_plot(item)
 
     def loadLastSim(self):
         # TODO
@@ -984,7 +996,8 @@ class SimulationGui(QMainWindow):
         if data:
             self._read_results()
             self._update_data_list()
-            self._update_plots()
+            # TODO
+            # self._update_plots()
 
         if self._settings.value("control/autoplay_animation") == "True":
             self.actPlayPause.trigger()
@@ -1175,14 +1188,39 @@ class SimulationGui(QMainWindow):
     def update_plot(self, item):
         title = item.text(0)
 
+        # collect data
+        if self.currentDataset is None:
+            return
+        t = self.currentDataset["results"]["time"]
+
         # get the new datapoints
         newDataPoints = []
         for indx in range(item.childCount()):
             data = self._get_data_by_name(item.child(indx).text(1))
             newDataPoints.append(data)
 
-        # clear plot
-        # create_plot
+        docks = self.findAllPlotDocks()
+
+        for dock in docks:
+            if dock.title() == title:
+                for widget in dock.widgets:
+                    widget.getPlotItem().clear()
+
+                for indx in range(item.childCount()):
+                    colorIdxItem = indx % len(self.TABLEAU_COLORS)
+                    colorItem = QColor(self.TABLEAU_COLORS[colorIdxItem][1])
+
+                    data = self._get_data_by_name(item.child(indx).text(1))
+                    widget.plot(x=t, y=data, pen=pg.mkPen(colorItem, width=2))
+
+                # add a time line
+                time_line = pg.InfiniteLine(self.playbackTime,
+                                            angle=90,
+                                            movable=False,
+                                            pen=pg.mkPen("#FF0000", width=2.0))
+                widget.getPlotItem().addItem(time_line)
+
+                return
 
     def create_plot(self, item):
         """
@@ -1197,6 +1235,8 @@ class SimulationGui(QMainWindow):
         title = str(item.text(0))
 
         # collect data
+        if self.currentDataset is None:
+            return
         t = self.currentDataset["results"]["time"]
 
         # create plot widget
@@ -1205,8 +1245,11 @@ class SimulationGui(QMainWindow):
         widget.getPlotItem().getAxis("bottom").setLabel(text="Time", units="s")
 
         for indx in range(item.childCount()):
+            colorIdxItem = indx % len(self.TABLEAU_COLORS)
+            colorItem = QColor(self.TABLEAU_COLORS[colorIdxItem][1])
+
             data = self._get_data_by_name(item.child(indx).text(1))
-            widget.plot(x=t, y=data)
+            widget.plot(x=t, y=data, pen=pg.mkPen(colorItem, width=2))
 
         # add a time line
         time_line = pg.InfiniteLine(self.playbackTime,
