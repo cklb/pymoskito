@@ -302,7 +302,7 @@ class SimulationGui(QMainWindow):
 
         self.dataPointTreeWidget = QTreeWidget()
         self.dataPointTreeWidget.setHeaderLabels(["PlotTitle", "DataPoint"])
-        self.dataPointTreeWidget.itemDoubleClicked.connect(self.plots)
+        self.dataPointTreeWidget.itemDoubleClicked.connect(self.plots_clicked)
         self.dataPointTreeWidget.setExpandsOnDoubleClick(0)
         self.dataPointTreeLayout = QVBoxLayout()
 
@@ -311,11 +311,6 @@ class SimulationGui(QMainWindow):
 
         self.dataWidget.setLayout(self.dataLayout)
         self.dataDock.addWidget(self.dataWidget)
-
-        # TODO hier am bauen
-        # self.dataList = QListWidget(self)
-        # self.dataDock.addWidget(self.dataList)
-        # self.dataList.itemDoubleClicked.connect(self.create_plot)
 
         # actions for simulation control
         self.actSimulateCurrent = QAction(self)
@@ -543,7 +538,7 @@ class SimulationGui(QMainWindow):
             child.setText(1, dataPoint)
             toplevelitem.addChild(child)
 
-            # self.plots(toplevelitem)
+            self.plots(toplevelitem)
 
     def removeDatapointFromTree(self):
         if self.dataPointTreeWidget.selectedItems():
@@ -553,7 +548,7 @@ class SimulationGui(QMainWindow):
 
             toplevelitem.takeChild(toplevelitem.indexOfChild(self.dataPointTreeWidget.selectedItems()[0]))
 
-            # self.plots(toplevelitem)
+            self.plots(toplevelitem)
 
     def plots(self, item):
         title = item.text(0)
@@ -570,6 +565,26 @@ class SimulationGui(QMainWindow):
             openDocks = [dock.title() for dock in self.findAllPlotDocks()]
             if title in openDocks:
                 self.update_plot(item)
+
+    def plots_clicked(self, item):
+        title = item.text(0)
+
+        # check if a top level item has been clicked
+        if not item.parent():
+            if title in self.non_plotting_docks:
+                self._logger.error("Title '{}' not allowed for a plot window since"
+                                   "it would shadow on of the reserved "
+                                   "names".format(title))
+                return
+
+            # check if plot has already been opened
+            openDocks = [dock.title() for dock in self.findAllPlotDocks()]
+            if title in openDocks:
+                self.update_plot(item)
+                try:
+                    self.area.docks[title].raiseDock()
+                except:
+                    pass
             else:
                 self.create_plot(item)
 
@@ -846,6 +861,15 @@ class SimulationGui(QMainWindow):
         """
         self.apply_regime_by_name(str(item.text()))
 
+        for i in range(self.regime_list.count()):
+            newfont = self.regime_list.item(i).font()
+            if self.regime_list.item(i) == item:
+                newfont.setBold(1)
+            else:
+                newfont.setBold(0)
+            self.regime_list.item(i).setFont(newfont)
+        self.regime_list.repaint()
+
     def apply_regime_by_name(self, regime_name):
         """
         Apply the regime given by `regime_name` und update the regime index.
@@ -997,7 +1021,7 @@ class SimulationGui(QMainWindow):
             self._read_results()
             self._update_data_list()
             # TODO
-            # self._update_plots()
+            self._update_plots()
 
         if self._settings.value("control/autoplay_animation") == "True":
             self.actPlayPause.trigger()
@@ -1105,7 +1129,7 @@ class SimulationGui(QMainWindow):
     def _update_data_list(self):
         # self.dataList.clear()
         self.dataPointListWidget.clear()
-        # TODO remove all from treewidget, close all plots
+        # TODO lets open and check if possible to plot
         for module_name, results in self.currentDataset["results"].items():
             if not isinstance(results, np.ndarray):
                 continue
@@ -1193,12 +1217,6 @@ class SimulationGui(QMainWindow):
             return
         t = self.currentDataset["results"]["time"]
 
-        # get the new datapoints
-        newDataPoints = []
-        for indx in range(item.childCount()):
-            data = self._get_data_by_name(item.child(indx).text(1))
-            newDataPoints.append(data)
-
         docks = self.findAllPlotDocks()
 
         for dock in docks:
@@ -1210,8 +1228,12 @@ class SimulationGui(QMainWindow):
                     colorIdxItem = indx % len(self.TABLEAU_COLORS)
                     colorItem = QColor(self.TABLEAU_COLORS[colorIdxItem][1])
 
-                    data = self._get_data_by_name(item.child(indx).text(1))
-                    widget.plot(x=t, y=data, pen=pg.mkPen(colorItem, width=2))
+                    try:
+                        data = self._get_data_by_name(item.child(indx).text(1))
+                        widget.plot(x=t, y=data, pen=pg.mkPen(colorItem, width=2))
+                    except:
+                        self._logger.info("Datapoint not plotable: {}".format(item.child(indx).text(1)))
+                        pass
 
                 # add a time line
                 time_line = pg.InfiniteLine(self.playbackTime,
@@ -1240,7 +1262,7 @@ class SimulationGui(QMainWindow):
         t = self.currentDataset["results"]["time"]
 
         # create plot widget
-        widget = pg.PlotWidget(title=title)
+        widget = pg.PlotWidget()
         widget.showGrid(True, True)
         widget.getPlotItem().getAxis("bottom").setLabel(text="Time", units="s")
 
@@ -1338,21 +1360,10 @@ class SimulationGui(QMainWindow):
         """
         Update the data in all plot windows
         """
-        for title, dock in self.area.findAll()[1].items():
-            if title in self.non_plotting_docks:
-                continue
-
-                # if not self.dataList.findItems(dock.name(), Qt.MatchExactly):
-                # no data for this plot -> remove it
-                dock.close()
-                # continue
-
-            for widget in dock.widgets:
-                for item in widget.getPlotItem().items:
-                    if isinstance(item, pg.PlotDataItem):
-                        x_data = self.currentDataset["results"]["time"]
-                        y_data = self._get_data_by_name(dock.name())
-                        item.setData(x=x_data, y=y_data)
+        root = self.dataPointTreeWidget.invisibleRootItem()
+        print(root.childCount())
+        for i in range(root.childCount()):
+            self.update_plot(root.child(i))
 
     @pyqtSlot(QModelIndex)
     def target_view_changed(self, index):
