@@ -255,7 +255,7 @@ class SimulationGui(QMainWindow):
         self.lastSimDock.addWidget(self.lastSimList)
         # TODO
         # self.lastSimList.itemDoubleClicked.connect(self.loadLastSim)
-        self._lastSim = LengthList(10)
+        self._lastSimulations = LengthList(10)
 
         # data window
         self.dataWidget = QWidget()
@@ -314,7 +314,7 @@ class SimulationGui(QMainWindow):
 
         self.dataPointTreeWidget = QTreeWidget()
         self.dataPointTreeWidget.setHeaderLabels(["PlotTitle", "DataPoint"])
-        self.dataPointTreeWidget.setSelectionMode(QAbstractItemView.MultiSelection)
+        # self.dataPointTreeWidget.setSelectionMode(QAbstractItemView.MultiSelection)
         self.dataPointTreeWidget.itemDoubleClicked.connect(self.plot_vector_clicked)
         self.dataPointTreeWidget.setExpandsOnDoubleClick(0)
         self.dataPointTreeLayout = QVBoxLayout()
@@ -544,31 +544,42 @@ class SimulationGui(QMainWindow):
                 self.dataPointTreeWidget.indexOfTopLevelItem(item))
 
     def addDatapointToTree(self):
-        if self.dataPointListWidget.selectedIndexes() and self.dataPointTreeWidget.selectedIndexes():
-            dataPoint = self.dataPointListWidget.currentItem().text()
-            toplevelitem = self.dataPointTreeWidget.selectedItems()[0]
-            while toplevelitem.parent():
-                toplevelitem = toplevelitem.parent()
+        if not (self.dataPointListWidget.selectedIndexes()
+                and self.dataPointTreeWidget.selectedIndexes()):
+            return
 
-            for i in range(toplevelitem.childCount()):
-                if dataPoint == toplevelitem.child(i).text(1):
-                    return
+        dataPoint = self.dataPointListWidget.currentItem().text()
+        toplevelitem = self.dataPointTreeWidget.selectedItems()[0]
+        while toplevelitem.parent():
+            toplevelitem = toplevelitem.parent()
 
-            child = QTreeWidgetItem()
-            child.setText(1, dataPoint)
-            toplevelitem.addChild(child)
+        for i in range(toplevelitem.childCount()):
+            if dataPoint == toplevelitem.child(i).text(1):
+                return
 
-            self.plots(toplevelitem)
+        child = QTreeWidgetItem()
+        child.setText(1, dataPoint)
+        toplevelitem.addChild(child)
+
+        dock = next((d for d in self.findAllPlotDocks()
+                     if d.title() == toplevelitem.text(0)), None)
+        if dock:
+            widget = dock.widgets[0]
+            self.plot_data_vector_member(child, widget)
+        # self.plots(toplevelitem)
 
     def removeDatapointFromTree(self):
-        if self.dataPointTreeWidget.selectedItems():
-            toplevelitem = self.dataPointTreeWidget.selectedItems()[0]
-            while toplevelitem.parent():
-                toplevelitem = toplevelitem.parent()
+        items = self.dataPointTreeWidget.selectedItems()
+        if not items:
+            return
 
-            toplevelitem.takeChild(toplevelitem.indexOfChild(self.dataPointTreeWidget.selectedItems()[0]))
+        # TODO iterate over items
+        top_item = items[0]
+        while top_item.parent():
+            top_item = top_item.parent()
 
-            self.plots(toplevelitem)
+        top_item.takeChild(top_item.indexOfChild(items[0]))
+        self._update_plot(top_item)
 
     def plots(self, item):
         title = item.text(0)
@@ -584,7 +595,7 @@ class SimulationGui(QMainWindow):
             # check if plot has already been opened
             openDocks = [dock.title() for dock in self.findAllPlotDocks()]
             if title in openDocks:
-                self.update_plot(item)
+                self._update_plot(item)
 
     def plot_vector_clicked(self, item):
 
@@ -602,7 +613,7 @@ class SimulationGui(QMainWindow):
         # check if plot has already been opened
         openDocks = [dock.title() for dock in self.findAllPlotDocks()]
         if title in openDocks:
-            self.update_plot(item)
+            self._update_plot(item)
             try:
                 self.area.docks[title].raiseDock()
             except:
@@ -858,7 +869,7 @@ class SimulationGui(QMainWindow):
 
     def _update_lastSimList(self):
         self.lastSimList.clear()
-        for lastSim in self._lastSim.get_list():
+        for lastSim in self._lastSimulations.get_list():
             self._logger.debug("adding '{}' to lastSim list".format(lastSim["name"]))
             self.lastSimList.addItem(lastSim["name"])
 
@@ -1035,7 +1046,7 @@ class SimulationGui(QMainWindow):
         lastSimData = {'modules': data['modules'],
                        'results': data['results'],
                        'name': self._current_regime_name}
-        self._lastSim.push(lastSimData)
+        self._lastSimulations.push(lastSimData)
         self._update_lastSimList()
 
         self.currentDataset = data
@@ -1126,10 +1137,13 @@ class SimulationGui(QMainWindow):
 
     def update_gui(self):
         """
-        updates the graphical user interface, including:
+        Updates the graphical user interface to reflect changes of the current
+        display time. 
+        
+        This includes:
             - timestamp
-            - visualisation
-            - time cursor in diagrams
+            - visualisation window
+            - time cursors in diagrams
         """
         if not self.validData:
             return
@@ -1152,6 +1166,7 @@ class SimulationGui(QMainWindow):
         # self.dataList.clear()
         self.dataPointListWidget.clear()
         # TODO lets open and check if possible to plot
+        # TODO create trees with children instead of plain sufffixes
         for module_name, results in self.currentDataset["results"].items():
             if not isinstance(results, np.ndarray):
                 continue
@@ -1231,40 +1246,32 @@ class SimulationGui(QMainWindow):
 
         return info[idx]["Unit"]
 
-    def update_plot(self, item):
-        title = item.text(0)
-
+    def _update_plot(self, item):
         # collect data
         if self.currentDataset is None:
             return
+
+        title = item.text(0)
         t = self.currentDataset["results"]["time"]
-
         docks = self.findAllPlotDocks()
+        target = next((d for d in docks if d.title() == title), None)
+        if target is None:
+            return
 
-        for dock in docks:
-            if dock.title() == title:
-                for widget in dock.widgets:
-                    widget.getPlotItem().clear()
+        for widget in target.widgets:
+            child_names = [item.child(c_idx).text(1)
+                           for c_idx in range(item.childCount())]
+            del_list = []
+            for _item in widget.getPlotItem().items:
+                if isinstance(_item, pg.PlotDataItem):
+                    if _item.name() in child_names:
+                        y_data = self._get_data_by_name(_item.name())
+                        _item.setData(x=t, y=y_data)
+                    else:
+                        del_list.append(_item)
 
-                for indx in range(item.childCount()):
-                    colorIdxItem = indx % len(self.TABLEAU_COLORS)
-                    colorItem = QColor(self.TABLEAU_COLORS[colorIdxItem][1])
-
-                    try:
-                        data = self._get_data_by_name(item.child(indx).text(1))
-                        widget.plot(x=t, y=data, pen=pg.mkPen(colorItem, width=2))
-                    except:
-                        self._logger.info("Datapoint not plotable: {}".format(item.child(indx).text(1)))
-                        pass
-
-                # add a time line
-                time_line = pg.InfiniteLine(self.playbackTime,
-                                            angle=90,
-                                            movable=False,
-                                            pen=pg.mkPen("#FF0000", width=2.0))
-                widget.getPlotItem().addItem(time_line)
-
-                return
+            for _item in del_list:
+                widget.getPlotItem().removeItem(_item)
 
     def plot_data_vector(self, item):
         """
@@ -1279,9 +1286,7 @@ class SimulationGui(QMainWindow):
         if self.currentDataset is None:
             return
 
-        # collect data
         title = str(item.text(0))
-        t = self.currentDataset["results"]["time"]
 
         # create plot widget
         widget = pg.PlotWidget()
@@ -1289,11 +1294,7 @@ class SimulationGui(QMainWindow):
         widget.getPlotItem().getAxis("bottom").setLabel(text="Time", units="s")
 
         for idx in range(item.childCount()):
-            c_idx = idx % len(self.TABLEAU_COLORS)
-            color = QColor(self.TABLEAU_COLORS[c_idx][1])
-
-            data = self._get_data_by_name(item.child(idx).text(1))
-            widget.plot(x=t, y=data, pen=pg.mkPen(color, width=2))
+            self.plot_data_vector_member(item.child(idx), widget)
 
         # add a time line
         time_line = pg.InfiniteLine(self.playbackTime,
@@ -1318,6 +1319,19 @@ class SimulationGui(QMainWindow):
             self.area.addDock(dock, "above", plotWidgets[0])
         else:
             self.area.addDock(dock, "bottom", self.animationDock)
+
+    def plot_data_vector_member(self, item, widget):
+        idx = item.parent().indexOfChild(item)
+        c_idx = idx % len(self.TABLEAU_COLORS)
+        color = QColor(self.TABLEAU_COLORS[c_idx][1])
+
+        data_name = item.text(1)
+        t = self.currentDataset["results"]["time"]
+        data = self._get_data_by_name(data_name)
+        widget.plot(x=t,
+                    y=data,
+                    pen=pg.mkPen(color, width=2),
+                    name=data_name)
 
     def findAllPlotDocks(self):
         list = []
@@ -1385,9 +1399,8 @@ class SimulationGui(QMainWindow):
         Update the data in all plot windows
         """
         root = self.dataPointTreeWidget.invisibleRootItem()
-        print(root.childCount())
         for i in range(root.childCount()):
-            self.update_plot(root.child(i))
+            self._update_plot(root.child(i))
 
     @pyqtSlot(QModelIndex)
     def target_view_changed(self, index):
