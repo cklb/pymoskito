@@ -307,14 +307,15 @@ class SimulationGui(QMainWindow):
         self.dataPointPlotRemoveButton.setToolTip(
             "Delete the selected plot window."
         )
-        self.dataPointPlotRemoveButton.clicked.connect(self.removePlotTreeItem)
+        self.dataPointPlotRemoveButton.clicked.connect(self.removeSelectedPlotTreeItems)
         self.dataPointManipulationLayout.addWidget(self.dataPointPlotRemoveButton)
         self.dataPointManipulationWidget.setLayout(self.dataPointManipulationLayout)
         self.dataLayout.addWidget(self.dataPointManipulationWidget)
 
         self.dataPointTreeWidget = QTreeWidget()
         self.dataPointTreeWidget.setHeaderLabels(["PlotTitle", "DataPoint"])
-        self.dataPointTreeWidget.itemDoubleClicked.connect(self.plots_clicked)
+        self.dataPointTreeWidget.setSelectionMode(QAbstractItemView.MultiSelection)
+        self.dataPointTreeWidget.itemDoubleClicked.connect(self.plot_vector_clicked)
         self.dataPointTreeWidget.setExpandsOnDoubleClick(0)
         self.dataPointTreeLayout = QVBoxLayout()
 
@@ -504,36 +505,43 @@ class SimulationGui(QMainWindow):
 
     def addPlotTreeItem(self):
         name, ok = QInputDialog.getText(self, "PlotTitle", "PlotTitle:")
-        if ok and name:
-            # check if name is in treewidget
-            root = self.dataPointTreeWidget.invisibleRootItem()
-            child_count = root.childCount()
-            for i in range(child_count):
-                item = root.child(i)
-                _name = item.text(0)
-                if _name == name:
-                    self._logger.error("Name '{}' already exists".format(name))
-                    return
+        if not(ok and name):
+            return
 
-            toplevelitem = QTreeWidgetItem()
-            toplevelitem.setText(0, name)
-            self.dataPointTreeWidget.addTopLevelItem(toplevelitem)
-            toplevelitem.setExpanded(1)
+        similar_items = self.dataPointTreeWidget.findItems(name,
+                                                           Qt.MatchExactly)
+        if similar_items:
+            self._logger.error("Name '{}' already exists".format(name))
+            return
 
-    def removePlotTreeItem(self):
-        if self.dataPointTreeWidget.selectedItems():
-            toplevelitem = self.dataPointTreeWidget.selectedItems()[0]
-            while toplevelitem.parent():
-                toplevelitem = toplevelitem.parent()
+        toplevelitem = QTreeWidgetItem()
+        toplevelitem.setText(0, name)
+        self.dataPointTreeWidget.addTopLevelItem(toplevelitem)
+        toplevelitem.setExpanded(1)
 
-            text = "The marked plot '" + self.dataPointTreeWidget.selectedItems()[0].text(0) + "' will deleted!"
-            buttonReply = QMessageBox.warning(self, "Plot delete", text, QMessageBox.Ok | QMessageBox.Cancel)
-            if buttonReply == QMessageBox.Ok:
-                openDocks = [dock.title() for dock in self.findAllPlotDocks()]
-                if toplevelitem.text(0) in openDocks:
-                    self.area.docks[toplevelitem.text(0)].close()
+    def removeSelectedPlotTreeItems(self):
+        items = self.dataPointTreeWidget.selectedItems()
+        if not items:
+            return
 
-                self.dataPointTreeWidget.takeTopLevelItem(self.dataPointTreeWidget.indexOfTopLevelItem(toplevelitem))
+        for item in items:
+            self.removePlotTreeItem(item)
+
+    def removePlotTreeItem(self, item):
+        # get the  top item
+        while item.parent():
+            item = item.parent()
+
+        text = "The marked plot '" + item.text(0) + "' will be deleted!"
+        buttonReply = QMessageBox.warning(self, "Plot delete", text,
+                                          QMessageBox.Ok | QMessageBox.Cancel)
+        if buttonReply == QMessageBox.Ok:
+            openDocks = [dock.title() for dock in self.findAllPlotDocks()]
+            if item.text(0) in openDocks:
+                self.area.docks[item.text(0)].close()
+
+            self.dataPointTreeWidget.takeTopLevelItem(
+                self.dataPointTreeWidget.indexOfTopLevelItem(item))
 
     def addDatapointToTree(self):
         if self.dataPointListWidget.selectedIndexes() and self.dataPointTreeWidget.selectedIndexes():
@@ -578,27 +586,29 @@ class SimulationGui(QMainWindow):
             if title in openDocks:
                 self.update_plot(item)
 
-    def plots_clicked(self, item):
-        title = item.text(0)
+    def plot_vector_clicked(self, item):
 
         # check if a top level item has been clicked
-        if not item.parent():
-            if title in self.non_plotting_docks:
-                self._logger.error("Title '{}' not allowed for a plot window since"
-                                   "it would shadow on of the reserved "
-                                   "names".format(title))
-                return
+        if item.parent():
+            return
 
-            # check if plot has already been opened
-            openDocks = [dock.title() for dock in self.findAllPlotDocks()]
-            if title in openDocks:
-                self.update_plot(item)
-                try:
-                    self.area.docks[title].raiseDock()
-                except:
-                    pass
-            else:
-                self.create_plot(item)
+        title = item.text(0)
+        if title in self.non_plotting_docks:
+            self._logger.error("Title '{}' not allowed for a plot window since"
+                               "it would shadow on of the reserved "
+                               "names".format(title))
+            return
+
+        # check if plot has already been opened
+        openDocks = [dock.title() for dock in self.findAllPlotDocks()]
+        if title in openDocks:
+            self.update_plot(item)
+            try:
+                self.area.docks[title].raiseDock()
+            except:
+                pass
+        else:
+            self.plot_data_vector(item)
 
     def loadLastSim(self):
         # TODO
@@ -1256,7 +1266,7 @@ class SimulationGui(QMainWindow):
 
                 return
 
-    def create_plot(self, item):
+    def plot_data_vector(self, item):
         """
         Creates a plot widget based on the given item.
 
@@ -1266,11 +1276,11 @@ class SimulationGui(QMainWindow):
         Args:
             item(Qt.ListItem): Item to plot.
         """
-        title = str(item.text(0))
-
-        # collect data
         if self.currentDataset is None:
             return
+
+        # collect data
+        title = str(item.text(0))
         t = self.currentDataset["results"]["time"]
 
         # create plot widget
@@ -1278,12 +1288,12 @@ class SimulationGui(QMainWindow):
         widget.showGrid(True, True)
         widget.getPlotItem().getAxis("bottom").setLabel(text="Time", units="s")
 
-        for indx in range(item.childCount()):
-            colorIdxItem = indx % len(self.TABLEAU_COLORS)
-            colorItem = QColor(self.TABLEAU_COLORS[colorIdxItem][1])
+        for idx in range(item.childCount()):
+            c_idx = idx % len(self.TABLEAU_COLORS)
+            color = QColor(self.TABLEAU_COLORS[c_idx][1])
 
-            data = self._get_data_by_name(item.child(indx).text(1))
-            widget.plot(x=t, y=data, pen=pg.mkPen(colorItem, width=2))
+            data = self._get_data_by_name(item.child(idx).text(1))
+            widget.plot(x=t, y=data, pen=pg.mkPen(color, width=2))
 
         # add a time line
         time_line = pg.InfiniteLine(self.playbackTime,
@@ -1292,16 +1302,18 @@ class SimulationGui(QMainWindow):
                                     pen=pg.mkPen("#FF0000", width=2.0))
         widget.getPlotItem().addItem(time_line)
 
-        widget.scene().contextMenu = [QAction("Export png", self), QAction("Export csv", self)]
-        widget.scene().contextMenu[0].triggered.connect(lambda: self.exportPng(widget.getPlotItem(), title))
-        widget.scene().contextMenu[1].triggered.connect(lambda: self.exportCsv(widget.getPlotItem(), title))
+        widget.scene().contextMenu = [QAction("Export png", self),
+                                      QAction("Export csv", self)]
+        widget.scene().contextMenu[0].triggered.connect(
+            lambda: self.exportPng(widget.getPlotItem(), title))
+        widget.scene().contextMenu[1].triggered.connect(
+            lambda: self.exportCsv(widget.getPlotItem(), title))
 
         # create dock container and add it to dock area
         dock = pg.dockarea.Dock(title, closable=True)
         dock.addWidget(widget)
-        # self.area.addDock(dock, "above", self.plotDockPlaceholder)
-        plotWidgets = self.findAllPlotDocks()
 
+        plotWidgets = self.findAllPlotDocks()
         if plotWidgets:
             self.area.addDock(dock, "above", plotWidgets[0])
         else:
