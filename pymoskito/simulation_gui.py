@@ -148,7 +148,6 @@ class SimulationGui(QMainWindow):
         self.lastSimDock = pg.dockarea.Dock("Last Simulations")
         self.dataDock = pg.dockarea.Dock("Data")
         self.logDock = pg.dockarea.Dock("Log")
-        # self.plotDockPlaceholder = pg.dockarea.Dock("Placeholder")
 
         # arrange docks
         self.area.addDock(self.animationDock, "right")
@@ -156,7 +155,6 @@ class SimulationGui(QMainWindow):
         self.area.addDock(self.regimeDock, "above", self.lastSimDock)
         self.area.addDock(self.propertyDock, "bottom", self.regimeDock)
         self.area.addDock(self.dataDock, "bottom", self.propertyDock)
-        # self.area.addDock(self.plotDockPlaceholder, "bottom", self.animationDock)
         self.area.addDock(self.logDock, "bottom", self.dataDock)
         self.non_plotting_docks = list(self.area.findAll()[1].keys())
 
@@ -253,9 +251,8 @@ class SimulationGui(QMainWindow):
         # last sim window
         self.lastSimList = QListWidget(self)
         self.lastSimDock.addWidget(self.lastSimList)
-        # TODO
-        # self.lastSimList.itemDoubleClicked.connect(self.loadLastSim)
-        self._lastSimulations = LengthList(10)
+        self._lastSimulations = LengthList(20)
+        self.lastSimList.itemDoubleClicked.connect(self.loadLastSim)
 
         # data window
         self.dataWidget = QWidget()
@@ -265,11 +262,6 @@ class SimulationGui(QMainWindow):
         self.dataPointListLayout = QVBoxLayout()
         self.dataPointBuffers = []
         self.plotCharts = []
-        # TODO
-        # if dataPointNames:
-        #     for data in dataPointNames:
-        #         self.dataPointBuffers.append(DataPointBuffer(data))
-        #     self.dataPointListWidget.addItems(dataPointNames)
         self.dataPointListWidget.setLayout(self.dataPointListLayout)
         self.dataLayout.addWidget(self.dataPointListWidget)
 
@@ -868,7 +860,6 @@ class SimulationGui(QMainWindow):
         return
 
     def _update_lastSimList(self):
-        self.lastSimList.clear()
         for lastSim in self._lastSimulations.get_list():
             self._logger.debug("adding '{}' to lastSim list".format(lastSim["name"]))
             self.lastSimList.addItem(lastSim["name"])
@@ -1053,7 +1044,6 @@ class SimulationGui(QMainWindow):
         if data:
             self._read_results()
             self._update_data_list()
-            # TODO
             self._update_plots()
 
         if self._settings.value("control/autoplay_animation") == "True":
@@ -1345,7 +1335,9 @@ class SimulationGui(QMainWindow):
 
     def exportCsv(self, plotItem, name):
         exporter = exporters.CSVExporter(plotItem)
-        exporter.export(name + '.csv')
+        filename = QFileDialog.getSaveFileName(self, "CSV export", name + ".csv", "CSV Data (*.csv)")
+        if filename[0]:
+            exporter.export(filename[0])
 
     def exportPng(self, plotItem, name):
         # Notwendig da Fehler in PyQtGraph
@@ -1356,8 +1348,11 @@ class SimulationGui(QMainWindow):
         # exporter.parameters()['background'] = QColor(255, 255, 255)
         exporter.params.param('width').setValue(1920, blockSignal=exporter.widthChanged)
         exporter.params.param('height').setValue(1080, blockSignal=exporter.heightChanged)
-        # TODO file save dialog einblenden
-        exporter.export(name + '.png')
+
+        filename = QFileDialog.getSaveFileName(self, "PNG export", name + ".png", "PNG Image (*.png)")
+        if filename[0]:
+            exporter.export(filename[0])
+
         # restore old state
         plotItem.setGeometry(QRectF(oldGeometry))
 
