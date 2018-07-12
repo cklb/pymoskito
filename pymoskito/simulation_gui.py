@@ -49,9 +49,9 @@ except ImportError as e:
     QVTKRenderWindowInteractor = None
 
 # pymoskito
-from .visualization import MplVisualizer, VtkVisualizer
 from .registry import get_registered_visualizers
 from .simulation_interface import SimulatorInteractor, SimulatorView
+from .visualization import MplVisualizer, VtkVisualizer
 from .processing_gui import PostProcessor
 from .tools import get_resource, PlainTextLogger, LengthList
 
@@ -278,23 +278,35 @@ class SimulationGui(QMainWindow):
         self.dataPointManipulationLayout.addStretch(0)
         self.dataPointRightButtonWidget = QWidget()
         self.dataPointRightButtonLayout = QVBoxLayout()
-        self.dataPointRightButton = QPushButton(chr(8594), self)
+        self.dataPointRightButton = QPushButton(chr(0x226b), self)
+        self.dataPointRightButton.setToolTip(
+            "Add the selected data set from the left side to the selected plot "
+            "on the right.")
         self.dataPointRightButton.clicked.connect(self.addDatapointToTree)
         self.dataPointManipulationLayout.addWidget(self.dataPointRightButton)
         self.dataPointLeftButtonWidget = QWidget()
         self.dataPointLeftButtonLayout = QVBoxLayout()
-        self.dataPointLeftButton = QPushButton(chr(8592), self)
+        self.dataPointLeftButton = QPushButton(chr(0x226a), self)
+        self.dataPointLeftButton.setToolTip(
+            "Remove the selected data set from the plot on the right."
+        )
         self.dataPointLeftButton.clicked.connect(self.removeDatapointFromTree)
         self.dataPointManipulationLayout.addWidget(self.dataPointLeftButton)
         self.dataPointManipulationLayout.addStretch(0)
         self.dataPointPlotAddButtonWidget = QWidget()
         self.dataPointPlotAddButtonLayout = QVBoxLayout()
         self.dataPointPlotAddButton = QPushButton("+", self)
+        self.dataPointPlotAddButton.setToolTip(
+            "Create a new plot window."
+        )
         self.dataPointPlotAddButton.clicked.connect(self.addPlotTreeItem)
         self.dataPointManipulationLayout.addWidget(self.dataPointPlotAddButton)
         self.dataPointPlotRemoveButtonWidget = QWidget()
         self.dataPointPlotRemoveButtonLayout = QVBoxLayout()
         self.dataPointPlotRemoveButton = QPushButton("-", self)
+        self.dataPointPlotRemoveButton.setToolTip(
+            "Delete the selected plot window."
+        )
         self.dataPointPlotRemoveButton.clicked.connect(self.removePlotTreeItem)
         self.dataPointManipulationLayout.addWidget(self.dataPointPlotRemoveButton)
         self.dataPointManipulationWidget.setLayout(self.dataPointManipulationLayout)
@@ -451,7 +463,7 @@ class SimulationGui(QMainWindow):
         editMenu = self.menuBar().addMenu("&Edit")
         editMenu.addAction(self.actDeleteRegimes)
 
-        self.viewMenu = self.menuBar().addMenu('View')
+        self.viewMenu = self.menuBar().addMenu('&View')
         self.actLoadStandardState = QAction('Restore Default View')
         self.viewMenu.addAction(self.actLoadStandardState)
         self.actLoadStandardState.triggered.connect(self.loadStandardDockState)
