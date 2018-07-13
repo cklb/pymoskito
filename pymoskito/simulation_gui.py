@@ -260,9 +260,8 @@ class SimulationGui(QMainWindow):
 
         self.dataPointListWidget = QListWidget()
         self.dataPointListLayout = QVBoxLayout()
-        self.dataPointBuffers = []
-        self.plotCharts = []
         self.dataPointListWidget.setLayout(self.dataPointListLayout)
+        self.dataPointListWidget.setSelectionMode(QAbstractItemView.ExtendedSelection)
         self.dataLayout.addWidget(self.dataPointListWidget)
 
         self.dataPointManipulationWidget = QWidget()
@@ -540,24 +539,31 @@ class SimulationGui(QMainWindow):
                 and self.dataPointTreeWidget.selectedIndexes()):
             return
 
-        dataPoint = self.dataPointListWidget.currentItem().text()
-        toplevelitem = self.dataPointTreeWidget.selectedItems()[0]
-        while toplevelitem.parent():
-            toplevelitem = toplevelitem.parent()
+        dataPoints = []
+        for item in self.dataPointListWidget.selectedItems():
+                dataPoints.append(item.text())
 
-        for i in range(toplevelitem.childCount()):
-            if dataPoint == toplevelitem.child(i).text(1):
-                return
+        toplevelItem = self.dataPointTreeWidget.selectedItems()[0]
+        while toplevelItem.parent():
+            toplevelItem = toplevelItem.parent()
 
-        child = QTreeWidgetItem()
-        child.setText(1, dataPoint)
-        toplevelitem.addChild(child)
+        topLevelItemList = []
+        for i in range(toplevelItem.childCount()):
+            topLevelItemList.append(toplevelItem.child(i).text(1))
 
         dock = next((d for d in self.findAllPlotDocks()
-                     if d.title() == toplevelitem.text(0)), None)
-        if dock:
-            widget = dock.widgets[0]
-            self.plot_data_vector_member(child, widget)
+                     if d.title() == toplevelItem.text(0)), None)
+
+        for dataPoint in dataPoints:
+            if dataPoint not in topLevelItemList:
+                child = QTreeWidgetItem()
+                child.setText(1, dataPoint)
+                toplevelItem.addChild(child)
+
+                if dock:
+                    widget = dock.widgets[0]
+                    self.plot_data_vector_member(child, widget)
+
         # self.plots(toplevelitem)
 
     def removeDatapointFromTree(self):
