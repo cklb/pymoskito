@@ -2,17 +2,17 @@
 
 # system
 import logging
-import time
 import os
-from operator import itemgetter
-import yaml
 import pickle
-import pkg_resources
+import time
 import webbrowser
+from operator import itemgetter
 
 import numpy as np
-from scipy.interpolate import interp1d
-
+import pkg_resources
+# pyqtgraph
+import pyqtgraph as pg
+import yaml
 # Qt
 from PyQt5.QtCore import (pyqtSignal, pyqtSlot, Qt, QTimer, QSize, QSettings,
                           QCoreApplication, QModelIndex, QRectF)
@@ -21,15 +21,12 @@ from PyQt5.QtWidgets import (QWidget, QAction, QSlider, QMainWindow,
                              QTreeView, QListWidget, QListWidgetItem,
                              QAbstractItemView,
                              QToolBar, QStatusBar, QProgressBar, QLabel,
-                             QPlainTextEdit, QLineEdit, QFileDialog, QInputDialog,
-                             QAbstractSlider, QFrame, QVBoxLayout, QMenu,
-                             QMessageBox, QDialogButtonBox, QApplication, QTreeWidget,
+                             QPlainTextEdit, QFileDialog, QInputDialog,
+                             QFrame, QVBoxLayout, QMessageBox, QApplication, QTreeWidget,
                              QHBoxLayout, QPushButton, QTreeWidgetItem)
-
-# pyqtgraph
-import pyqtgraph as pg
-from pyqtgraph.dockarea import DockArea
 from pyqtgraph import exporters
+from pyqtgraph.dockarea import DockArea
+from scipy.interpolate import interp1d
 
 # vtk
 vtk_error_msg = ""
@@ -252,7 +249,7 @@ class SimulationGui(QMainWindow):
         self.lastSimList = QListWidget(self)
         self.lastSimDock.addWidget(self.lastSimList)
         self._lastSimulations = LengthList(20)
-        self.lastSimList.itemDoubleClicked.connect(self.loadLastSim)
+        self.lastSimList.itemDoubleClicked.connect(self.load_last_sim)
 
         # data window
         self.dataWidget = QWidget()
@@ -496,7 +493,7 @@ class SimulationGui(QMainWindow):
 
     def addPlotTreeItem(self):
         name, ok = QInputDialog.getText(self, "PlotTitle", "PlotTitle:")
-        if not(ok and name):
+        if not (ok and name):
             return
 
         similar_items = self.dataPointTreeWidget.findItems(name,
@@ -541,7 +538,7 @@ class SimulationGui(QMainWindow):
 
         dataPoints = []
         for item in self.dataPointListWidget.selectedItems():
-                dataPoints.append(item.text())
+            dataPoints.append(item.text())
 
         toplevelItem = self.dataPointTreeWidget.selectedItems()[0]
         while toplevelItem.parent():
@@ -619,12 +616,37 @@ class SimulationGui(QMainWindow):
         else:
             self.plot_data_vector(item)
 
-    def loadLastSim(self):
+    def load_last_sim(self, item):
         # TODO
         # 1. set settings
         # 1.1. is settings same as present, load datalist
         # 2. set datalist
-        pass
+        last_sim_name = str(item.text())
+
+        try:
+            idx = list(map(itemgetter("name"), self._lastSimulations)).index(last_sim_name)
+        except ValueError as e:
+            self._logger.error("load_last_sim(): Error no regime called "
+                               "'{0}'".format(last_sim_name))
+            return False
+
+        if idx >= len(self._lastSimulations):
+            self._logger.error("load_last_sim(): index error! ({})".format(idx))
+            return False
+
+        last_sim_name = self._lastSimulations[idx]["name"]
+        self.statusBar().showMessage("last sim {} applied.".format(last_sim_name),
+                                     1000)
+        self._logger.info("applying last sim '{}'".format(last_sim_name))
+
+        data = {'modules': self._lastSimulations[idx]["modules"],
+                'results': self._lastSimulations[idx]["results"],
+                'simulation': self._lastSimulations[idx]["simulation"]}
+        self.currentDataset = data
+        if data:
+            self._read_results()
+            self._update_data_list()
+            self._update_plots()
 
     def _read_settings(self):
 
@@ -865,10 +887,9 @@ class SimulationGui(QMainWindow):
         self.statusBar().showMessage("loaded {} regimes.".format(len(self._regimes)), 1000)
         return
 
-    def _update_lastSimList(self):
-        for lastSim in self._lastSimulations.get_list():
-            self._logger.debug("adding '{}' to lastSim list".format(lastSim["name"]))
-            self.lastSimList.addItem(lastSim["name"])
+    def _update_lastSimList(self, item):
+        self._logger.debug("adding '{}' to lastSim list".format(item))
+        self.lastSimList.addItem(item)
 
     def _update_regime_list(self):
         self.regime_list.clear()
@@ -1039,12 +1060,12 @@ class SimulationGui(QMainWindow):
 
         self.stop_animation()
 
-        # self._regimes[self._current_regime_index]['data'] = data
         lastSimData = {'modules': data['modules'],
                        'results': data['results'],
+                       'simulation': data['simulation'],
                        'name': self._current_regime_name}
         self._lastSimulations.push(lastSimData)
-        self._update_lastSimList()
+        self._update_lastSimList(lastSimData['name'])
 
         self.currentDataset = data
         if data:

@@ -242,3 +242,9 @@ class LengthList(object):
 
     def get_list(self):
         return self.ls
+
+    def __len__(self):
+        return len(self.ls)
+
+    def __getitem__(self, key):
+        return self.ls[key]
