@@ -639,11 +639,8 @@ class SimulationGui(QMainWindow):
                                      1000)
         self._logger.info("applying last sim '{}'".format(last_sim_name))
 
-        data = {'modules': self._lastSimulations[idx]["modules"],
-                'results': self._lastSimulations[idx]["results"],
-                'simulation': self._lastSimulations[idx]["simulation"]}
-        self.currentDataset = data
-        if data:
+        self.currentDataset = self._lastSimulations[idx]
+        if self._lastSimulations[idx]:
             self._read_results()
             self._update_data_list()
             self._update_plots()
@@ -920,6 +917,8 @@ class SimulationGui(QMainWindow):
                 newfont.setBold(0)
             self.regime_list.item(i).setFont(newfont)
         self.regime_list.repaint()
+
+        self.dataPointListWidget.clear()
 
     def apply_regime_by_name(self, regime_name):
         """
@@ -1283,7 +1282,10 @@ class SimulationGui(QMainWindow):
                 if isinstance(_item, pg.PlotDataItem):
                     if _item.name() in child_names:
                         y_data = self._get_data_by_name(_item.name())
-                        _item.setData(x=t, y=y_data)
+                        if y_data is not None:
+                            _item.setData(x=t, y=y_data)
+                        else:
+                            del_list.append(_item)
                     else:
                         del_list.append(_item)
 
@@ -1345,10 +1347,11 @@ class SimulationGui(QMainWindow):
         data_name = item.text(1)
         t = self.currentDataset["results"]["time"]
         data = self._get_data_by_name(data_name)
-        widget.plot(x=t,
-                    y=data,
-                    pen=pg.mkPen(color, width=2),
-                    name=data_name)
+        if data is not None:
+            widget.plot(x=t,
+                        y=data,
+                        pen=pg.mkPen(color, width=2),
+                        name=data_name)
 
     def findAllPlotDocks(self):
         list = []
@@ -1394,7 +1397,11 @@ class SimulationGui(QMainWindow):
             except ValueError:
                 idx = self._get_index_from_suffix(module_name, tmp[1])
             finally:
-                data = self.currentDataset["results"][module_name][..., idx]
+                try:
+                    data = self.currentDataset["results"][module_name][..., idx]
+                except KeyError:
+                    data = None
+
         elif len(tmp) == 3:
             idx = int(tmp[1])
             der = int(tmp[2])
