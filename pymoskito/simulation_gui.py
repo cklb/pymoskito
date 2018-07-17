@@ -1059,15 +1059,16 @@ class SimulationGui(QMainWindow):
 
         self.stop_animation()
 
-        lastSimData = {'modules': data['modules'],
-                       'results': data['results'],
-                       'simulation': data['simulation'],
-                       'name': self._current_regime_name}
-        self._lastSimulations.push(lastSimData)
-        self._update_lastSimList(lastSimData['name'])
-
-        self.currentDataset = data
         if data:
+            lastSimData = {'modules': data['modules'],
+                           'results': data['results'],
+                           'simulation': data['simulation'],
+                           'name': self._current_regime_name}
+            self._lastSimulations.push(lastSimData)
+            self._update_lastSimList(lastSimData['name'])
+
+            self.currentDataset = data
+
             self._read_results()
             self._update_data_list()
             self._update_plots()
