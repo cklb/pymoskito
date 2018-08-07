@@ -621,13 +621,12 @@ class SimulationGui(QMainWindow):
         # 1. set settings
         # 1.1. is settings same as present, load datalist
         # 2. set datalist
-        last_sim_name = str(item.text())
 
         try:
-            idx = list(map(itemgetter("name"), self._lastSimulations)).index(last_sim_name)
+            idx = self.lastSimList.row(item)
         except ValueError as e:
             self._logger.error("load_last_sim(): Error no regime called "
-                               "'{0}'".format(last_sim_name))
+                               "'{0}'".format(str(item.text())))
             return False
 
         if idx >= len(self._lastSimulations):
@@ -644,6 +643,9 @@ class SimulationGui(QMainWindow):
             self._read_results()
             self._update_data_list()
             self._update_plots()
+
+        self.setQListItemBold(self.lastSimList, item)
+        self.setQListItemBold(self.regime_list, item)
 
     def _read_settings(self):
 
@@ -907,16 +909,10 @@ class SimulationGui(QMainWindow):
         """
         Apply the selected regime to the current target.
         """
-        self.apply_regime_by_name(str(item.text()))
+        sucess = self._apply_regime_by_idx(self.regime_list.row(item))
 
-        for i in range(self.regime_list.count()):
-            newfont = self.regime_list.item(i).font()
-            if self.regime_list.item(i) == item:
-                newfont.setBold(1)
-            else:
-                newfont.setBold(0)
-            self.regime_list.item(i).setFont(newfont)
-        self.regime_list.repaint()
+        self.setQListItemBold(self.regime_list, item, [sucess])
+        self.setQListItemBold(self.lastSimList, item, [sucess])
 
         self.dataPointListWidget.clear()
 
@@ -1479,3 +1475,18 @@ class SimulationGui(QMainWindow):
         for docks in self.findAllPlotDocks():
             docks.close()
         self.area.restoreState(self.standardDockState)
+
+    def setQListItemBold(self, QList=None, item=None, args=[]):
+        sucess = True
+        for arg in args:
+            if arg == False:
+                sucess = False
+                break
+        for i in range(QList.count()):
+            newfont = QList.item(i).font()
+            if QList.item(i) == item and sucess:
+                newfont.setBold(1)
+            else:
+                newfont.setBold(0)
+            QList.item(i).setFont(newfont)
+        QList.repaint()
