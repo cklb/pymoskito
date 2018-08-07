@@ -50,3 +50,5 @@ examples/results/processing*
 pymoskito.log.1
 pymoskito.log.2
 pymoskito.log.3
+
+.DS_Store
