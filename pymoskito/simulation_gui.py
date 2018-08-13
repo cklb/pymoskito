@@ -1439,6 +1439,11 @@ class SimulationGui(QMainWindow):
         self._logger.info("launching postprocessor")
         self.statusBar().showMessage("launching postprocessor", 1000)
         if self.postprocessor is None:
+            from .generic_processing_modules import PlotAll
+            from .processing_core import PostProcessingModule
+            from .registry import register_processing_module
+            register_processing_module(PostProcessingModule, PlotAll)
+
             self.postprocessor = PostProcessor()
 
         self.postprocessor.show()
