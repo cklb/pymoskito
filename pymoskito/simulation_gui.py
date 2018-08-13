@@ -643,6 +643,7 @@ class SimulationGui(QMainWindow):
             self._read_results()
             self._update_data_list()
             self._update_plots()
+            self.update_gui()
 
         self.setQListItemBold(self.lastSimList, item)
         self.setQListItemBold(self.regime_list, item)
