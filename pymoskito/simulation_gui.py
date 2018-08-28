@@ -617,11 +617,6 @@ class SimulationGui(QMainWindow):
             self.plot_data_vector(item)
 
     def load_last_sim(self, item):
-        # TODO
-        # 1. set settings
-        # 1.1. is settings same as present, load datalist
-        # 2. set datalist
-
         try:
             idx = self.lastSimList.row(item)
         except ValueError as e:
@@ -643,6 +638,10 @@ class SimulationGui(QMainWindow):
             self._read_results()
             self._update_data_list()
             self._update_plots()
+            # TODO first try, not perfect, cause of error messeage of _applyRegime
+            lsettings = self.currentDataset['modules']
+            lsettings["clear previous"] = True
+            self.sim.set_regime(lsettings)
             self.update_gui()
 
         self.setQListItemBold(self.lastSimList, item)
@@ -956,15 +955,6 @@ class SimulationGui(QMainWindow):
 
         self._current_regime_index = index
         self._current_regime_name = reg_name
-
-        # TODO check if data is in self._lastSim, else clear
-        # if 'data' in self._regimes[index]:
-        #     self.currentDataset = self._regimes[index]['data']
-        #     self._read_results()
-        #     self._update_data_list()
-        #     self._update_plots()
-        # else:
-        # self.dataList.clear()
 
         return self.sim.set_regime(self._regimes[index])
 

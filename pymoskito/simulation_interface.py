@@ -3,16 +3,15 @@
     provides functions to manipulate settings of the simulator and
     to inspect its current state.
 """
+import ast
 import copy
 import logging
 import sys
-import ast
 from collections import OrderedDict
-import numpy as np
 
+import numpy as np
 from PyQt5.QtCore import (
-    Qt, QObject, pyqtSignal, pyqtSlot, QModelIndex, QSize, QThread, QVariant,
-)
+    Qt, QObject, pyqtSignal, pyqtSlot, QModelIndex, QSize, QThread, )
 from PyQt5.QtGui import QStandardItemModel, QStandardItem
 from PyQt5.QtWidgets import QItemDelegate, QComboBox, QTreeView
 
@@ -37,7 +36,6 @@ class SimulatorModel(QStandardItemModel):
 
 
 class PropertyItem(QStandardItem):
-
     RawDataRole = Qt.UserRole + 1
 
     def __init__(self, data):
@@ -425,7 +423,7 @@ class SimulatorInteractor(QObject):
                 for row in range(module_item.rowCount()):
                     if self.target_model.data(
                             module_item.child(row, 0).index()) == key:
-                    # if str(module_item.child(row, 0).text()) == key:
+                        # if str(module_item.child(row, 0).text()) == key:
                         value_idx = self.target_model.index(row, 1, module_index)
                         self.target_model.setData(value_idx,
                                                   val,
@@ -434,10 +432,10 @@ class SimulatorInteractor(QObject):
                         break
 
                 if not found:
-                    self._logger.error("_applyRegime(): Setting: '{0}' not "
-                                       "available for Module: '{1}'".format(
+                    self._logger.warning("_applyRegime(): Setting: '{0}' not "
+                                         "available for Module: '{1}'".format(
                         key, module_type))
-                    return False
+                    continue  # return False
 
         return True
 
@@ -583,4 +581,3 @@ class SimulatorInteractor(QObject):
 
         # Signal gui that new data is available
         self.simulation_finalized.emit(self._sim_state, self._sim_data)
-
