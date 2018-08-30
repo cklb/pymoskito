@@ -10,11 +10,15 @@ mpl.use('Qt5Agg')
 os.environ["PYQTGRAPH_QT_LIB"] = "PyQt5"
 
 from .registry import *
-from .generic_simulation_modules import *
+
 from .processing_core import *
 from .processing_gui import *
+from .generic_processing_modules import *
+
 from .simulation_gui import *
 from .simulation_modules import *
+from .generic_simulation_modules import *
+
 from .tools import *
 from .controltools import *
 from .visualization import *
@@ -43,3 +47,5 @@ register_simulation_module(ObserverMixer, AdditiveMixer)
 register_simulation_module(Limiter, ModelInputLimiter)
 register_simulation_module(Sensor, DeadTimeSensor)
 register_simulation_module(Disturbance, GaussianNoise)
+
+register_processing_module(PostProcessingModule, PlotAll)

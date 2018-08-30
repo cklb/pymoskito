@@ -248,3 +248,19 @@ class LengthList(object):
 
     def __getitem__(self, key):
         return self.ls[key]
+
+
+def get_figure_size(scale):
+    """
+    calculate optimal figure size with the golden ratio
+    :param scale:
+    :return:
+    """
+    # TODO: Get this from LaTeX using \the\textwidth
+    fig_width_pt = 448.13095
+    inches_per_pt = 1.0 / 72.27  # Convert pt to inch (stupid imperial system)
+    golden_ratio = (np.sqrt(5.0) - 1.0) / 2.0  # Aesthetic ratio
+    fig_width = fig_width_pt * inches_per_pt * scale  # width in inches
+    fig_height = fig_width * golden_ratio  # height in inches
+    fig_size = [fig_width, fig_height]
+    return fig_size

@@ -4,7 +4,7 @@ import logging
 import os
 
 from PyQt5.QtCore import Qt, pyqtSignal, QSize, QSettings
-from PyQt5.QtGui import QIcon, QKeySequence
+from PyQt5.QtGui import QIcon, QKeySequence, QCloseEvent
 from PyQt5.QtWidgets import (
     QWidget, QAction, QMainWindow, QListWidget, QListWidgetItem, QToolBar,
     QStatusBar, QLabel, QShortcut, QFileDialog, QGridLayout, QSizePolicy,
@@ -14,6 +14,7 @@ from PyQt5.QtWidgets import (
 from . import registry as pm
 from .processing_core import PostProcessingModule, MetaProcessingModule
 from .tools import get_resource, PlainTextLogger, PostFilter
+from .mpl_settings import enable_latex, disable_latex
 
 __all__ = ["PostProcessor"]
 
@@ -161,6 +162,16 @@ class PostProcessor(QMainWindow):
         # status bar
         self.statusBar = QStatusBar(self)
         self.setStatusBar(self.statusBar)
+
+        # activate latex formatting in plots
+        self._logger.info("TeX on")
+        enable_latex()
+
+    def closeEvent(self, QCloseEvent):
+        self._logger.info("Close Event received, closing Postprocessing GUI")
+        self._logger.info("TeX off")
+        disable_latex()
+        super().closeEvent(QCloseEvent)
 
     def load_result_files(self):
         path = self._settings.value("path/simulation_results")
