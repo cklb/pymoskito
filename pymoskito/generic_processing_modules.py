@@ -1,69 +1,14 @@
 # -*- coding: utf-8 -*-
-
-
-import matplotlib as mpl
 import numpy as np
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 from matplotlib.lines import Line2D as Line
 
 from .processing_core import PostProcessingModule, MetaProcessingModule
-from .tools import sort_tree
 from .resources import colors
+from .tools import sort_tree
 
 __all__ = ["StepResponse", "PlotAll", "XYMetaProcessor"]
-
-
-def get_figure_size(scale):
-    """
-    calculate optimal figure size with the golden ratio
-    :param scale:
-    :return:
-    """
-    # TODO: Get this from LaTeX using \the\textwidth
-    fig_width_pt = 448.13095
-    inches_per_pt = 1.0 / 72.27  # Convert pt to inch (stupid imperial system)
-    golden_ratio = (np.sqrt(5.0) - 1.0) / 2.0  # Aesthetic ratio
-    fig_width = fig_width_pt * inches_per_pt * scale  # width in inches
-    fig_height = fig_width * golden_ratio  # height in inches
-    fig_size = [fig_width, fig_height]
-    return fig_size
-
-
-latex_settings = {
-    # change this if using contex, xetex or lualatex
-    "pgf.texsystem": "pdflatex",
-    # use LaTeX to write all text
-    "text.usetex": True,
-    'font.family': 'lmodern',
-    # blank entries should cause plots to inherit fonts from the document
-    # "font.serif": [],
-    # "font.sans-serif": [],
-    # "font.monospace": [],
-    # "text.fontsize": 11,
-    "legend.fontsize": 9,  # Make the legend/label fonts a little smaller
-    "xtick.labelsize": 9,
-    "ytick.labelsize": 9,
-    "figure.figsize": get_figure_size(1),  # default fig size of 1\textwidth
-    "lines.linewidth": 0.5,
-    "axes.labelsize": 11,  # LaTeX default is 10pt font.
-    "axes.linewidth": 0.5,
-    "axes.unicode_minus": False,
-    # subfig related
-    "figure.subplot.left": 0.1,
-    "figure.subplot.right": 0.95,
-    "figure.subplot.bottom": 0.125,
-    "figure.subplot.top": 0.95,
-    # the amount of width reserved for blank space between subplots
-    "figure.subplot.wspace": 0.4,
-    # the amount of height reserved for white space between subplots
-    "figure.subplot.hspace": 0.4,
-    # Patches are graphical objects that fill 2D space, like polygons or circles
-    "patch.linewidth": 0.5,
-}
-mpl.rcParams.update(latex_settings)
-mpl.rcParams['text.latex.preamble'].append(r'\usepackage{lmodern}'),
-mpl.rcParams['text.latex.preamble'].append(r'\usepackage{siunitx}'),
 
 
 class StepResponse(PostProcessingModule):
