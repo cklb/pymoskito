@@ -268,7 +268,7 @@ class SimulationGui(QMainWindow):
         self.dataPointRightButtonLayout = QVBoxLayout()
         self.dataPointRightButton = QPushButton(chr(0x226b), self)
         self.dataPointRightButton.setToolTip(
-            "Add the selected data set from the left side to the selected plot "
+            "Add the selected data set from the left to the selected plot "
             "on the right.")
         self.dataPointRightButton.clicked.connect(self.addDatapointToTree)
         self.dataPointManipulationLayout.addWidget(self.dataPointRightButton)
@@ -537,15 +537,24 @@ class SimulationGui(QMainWindow):
                 self.dataPointTreeWidget.indexOfTopLevelItem(item))
 
     def addDatapointToTree(self):
-        if not (self.dataPointListWidget.selectedIndexes()
-                and self.dataPointTreeWidget.selectedIndexes()):
+        if not self.dataPointListWidget.selectedIndexes():
             return
 
         dataPoints = []
         for item in self.dataPointListWidget.selectedItems():
             dataPoints.append(item.text())
 
-        toplevelItem = self.dataPointTreeWidget.selectedItems()[0]
+        toplevelItems = self.dataPointTreeWidget.selectedItems()
+        if not toplevelItems:
+            if self.dataPointTreeWidget.topLevelItemCount() == 1:
+                toplevelItem = self.dataPointTreeWidget.topLevelItem(0)
+            else:
+                self._logger.error("Can't add data set, "
+                                   "a plot has to be selected.")
+                return
+        else:
+            toplevelItem = toplevelItems[0]
+
         while toplevelItem.parent():
             toplevelItem = toplevelItem.parent()
 
