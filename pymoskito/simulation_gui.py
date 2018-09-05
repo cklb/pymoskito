@@ -491,15 +491,17 @@ class SimulationGui(QMainWindow):
 
         self._logger.info("Simulation GUI is up and running.")
 
-    def addPlotTreeItem(self):
-        name, ok = QInputDialog.getText(
-            self,
-            "PlotTitle",
-            "PlotTitle:",
-            text="plot_{:03d}".format(self.dataPointTreeWidget.topLevelItemCount())
-        )
-        if not (ok and name):
-            return
+    def addPlotTreeItem(self, default=False):
+        text = "plot_{:03d}".format(self.dataPointTreeWidget.topLevelItemCount())
+        if not default:
+            name, ok = QInputDialog.getText(self,
+                                            "PlotTitle",
+                                            "PlotTitle:",
+                                            text=text)
+            if not (ok and name):
+                return
+        else:
+            name = text
 
         similar_items = self.dataPointTreeWidget.findItems(name,
                                                            Qt.MatchExactly)
@@ -538,6 +540,7 @@ class SimulationGui(QMainWindow):
 
     def addDatapointToTree(self):
         if not self.dataPointListWidget.selectedIndexes():
+            self._logger.error("Can't add data set: no data set selected.")
             return
 
         dataPoints = []
@@ -546,11 +549,12 @@ class SimulationGui(QMainWindow):
 
         toplevelItems = self.dataPointTreeWidget.selectedItems()
         if not toplevelItems:
-            if self.dataPointTreeWidget.topLevelItemCount() == 1:
+            if self.dataPointTreeWidget.topLevelItemCount() < 2:
+                if self.dataPointTreeWidget.topLevelItemCount() < 1:
+                    self.addPlotTreeItem(default=True)
                 toplevelItem = self.dataPointTreeWidget.topLevelItem(0)
             else:
-                self._logger.error("Can't add data set, "
-                                   "a plot has to be selected.")
+                self._logger.error("Can't add data set: no plot selected.")
                 return
         else:
             toplevelItem = toplevelItems[0]
@@ -574,8 +578,10 @@ class SimulationGui(QMainWindow):
                 if dock:
                     widget = dock.widgets[0]
                     self.plot_data_vector_member(child, widget)
-
-        # self.plots(toplevelitem)
+            else:
+                self._logger.error("Can't add data set: "
+                                   "Set is '{}' already present selected plot"
+                                   "".format(dataPoint))
 
     def removeDatapointFromTree(self):
         items = self.dataPointTreeWidget.selectedItems()
