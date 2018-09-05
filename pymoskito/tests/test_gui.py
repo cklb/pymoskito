@@ -26,7 +26,7 @@ class TestGUIBasics(unittest.TestCase):
     def test_defaults(self):
         # actions - enable at start
         self.assertTrue(self.gui.actLoadRegimes.isEnabled())
-        self.assertTrue(self.gui.actLoadStandardState.isEnabled())
+        # self.assertTrue(self.gui.actLoadStandardState.isEnabled())
         self.assertTrue(self.gui.actSimulateCurrent.isEnabled())
         self.assertTrue(self.gui.actSlow.isEnabled())
         self.assertTrue(self.gui.actFast.isEnabled())
@@ -44,7 +44,6 @@ class TestGUIBasics(unittest.TestCase):
         # playback speed
         self.assertTrue(self.gui.speedControl.isEnabled())
         self.assertEqual(self.gui.speedControl.value(), 6)
-
 
     def test_close(self):
         self.gui.close()

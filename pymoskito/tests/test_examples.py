@@ -1,4 +1,5 @@
 import sys
+import os
 import unittest
 import subprocess
 import re
@@ -37,7 +38,8 @@ class TestExamples(unittest.TestCase):
         """
         print("Testing Example: {}".format(name))
         pattern = re.compile(r"(- ERROR -)")
-        cmd = [sys.executable, "example_runner.py", name]
+        script = os.sep.join([os.path.dirname(__file__), "example_runner.py"])
+        cmd = [sys.executable, script, name]
 
         with subprocess.Popen(cmd,
                               stdout=subprocess.PIPE,

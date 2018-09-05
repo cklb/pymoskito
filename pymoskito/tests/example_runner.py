@@ -17,8 +17,12 @@ if __name__ == '__main__':
 
     app = QApplication([])
     gui = pm.SimulationGui()
-    gui.load_regimes_from_file(os.sep.join(["..", "examples", name, ""])
-                               + "default.sreg")
+    mod_dir = os.path.dirname(__file__)
+    gui.load_regimes_from_file(os.sep.join([os.path.dirname(__file__),
+                                            "..",
+                                            "examples",
+                                            name,
+                                            "default.sreg"]))
     gui.actExitOnBatchCompletion.setChecked(True)
     gui.start_regime_execution()
     app.exec_()
