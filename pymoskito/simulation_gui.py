@@ -492,7 +492,12 @@ class SimulationGui(QMainWindow):
         self._logger.info("Simulation GUI is up and running.")
 
     def addPlotTreeItem(self):
-        name, ok = QInputDialog.getText(self, "PlotTitle", "PlotTitle:")
+        name, ok = QInputDialog.getText(
+            self,
+            "PlotTitle",
+            "PlotTitle:",
+            text="plot_{:03d}".format(self.dataPointTreeWidget.topLevelItemCount())
+        )
         if not (ok and name):
             return
 
