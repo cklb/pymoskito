@@ -267,4 +267,5 @@ class CarVisualizer(pm.MplVisualizer):
                 x1_trailer2, x2_trailer2,
                 x2T1_1, y2T1_1, x2T1_2, y2T1_2, x2T2_1, y2T2_1, x2T2_2, y2T2_2)
 
+
 pm.register_visualizer(CarVisualizer)

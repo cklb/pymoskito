@@ -54,13 +54,10 @@ class TestPropertyItem(unittest.TestCase):
 
         new_list = [1, 3, 5]
         item.setData(new_list, role=PropertyItem.RawDataRole)
-        self.assertEqual(item.data(role=PropertyItem.RawDataRole),
-                         new_list)
+        self.assertEqual(item.data(role=PropertyItem.RawDataRole), new_list)
         new_str = str(new_list)
-        self.assertEqual(item.data(role=Qt.DisplayRole),
-                         new_str)
+        self.assertEqual(item.data(role=Qt.DisplayRole), new_str)
 
         # invalid data should be rejected and exception should be printed to log
         item.setData(edit_str[:-1], role=Qt.EditRole)
-        self.assertEqual(item.data(role=Qt.DisplayRole),
-                         new_str)
+        self.assertEqual(item.data(role=Qt.DisplayRole), new_str)

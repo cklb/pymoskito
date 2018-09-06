@@ -45,7 +45,7 @@ class TestGUIBasics(unittest.TestCase):
         self.assertTrue(self.gui.speedControl.isEnabled())
         self.assertEqual(self.gui.speedControl.value(), 6)
 
-    def test_close(self):
+    def tearDown(self):
         self.gui.close()
 
 

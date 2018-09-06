@@ -67,4 +67,5 @@ class CarModel(pm.Model):
     def calc_output(self, input):
         return input
 
+
 pm.register_simulation_module(pm.Model, CarModel)

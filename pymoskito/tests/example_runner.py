@@ -24,5 +24,7 @@ if __name__ == '__main__':
                                             name,
                                             "default.sreg"]))
     gui.actExitOnBatchCompletion.setChecked(True)
+    gui._settings.setValue("path/simulation_results",
+                           os.path.abspath(os.curdir))
     gui.start_regime_execution()
     app.exec_()
