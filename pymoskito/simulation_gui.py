@@ -517,6 +517,7 @@ class SimulationGui(QMainWindow):
     def removeSelectedPlotTreeItems(self):
         items = self.dataPointTreeWidget.selectedItems()
         if not items:
+            self._logger.error("Can't remove plot: no plot selected.")
             return
 
         for item in items:
@@ -586,9 +587,9 @@ class SimulationGui(QMainWindow):
     def removeDatapointFromTree(self):
         items = self.dataPointTreeWidget.selectedItems()
         if not items:
+            self._logger.error("Can't remove data set: no set selected.")
             return
 
-        # TODO iterate over items
         top_item = items[0]
         while top_item.parent():
             top_item = top_item.parent()
