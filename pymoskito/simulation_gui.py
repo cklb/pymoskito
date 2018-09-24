@@ -149,10 +149,10 @@ class SimulationGui(QMainWindow):
         # arrange docks
         self.area.addDock(self.animationDock, "right")
         self.area.addDock(self.lastSimDock, "left", self.animationDock)
-        self.area.addDock(self.regimeDock, "above", self.lastSimDock)
-        self.area.addDock(self.propertyDock, "bottom", self.regimeDock)
+        self.area.addDock(self.propertyDock, "bottom", self.lastSimDock)
         self.area.addDock(self.dataDock, "bottom", self.propertyDock)
         self.area.addDock(self.logDock, "bottom", self.dataDock)
+        self.area.addDock(self.regimeDock, "left", self.lastSimDock)
         self.non_plotting_docks = list(self.area.findAll()[1].keys())
 
         self.standardDockState = self.area.saveState()
@@ -271,10 +271,13 @@ class SimulationGui(QMainWindow):
             "Add the selected data set from the left side to the selected plot "
             "on the right.")
         self.dataPointRightButton.clicked.connect(self.addDatapointToTree)
+        self.dataPointLabel = QLabel('Datapoints', self)
+        self.dataPointLabel.setAlignment(Qt.AlignCenter)
+        self.dataPointManipulationLayout.addWidget(self.dataPointLabel)
         self.dataPointManipulationLayout.addWidget(self.dataPointRightButton)
         self.dataPointLeftButtonWidget = QWidget()
         self.dataPointLeftButtonLayout = QVBoxLayout()
-        self.dataPointLeftButton = QPushButton(chr(0x226a), self)
+        self.dataPointLeftButton = QPushButton(chr(0x03A7), self)
         self.dataPointLeftButton.setToolTip(
             "Remove the selected data set from the plot on the right."
         )
@@ -288,6 +291,9 @@ class SimulationGui(QMainWindow):
             "Create a new plot window."
         )
         self.dataPointPlotAddButton.clicked.connect(self.addPlotTreeItem)
+        self.plotLabel = QLabel('Plots', self)
+        self.plotLabel.setAlignment(Qt.AlignCenter)
+        self.dataPointManipulationLayout.addWidget(self.plotLabel)
         self.dataPointManipulationLayout.addWidget(self.dataPointPlotAddButton)
         self.dataPointPlotRemoveButtonWidget = QWidget()
         self.dataPointPlotRemoveButtonLayout = QVBoxLayout()
@@ -638,10 +644,9 @@ class SimulationGui(QMainWindow):
             self._read_results()
             self._update_data_list()
             self._update_plots()
-            # TODO first try, not perfect, cause of error messeage of _applyRegime
             lsettings = self.currentDataset['modules']
             lsettings["clear previous"] = True
-            self.sim.set_regime(lsettings)
+            self.sim.restore_regime(lsettings)
             self.update_gui()
 
         self.setQListItemBold(self.lastSimList, item)
@@ -1047,10 +1052,11 @@ class SimulationGui(QMainWindow):
         self.stop_animation()
 
         if data:
+            lastSimCount = self.lastSimList.count()
             lastSimData = {'modules': data['modules'],
                            'results': data['results'],
                            'simulation': data['simulation'],
-                           'name': self._current_regime_name}
+                           'name': str(lastSimCount) + ": " + self._current_regime_name}
             self._lastSimulations.push(lastSimData)
             self._update_lastSimList(lastSimData['name'])
 

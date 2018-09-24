@@ -359,9 +359,24 @@ class SimulatorInteractor(QObject):
             self._logger.error("setRegime(): only scalar input allowed!")
             return False
 
-        return self._apply_regime(reg)
+        return self._apply_regime(reg, False)
 
-    def _apply_regime(self, reg):
+    def restore_regime(self, reg):
+        """
+        Restore the given generated regime settings into the target model.
+
+        Returns:
+            bool: `True` if successful, `False` if errors occurred.
+        """
+        if reg is None:
+            return
+        if isinstance(reg, list):
+            self._logger.error("restoreRegime(): only scalar input allowed!")
+            return False
+
+        return self._apply_regime(reg, True)
+
+    def _apply_regime(self, reg, ignore_is_public):
         """
         Set all module settings to those provided in the regime.
 
@@ -431,11 +446,16 @@ class SimulatorInteractor(QObject):
                         found = True
                         break
 
-                if not found:
-                    self._logger.warning("_applyRegime(): Setting: '{0}' not "
-                                         "available for Module: '{1}'".format(
+                if not found and ignore_is_public:
+                    self._logger.info("_applyRegime(): Setting: '{0}' not "
+                                      "available for Module: '{1}'".format(
                         key, module_type))
-                    continue  # return False
+                    continue
+                elif not found:
+                    self._logger.error("_applyRegime(): Setting: '{0}' not "
+                                       "available for Module: '{1}'".format(
+                        key, module_type))
+                    return False
 
         return True
 
