@@ -20,7 +20,6 @@ if __name__ == '__main__':
 
     # create an Application instance (needed)
     app = QApplication([])
-    prog = None
     sim = pm.SimulationGui()
 
     # load defaults

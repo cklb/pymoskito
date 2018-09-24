@@ -161,7 +161,7 @@ class SimulationGui(QMainWindow):
         self.propertyDock.addWidget(self.targetView)
 
         if not vtk_available:
-            self._logger.error("loading vtk failed with:{}".format(vtk_error_msg))
+            self._logger.warning("loading vtk failed with:{}".format(vtk_error_msg))
 
         # check if there is a registered visualizer
         available_vis = get_registered_visualizers()

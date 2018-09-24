@@ -1,6 +1,7 @@
 from abc import ABCMeta, abstractmethod
 
-from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT, FigureCanvasQTAgg as FigureCanvas
+from matplotlib.backends.backend_qt5agg import (
+    NavigationToolbar2QT, FigureCanvasQTAgg as FigureCanvas)
 from matplotlib.figure import Figure
 
 __all__ = ["VtkVisualizer", "MplVisualizer"]
@@ -59,6 +60,7 @@ class VtkVisualizer(Visualizer):
         self.position = None
         self.focal_point = None
         self.view_up = None
+        self.view_angle = None
         self.parallel_projection = None
         self.parallel_scale = None
         self.clipping_range = None
