@@ -268,7 +268,7 @@ class SimulationGui(QMainWindow):
         self.dataPointRightButtonLayout = QVBoxLayout()
         self.dataPointRightButton = QPushButton(chr(0x226b), self)
         self.dataPointRightButton.setToolTip(
-            "Add the selected data set from the left side to the selected plot "
+            "Add the selected data set from the left to the selected plot "
             "on the right.")
         self.dataPointRightButton.clicked.connect(self.addDatapointToTree)
         self.dataPointLabel = QLabel('Datapoints', self)
@@ -497,10 +497,17 @@ class SimulationGui(QMainWindow):
 
         self._logger.info("Simulation GUI is up and running.")
 
-    def addPlotTreeItem(self):
-        name, ok = QInputDialog.getText(self, "PlotTitle", "PlotTitle:")
-        if not (ok and name):
-            return
+    def addPlotTreeItem(self, default=False):
+        text = "plot_{:03d}".format(self.dataPointTreeWidget.topLevelItemCount())
+        if not default:
+            name, ok = QInputDialog.getText(self,
+                                            "PlotTitle",
+                                            "PlotTitle:",
+                                            text=text)
+            if not (ok and name):
+                return
+        else:
+            name = text
 
         similar_items = self.dataPointTreeWidget.findItems(name,
                                                            Qt.MatchExactly)
@@ -516,6 +523,7 @@ class SimulationGui(QMainWindow):
     def removeSelectedPlotTreeItems(self):
         items = self.dataPointTreeWidget.selectedItems()
         if not items:
+            self._logger.error("Can't remove plot: no plot selected.")
             return
 
         for item in items:
@@ -538,15 +546,26 @@ class SimulationGui(QMainWindow):
                 self.dataPointTreeWidget.indexOfTopLevelItem(item))
 
     def addDatapointToTree(self):
-        if not (self.dataPointListWidget.selectedIndexes()
-                and self.dataPointTreeWidget.selectedIndexes()):
+        if not self.dataPointListWidget.selectedIndexes():
+            self._logger.error("Can't add data set: no data set selected.")
             return
 
         dataPoints = []
         for item in self.dataPointListWidget.selectedItems():
             dataPoints.append(item.text())
 
-        toplevelItem = self.dataPointTreeWidget.selectedItems()[0]
+        toplevelItems = self.dataPointTreeWidget.selectedItems()
+        if not toplevelItems:
+            if self.dataPointTreeWidget.topLevelItemCount() < 2:
+                if self.dataPointTreeWidget.topLevelItemCount() < 1:
+                    self.addPlotTreeItem(default=True)
+                toplevelItem = self.dataPointTreeWidget.topLevelItem(0)
+            else:
+                self._logger.error("Can't add data set: no plot selected.")
+                return
+        else:
+            toplevelItem = toplevelItems[0]
+
         while toplevelItem.parent():
             toplevelItem = toplevelItem.parent()
 
@@ -566,15 +585,17 @@ class SimulationGui(QMainWindow):
                 if dock:
                     widget = dock.widgets[0]
                     self.plot_data_vector_member(child, widget)
-
-        # self.plots(toplevelitem)
+            else:
+                self._logger.error("Can't add data set: "
+                                   "Set is '{}' already present selected plot"
+                                   "".format(dataPoint))
 
     def removeDatapointFromTree(self):
         items = self.dataPointTreeWidget.selectedItems()
         if not items:
+            self._logger.error("Can't remove data set: no set selected.")
             return
 
-        # TODO iterate over items
         top_item = items[0]
         while top_item.parent():
             top_item = top_item.parent()
@@ -1436,11 +1457,6 @@ class SimulationGui(QMainWindow):
         self._logger.info("launching postprocessor")
         self.statusBar().showMessage("launching postprocessor", 1000)
         if self.postprocessor is None:
-            from .generic_processing_modules import PlotAll
-            from .processing_core import PostProcessingModule
-            from .registry import register_processing_module
-            register_processing_module(PostProcessingModule, PlotAll)
-
             self.postprocessor = PostProcessor()
 
         self.postprocessor.show()
