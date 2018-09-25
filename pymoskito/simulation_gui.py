@@ -587,7 +587,7 @@ class SimulationGui(QMainWindow):
                     self.plot_data_vector_member(child, widget)
             else:
                 self._logger.error("Can't add data set: "
-                                   "Set is '{}' already present selected plot"
+                                   "Set '{}' is already present selected plot"
                                    "".format(dataPoint))
 
     def removeDatapointFromTree(self):
@@ -644,21 +644,19 @@ class SimulationGui(QMainWindow):
             self.plot_data_vector(item)
 
     def load_last_sim(self, item):
+        sim_name = str(item.text())
         try:
             idx = self.lastSimList.row(item)
         except ValueError as e:
-            self._logger.error("load_last_sim(): Error no regime called "
-                               "'{0}'".format(str(item.text())))
+            self._logger.error("load_last_sim(): No results called "
+                               "'{0}'".format(sim_name))
             return False
 
         if idx >= len(self._lastSimulations):
-            self._logger.error("load_last_sim(): index error! ({})".format(idx))
+            self._logger.error("load_last_sim(): Invalid index '{}')".format(idx))
             return False
 
-        last_sim_name = self._lastSimulations[idx]["name"]
-        self.statusBar().showMessage("last sim {} applied.".format(last_sim_name),
-                                     1000)
-        self._logger.info("applying last sim '{}'".format(last_sim_name))
+        self._logger.info("restoring simulation '{}'".format(sim_name))
 
         self.currentDataset = self._lastSimulations[idx]
         if self._lastSimulations[idx]:
@@ -672,6 +670,9 @@ class SimulationGui(QMainWindow):
 
         self.setQListItemBold(self.lastSimList, item)
         self.setQListItemBold(self.regime_list, item)
+        self.statusBar().showMessage(
+            "restored simulation '{}'.".format(sim_name),
+            1000)
 
     def _read_settings(self):
 
@@ -912,10 +913,6 @@ class SimulationGui(QMainWindow):
         self.statusBar().showMessage("loaded {} regimes.".format(len(self._regimes)), 1000)
         return
 
-    def _update_lastSimList(self, item):
-        self._logger.debug("adding '{}' to lastSim list".format(item))
-        self.lastSimList.addItem(item)
-
     def _update_regime_list(self):
         self.regime_list.clear()
         for reg in self._regimes:
@@ -935,11 +932,10 @@ class SimulationGui(QMainWindow):
         """
         Apply the selected regime to the current target.
         """
-        sucess = self._apply_regime_by_idx(self.regime_list.row(item))
+        success = self._apply_regime_by_idx(self.regime_list.row(item))
 
-        self.setQListItemBold(self.regime_list, item, [sucess])
-        self.setQListItemBold(self.lastSimList, item, [sucess])
-
+        self.setQListItemBold(self.regime_list, item, success)
+        self.setQListItemBold(self.lastSimList, item, success)
         self.dataPointListWidget.clear()
 
     def apply_regime_by_name(self, regime_name):
@@ -971,18 +967,20 @@ class SimulationGui(QMainWindow):
             bool: `True` if successful, `False` if errors occurred.
         """
         if index >= len(self._regimes):
-            self._logger.error("applyRegime: index error! ({})".format(index))
+            self._logger.error("Invalid index: '{}'".format(index))
             return False
 
         reg_name = self._regimes[index]["Name"]
-        self.statusBar().showMessage("regime {} applied.".format(reg_name),
-                                     1000)
         self._logger.info("applying regime '{}'".format(reg_name))
 
         self._current_regime_index = index
         self._current_regime_name = reg_name
 
-        return self.sim.set_regime(self._regimes[index])
+        ret = self.sim.set_regime(self._regimes[index])
+        if ret:
+            self.statusBar().showMessage("regime {} applied.".format(reg_name),
+                                         1000)
+        return ret
 
     @pyqtSlot()
     def start_regime_execution(self):
@@ -1073,19 +1071,25 @@ class SimulationGui(QMainWindow):
         self.stop_animation()
 
         if data:
+            # import new data
+            self.currentDataset = data
+            self._read_results()
+            self._update_data_list()
+            self._update_plots()
+
+            # add results to history
             lastSimCount = self.lastSimList.count()
             lastSimData = {'modules': data['modules'],
                            'results': data['results'],
                            'simulation': data['simulation'],
-                           'name': str(lastSimCount) + ": " + self._current_regime_name}
+                           'name': self._current_regime_name,
+                           }
+            display_name = "{}:{}".format(lastSimCount,
+                                          self._current_regime_name)
             self._lastSimulations.push(lastSimData)
-            self._update_lastSimList(lastSimData['name'])
-
-            self.currentDataset = data
-
-            self._read_results()
-            self._update_data_list()
-            self._update_plots()
+            new_item = QListWidgetItem(display_name)
+            self.lastSimList.addItem(new_item)
+            self.setQListItemBold(self.lastSimList, new_item)
 
         if self._settings.value("control/autoplay_animation") == "True":
             self.actPlayPause.trigger()
@@ -1494,17 +1498,12 @@ class SimulationGui(QMainWindow):
             docks.close()
         self.area.restoreState(self.standardDockState)
 
-    def setQListItemBold(self, QList=None, item=None, args=[]):
-        sucess = True
-        for arg in args:
-            if arg == False:
-                sucess = False
-                break
-        for i in range(QList.count()):
-            newfont = QList.item(i).font()
-            if QList.item(i) == item and sucess:
-                newfont.setBold(1)
+    def setQListItemBold(self, q_list=None, item=None, state=True):
+        for i in range(q_list.count()):
+            new_font = q_list.item(i).font()
+            if q_list.item(i) == item and state:
+                new_font.setBold(1)
             else:
-                newfont.setBold(0)
-            QList.item(i).setFont(newfont)
-        QList.repaint()
+                new_font.setBold(0)
+            q_list.item(i).setFont(new_font)
+        q_list.repaint()

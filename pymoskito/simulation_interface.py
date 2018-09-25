@@ -434,28 +434,23 @@ class SimulatorInteractor(QObject):
                 if key == "type":
                     continue
 
-                found = False
                 for row in range(module_item.rowCount()):
                     if self.target_model.data(
                             module_item.child(row, 0).index()) == key:
-                        # if str(module_item.child(row, 0).text()) == key:
-                        value_idx = self.target_model.index(row, 1, module_index)
+                        value_idx = self.target_model.index(row,
+                                                            1,
+                                                            module_index)
                         self.target_model.setData(value_idx,
                                                   val,
                                                   role=PropertyItem.RawDataRole)
-                        found = True
                         break
-
-                if not found and ignore_is_public:
-                    self._logger.info("_applyRegime(): Setting: '{0}' not "
-                                      "available for Module: '{1}'".format(
-                        key, module_type))
-                    continue
-                elif not found:
-                    self._logger.error("_applyRegime(): Setting: '{0}' not "
-                                       "available for Module: '{1}'".format(
-                        key, module_type))
-                    return False
+                else:
+                    if not ignore_is_public:
+                        self._logger.error(
+                            "_applyRegime(): No public setting called '{0}'"
+                            "available for Module: '{1}'".format(key,
+                                                                 module_type))
+                        return False
 
         return True
 
