@@ -1,17 +1,16 @@
 # -*- coding: utf-8 -*-
 
+import time
+
 # system
 import logging
+import numpy as np
 import os
 import pickle
-import time
-import webbrowser
-from operator import itemgetter
-
-import numpy as np
 import pkg_resources
 # pyqtgraph
 import pyqtgraph as pg
+import webbrowser
 import yaml
 # Qt
 from PyQt5.QtCore import (pyqtSignal, pyqtSlot, Qt, QTimer, QSize, QSettings,
@@ -24,6 +23,7 @@ from PyQt5.QtWidgets import (QWidget, QAction, QSlider, QMainWindow,
                              QPlainTextEdit, QFileDialog, QInputDialog,
                              QFrame, QVBoxLayout, QMessageBox, QApplication, QTreeWidget,
                              QHBoxLayout, QPushButton, QTreeWidgetItem)
+from operator import itemgetter
 from pyqtgraph import exporters
 from pyqtgraph.dockarea import DockArea
 from scipy.interpolate import interp1d
@@ -156,6 +156,9 @@ class SimulationGui(QMainWindow):
         self.non_plotting_docks = list(self.area.findAll()[1].keys())
 
         self.standardDockState = self.area.saveState()
+
+        # flag to show mouse position in plots
+        self._show_mouse_pos = False
 
         # add widgets to the docks
         self.propertyDock.addWidget(self.targetView)
@@ -1341,12 +1344,22 @@ class SimulationGui(QMainWindow):
                                     pen=pg.mkPen("#FF0000", width=2.0))
         widget.getPlotItem().addItem(time_line)
 
-        widget.scene().contextMenu = [QAction("Export png", self),
+        mouse_pos = pg.TextItem(text='', anchor=(0, 1))
+        widget.getPlotItem().addItem(mouse_pos)
+
+        mousePosAction = QAction("Mouse Position", self)
+        mousePosAction.setCheckable(True)
+        widget.scene().contextMenu = [mousePosAction,
+                                      QAction("Export png", self),
                                       QAction("Export csv", self)]
         widget.scene().contextMenu[0].triggered.connect(
-            lambda: self.exportPng(widget.getPlotItem(), title))
+            lambda: self.checkMousePosState(mousePosAction))
         widget.scene().contextMenu[1].triggered.connect(
+            lambda: self.exportPng(widget.getPlotItem(), title))
+        widget.scene().contextMenu[2].triggered.connect(
             lambda: self.exportCsv(widget.getPlotItem(), title))
+        widget.scene().sigMouseMoved.connect(
+            lambda pos, widget=widget, mouseItem=mouse_pos: self.onMove(pos, widget, mouseItem))
 
         # create dock container and add it to dock area
         dock = pg.dockarea.Dock(title, closable=True)
@@ -1357,6 +1370,23 @@ class SimulationGui(QMainWindow):
             self.area.addDock(dock, "above", plotWidgets[0])
         else:
             self.area.addDock(dock, "bottom", self.animationDock)
+
+    def checkMousePosState(self, mousePosAction):
+        if mousePosAction.isChecked():
+            self._show_mouse_pos = True
+        else:
+            self._show_mouse_pos = False
+
+    def onMove(self, pos, widget, mouseItem):
+        if not widget.sceneBoundingRect().contains(pos) or not self._show_mouse_pos:
+            mouseItem.hide()
+            return
+        else:
+            mouseItem.show()
+
+        actPos = widget.getPlotItem().vb.mapSceneToView(pos)
+        mouseItem.setPos(actPos.x(), actPos.y())
+        mouseItem.setText("x: {:.1f}\ny: {:.1f}".format(actPos.x(), actPos.y()))
 
     def plot_data_vector_member(self, item, widget):
         idx = item.parent().indexOfChild(item)
