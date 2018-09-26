@@ -157,9 +157,6 @@ class SimulationGui(QMainWindow):
 
         self.standardDockState = self.area.saveState()
 
-        # flag to show mouse position in plots
-        self._show_mouse_pos = False
-
         # add widgets to the docks
         self.propertyDock.addWidget(self.targetView)
 
@@ -1352,14 +1349,15 @@ class SimulationGui(QMainWindow):
         widget.scene().contextMenu = [mousePosAction,
                                       QAction("Export png", self),
                                       QAction("Export csv", self)]
-        widget.scene().contextMenu[0].triggered.connect(
-            lambda: self.checkMousePosState(mousePosAction))
         widget.scene().contextMenu[1].triggered.connect(
             lambda: self.exportPng(widget.getPlotItem(), title))
         widget.scene().contextMenu[2].triggered.connect(
             lambda: self.exportCsv(widget.getPlotItem(), title))
         widget.scene().sigMouseMoved.connect(
-            lambda pos, widget=widget, mouseItem=mouse_pos: self.onMove(pos, widget, mouseItem))
+            lambda pos, widget=widget, mouseItem=mouse_pos, mouseAction=mousePosAction: self.onMove(pos,
+                                                                                                    widget,
+                                                                                                    mouseItem,
+                                                                                                    mouseAction))
 
         # create dock container and add it to dock area
         dock = pg.dockarea.Dock(title, closable=True)
@@ -1371,14 +1369,8 @@ class SimulationGui(QMainWindow):
         else:
             self.area.addDock(dock, "bottom", self.animationDock)
 
-    def checkMousePosState(self, mousePosAction):
-        if mousePosAction.isChecked():
-            self._show_mouse_pos = True
-        else:
-            self._show_mouse_pos = False
-
-    def onMove(self, pos, widget, mouseItem):
-        if not widget.sceneBoundingRect().contains(pos) or not self._show_mouse_pos:
+    def onMove(self, pos, widget, mouseItem, mouseAction):
+        if not widget.sceneBoundingRect().contains(pos) or not mouseAction.isChecked():
             mouseItem.hide()
             return
         else:
