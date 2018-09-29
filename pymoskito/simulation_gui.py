@@ -459,9 +459,16 @@ class SimulationGui(QMainWindow):
         editMenu.addAction(self.actDeleteRegimes)
 
         self.viewMenu = self.menuBar().addMenu('&View')
-        self.actLoadStandardState = QAction('Restore Default View')
+        self.actLoadStandardState = QAction('&Restore Default View')
         self.viewMenu.addAction(self.actLoadStandardState)
         self.actLoadStandardState.triggered.connect(self.loadStandardDockState)
+        self.actShowCoords = QAction("&Show Coordinates", self)
+        self.actShowCoords.setCheckable(True)
+        self.actShowCoords.setChecked(
+            self._settings.value("view/show_coordinates") == "True"
+        )
+        self.viewMenu.addAction(self.actShowCoords)
+        self.actShowCoords.changed.connect(self.update_show_coords_setting)
 
         simMenu = self.menuBar().addMenu("&Simulation")
         simMenu.addAction(self.actSimulateCurrent)
@@ -492,8 +499,10 @@ class SimulationGui(QMainWindow):
         self.setStatusBar(self.status)
         self.statusLabel = QLabel("Ready.")
         self.statusBar().addPermanentWidget(self.statusLabel)
-        self.timeLabel = QLabel("current time: 0.0")
+        self.timeLabel = QLabel("t=0.0")
         self.statusBar().addPermanentWidget(self.timeLabel)
+        self.coordLabel = QLabel("x=0.0 y=0.0")
+        self.statusBar().addPermanentWidget(self.coordLabel)
 
         self._logger.info("Simulation GUI is up and running.")
 
@@ -538,7 +547,7 @@ class SimulationGui(QMainWindow):
         buttonReply = QMessageBox.warning(self, "Plot delete", text,
                                           QMessageBox.Ok | QMessageBox.Cancel)
         if buttonReply == QMessageBox.Ok:
-            openDocks = [dock.title() for dock in self.findAllPlotDocks()]
+            openDocks = [dock.title() for dock in self.find_all_plot_docks()]
             if item.text(0) in openDocks:
                 self.area.docks[item.text(0)].close()
 
@@ -573,7 +582,7 @@ class SimulationGui(QMainWindow):
         for i in range(toplevelItem.childCount()):
             topLevelItemList.append(toplevelItem.child(i).text(1))
 
-        dock = next((d for d in self.findAllPlotDocks()
+        dock = next((d for d in self.find_all_plot_docks()
                      if d.title() == toplevelItem.text(0)), None)
 
         for dataPoint in dataPoints:
@@ -615,7 +624,7 @@ class SimulationGui(QMainWindow):
                 return
 
             # check if plot has already been opened
-            openDocks = [dock.title() for dock in self.findAllPlotDocks()]
+            openDocks = [dock.title() for dock in self.find_all_plot_docks()]
             if title in openDocks:
                 self._update_plot(item)
 
@@ -633,7 +642,7 @@ class SimulationGui(QMainWindow):
             return
 
         # check if plot has already been opened
-        openDocks = [dock.title() for dock in self.findAllPlotDocks()]
+        openDocks = [dock.title() for dock in self.find_all_plot_docks()]
         if title in openDocks:
             self._update_plot(item)
             try:
@@ -699,6 +708,9 @@ class SimulationGui(QMainWindow):
         if not self._settings.contains("control/exit_on_batch_completion"):
             self._settings.setValue("control/exit_on_batch_completion", "False")
 
+        if not self._settings.contains("view/show_coordinates"):
+            self._settings.setValue("view/show_coordinates", "True")
+
     def _write_settings(self):
         """ Store the application state. """
         pass
@@ -707,6 +719,11 @@ class SimulationGui(QMainWindow):
     def update_autoplay_setting(self):
         self._settings.setValue("control/autoplay_animation",
                                 str(self.actAutoPlay.isChecked()))
+
+    @pyqtSlot()
+    def update_show_coords_setting(self):
+        self._settings.setValue("view/show_coordinates",
+                                str(self.actShowCoords.isChecked()))
 
     @pyqtSlot()
     def update_exit_on_batch_completion_setting(self, state=None):
@@ -990,7 +1007,7 @@ class SimulationGui(QMainWindow):
         self.actSimulateAll.setText("Stop Simulating &All Regimes")
         self.actSimulateAll.setIcon(QIcon(get_resource("stop_batch.png")))
         self.actSimulateAll.triggered.disconnect(self.start_regime_execution)
-        self.actSimulateAll.triggered.connect(self.stop_regime_excecution)
+        self.actSimulateAll.triggered.connect(self.stop_regime_execution)
 
         self.runningBatch = True
         self._current_regime_index = -1
@@ -1013,7 +1030,7 @@ class SimulationGui(QMainWindow):
         self.start_simulation()
 
     @pyqtSlot()
-    def stop_regime_excecution(self):
+    def stop_regime_execution(self):
         """ Stop the batch process.
         """
         self.stopSimulation.emit()
@@ -1026,7 +1043,7 @@ class SimulationGui(QMainWindow):
 
         self.actSimulateAll.setText("Simulate &All Regimes")
         self.actSimulateAll.setIcon(QIcon(get_resource("execute_regimes.png")))
-        self.actSimulateAll.triggered.disconnect(self.stop_regime_excecution)
+        self.actSimulateAll.triggered.disconnect(self.stop_regime_execution)
         self.actSimulateAll.triggered.connect(self.start_regime_execution)
 
         if status:
@@ -1183,7 +1200,7 @@ class SimulationGui(QMainWindow):
         if not self.validData:
             return
 
-        self.timeLabel.setText("current time: %4f" % self.playbackTime)
+        self.timeLabel.setText("t={0:.3e}".format(self.playbackTime))
 
         # update time cursor in plots
         self._update_time_cursors()
@@ -1288,7 +1305,7 @@ class SimulationGui(QMainWindow):
 
         title = item.text(0)
         t = self.currentDataset["results"]["time"]
-        docks = self.findAllPlotDocks()
+        docks = self.find_all_plot_docks()
         target = next((d for d in docks if d.title() == title), None)
         if target is None:
             return
@@ -1341,44 +1358,46 @@ class SimulationGui(QMainWindow):
                                     pen=pg.mkPen("#FF0000", width=2.0))
         widget.getPlotItem().addItem(time_line)
 
-        mouse_pos = pg.TextItem(text='', anchor=(0, 1))
-        widget.getPlotItem().addItem(mouse_pos)
+        coord_item = pg.TextItem(text='', anchor=(0, 1))
+        widget.getPlotItem().addItem(coord_item, ignoreBounds=True)
 
-        mousePosAction = QAction("Mouse Position", self)
-        mousePosAction.setCheckable(True)
-        widget.scene().contextMenu = [mousePosAction,
-                                      QAction("Export png", self),
-                                      QAction("Export csv", self)]
+        def info_wrapper(pos):
+            self.update_coord_info(pos, widget, coord_item)
+
+        widget.scene().sigMouseMoved.connect(info_wrapper)
+
+        widget.scene().contextMenu = [
+            QAction("Export png", self),
+            QAction("Export csv", self)
+        ]
+        widget.scene().contextMenu[0].triggered.connect(
+            lambda: self.export_png(widget.getPlotItem(), title))
         widget.scene().contextMenu[1].triggered.connect(
-            lambda: self.exportPng(widget.getPlotItem(), title))
-        widget.scene().contextMenu[2].triggered.connect(
-            lambda: self.exportCsv(widget.getPlotItem(), title))
-        widget.scene().sigMouseMoved.connect(
-            lambda pos, widget=widget, mouseItem=mouse_pos, mouseAction=mousePosAction: self.onMove(pos,
-                                                                                                    widget,
-                                                                                                    mouseItem,
-                                                                                                    mouseAction))
+            lambda: self.export_csv(widget.getPlotItem(), title))
 
         # create dock container and add it to dock area
         dock = pg.dockarea.Dock(title, closable=True)
         dock.addWidget(widget)
 
-        plotWidgets = self.findAllPlotDocks()
+        plotWidgets = self.find_all_plot_docks()
         if plotWidgets:
             self.area.addDock(dock, "above", plotWidgets[0])
         else:
             self.area.addDock(dock, "bottom", self.animationDock)
 
-    def onMove(self, pos, widget, mouseItem, mouseAction):
-        if not widget.sceneBoundingRect().contains(pos) or not mouseAction.isChecked():
-            mouseItem.hide()
-            return
-        else:
-            mouseItem.show()
+    def update_coord_info(self, pos, widget, coord_item):
+        mouse_coords = widget.getPlotItem().vb.mapSceneToView(pos)
+        coord_item.setPos(mouse_coords.x(), mouse_coords.y())
+        coord_text = "x={:.3e} y={:.3e}".format(mouse_coords.x(),
+                                                mouse_coords.y())
+        self.coordLabel.setText(coord_text)
 
-        actPos = widget.getPlotItem().vb.mapSceneToView(pos)
-        mouseItem.setPos(actPos.x(), actPos.y())
-        mouseItem.setText("x: {:.1f}\ny: {:.1f}".format(actPos.x(), actPos.y()))
+        show_info = self._settings.value("view/show_coordinates") == "True"
+        if widget.sceneBoundingRect().contains(pos) and show_info:
+            coord_item.setText(coord_text.replace(" ", "\n"))
+            coord_item.show()
+        else:
+            coord_item.hide()
 
     def plot_data_vector_member(self, item, widget):
         idx = item.parent().indexOfChild(item)
@@ -1394,7 +1413,7 @@ class SimulationGui(QMainWindow):
                         pen=pg.mkPen(color, width=2),
                         name=data_name)
 
-    def findAllPlotDocks(self):
+    def find_all_plot_docks(self):
         list = []
         for title, dock in self.area.findAll()[1].items():
             if title in self.non_plotting_docks:
@@ -1404,28 +1423,34 @@ class SimulationGui(QMainWindow):
 
         return list
 
-    def exportCsv(self, plotItem, name):
-        exporter = exporters.CSVExporter(plotItem)
-        filename = QFileDialog.getSaveFileName(self, "CSV export", name + ".csv", "CSV Data (*.csv)")
+    def export_csv(self, plot_item, name):
+        exporter = exporters.CSVExporter(plot_item)
+        filename = QFileDialog.getSaveFileName(self,
+                                               "CSV export", name + ".csv",
+                                               "CSV Data (*.csv)")
         if filename[0]:
             exporter.export(filename[0])
 
-    def exportPng(self, plotItem, name):
-        # Notwendig da Fehler in PyQtGraph
-        exporter = exporters.ImageExporter(plotItem)
-        oldGeometry = plotItem.geometry()
-        plotItem.setGeometry(QRectF(0, 0, 1920, 1080))
-        # TODO Farben ändern Background, grid und pen
+    def export_png(self, plot_item, name):
+        # required due to bug in pyqtgraph
+        exporter = exporters.ImageExporter(plot_item)
+        old_geometry = plot_item.geometry()
+        plot_item.setGeometry(QRectF(0, 0, 1920, 1080))
+        # TODO change colors of background, grid and pen
         # exporter.parameters()['background'] = QColor(255, 255, 255)
-        exporter.params.param('width').setValue(1920, blockSignal=exporter.widthChanged)
-        exporter.params.param('height').setValue(1080, blockSignal=exporter.heightChanged)
+        exporter.params.param('width').setValue(1920,
+                                                blockSignal=exporter.widthChanged)
+        exporter.params.param('height').setValue(1080,
+                                                 blockSignal=exporter.heightChanged)
 
-        filename = QFileDialog.getSaveFileName(self, "PNG export", name + ".png", "PNG Image (*.png)")
+        filename = QFileDialog.getSaveFileName(self,
+                                               "PNG export", name + ".png",
+                                               "PNG Image (*.png)")
         if filename[0]:
             exporter.export(filename[0])
 
         # restore old state
-        plotItem.setGeometry(QRectF(oldGeometry))
+        plot_item.setGeometry(QRectF(old_geometry))
 
     def _get_data_by_name(self, name):
         tmp = name.split(".")
@@ -1516,7 +1541,7 @@ class SimulationGui(QMainWindow):
         super().closeEvent(QCloseEvent)
 
     def loadStandardDockState(self):
-        for docks in self.findAllPlotDocks():
+        for docks in self.find_all_plot_docks():
             docks.close()
         self.area.restoreState(self.standardDockState)
 
