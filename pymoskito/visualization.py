@@ -112,7 +112,5 @@ class MplVisualizer(Visualizer):
         self.canvas = FigureCanvas(self.fig)
         self.canvas.setParent(self.qWidget)
         self.axes = self.fig.add_subplot(111)
-        self.mpl_toolbar = NavigationToolbar2QT(self.canvas, self.qWidget)
-        self.qLayout.addWidget(self.mpl_toolbar)
         self.qLayout.addWidget(self.canvas)
         self.qWidget.setLayout(self.qLayout)
