@@ -7,7 +7,10 @@ History
 0.3.0 (2018-10-01)
 ------------------
 
-* TODO
+* Added a new plot system
+* Added a last simulation list
+* Added more log messages 
+* Removed latex as an requirement for the main GUI, only required for the Postprocessor
 
 0.2.3 (2018-05-14)
 ------------------
