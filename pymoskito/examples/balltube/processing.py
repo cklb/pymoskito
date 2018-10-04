@@ -7,6 +7,8 @@ from pymoskito.generic_processing_modules import XYMetaProcessor
 class ErrorProcessor(XYMetaProcessor):
 
     def __init__(self):
-        XYMetaProcessor.__init__(self, ["modules", "Controller"], ["modules", "Solver", "end time"],
+        XYMetaProcessor.__init__(self,
+                                 ["modules", "Controller"],
+                                 ["modules", "Solver", "end time"],
                                  ["metrics", "L1NormITAE"])
 

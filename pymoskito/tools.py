@@ -8,8 +8,6 @@ import os
 import re
 
 import numpy as np
-from PyQt5.QtWidgets import QApplication
-
 
 logger = logging.getLogger(__name__)
 
@@ -171,6 +169,7 @@ class PlainTextLogger(logging.Handler):
     """
     Logging handler hat formats log data for line display
     """
+
     def __init__(self, level=logging.NOTSET):
         logging.Handler.__init__(self, level)
         self.name = "PlainTextLogger"
@@ -200,6 +199,7 @@ class PostFilter(logging.Filter):
     """
     Filter to sort out all not PostProcessing related log information
     """
+
     def __init__(self, invert=False):
         logging.Filter.__init__(self)
         self._invert = invert
@@ -229,3 +229,38 @@ def swap_rows(arr, frm, to):
         arr[[frm, to], :] = arr[[to, frm], :]
     return arr
 
+
+class LengthList(object):
+    def __init__(self, maxLength):
+        self.maxLength = maxLength
+        self.ls = []
+
+    def push(self, st):
+        if len(self.ls) == self.maxLength:
+            self.ls.pop(0)
+        self.ls.append(st)
+
+    def get_list(self):
+        return self.ls
+
+    def __len__(self):
+        return len(self.ls)
+
+    def __getitem__(self, key):
+        return self.ls[key]
+
+
+def get_figure_size(scale):
+    """
+    calculate optimal figure size with the golden ratio
+    :param scale:
+    :return:
+    """
+    # TODO: Get this from LaTeX using \the\textwidth
+    fig_width_pt = 448.13095
+    inches_per_pt = 1.0 / 72.27  # Convert pt to inch (stupid imperial system)
+    golden_ratio = (np.sqrt(5.0) - 1.0) / 2.0  # Aesthetic ratio
+    fig_width = fig_width_pt * inches_per_pt * scale  # width in inches
+    fig_height = fig_width * golden_ratio  # height in inches
+    fig_size = [fig_width, fig_height]
+    return fig_size
