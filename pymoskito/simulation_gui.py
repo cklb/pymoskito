@@ -1453,6 +1453,7 @@ class SimulationGui(QMainWindow):
         plot_item.setGeometry(QRectF(old_geometry))
 
     def _get_data_by_name(self, name):
+        self._logger.debug("looking up data for {}".format(name))
         tmp = name.split(".")
         module_name = tmp[0]
         try:
@@ -1467,20 +1468,19 @@ class SimulationGui(QMainWindow):
                 idx = int(tmp[1])
             except ValueError:
                 idx = self._get_index_from_suffix(module_name, tmp[1])
-            try:
-                data = raw_data[..., idx]
-            except IndexError:
+            if raw_data.ndim != 2 or raw_data.shape[1] <= idx:
                 return None
+            data = raw_data[:, idx]
         elif len(tmp) == 3:
             try:
                 idx = int(tmp[1])
                 der = int(tmp[2])
             except ValueError:
                 return None
-            try:
-                data = raw_data[..., idx, der]
-            except IndexError:
+            if raw_data.ndim != 3 or raw_data.shape[1] <= idx \
+                    or raw_data.shape[2] <= der:
                 return None
+            data = raw_data[:, idx, der]
         else:
             raise ValueError("Format not supported")
 
