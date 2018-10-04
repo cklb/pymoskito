@@ -740,7 +740,7 @@ class SimulationGui(QMainWindow):
         """
         play the animation
         """
-        self._logger.debug("Starting Playback")
+        self._logger.info("Starting Playback")
 
         # if we are at the end, start from the beginning
         if self.playbackTime == self.currentEndTime:
@@ -757,7 +757,7 @@ class SimulationGui(QMainWindow):
         """
         pause the animation
         """
-        self._logger.debug("Pausing Playback")
+        self._logger.info("Pausing Playback")
         self.playbackTimer.stop()
         self.actPlayPause.setText("Play Animation")
         self.actPlayPause.setIcon(QIcon(get_resource("play.png")))
@@ -768,7 +768,7 @@ class SimulationGui(QMainWindow):
         """
         Stop the animation if it is running and reset the playback time.
         """
-        self._logger.debug("Stopping Playback")
+        self._logger.info("Stopping Playback")
         if self.actPlayPause.text() == "Pause Animation":
             # animation is playing -> stop it
             self.playbackTimer.stop()
@@ -933,7 +933,7 @@ class SimulationGui(QMainWindow):
     def _update_regime_list(self):
         self.regime_list.clear()
         for reg in self._regimes:
-            self._logger.debug("adding '{}' to regime list".format(reg["Name"]))
+            self._logger.info("adding '{}' to regime list".format(reg["Name"]))
             self.regime_list.addItem(reg["Name"])
 
     def remove_regime_items(self):
@@ -1455,7 +1455,6 @@ class SimulationGui(QMainWindow):
         plot_item.setGeometry(QRectF(old_geometry))
 
     def _get_data_by_name(self, name):
-        self._logger.debug("looking up data for {}".format(name))
         tmp = name.split(".")
         module_name = tmp[0]
         try:
