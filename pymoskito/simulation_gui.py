@@ -1407,11 +1407,13 @@ class SimulationGui(QMainWindow):
         data_name = item.text(1)
         t = self.currentDataset["results"]["time"]
         data = self._get_data_by_name(data_name)
-        if data is not None:
-            widget.plot(x=t,
-                        y=data,
-                        pen=pg.mkPen(color, width=2),
-                        name=data_name)
+        if data is None:
+            t = None
+
+        widget.plot(x=t,
+                    y=data,
+                    pen=pg.mkPen(color, width=2),
+                    name=data_name)
 
     def find_all_plot_docks(self):
         list = []
