@@ -1321,7 +1321,7 @@ class SimulationGui(QMainWindow):
                         if y_data is not None:
                             _item.setData(x=t, y=y_data)
                         else:
-                            del_list.append(_item)
+                            _item.clear()
                     else:
                         del_list.append(_item)
 
@@ -1455,23 +1455,32 @@ class SimulationGui(QMainWindow):
     def _get_data_by_name(self, name):
         tmp = name.split(".")
         module_name = tmp[0]
+        try:
+            raw_data = self.currentDataset["results"][module_name]
+        except KeyError:
+            return None
+
         if len(tmp) == 1:
-            data = np.array(self.currentDataset["results"][module_name])
+            data = np.array(raw_data)
         elif len(tmp) == 2:
             try:
                 idx = int(tmp[1])
             except ValueError:
                 idx = self._get_index_from_suffix(module_name, tmp[1])
-            finally:
-                try:
-                    data = self.currentDataset["results"][module_name][..., idx]
-                except KeyError:
-                    data = None
-
+            try:
+                data = raw_data[..., idx]
+            except IndexError:
+                return None
         elif len(tmp) == 3:
-            idx = int(tmp[1])
-            der = int(tmp[2])
-            data = self.currentDataset["results"][module_name][..., idx, der]
+            try:
+                idx = int(tmp[1])
+                der = int(tmp[2])
+            except ValueError:
+                return None
+            try:
+                data = raw_data[..., idx, der]
+            except IndexError:
+                return None
         else:
             raise ValueError("Format not supported")
 
