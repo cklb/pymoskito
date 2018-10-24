@@ -1438,26 +1438,30 @@ class SimulationGui(QMainWindow):
         if filename[0]:
             exporter.export(filename[0])
 
-    def export_png(self, plot_item, name):
-        # required due to bug in pyqtgraph
+    def export_png(self, plot_item, name, coord_item):
+        # Notwendig da Fehler in PyQtGraph
         exporter = exporters.ImageExporter(plot_item)
-        old_geometry = plot_item.geometry()
+        oldGeometry = plot_item.geometry()
         plot_item.setGeometry(QRectF(0, 0, 1920, 1080))
-        # TODO change colors of background, grid and pen
-        # exporter.parameters()['background'] = QColor(255, 255, 255)
-        exporter.params.param('width').setValue(1920,
-                                                blockSignal=exporter.widthChanged)
-        exporter.params.param('height').setValue(1080,
-                                                 blockSignal=exporter.heightChanged)
 
-        filename = QFileDialog.getSaveFileName(self,
-                                               "PNG export", name + ".png",
-                                               "PNG Image (*.png)")
+        bgBrush = pg.mkBrush('w')
+        exporter.params.param('background').setValue(bgBrush.color())
+        exporter.params.param('width').setValue(1920, blockSignal=exporter.widthChanged)
+        exporter.params.param('height').setValue(1080, blockSignal=exporter.heightChanged)
+
+        flag = 0
+        if coord_item.isVisible():
+            coord_item.hide()
+            flag = 1
+
+        filename = QFileDialog.getSaveFileName(self, "PNG export", name + ".png", "PNG Image (*.png)")
         if filename[0]:
             exporter.export(filename[0])
 
         # restore old state
-        plot_item.setGeometry(QRectF(old_geometry))
+        if flag == 1:
+            coord_item.show()
+        plot_item.setGeometry(QRectF(oldGeometry))
 
     def _get_data_by_name(self, name):
         tmp = name.split(".")
