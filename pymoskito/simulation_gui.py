@@ -589,6 +589,11 @@ class SimulationGui(QMainWindow):
             if dataPoint not in topLevelItemList:
                 child = QTreeWidgetItem()
                 child.setText(1, dataPoint)
+
+                colorIdxItem = toplevelItem.childCount() % len(self.TABLEAU_COLORS)
+                colorItem = QColor(self.TABLEAU_COLORS[colorIdxItem][1])
+                child.setBackground(0, colorItem)
+
                 toplevelItem.addChild(child)
 
                 if dock:
