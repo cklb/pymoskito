@@ -816,6 +816,12 @@ class SimulationGui(QMainWindow):
                                      axis=0,
                                      bounds_error=False,
                                      fill_value=(state[0], state[-1]))
+        input_ = self.currentDataset["results"]["ModelMixer"]
+        self.u_interpolator = interp1d(self.currentDataset["results"]["time"],
+                                     input_,
+                                     axis=0,
+                                     bounds_error=False,
+                                     fill_value=(input_[0], input_[-1]))
         self.currentStepSize = 1.0/self.currentDataset["simulation"][
             "measure rate"]
         self.currentEndTime = self.currentDataset["simulation"]["end time"]
@@ -893,7 +899,8 @@ class SimulationGui(QMainWindow):
         # update state of rendering
         if self.visualizer:
             state = self.interpolator(self.playbackTime)
-            self.visualizer.update_scene(state)
+            input_ = self.u_interpolator(self.playbackTime)
+            self.visualizer.update_scene(state, input_)
             if isinstance(self.visualizer, MplVisualizer):
                 pass
             elif isinstance(self.visualizer, VtkVisualizer):
