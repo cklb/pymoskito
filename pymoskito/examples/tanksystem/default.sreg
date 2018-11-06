@@ -1,0 +1,55 @@
+ # default regime file that is loaded when the simulation environment starts up
+ # use this to create your own files
+
+- Name: test_python_PID
+  clear previous: !!python/bool True # decide whether previous settings should remain or not
+
+  Model:
+   type: TankModel
+
+  Solver:
+   type: ODEInt
+   measure rate: 500
+   step size: 0.02
+   end time: 10
+
+  Controller:
+   type: PIDController
+   Kp: 600
+   Ki: 570
+   Kd: 230
+
+  Trajectory:
+   type: SmoothTransition
+
+  ModelMixer:
+   type: AdditiveMixer
+   Input A: Controller
+   Input B: Feedforward
+
+- Name: test_c++_PID
+  clear previous: !!python/bool True # decide whether previous settings should remain or not
+
+  Model:
+   type: TankModel
+
+  Solver:
+   type: ODEInt
+   measure rate: 500
+   step size: 0.02
+   end time: 10
+
+  Controller:
+   type: PIDController
+   Kp: 600
+   Ki: 570
+   Kd: 230
+
+  Trajectory:
+   type: SmoothTransition
+
+  ModelMixer:
+   type: AdditiveMixer
+   Input A: Controller
+   Input B: Feedforward
+
