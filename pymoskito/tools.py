@@ -264,3 +264,40 @@ def get_figure_size(scale):
     fig_height = fig_width * golden_ratio  # height in inches
     fig_size = [fig_width, fig_height]
     return fig_size
+
+
+class CSVExporter(object):
+    def __init__(self, dataPoints):
+        self.dataPoints = dataPoints
+        self.sep = ','
+
+    def export(self, fileName):
+        fd = open(fileName, 'w')
+        data = []
+        header = []
+
+        for key, value in self.dataPoints.items():
+            header.append(key)
+            data.append(value)
+
+        numColumns = len(header)
+        if data:
+            numRows = len(max(data, key=len))
+        else:
+            fd.close()
+            return
+
+        fd.write(self.sep.join(header) + '\n')
+
+        for i in range(numRows):
+            for j in range(numColumns):
+                if i < len(data[j]):
+                    fd.write(str(data[j][i]))
+                else:
+                    fd.write(str(np.nan))
+
+                if j < numColumns - 1:
+                    fd.write(self.sep)
+
+            fd.write('\n')
+        fd.close()
