@@ -1,16 +1,17 @@
 # -*- coding: utf-8 -*-
 
-import time
-
 # system
 import logging
-import numpy as np
 import os
 import pickle
+import time
+import webbrowser
+from operator import itemgetter
+
+import numpy as np
 import pkg_resources
 # pyqtgraph
 import pyqtgraph as pg
-import webbrowser
 import yaml
 # Qt
 from PyQt5.QtCore import (pyqtSignal, pyqtSlot, Qt, QTimer, QSize, QSettings,
@@ -23,7 +24,6 @@ from PyQt5.QtWidgets import (QWidget, QAction, QSlider, QMainWindow,
                              QPlainTextEdit, QFileDialog, QInputDialog,
                              QFrame, QVBoxLayout, QMessageBox, QApplication, QTreeWidget,
                              QHBoxLayout, QPushButton, QTreeWidgetItem)
-from operator import itemgetter
 from pyqtgraph import exporters
 from pyqtgraph.dockarea import DockArea
 from scipy.interpolate import interp1d
@@ -50,7 +50,7 @@ from .registry import get_registered_visualizers
 from .simulation_interface import SimulatorInteractor, SimulatorView
 from .visualization import MplVisualizer, VtkVisualizer
 from .processing_gui import PostProcessor
-from .tools import get_resource, PlainTextLogger, LengthList
+from .tools import get_resource, PlainTextLogger, LengthList, CSVExporter
 
 __all__ = ["SimulationGui", "run"]
 
@@ -263,7 +263,8 @@ class SimulationGui(QMainWindow):
 
         self.dataPointManipulationWidget = QWidget()
         self.dataPointManipulationLayout = QVBoxLayout()
-        self.dataPointManipulationLayout.addStretch(0)
+        self.dataPointManipulationLayout.addStretch()
+        self.dataPointManipulationLayout.setSpacing(5)
         self.dataPointRightButtonWidget = QWidget()
         self.dataPointRightButtonLayout = QVBoxLayout()
         self.dataPointRightButton = QPushButton(chr(0x226b), self)
@@ -283,7 +284,13 @@ class SimulationGui(QMainWindow):
         )
         self.dataPointLeftButton.clicked.connect(self.removeDatapointFromTree)
         self.dataPointManipulationLayout.addWidget(self.dataPointLeftButton)
-        self.dataPointManipulationLayout.addStretch(0)
+        self.dataPointExportButton = QPushButton(chr(0x25BC), self)
+        self.dataPointExportButton.setToolTip(
+            "Export the selected data set from the left to the selected plot "
+            "on the right."
+        )
+        self.dataPointExportButton.clicked.connect(self.exportDatapointFromTree)
+        self.dataPointManipulationLayout.addWidget(self.dataPointExportButton)
         self.dataPointPlotAddButtonWidget = QWidget()
         self.dataPointPlotAddButtonLayout = QVBoxLayout()
         self.dataPointPlotAddButton = QPushButton("+", self)
@@ -603,6 +610,21 @@ class SimulationGui(QMainWindow):
                 self._logger.error("Can't add data set: "
                                    "Set '{}' is already present selected plot"
                                    "".format(dataPoint))
+
+    def exportDatapointFromTree(self):
+        if not self.dataPointListWidget.selectedIndexes():
+            self._logger.error("Can't export data set: no data set selected.")
+            return
+
+        dataPoints = {}
+        for item in self.dataPointListWidget.selectedItems():
+            dataPoints[item.text()] = self._get_data_by_name(item.text())
+
+        exporter = CSVExporter(dataPoints)
+        filename = QFileDialog.getSaveFileName(self, "CSV export", ".csv", "CSV Data (*.csv)")
+        if filename[0]:
+            exporter.export(filename[0])
+            self._logger.info("Export successful.")
 
     def removeDatapointFromTree(self):
         items = self.dataPointTreeWidget.selectedItems()
