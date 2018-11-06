@@ -93,6 +93,19 @@ class SimulationModule(QObject, metaclass=SimulationModuleMeta):
         pass
 
 
+class CppSimulationModule(metaclass=SimulationModule):
+    """
+    Base class for a cpp simulation module.
+
+    """
+    def __init__(self, settings):
+        CppSimulationModule.__init__(self, settings)
+        assert ("path_h" in settings)
+        assert ("path_cpp" in settings)
+        assert ("path_binding" in settings)
+        # TODO cmakefile schreiben, pfad zum *.h, *.cpp, binding.cpp
+
+
 class ModelException(SimulationException):
     """
     Exception to be raised if the current system state violates modelling
@@ -289,6 +302,12 @@ class Controller(SimulationModule):
             Array: Control output.
         """
         pass
+
+
+class CppController(Controller, CppSimulationModule):
+    def __init__(self, settings):
+        Controller.__init__(self, settings)
+        CppSimulationModule.__init__(self, settings)
 
 
 class Observer(SimulationModule):
