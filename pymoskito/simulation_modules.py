@@ -93,7 +93,7 @@ class SimulationModule(QObject, metaclass=SimulationModuleMeta):
         pass
 
 
-class CppSimulationModule(metaclass=SimulationModule):
+class CppSimulationModule(QObject):
     """
     Base class for a cpp simulation module.
 
