@@ -7,7 +7,7 @@ from PyQt5.QtCore import QObject
 pyqtWrapperType = type(QObject)
 
 __all__ = ["SimulationModule", "SimulationException",
-           "Trajectory", "Feedforward", "Controller", "Limiter",
+           "Trajectory", "Feedforward", "Controller", "CppController", "Limiter",
            "ModelMixer", "Model", "ModelException",
            "Solver", "Disturbance", "Sensor", "ObserverMixer", "Observer"]
 
