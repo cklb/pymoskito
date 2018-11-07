@@ -131,7 +131,7 @@ try:
 
 except ImportError as e:
     vtk = None
-    print("BallTube Visualizer:")
+    print("Tank Visualizer:")
     print(e)
     print("VTK Visualization not available.")
 
@@ -141,33 +141,121 @@ class MplTankVisualizer(pm.MplVisualizer):
     def __init__(self, q_widget, q_layout):
         pm.MplVisualizer.__init__(self, q_widget, q_layout)
 
-        self.axes.set_xlim(-0.3, 0.3)
-        self.axes.set_ylim(-0.05, 1.55)
+        self.axes.set_xlim(-4 * st.rT, 7 * st.rT)
+        self.axes.set_ylim(-0.1, st.hT + 0.1)
         self.axes.set_aspect("equal")
         self.axes.get_xaxis().set_visible(False)
-#        tube = mpl.patches.Rectangle(xy=[-st.d_R*st.scale/2.0, 0],
-#                                     width=st.d_R*st.scale,
-#                                     height=st.tube_length,
-#                                     fill=False)
-#        self.axes.add_patch(tube)
-        tube_out = mpl.patches.Rectangle(xy=[-st.d_R_out * st.scale / 2.0, 0],
-                                         width=st.d_R_out * st.scale,
-                                         height=st.tube_length,
-                                         linewidth=1,
-                                         fill=False)
-        self.axes.add_patch(tube_out)
+        self.axes.get_yaxis().set_visible(False)
 
-        self.ball = mpl.patches.Circle(xy=[0, st.d_B*st.scale/2.0],
-                                       radius=st.d_B*st.scale/2.0,
-                                       color="#0059A3",
-                                       linewidth=1)
-        self.ball.set_edgecolor("black")
-        self.axes.add_patch(self.ball)
+        tube1_house = mpl.patches.Rectangle(xy=[0, 0],
+                                            width=2 * st.rT,
+                                            height=st.hT,
+                                            linewidth=2,
+                                            fill=False,
+                                            zorder=2)
+        self.axes.add_patch(tube1_house)
+
+        self.tube1 = mpl.patches.Rectangle(xy=[0, 0],
+                                           width=2 * st.rT,
+                                           height=0,
+                                           linewidth=0.1,
+                                           fill=True,
+                                           color='blue',
+                                           zorder=1)
+        self.axes.add_patch(self.tube1)
+
+        conT1_house_above = mpl.lines.Line2D([-3 * st.rT, -3 * st.rT + 3 * st.rT],
+                                             [0.1 * st.hT + 0.1 * st.hT, 0.1 * st.hT + 0.1 * st.hT],
+                                             linewidth=2,
+                                             color='black',
+                                             zorder=3)
+        self.axes.add_line(conT1_house_above)
+
+        conT1_house_below = mpl.lines.Line2D([-3 * st.rT, -3 * st.rT + 3 * st.rT],
+                                             [0.1 * st.hT, 0.1 * st.hT],
+                                             linewidth=2,
+                                             color='black',
+                                             zorder=3)
+        self.axes.add_line(conT1_house_below)
+
+        self.conT1 = mpl.patches.Rectangle(xy=[(-3 * st.rT), 0.1 * st.hT],
+                                           width=(3 * st.rT),
+                                           height=0.1 * st.hT,
+                                           linewidth=2,
+                                           fill=True,
+                                           color='white',
+                                           zorder=3)
+        self.axes.add_patch(self.conT1)
+
+        conT1T2_house_above = mpl.lines.Line2D([2 * st.rT, 2 * st.rT + 4 * st.rT],
+                                               [0.1 * st.hT + 0.1 * st.hT, 0.1 * st.hT + 0.1 * st.hT],
+                                               linewidth=2,
+                                               color='black',
+                                               zorder=3)
+        self.axes.add_line(conT1T2_house_above)
+
+        conT1T2_house_below = mpl.lines.Line2D([2 * st.rT, 2 * st.rT + 4 * st.rT],
+                                               [0.1 * st.hT, 0.1 * st.hT],
+                                               linewidth=2,
+                                               color='black',
+                                               zorder=3)
+        self.axes.add_line(conT1T2_house_below)
+
+        self.conT1T2 = mpl.patches.Rectangle(xy=[(2 * st.rT), 0.1 * st.hT],
+                                             width=(4 * st.rT),
+                                             height=0.1 * st.hT,
+                                             linewidth=2,
+                                             fill=True,
+                                             color='white',
+                                             zorder=3)
+        self.axes.add_patch(self.conT1T2)
+
+        pump_house = mpl.patches.Circle(xy=[-1.5 * st.rT, 0.15 * st.hT],
+                                        radius=0.1 * st.hT,
+                                        linewidth=1,
+                                        edgecolor='black',
+                                        facecolor='white',
+                                        zorder=10)
+        self.axes.add_patch(pump_house)
+
+        pump = mpl.patches.Polygon([[-1.5 * st.rT, 0.15 * st.hT + 0.1 * st.hT],
+                                    [-1.5 * st.rT + 0.1 * st.hT, 0.15 * st.hT],
+                                    [-1.5 * st.rT, 0.15 * st.hT - 0.1 * st.hT]],
+                                   linewidth=1,
+                                   closed=False,
+                                   edgecolor='black',
+                                   facecolor='white',
+                                   zorder=10)
+        self.axes.add_patch(pump)
+
+        ventil_house = mpl.patches.Rectangle(xy=[3.25 * st.rT, 0.05 * st.hT],
+                                             width=1.5 * st.rT,
+                                             height=0.2 * st.hT,
+                                             fill=True,
+                                             color='white',
+                                             zorder=10)
+        self.axes.add_patch(ventil_house)
+
+        ventil = mpl.patches.Polygon([[3.25 * st.rT, 0.05 * st.hT],
+                                      [3.25 * st.rT + 1.5 * st.rT, 0.05 * st.hT + 0.2 * st.hT],
+                                      [3.25 * st.rT + 1.5 * st.rT, 0.05 * st.hT],
+                                      [3.25 * st.rT, 0.05 * st.hT + 0.2 * st.hT]],
+                                     linewidth=1,
+                                     edgecolor='black',
+                                     facecolor='white',
+                                     zorder=10)
+        self.axes.add_patch(ventil)
+
+        self.axes.text(st.rT, st.hT + 0.01, 'Tank', horizontalalignment='center')
 
     def update_scene(self, x):
-
-        self.ball.center = (0, x[2] + st.d_R*st.scale/2.0)
+        if x[0] > 0:
+            self.conT1.set_color('blue')
+            self.tube1.set_height(x[0])
+        else:
+            self.conT1.set_color('white')
+            self.tube1.set_height(0)
         self.canvas.draw()
 
 
-pm.register_visualizer(Mpl2TankVisualizer)
+pm.register_visualizer(MplTankVisualizer)
