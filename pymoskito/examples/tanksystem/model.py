@@ -7,11 +7,11 @@ from . import settings as st
 
 
 class TankModel(pm.Model):
-    public_settings = OrderedDict([('initial state', [0, 0]),
-                                   ("AT1", st.AT),
-                                   ("hT1", st.hT),
-                                   ("hV1", st.hV),
-                                   ("AS1", st.AS),
+    public_settings = OrderedDict([('initial state', [0]),
+                                   ("AT", st.AT),
+                                   ("hT", st.hT),
+                                   ("hV", st.hV),
+                                   ("AS", st.AS),
                                    ("g", st.g),
                                    ("Ku", st.Ku),
                                    ("uA0", st.uA0)])
@@ -33,7 +33,6 @@ class TankModel(pm.Model):
         :type args: system input u
         """
         x1 = x[0]
-        x2 = x[1]
         uA = args[0]
 
         uA0 = self.settings['uA0']
