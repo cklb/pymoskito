@@ -345,6 +345,7 @@ class SimulatorInteractor(QObject):
             # store settings
             # self._sim_data['modules'].update({module_name: settings})
 
+        # TODO hier fehlt ein richtiger check ob die module erfolgreich initialisiert wurden
         if all([mod in self._sim_modules
                 for mod in Simulator.static_module_list]):
             return True
