@@ -14,7 +14,7 @@ from . import libs
 __all__ = ["SimulationModule", "SimulationException",
            "Trajectory", "Feedforward", "Controller", "CppController", "Limiter",
            "ModelMixer", "Model", "ModelException",
-           "Solver", "Disturbance", "Sensor", "ObserverMixer", "Observer"]
+           "Solver", "Disturbance", "Sensor", "ObserverMixer", "Observer", "CppObserver"]
 
 
 class SimulationModuleMeta(ABCMeta, pyqtWrapperType):
@@ -132,33 +132,12 @@ class CppSimulationModule(QObject):
 
         pybindDir = os.path.dirname(libs.__file__) + '/pybind11'
 
-        # write CMakeLists.txt
-        # TODO check existing CMakeLists.txt file
-        cMakeLists = """cmake_minimum_required(VERSION 2.8.12)
-project({})
-
-set( CMAKE_RUNTIME_OUTPUT_DIRECTORY . )
-set( CMAKE_LIBRARY_OUTPUT_DIRECTORY . )
-set( CMAKE_ARCHIVE_OUTPUT_DIRECTORY . )
-
-foreach( OUTPUTCONFIG ${{CMAKE_CONFIGURATION_TYPES}} )
-    string( TOUPPER ${{OUTPUTCONFIG}} OUTPUTCONFIG )
-    set( CMAKE_RUNTIME_OUTPUT_DIRECTORY_${{OUTPUTCONFIG}} . )
-    set( CMAKE_LIBRARY_OUTPUT_DIRECTORY_${{OUTPUTCONFIG}} . )
-    set( CMAKE_ARCHIVE_OUTPUT_DIRECTORY_${{OUTPUTCONFIG}} . )
-endforeach( OUTPUTCONFIG CMAKE_CONFIGURATION_TYPES )
-
-include_directories({} pybind11)
-pybind11_add_module({} {} {})""".format(moduleName,
-                                        pybindDir,
-                                        moduleName,
-                                        moduleName + '.cpp',
-                                        'binding.cpp')
-
         cMakeListsPath = bindingPath + "/CMakeLists.txt"
-        cMakeListstxt = open(cMakeListsPath, "w")
-        cMakeListstxt.write(cMakeLists)
-        cMakeListstxt.close()
+        if not os.path.exists(cMakeListsPath):
+            self._logger.info("No CMakeLists.txt found! Generate...")
+            self._writeCMakeLists(cMakeListsPath, pybindDir, moduleName)
+        else:
+            self._checkCMakeLists(cMakeListsPath, moduleName)
 
         if os.name == 'nt':
             result = subprocess.run(['cmake -A x64 .  && cmake --build . --config Release'], cwd=bindingPath,
@@ -166,9 +145,45 @@ pybind11_add_module({} {} {})""".format(moduleName,
         else:
             result = subprocess.run(['cmake .  && make'], cwd=bindingPath, shell=True)
 
-        if result.returncode < 0:
+        if result.returncode != 0:
             self._logger.error("Make not successfull!")
             return
+
+    def _checkCMakeLists(self, cMakeListsPath, moduleName):
+        cMakeListsSearch = "pybind11_add_module({} {} {})".format(moduleName, moduleName + '.cpp', 'binding.cpp')
+
+        if cMakeListsSearch in open(cMakeListsPath).read():
+            return
+        else:
+            cMakeListstxt = open(cMakeListsPath, "a")
+            cMakeListstxt.write(cMakeListsSearch)
+            cMakeListstxt.close()
+
+    def _writeCMakeLists(self, cMakeListsPath, pybindDir, moduleName):
+        cMakeLists = "cmake_minimum_required(VERSION 2.8.12)\n"
+        cMakeLists += "project({})\n\n".format(moduleName)
+
+        cMakeLists += "set( CMAKE_RUNTIME_OUTPUT_DIRECTORY . )\n"
+        cMakeLists += "set( CMAKE_LIBRARY_OUTPUT_DIRECTORY . )\n"
+        cMakeLists += "set( CMAKE_ARCHIVE_OUTPUT_DIRECTORY . )\n\n"
+
+        cMakeLists += "set( CMAKE_RUNTIME_OUTPUT_DIRECTORY . )\n"
+        cMakeLists += "set( CMAKE_LIBRARY_OUTPUT_DIRECTORY . )\n"
+        cMakeLists += "set( CMAKE_ARCHIVE_OUTPUT_DIRECTORY . )\n\n"
+
+        cMakeLists += "foreach( OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES} )\n"
+        cMakeLists += "\tstring( TOUPPER ${OUTPUTCONFIG} OUTPUTCONFIG )\n"
+        cMakeLists += "\tset( CMAKE_RUNTIME_OUTPUT_DIRECTORY_${OUTPUTCONFIG} . )\n"
+        cMakeLists += "\tset( CMAKE_LIBRARY_OUTPUT_DIRECTORY_${OUTPUTCONFIG} . )\n"
+        cMakeLists += "\tset( CMAKE_ARCHIVE_OUTPUT_DIRECTORY_${OUTPUTCONFIG} . )\n"
+        cMakeLists += "endforeach( OUTPUTCONFIG CMAKE_CONFIGURATION_TYPES )\n\n"
+
+        cMakeLists += "add_subdirectory({} pybind11)\n".format(pybindDir)
+        cMakeLists += "pybind11_add_module({} {} {})".format(moduleName, moduleName + '.cpp', 'binding.cpp')
+
+        cMakeListstxt = open(cMakeListsPath, "w")
+        cMakeListstxt.write(cMakeLists)
+        cMakeListstxt.close()
 
 
 class ModelException(SimulationException):
@@ -408,6 +423,12 @@ class Observer(SimulationModule):
             Estimated system state
         """
         pass
+
+
+class CppObserver(Observer, CppSimulationModule):
+    def __init__(self, settings):
+        Observer.__init__(self, settings)
+        CppSimulationModule.__init__(self, settings)
 
 
 class Feedforward(SimulationModule):
