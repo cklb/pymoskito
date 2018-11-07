@@ -1,10 +1,15 @@
-import logging
-from copy import copy
-from abc import ABCMeta, abstractmethod
 from collections import OrderedDict
 
+import logging
+import os
+import subprocess
 from PyQt5.QtCore import QObject
+from abc import ABCMeta, abstractmethod
+from copy import copy
+
 pyqtWrapperType = type(QObject)
+
+from . import libs
 
 __all__ = ["SimulationModule", "SimulationException",
            "Trajectory", "Feedforward", "Controller", "CppController", "Limiter",
@@ -98,12 +103,72 @@ class CppSimulationModule(QObject):
     Base class for a cpp simulation module.
 
     """
+
     def __init__(self, settings):
-        CppSimulationModule.__init__(self, settings)
-        assert ("path_h" in settings)
-        assert ("path_cpp" in settings)
-        assert ("path_binding" in settings)
+        QObject.__init__(self, None)
+        assert ("Module" in settings)
+
+        moduleName = settings['Module']
         # TODO cmakefile schreiben, pfad zum *.h, *.cpp, binding.cpp
+        # TODO wenn nicht erfolgreich, simulation nicht starten!!
+        # TODO automatische generierung der binding.cpp aus Module.h mittels kommentarkeyword pybindexport
+        # (darunter liegenede Klassen und Funktionen, sowie Vererbungen erkennen)
+
+        # check if folder exists
+        bindingPath = os.getcwd() + '/binding'
+        if not os.path.isdir(bindingPath):
+            self._logger.error("Dir binding not avaiable in project folder '{}'".format(os.getcwd()))
+            return
+
+        moduleHPath = os.getcwd() + '/binding/' + moduleName + ".h"
+        if not os.path.exists(moduleHPath):
+            self._logger.error("Module '{}'.h could not found in binding folder".format(moduleHPath))
+            return
+
+        moduleCppPath = os.getcwd() + '/binding/' + settings["Module"] + ".cpp"
+        if not os.path.exists(moduleHPath):
+            self._logger.error("Module '{}'.h could not found in binding folder".format(moduleCppPath))
+            return
+
+        pybindDir = os.path.dirname(libs.__file__) + '/pybind11'
+
+        # write CMakeLists.txt
+        # TODO check existing CMakeLists.txt file
+        cMakeLists = """cmake_minimum_required(VERSION 2.8.12)
+project({})
+
+set( CMAKE_RUNTIME_OUTPUT_DIRECTORY . )
+set( CMAKE_LIBRARY_OUTPUT_DIRECTORY . )
+set( CMAKE_ARCHIVE_OUTPUT_DIRECTORY . )
+
+foreach( OUTPUTCONFIG ${{CMAKE_CONFIGURATION_TYPES}} )
+    string( TOUPPER ${{OUTPUTCONFIG}} OUTPUTCONFIG )
+    set( CMAKE_RUNTIME_OUTPUT_DIRECTORY_${{OUTPUTCONFIG}} . )
+    set( CMAKE_LIBRARY_OUTPUT_DIRECTORY_${{OUTPUTCONFIG}} . )
+    set( CMAKE_ARCHIVE_OUTPUT_DIRECTORY_${{OUTPUTCONFIG}} . )
+endforeach( OUTPUTCONFIG CMAKE_CONFIGURATION_TYPES )
+
+include_directories({} pybind11)
+pybind11_add_module({} {} {})""".format(moduleName,
+                                        pybindDir,
+                                        moduleName,
+                                        moduleName + '.cpp',
+                                        'binding.cpp')
+
+        cMakeListsPath = bindingPath + "/CMakeLists.txt"
+        cMakeListstxt = open(cMakeListsPath, "w")
+        cMakeListstxt.write(cMakeLists)
+        cMakeListstxt.close()
+
+        if os.name == 'nt':
+            result = subprocess.run(['cmake -A x64 .  && cmake --build . --config Release'], cwd=bindingPath,
+                                    shell=True)
+        else:
+            result = subprocess.run(['cmake .  && make'], cwd=bindingPath, shell=True)
+
+        if result.returncode < 0:
+            self._logger.error("Make not successfull!")
+            return
 
 
 class ModelException(SimulationException):
@@ -431,6 +496,7 @@ class SignalMixer(SimulationModule):
     """
     Base class for all Signal mixing modules
     """
+
     def __init__(self, settings):
         assert "input signals" in settings
         SimulationModule.__init__(self, settings)

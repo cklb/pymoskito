@@ -4,7 +4,6 @@ import numpy as np
 from collections import OrderedDict
 
 import pymoskito as pm
-from Controller import PIDController
 
 
 class CppPIDController(pm.CppController):
@@ -16,9 +15,9 @@ class CppPIDController(pm.CppController):
                                    ("Td", 12),
                                    ("dt", 0.1),
                                    ("output_limits", [0, 255]),
-                                   ("input_state", 1),
+                                   ("input_state", [0]),
                                    ("tick divider", 1),
-                                   ("path_cpp", 1)])
+                                   ("Module", 'Controller')])
 
     def __init__(self, settings):
         # add specific "private" settings
@@ -30,13 +29,18 @@ class CppPIDController(pm.CppController):
 
         self.lastTime = 0
         self.lastU = 0
-        self.pid = PIDController()
-        self.pid.create(self._settings["Kp"],
-                        self._settings["Ti"],
-                        self._settings["Td"],
-                        self._settings["output_limits"][0],
-                        self._settings["output_limits"][1],
-                        self._settings['dt'])
+        try:
+            from Controller import PIDController
+            self.pid = PIDController()
+            self.pid.create(self._settings["Kp"],
+                            self._settings["Ti"],
+                            self._settings["Td"],
+                            self._settings["output_limits"][0],
+                            self._settings["output_limits"][1],
+                            self._settings['dt'])
+        except ImportError as e:
+            self._logger.error('Can not load Controller module')
+            return None
 
     def _control(self,
                  time,
