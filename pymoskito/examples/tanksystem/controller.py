@@ -30,7 +30,7 @@ class CppPIDController(pm.CppController):
         self.lastTime = 0
         self.lastU = 0
         try:
-            from Controller import PIDController
+            from binding.Controller import PIDController
             self.pid = PIDController()
             self.pid.create(self._settings["Kp"],
                             self._settings["Ti"],
@@ -40,7 +40,6 @@ class CppPIDController(pm.CppController):
                             self._settings['dt'])
         except ImportError as e:
             self._logger.error('Can not load Controller module')
-            return None
 
     def _control(self,
                  time,
@@ -51,12 +50,14 @@ class CppPIDController(pm.CppController):
         # step size
         dt = time - self.lastTime
 
+        # input abbreviations
+        x = np.zeros((len(self._settings["input_state"]),))
+        for idx, state in enumerate(self._settings["input_state"]):
+            x[idx] = input_values[int(state)]
+
         if np.isclose(dt, self._settings['dt']):
             # save last control time
             self.lastTime = time
-
-            # input abbreviations
-            x = input_values[int(self._settings['input_state'])]
 
             yd = trajectory_values
 
