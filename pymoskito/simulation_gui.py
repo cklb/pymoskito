@@ -637,6 +637,12 @@ class SimulationGui(QMainWindow):
             top_item = top_item.parent()
 
         top_item.takeChild(top_item.indexOfChild(items[0]))
+
+        for i in range(top_item.childCount()):
+            colorIdxItem = i % len(self.TABLEAU_COLORS)
+            colorItem = QColor(self.TABLEAU_COLORS[colorIdxItem][1])
+            top_item.child(i).setBackground(0, colorItem)
+
         self._update_plot(top_item)
 
     def plots(self, item):
@@ -1341,12 +1347,17 @@ class SimulationGui(QMainWindow):
             child_names = [item.child(c_idx).text(1)
                            for c_idx in range(item.childCount())]
             del_list = []
+            cnt = 0
             for _item in widget.getPlotItem().items:
                 if isinstance(_item, pg.PlotDataItem):
                     if _item.name() in child_names:
                         y_data = self._get_data_by_name(_item.name())
                         if y_data is not None:
+                            c_idx = cnt % len(self.TABLEAU_COLORS)
+                            color = QColor(self.TABLEAU_COLORS[c_idx][1])
+                            cnt += 1
                             _item.setData(x=t, y=y_data)
+                            _item.setPen(pg.mkPen(color, width=2))
                         else:
                             _item.clear()
                     else:
