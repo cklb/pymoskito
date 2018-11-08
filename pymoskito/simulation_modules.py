@@ -114,36 +114,47 @@ class CppSimulationModule(QObject):
         # TODO automatische generierung der binding.cpp aus Module.h mittels kommentarkeyword pybindexport
         # (darunter liegenede Klassen und Funktionen, sowie Vererbungen erkennen)
 
+        if os.name == 'nt':
+            bindingPath = os.getcwd() + '\\binding'
+            moduleHPath = bindingPath + '\\' + moduleName + ".h"
+            moduleCppPath = bindingPath + '\\' + settings["Module"] + ".cpp"
+            pybindDir = os.path.dirname(libs.__file__) + '\\pybind11'
+            cMakeListsPath = bindingPath + "\\CMakeLists.txt"
+        else:
+            bindingPath = os.getcwd() + '/binding'
+            moduleHPath = os.getcwd() + '/binding/' + moduleName + ".h"
+            moduleCppPath = os.getcwd() + '/binding/' + settings["Module"] + ".cpp"
+            pybindDir = os.path.dirname(libs.__file__) + '/pybind11'
+            cMakeListsPath = bindingPath + "/CMakeLists.txt"
+
         # check if folder exists
-        bindingPath = os.getcwd() + '/binding'
         if not os.path.isdir(bindingPath):
             self._logger.error("Dir binding not avaiable in project folder '{}'".format(os.getcwd()))
             return
 
-        moduleHPath = os.getcwd() + '/binding/' + moduleName + ".h"
+
         if not os.path.exists(moduleHPath):
             self._logger.error("Module '{}'.h could not found in binding folder".format(moduleHPath))
             return
 
-        moduleCppPath = os.getcwd() + '/binding/' + settings["Module"] + ".cpp"
+
         if not os.path.exists(moduleHPath):
             self._logger.error("Module '{}'.h could not found in binding folder".format(moduleCppPath))
             return
 
-        pybindDir = os.path.dirname(libs.__file__) + '/pybind11'
 
-        cMakeListsPath = bindingPath + "/CMakeLists.txt"
         if not os.path.exists(cMakeListsPath):
             self._logger.info("No CMakeLists.txt found! Generate...")
-            self._writeCMakeLists(cMakeListsPath, pybindDir, moduleName)
+            self._writeCMakeLists(cMakeListsPath, pybindDir.replace('\\', '/'), moduleName)
         else:
             self._checkCMakeLists(cMakeListsPath, moduleName)
 
         if os.name == 'nt':
-            result = subprocess.run(['cmake -A x64 .  && cmake --build . --config Release'], cwd=bindingPath,
-                                    shell=True)
+            result = subprocess.run(['cmake',  '-A', 'x64', '.'], cwd=bindingPath, shell=True)
+            if result.returncode == 0:
+                result = subprocess.run(['cmake', '--build', '.', '--config', 'Release'], cwd=bindingPath, shell=True)
         else:
-            result = subprocess.run(['cmake .  && make'], cwd=bindingPath, shell=True)
+            result = subprocess.run(['cmake . && make'], cwd=bindingPath, shell=True)
 
         if result.returncode != 0:
             self._logger.error("Make not successfull!")
