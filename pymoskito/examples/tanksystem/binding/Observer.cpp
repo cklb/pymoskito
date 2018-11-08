@@ -1,5 +1,5 @@
 /** @file Controller.cpp
- * This file includes the different controller implementations for the ball in tube labor-imw test.
+ * This file includes the different observer implementations for the two tank system.
  *
  * Copyright (c) 2018 IACE
  */
@@ -9,23 +9,12 @@
 #include "Observer.h"
 
 
-void LuenbergerObserver::create(const double& dKp,
-                           const double& dTi,
-                           const double& dTd,
-                           const double& dOutputMin,
-                           const double& dOutputMax,
-                           const double& dSampleTime)
+void HighGainObserver::create(const double& dGain,
+                              const double& dSampleTime)
 {
-    this->dKp = dKp;
-    this->dTd = dTd;
-    this->dTi = dTi;
-	this->dOutputMin = dOutputMin;
-	this->dOutputMax = dOutputMax;
+    this->dGain = dGain;
 
 	this->dSampleTime = dSampleTime;
-
-    this->dIntegral = 0.0;
-    this->dLastError = 0.0;
 }
 
 
