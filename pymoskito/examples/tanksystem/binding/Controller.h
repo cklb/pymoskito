@@ -1,5 +1,5 @@
 /** @file Controller.h
- * This file includes the different controller implementations for the ball in tube labor-imw test.
+ * This file includes the different controller implementations for the two tank system.
  *
  * Copyright (c) 2018 IACE
  */

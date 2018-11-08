@@ -31,6 +31,9 @@
    Input A: Controller
    Input B: None
 
+  Observer:
+   type: HighGainObserver
+
 - Name: test_cpp_PID
   clear previous: !!python/bool True # decide whether previous settings should remain or not
 
