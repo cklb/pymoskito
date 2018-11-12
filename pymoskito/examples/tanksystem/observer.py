@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 
-import numpy as np
 from collections import OrderedDict
+
+import numpy as np
 
 import pymoskito as pm
 from . import settings as st
@@ -13,7 +14,7 @@ class HighGainObserver(pm.Observer):
     """
     public_settings = OrderedDict([
         ("initial state", [0, 0]),
-        ("poles", [-2, -2]),
+        ("poles", [-0.1, -0.1]),
         ("tick divider", 1),
         ("AT1", st.AT1),
         ("AT2", st.AT2),
@@ -71,11 +72,11 @@ class HighGainObserver(pm.Observer):
 
 class CppHighGainObserver(pm.CppObserver):
     """
-    Luenberger Observer that uses a simple euler forward integration
+    High Gain Observer implemented in Cpp
     """
     public_settings = OrderedDict([
         ("initial state", [0, 0]),
-        ("poles", [-10, -10]),
+        ("poles", [-0.1, -0.1]),
         ("tick divider", 1),
         ("AT1", st.AT1),
         ("AT2", st.AT2),
@@ -86,16 +87,40 @@ class CppHighGainObserver(pm.CppObserver):
         ("g", st.g),
         ("Ku", st.Ku),
         ("uA0", st.uA0),
+        ("Module", 'Observer'),
     ])
 
     def __init__(self, settings):
         settings.update(output_dim=2)
         super().__init__(settings)
 
-        self.output = np.array(self._settings["initial state"], dtype=float)
+        try:
+            from binding.Observer import HighGainObserver
+            self.obs = HighGainObserver()
+            self.obs.create(self._settings["initial state"][0],
+                            self._settings["poles"][0],
+                            self._settings["AT1"],
+                            self._settings["AT2"],
+                            self._settings["hT1"],
+                            self._settings["hT2"],
+                            self._settings["AS1"],
+                            self._settings["AS2"],
+                            self._settings["Ku"],
+                            self._settings["uA0"],
+                            0.1,
+                            len(self._settings["initial state"]))
+        except ImportError as e:
+            self._logger.error('Can not load Observer module')
 
     def _observe(self, time, system_input, system_output):
-        return self.output
+        if system_input is None:
+            return 0.0
+
+        y = system_output[0]
+        uA = system_input[0]
+        output = np.array([self.obs.compute(y, uA)])
+
+        return output
 
 
 pm.register_simulation_module(pm.Observer, HighGainObserver)
