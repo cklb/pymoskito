@@ -1,11 +1,11 @@
-from collections import OrderedDict
-
 import logging
 import os
 import subprocess
-from PyQt5.QtCore import QObject
 from abc import ABCMeta, abstractmethod
+from collections import OrderedDict
 from copy import copy
+
+from PyQt5.QtCore import QObject
 
 pyqtWrapperType = type(QObject)
 
@@ -132,16 +132,13 @@ class CppSimulationModule(QObject):
             self._logger.error("Dir binding not avaiable in project folder '{}'".format(os.getcwd()))
             return
 
-
         if not os.path.exists(moduleHPath):
             self._logger.error("Module '{}'.h could not found in binding folder".format(moduleHPath))
             return
 
-
         if not os.path.exists(moduleHPath):
             self._logger.error("Module '{}'.h could not found in binding folder".format(moduleCppPath))
             return
-
 
         if not os.path.exists(cMakeListsPath):
             self._logger.info("No CMakeLists.txt found! Generate...")
@@ -150,7 +147,7 @@ class CppSimulationModule(QObject):
             self._checkCMakeLists(cMakeListsPath, moduleName)
 
         if os.name == 'nt':
-            result = subprocess.run(['cmake',  '-A', 'x64', '.'], cwd=bindingPath, shell=True)
+            result = subprocess.run(['cmake', '-A', 'x64', '.'], cwd=bindingPath, shell=True)
             if result.returncode == 0:
                 result = subprocess.run(['cmake', '--build', '.', '--config', 'Release'], cwd=bindingPath, shell=True)
         else:
@@ -161,12 +158,15 @@ class CppSimulationModule(QObject):
             return
 
     def _checkCMakeLists(self, cMakeListsPath, moduleName):
-        cMakeListsSearch = "pybind11_add_module({} {} {})".format(moduleName, moduleName + '.cpp', 'binding.cpp')
+        cMakeListsSearch = "pybind11_add_module({} {} {})".format(moduleName,
+                                                                  moduleName + '.cpp',
+                                                                  'binding_' + moduleName + '.cpp')
 
         if cMakeListsSearch in open(cMakeListsPath).read():
             return
         else:
             cMakeListstxt = open(cMakeListsPath, "a")
+            cMakeListstxt.write("\n")
             cMakeListstxt.write(cMakeListsSearch)
             cMakeListstxt.close()
 
@@ -190,7 +190,9 @@ class CppSimulationModule(QObject):
         cMakeLists += "endforeach( OUTPUTCONFIG CMAKE_CONFIGURATION_TYPES )\n\n"
 
         cMakeLists += "add_subdirectory({} pybind11)\n".format(pybindDir)
-        cMakeLists += "pybind11_add_module({} {} {})".format(moduleName, moduleName + '.cpp', 'binding.cpp')
+        cMakeLists += "pybind11_add_module({} {} {})".format(moduleName,
+                                                             moduleName + '.cpp',
+                                                             'binding_' + moduleName + '.cpp')
 
         cMakeListstxt = open(cMakeListsPath, "w")
         cMakeListstxt.write(cMakeLists)

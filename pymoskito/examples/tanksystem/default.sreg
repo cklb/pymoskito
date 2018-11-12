@@ -52,8 +52,8 @@
    type: CppPIDController
    input_state: [1]
    Kp: 10
-   Ti: 2
-   Td: 1
+   Ti: 0.5
+   Td: 0.1
 
   Trajectory:
    type: SmoothTransition
@@ -64,3 +64,5 @@
    Input A: Controller
    Input B: None
 
+  Observer:
+   type: CppHighGainObserver
