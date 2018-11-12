@@ -9,60 +9,57 @@
 #include "Observer.h"
 
 
-void HighGainObserver::create(const double& dGain,
-                              const double& dSampleTime)
+void HighGainObserver::create(const double& dInitialState,
+                              const double& dGain,
+                              const double& dAT1,
+                              const double& dAT2,
+                              const double& dhT1,
+                              const double& dhT2,
+                              const double& dAS1,
+                              const double& dAS2,
+                              const double& dKu,
+                              const double& dUA0,
+                              const double& dSampleTime,
+                              const int& iSize)
 {
-    this->dGain = dGain;
+    this->dAT1 = dAT1;
+    this->dAT2 = dAT2;
+    this->dhT1 = dhT1;
+    this->dhT2 = dhT2;
+    this->dAS1 = dAS1;
+    this->dAS2 = dAS2;
+    this->dKu = dKu;
+    this->dSampleTime = dSampleTime;
+    this->iSize = iSize;
 
-	this->dSampleTime = dSampleTime;
+	this->dGain = new double[iSize];
+    this->dOut = new double[iSize];
+
+	for(int i = 0; i < iSize; i++)
+	{
+	    this->dGain[i] = dGain;
+	    this->dOut[i] = dInitialState;
+	}
 }
 
 
-void LuenbergerObserver::reset()
+double* HighGainObserver::compute(const double& dhT1,
+                                  const double& dUA)
 {
-    this->dIntegral = 0.0;
-    this->dLastError = 0.0;
-}
+    double du = 0.0;
 
+    double da1 = this->dAS1 * sqrt(2 * M_G / (pow(this->dAT1, 2) - pow(this->dAS1, 2)));
+    double da2 = this->dAS2 * sqrt(2 * M_G / (pow(this->dAT2, 2) - pow(this->dAS2, 2)));
 
-double LuenbergerObserver::compute(const double& dCurInput,
-                              const double& dCurSetpoint)
-{
-	double dError = dCurSetpoint - dCurInput;
-
-	this->dIntegral += (dError + dLastError) * this->dSampleTime;
-
-	if (this->dIntegral > this->dOutputMax)
-		this->dIntegral = this->dOutputMax;
-	else if (this->dIntegral < this->dOutputMin)
-		this->dIntegral = this->dOutputMin;
-
-	// Compute differential part
-	double dDifferential = (dError - this->dLastError) / this->dSampleTime;
-
-	// Compute PID output
-    double dOut = 0.0;
-    if ((long long) (this->dTi * 1000) == 0LL)
+    if (dUA >= this->dUA0)
     {
-	    dOut = this->dKp * (dError + this->dTd * dDifferential);
-    }
-    else
-    {
-	    dOut = this->dKp * (dError +
-                            this->dIntegral / (2.0 * this->dTi) +
-                            this->dTd * dDifferential);
+        du = dUA - this->dUA0;
     }
 
-    // Apply limit to output value
-    if (dOut > this->dOutputMax)
-        dOut = this->dOutputMax;
-    else if (dOut < this->dOutputMin)
-        dOut = this->dOutputMin;
+    this->dOut[0] += this->dSampleTime * (-da1 * sign(this->dOut[0]) * sqrt(fabs(this->dOut[0])) + this->dKu / this->dAT1 * du + this->dGain[0] * (this->dOut[0] - dhT1));
+    this->dOut[1] += this->dSampleTime * (-da2 * sign(this->dOut[1]) * sqrt(fabs(this->dOut[1])) + da1 * sign(this->dOut[0]) * sqrt(fabs(this->dOut[0])) * this->dAT1 / this->dAT2 + this->dGain[1] * (this->dOut[0] - dhT1));
 
-	// Keep track of some variables for next execution
-	this->dLastError = dError;
-
-	return dOut;
+	return this->dOut;
 }
 
 
