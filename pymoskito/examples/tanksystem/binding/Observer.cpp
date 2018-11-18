@@ -9,9 +9,7 @@
 #include "Observer.h"
 
 
-void HighGainObserver::create(const double& dInitialState,
-                              const double& dGain,
-                              const double& dAT1,
+void HighGainObserver::create(const double& dAT1,
                               const double& dAT2,
                               const double& dhT1,
                               const double& dhT2,
@@ -19,8 +17,7 @@ void HighGainObserver::create(const double& dInitialState,
                               const double& dAS2,
                               const double& dKu,
                               const double& dUA0,
-                              const double& dSampleTime,
-                              const int& iSize)
+                              const double& dSampleTime)
 {
     this->dAT1 = dAT1;
     this->dAT2 = dAT2;
@@ -30,21 +27,16 @@ void HighGainObserver::create(const double& dInitialState,
     this->dAS2 = dAS2;
     this->dKu = dKu;
     this->dSampleTime = dSampleTime;
-    this->iSize = iSize;
-
-	this->dGain = new double[iSize];
-    this->dOut = new double[iSize];
-
-	for(int i = 0; i < iSize; i++)
-	{
-	    this->dGain[i] = dGain;
-	    this->dOut[i] = dInitialState;
-	}
 }
 
 
-double* HighGainObserver::compute(const double& dhT1,
-                                  const double& dUA)
+#if !defined(__AVR__)
+    std::vector<double> HighGainObserver::compute(const double& dhT1,
+                                                  const double& dUA)
+#else
+    double* HighGainObserver::compute(const double& dhT1,
+                                      const double& dUA)
+#endif
 {
     double du = 0.0;
 
@@ -59,7 +51,13 @@ double* HighGainObserver::compute(const double& dhT1,
     this->dOut[0] += this->dSampleTime * (-da1 * sign(this->dOut[0]) * sqrt(fabs(this->dOut[0])) + this->dKu / this->dAT1 * du + this->dGain[0] * (this->dOut[0] - dhT1));
     this->dOut[1] += this->dSampleTime * (-da2 * sign(this->dOut[1]) * sqrt(fabs(this->dOut[1])) + da1 * sign(this->dOut[0]) * sqrt(fabs(this->dOut[0])) * this->dAT1 / this->dAT2 + this->dGain[1] * (this->dOut[0] - dhT1));
 
-	return this->dOut;
+
+#if !defined(__AVR__)
+    std::vector<double> dOut(std::begin(this->dOut), std::end(this->dOut));
+    return dOut;
+#else
+    return this->dOut;
+#endif
 }
 
 
