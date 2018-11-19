@@ -109,10 +109,6 @@ class CppSimulationModule(QObject):
         assert ("Module" in settings)
 
         moduleName = settings['Module']
-        # TODO cmakefile schreiben, pfad zum *.h, *.cpp, binding.cpp
-        # TODO wenn nicht erfolgreich, simulation nicht starten!!
-        # TODO automatische generierung der binding.cpp aus Module.h mittels kommentarkeyword pybindexport
-        # (darunter liegenede Klassen und Funktionen, sowie Vererbungen erkennen)
 
         if os.name == 'nt':
             bindingPath = os.getcwd() + '\\binding'
@@ -155,7 +151,7 @@ class CppSimulationModule(QObject):
 
         if result.returncode != 0:
             self._logger.error("Make not successfull!")
-            return
+            raise ModelException("Make of {} not successfull!".format(moduleName))
 
     def _checkCMakeLists(self, cMakeListsPath, moduleName):
         cMakeListsSearch = "pybind11_add_module({} {} {})".format(moduleName,
