@@ -110,7 +110,8 @@ class CppHighGainObserver(pm.CppObserver):
             self.obs.setInitialState(np.array(self._settings["initial state"]))
             self.obs.setGain(np.array(self._settings["poles"]))
         except ImportError as e:
-            self._logger.error('Can not load Observer module: {}'.format(e))
+            self._logger.error('Cannot load Observer module: {}'.format(e))
+            raise e
 
     def _observe(self, time, system_input, system_output):
         if system_input is None:

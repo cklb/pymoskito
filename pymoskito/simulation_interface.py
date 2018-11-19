@@ -334,9 +334,8 @@ class SimulatorInteractor(QObject):
             # build object
             try:
                 slot = sub_module_cls(settings)
-            except BaseException as e:
-                self._logger.exception(e)
-                self._logger.debug("Provided arguments: {}".format(settings))
+            except Exception as e:
+                self._logger.error("Init of module {} failed with\n \"{}\"!".format(module_name, e))
                 return False
 
             # add to simulation modules
@@ -345,7 +344,6 @@ class SimulatorInteractor(QObject):
             # store settings
             # self._sim_data['modules'].update({module_name: settings})
 
-        # TODO hier fehlt ein richtiger check ob die module erfolgreich initialisiert wurden
         if all([mod in self._sim_modules
                 for mod in Simulator.static_module_list]):
             return True
