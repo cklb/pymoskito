@@ -334,7 +334,12 @@ class SimulatorInteractor(QObject):
                     settings["measure rate"])
 
             # build object
-            slot = sub_module_cls(settings)
+            try:
+                slot = sub_module_cls(settings)
+            except BaseException as e:
+                self._logger.exception(e)
+                self._logger.debug("Provided arguments: {}".format(settings))
+                return False
 
             # add to simulation modules
             self._sim_modules.update({module_name: slot})
