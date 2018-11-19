@@ -22,7 +22,7 @@ test_requirements = [
 
 setup(
     name="pymoskito",
-    version="0.2.3",
+    version="0.3.0",
     description="Python based modular simulation & postprocessing kickass "
                 "toolbox",
     long_description=readme + "\n\n" + history,
@@ -32,6 +32,7 @@ setup(
         "Natural Language :: English",
         "Programming Language :: Python :: 3.5",
         "Programming Language :: Python :: 3.6",
+        "Programming Language :: Python :: 3.7",
     ],
     keywords="pymoskito control simulation feedback feedforward",
     url="https://github.com/cklb/pymoskito",

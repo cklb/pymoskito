@@ -6,10 +6,11 @@ Development Lead
 ----------------
 
 * Stefan Ecklebe <stefan.ecklebe@tu-dresden.de>
-* Christoph Burggraf <chris.burggraf@web.de>
 
 Contributors
 ------------
 
+* Christoph Burggraf
 * Marcus Riesmeier
 * Jonas Hoffmann
+* Jens Wurm

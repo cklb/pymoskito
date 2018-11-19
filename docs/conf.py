@@ -73,7 +73,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'PyMoskito'
-copyright = u'2017, Stefan Ecklebe'
+copyright = u'2018, Stefan Ecklebe'
 
 # The version info for the project you're documenting, acts as replacement
 # for |version| and |release|, also used in various other places throughout

@@ -3,16 +3,15 @@
     provides functions to manipulate settings of the simulator and
     to inspect its current state.
 """
+import ast
 import copy
 import logging
 import sys
-import ast
 from collections import OrderedDict
-import numpy as np
 
+import numpy as np
 from PyQt5.QtCore import (
-    Qt, QObject, pyqtSignal, pyqtSlot, QModelIndex, QSize, QThread, QVariant,
-)
+    Qt, QObject, pyqtSignal, pyqtSlot, QModelIndex, QSize, QThread, )
 from PyQt5.QtGui import QStandardItemModel, QStandardItem
 from PyQt5.QtWidgets import QItemDelegate, QComboBox, QTreeView
 
@@ -37,7 +36,6 @@ class SimulatorModel(QStandardItemModel):
 
 
 class PropertyItem(QStandardItem):
-
     RawDataRole = Qt.UserRole + 1
 
     def __init__(self, data):
@@ -366,9 +364,24 @@ class SimulatorInteractor(QObject):
             self._logger.error("setRegime(): only scalar input allowed!")
             return False
 
-        return self._apply_regime(reg)
+        return self._apply_regime(reg, False)
 
-    def _apply_regime(self, reg):
+    def restore_regime(self, reg):
+        """
+        Restore the given generated regime settings into the target model.
+
+        Returns:
+            bool: `True` if successful, `False` if errors occurred.
+        """
+        if reg is None:
+            return
+        if isinstance(reg, list):
+            self._logger.error("restoreRegime(): only scalar input allowed!")
+            return False
+
+        return self._apply_regime(reg, True)
+
+    def _apply_regime(self, reg, ignore_is_public):
         """
         Set all module settings to those provided in the regime.
 
@@ -426,23 +439,23 @@ class SimulatorInteractor(QObject):
                 if key == "type":
                     continue
 
-                found = False
                 for row in range(module_item.rowCount()):
                     if self.target_model.data(
                             module_item.child(row, 0).index()) == key:
-                    # if str(module_item.child(row, 0).text()) == key:
-                        value_idx = self.target_model.index(row, 1, module_index)
+                        value_idx = self.target_model.index(row,
+                                                            1,
+                                                            module_index)
                         self.target_model.setData(value_idx,
                                                   val,
                                                   role=PropertyItem.RawDataRole)
-                        found = True
                         break
-
-                if not found:
-                    self._logger.error("_applyRegime(): Setting: '{0}' not "
-                                       "available for Module: '{1}'".format(
-                        key, module_type))
-                    return False
+                else:
+                    if not ignore_is_public:
+                        self._logger.error(
+                            "_applyRegime(): No public setting called '{0}'"
+                            "available for Module: '{1}'".format(key,
+                                                                 module_type))
+                        return False
 
         return True
 
@@ -588,4 +601,3 @@ class SimulatorInteractor(QObject):
 
         # Signal gui that new data is available
         self.simulation_finalized.emit(self._sim_state, self._sim_data)
-
