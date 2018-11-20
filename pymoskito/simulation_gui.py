@@ -20,7 +20,7 @@ from PyQt5.QtWidgets import (QWidget, QAction, QSlider, QMainWindow,
                              QTreeView, QListWidget, QListWidgetItem,
                              QAbstractItemView,
                              QToolBar, QStatusBar, QProgressBar, QLabel,
-                             QPlainTextEdit, QFileDialog, QInputDialog,
+                             QTextEdit, QFileDialog, QInputDialog,
                              QFrame, QVBoxLayout, QMessageBox, QApplication, QTreeWidget,
                              QHBoxLayout, QPushButton, QTreeWidgetItem)
 from operator import itemgetter
@@ -440,13 +440,15 @@ class SimulationGui(QMainWindow):
         self.postprocessor = None
 
         # log dock
-        self.logBox = QPlainTextEdit(self)
+        self.logBox = QTextEdit(self)
         self.logBox.setReadOnly(True)
+        self.logBox.setLineWrapMode(QTextEdit.NoWrap)
+        self.logBox.ensureCursorVisible()
         self.logDock.addWidget(self.logBox)
 
         # init logger for logging box
         self.textLogger = PlainTextLogger(logging.INFO)
-        self.textLogger.set_target_cb(self.logBox.appendPlainText)
+        self.textLogger.set_target_cb(self.logBox)
         logging.getLogger().addHandler(self.textLogger)
 
         # menu bar
