@@ -1,17 +1,16 @@
 # -*- coding: utf-8 -*-
 
+import time
+
 # system
 import logging
+import numpy as np
 import os
 import pickle
-import time
-import webbrowser
-from operator import itemgetter
-
-import numpy as np
 import pkg_resources
 # pyqtgraph
 import pyqtgraph as pg
+import webbrowser
 import yaml
 # Qt
 from PyQt5.QtCore import (pyqtSignal, pyqtSlot, Qt, QTimer, QSize, QSettings,
@@ -21,9 +20,10 @@ from PyQt5.QtWidgets import (QWidget, QAction, QSlider, QMainWindow,
                              QTreeView, QListWidget, QListWidgetItem,
                              QAbstractItemView,
                              QToolBar, QStatusBar, QProgressBar, QLabel,
-                             QPlainTextEdit, QFileDialog, QInputDialog,
+                             QTextEdit, QFileDialog, QInputDialog,
                              QFrame, QVBoxLayout, QMessageBox, QApplication, QTreeWidget,
                              QHBoxLayout, QPushButton, QTreeWidgetItem)
+from operator import itemgetter
 from pyqtgraph import exporters
 from pyqtgraph.dockarea import DockArea
 from scipy.interpolate import interp1d
@@ -447,13 +447,15 @@ class SimulationGui(QMainWindow):
         self.postprocessor = None
 
         # log dock
-        self.logBox = QPlainTextEdit(self)
+        self.logBox = QTextEdit(self)
         self.logBox.setReadOnly(True)
+        self.logBox.setLineWrapMode(QTextEdit.NoWrap)
+        self.logBox.ensureCursorVisible()
         self.logDock.addWidget(self.logBox)
 
         # init logger for logging box
         self.textLogger = PlainTextLogger(logging.INFO)
-        self.textLogger.set_target_cb(self.logBox.appendPlainText)
+        self.textLogger.set_target_cb(self.logBox)
         logging.getLogger().addHandler(self.textLogger)
 
         # menu bar
