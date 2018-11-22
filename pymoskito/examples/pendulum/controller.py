@@ -34,10 +34,10 @@ class LinearStateFeedback(pm.Controller):
         self.V = pm.calc_prefilter(self.A, self.B, self.C, self.K)
         # eig = np.linalg.eig(self.A - np.dot(self.B, self.K))
 
-        self._logger.info("Equilibrium: {}".format(eq_state.tolist()))
-        self._logger.info("Poles: {}".format(self._settings["poles"]))
-        self._logger.info("K: {}".format(self.K[0]))
-        self._logger.info("V: {}".format(self.V[0]))
+        self._logger.debug("Equilibrium: {}".format(eq_state.tolist()))
+        self._logger.debug("Poles: {}".format(self._settings["poles"]))
+        self._logger.debug("K: {}".format(self.K[0]))
+        self._logger.debug("V: {}".format(self.V[0]))
 
     def _control(self, time, trajectory_values=None, feedforward_values=None,
                  input_values=None, **kwargs):
@@ -84,10 +84,10 @@ class LinearStateFeedbackParLin(pm.Controller):
         self.V = pm.calc_prefilter(self.A, self.B, self.C, self.K)
         # eig = np.linalg.eig(self.A - np.dot(self.B, self.K))
 
-        self._logger.info("Equilibrium: {}".format(eq_state.tolist()))
-        self._logger.info("Poles: {}".format(self._settings["poles"].tolist()))
-        self._logger.info("K: {}".format(self.K.tolist()[0]))
-        self._logger.info("V: {}".format(self.V[0]))
+        self._logger.debug("Equilibrium: {}".format(eq_state.tolist()))
+        self._logger.debug("Poles: {}".format(self._settings["poles"].tolist()))
+        self._logger.debug("K: {}".format(self.K.tolist()[0]))
+        self._logger.debug("V: {}".format(self.V[0]))
 
     def _control(self, time, trajectory_values=None, feedforward_values=None,
                  input_values=None, **kwargs):
@@ -153,13 +153,13 @@ class LinearQuadraticRegulator(pm.Controller):
 
         eig = np.linalg.eig(self.A - np.dot(self.B, self.K))
 
-        self._logger.info("equilibrium = " + str(eq_state))
-        self._logger.info("Q = " + str(self._settings["Q"]))
-        self._logger.info("R = " + str(self._settings["R"]))
-        self._logger.info("P = " + str(self.P))
-        self._logger.info("K = " + str(self.K))
-        self._logger.info("eig = " + str(eig))
-        self._logger.info("V = " + str(self.V[0][0]))
+        self._logger.debug("equilibrium = " + str(eq_state))
+        self._logger.debug("Q = " + str(self._settings["Q"]))
+        self._logger.debug("R = " + str(self._settings["R"]))
+        self._logger.debug("P = " + str(self.P))
+        self._logger.debug("K = " + str(self.K))
+        self._logger.debug("eig = " + str(eig))
+        self._logger.debug("V = " + str(self.V[0][0]))
 
     def _control(self, time, trajectory_values=None, feedforward_values=None,
                  input_values=None, **kwargs):
@@ -414,6 +414,7 @@ def calc_small_signal_state(settings, state):
         small_signal_state[4][0] = phi2_u - np.pi
 
     return small_signal_state
+
 
 pm.register_simulation_module(pm.Controller, LinearStateFeedback)
 pm.register_simulation_module(pm.Controller, LinearStateFeedbackParLin)
