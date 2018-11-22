@@ -93,7 +93,6 @@ class SimulationGui(QMainWindow):
         self.stopSimulation.connect(self.sim.stop_simulation)
         self.sim.simulation_finalized.connect(self.new_simulation_data)
         self.currentDataset = None
-        self.interpolator = None
 
         # sim setup viewer
         self.targetView = SimulatorView(self)
@@ -810,21 +809,10 @@ class SimulationGui(QMainWindow):
             self.actSimulateAll.setDisabled(False)
 
     def _read_results(self):
-        state = self.currentDataset["results"]["Solver"]
-        self.interpolator = interp1d(self.currentDataset["results"]["time"],
-                                     state,
-                                     axis=0,
-                                     bounds_error=False,
-                                     fill_value=(state[0], state[-1]))
-        input_ = self.currentDataset["results"]["ModelMixer"]
-        self.u_interpolator = interp1d(self.currentDataset["results"]["time"],
-                                     input_,
-                                     axis=0,
-                                     bounds_error=False,
-                                     fill_value=(input_[0], input_[-1]))
-        self.currentStepSize = 1.0/self.currentDataset["simulation"][
+        self.currentStepSize = 1.0 / self.currentDataset["simulation"][
             "measure rate"]
         self.currentEndTime = self.currentDataset["simulation"]["end time"]
+        self.visualizer.update_simulation_data(self.currentDataset)
         self.validData = True
 
     def increment_playback_speed(self):
@@ -898,9 +886,7 @@ class SimulationGui(QMainWindow):
 
         # update state of rendering
         if self.visualizer:
-            state = self.interpolator(self.playbackTime)
-            input_ = self.u_interpolator(self.playbackTime)
-            self.visualizer.update_scene(state, input_)
+            self.visualizer.update_time_frame(self.playbackTime)
             if isinstance(self.visualizer, MplVisualizer):
                 pass
             elif isinstance(self.visualizer, VtkVisualizer):
