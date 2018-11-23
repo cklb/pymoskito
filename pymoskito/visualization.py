@@ -65,8 +65,8 @@ class Visualizer(metaclass=ABCMeta):
         t_values = data["results"]["time"]
         self._state_interp = self._build_interpolator(
             t_values, data["results"]["Solver"])
-        # self._input_interp = self._build_interpolator(
-        #     t_values, data["results"]["ModelMixer"])
+        self._input_interp = self._build_interpolator(
+            t_values, data["results"]["ModelMixer"])
 
     def update_time_frame(self, t):
         """
@@ -80,9 +80,9 @@ class Visualizer(metaclass=ABCMeta):
 
         """
         q = self._state_interp(t)
-        # u = self._input_interp(t)
+        u = self._input_interp(t)
 
-        self.update_scene(q)
+        self.update_scene(q, u)
 
     @abstractmethod
     def update_scene(self, x):
