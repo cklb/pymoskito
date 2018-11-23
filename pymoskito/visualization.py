@@ -85,7 +85,7 @@ class Visualizer(metaclass=ABCMeta):
         self.update_scene(q, u)
 
     @abstractmethod
-    def update_scene(self, x):
+    def update_scene(self, *args):
         """
         Update the visualization.
 
@@ -93,11 +93,14 @@ class Visualizer(metaclass=ABCMeta):
         time frame changes. If access to more results is needed, replace
         `update_time_frame`.
 
-        Args:
-            x(array): Current model state.
-
         """
-        pass
+        # system state
+        q = args[0]
+
+        # system input
+        u = args[1]
+
+        return
 
 
 class VtkVisualizer(Visualizer):
