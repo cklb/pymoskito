@@ -12,9 +12,9 @@ pyqtWrapperType = type(QObject)
 from . import libs
 
 __all__ = ["SimulationModule", "SimulationException",
-           "Trajectory", "Feedforward", "Controller", "CppController", "Limiter",
+           "Trajectory", "Feedforward", "Controller", "Limiter",
            "ModelMixer", "Model", "ModelException",
-           "Solver", "Disturbance", "Sensor", "ObserverMixer", "Observer", "CppObserver"]
+           "Solver", "Disturbance", "Sensor", "ObserverMixer", "Observer"]
 
 
 class SimulationModuleMeta(ABCMeta, pyqtWrapperType):
@@ -72,60 +72,23 @@ class SimulationModule(QObject, metaclass=SimulationModuleMeta):
         self._settings["step width"] = None
         self._settings.pop("modules", None)
 
-    @property
-    @abstractmethod
-    def public_settings(self):
-        pass
+        if settings.get("binding", False):
+            self._generateBinding(settings)
 
-    @property
-    def settings(self):
-        return self._settings
-
-    @property
-    def tick_divider(self):
-        return self._settings["tick divider"]
-
-    @property
-    def step_width(self):
-        return self._settings["step width"]
-
-    @step_width.setter
-    def step_width(self, value):
-        self._settings["step width"] = value
-
-    @abstractmethod
-    def calc_output(self, input_vector):
-        pass
-
-
-class CppSimulationModule(QObject):
-    """
-    Base class for a cpp simulation module.
-
-    """
-
-    def __init__(self, settings):
-        QObject.__init__(self, None)
+    def _generateBinding(self, settings):
         assert ("Module" in settings)
 
         moduleName = settings['Module']
 
-        if os.name == 'nt':
-            bindingPath = os.getcwd() + '\\binding'
-            moduleHPath = bindingPath + '\\' + moduleName + ".h"
-            moduleCppPath = bindingPath + '\\' + settings["Module"] + ".cpp"
-            pybindDir = os.path.dirname(libs.__file__) + '\\pybind11'
-            cMakeListsPath = bindingPath + "\\CMakeLists.txt"
-        else:
-            bindingPath = os.getcwd() + '/binding'
-            moduleHPath = os.getcwd() + '/binding/' + moduleName + ".h"
-            moduleCppPath = os.getcwd() + '/binding/' + settings["Module"] + ".cpp"
-            pybindDir = os.path.dirname(libs.__file__) + '/pybind11'
-            cMakeListsPath = bindingPath + "/CMakeLists.txt"
+        bindingPath = os.path.join(os.getcwd(), 'binding')
+        moduleHPath = os.path.join(bindingPath, moduleName + ".h")
+        moduleCppPath = os.path.join(bindingPath, settings["Module"] + ".cpp")
+        pybindDir = os.path.join(os.path.dirname(libs.__file__), 'pybind11')
+        cMakeListsPath = os.path.join(bindingPath, 'CMakeLists.txt')
 
         # check if folder exists
         if not os.path.isdir(bindingPath):
-            self._logger.error("Dir binding not avaiable in project folder '{}'".format(os.getcwd()))
+            self._logger.error("Dir binding not available in project folder '{}'".format(os.getcwd()))
             return
 
         if not os.path.exists(moduleHPath):
@@ -138,7 +101,7 @@ class CppSimulationModule(QObject):
 
         if not os.path.exists(cMakeListsPath):
             self._logger.info("No CMakeLists.txt found! Generate...")
-            self._writeCMakeLists(cMakeListsPath, pybindDir.replace('\\', '/'), moduleName)
+            self._writeCMakeLists(cMakeListsPath, pybindDir, moduleName)
         else:
             self._checkCMakeLists(cMakeListsPath, moduleName)
 
@@ -193,6 +156,31 @@ class CppSimulationModule(QObject):
         cMakeListstxt = open(cMakeListsPath, "w")
         cMakeListstxt.write(cMakeLists)
         cMakeListstxt.close()
+
+    @property
+    @abstractmethod
+    def public_settings(self):
+        pass
+
+    @property
+    def settings(self):
+        return self._settings
+
+    @property
+    def tick_divider(self):
+        return self._settings["tick divider"]
+
+    @property
+    def step_width(self):
+        return self._settings["step width"]
+
+    @step_width.setter
+    def step_width(self, value):
+        self._settings["step width"] = value
+
+    @abstractmethod
+    def calc_output(self, input_vector):
+        pass
 
 
 class ModelException(SimulationException):
@@ -393,12 +381,6 @@ class Controller(SimulationModule):
         pass
 
 
-class CppController(Controller, CppSimulationModule):
-    def __init__(self, settings):
-        Controller.__init__(self, settings)
-        CppSimulationModule.__init__(self, settings)
-
-
 class Observer(SimulationModule):
     """
     Base class for observers
@@ -432,12 +414,6 @@ class Observer(SimulationModule):
             Estimated system state
         """
         pass
-
-
-class CppObserver(Observer, CppSimulationModule):
-    def __init__(self, settings):
-        Observer.__init__(self, settings)
-        CppSimulationModule.__init__(self, settings)
 
 
 class Feedforward(SimulationModule):

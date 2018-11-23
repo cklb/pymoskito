@@ -1,23 +1,27 @@
 # -*- coding: utf-8 -*-
 
-import numpy as np
 from collections import OrderedDict
+
+import numpy as np
 
 import pymoskito as pm
 
 
-class CppPIDController(pm.CppController):
+class CppPIDController(pm.Controller):
     """
     PID Controller implemented in cpp with pybind11
     """
-    public_settings = OrderedDict([("Kp", 12),
-                                   ("Ti", 12),
-                                   ("Td", 12),
-                                   ("dt", 0.1),
-                                   ("output_limits", [0, 255]),
-                                   ("input_state", [0]),
-                                   ("tick divider", 1),
-                                   ("Module", 'Controller')])
+    public_settings = OrderedDict([
+        ("Kp", 12),
+        ("Ti", 12),
+        ("Td", 12),
+        ("dt", 0.1),
+        ("output_limits", [0, 255]),
+        ("input_state", [0]),
+        ("tick divider", 1),
+        ("Module", 'Controller'),
+        ("binding", True),
+    ])
 
     def __init__(self, settings):
         # add specific "private" settings
@@ -25,7 +29,7 @@ class CppPIDController(pm.CppController):
         settings.update(output_dim=1)
         settings.update(input_type="system_state")
 
-        pm.CppController.__init__(self, settings)
+        super().__init__(settings)
 
         self.lastTime = 0
         self.lastU = 0
@@ -39,7 +43,7 @@ class CppPIDController(pm.CppController):
                             self._settings["output_limits"][1],
                             self._settings['dt'])
         except ImportError as e:
-            self._logger.error('Can not load Controller module')
+            self._logger.error('Can not load Controller module! {}'.format(e))
 
     def _control(self,
                  time,

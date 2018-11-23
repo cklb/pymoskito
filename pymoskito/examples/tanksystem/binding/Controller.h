@@ -1,40 +1,38 @@
 /** @file Controller.h
  * This file includes the different controller implementations for the two tank system.
  *
- * Copyright (c) 2018 IACE
  */
 #ifndef CONTROLLER_H
 #define CONTROLLER_H
 
 #include <math.h>
 
-#define M_G 9.81
-
 /**
  * @brief Base controller class that can used to derived a P, PI, PD or PID controller.
  */
-class Controller
-{
+class Controller {
 public:
-    // methods
     /**
      * @brief Method that sets the gain value of the proportional part
      *
      * @param gain value of the proportional part
      */
-    void setKp(const double& dKp) { this->dKp = dKp; }
+    void setKp(const double &dKp) { this->dKp = dKp; }
+
     /**
      * @brief Method that sets the time value of the integral part
      *
      * @param time value of the integral part
      */
-    void setTi(const double& dTi) { this->dTi = dTi; }
+    void setTi(const double &dTi) { this->dTi = dTi; }
+
     /**
      * @brief Method that sets the time value of the derivation part
      *
      * @param time value of the derivation part
      */
-    void setTd(const double& dTd) { this->dTd = dTd; }
+    void setTd(const double &dTd) { this->dTd = dTd; }
+
     /**
      * @brief Method that returns the current sample time of the controller
      *
@@ -43,14 +41,14 @@ public:
     double getSampleTime() const { return dSampleTime; }
 
     /**
-     * method the computs the controller output of the current time step for the given input value and setpoint
+     * method the computes the controller output of the current time step for the given input value and setpoint
      *
      * @param current input value
      * @param current setpoint
      * @return controller output in the range of min and max output
      */
-    virtual double compute(const double& dCurInput,
-                           const double& dCurSetpoint) = 0;
+    virtual double compute(const double &dCurInput,
+                           const double &dCurSetpoint) = 0;
 
     /**
      * @ brief Method that sets the initial values of the PID controller and resets the integral and last error part to zero
@@ -62,12 +60,12 @@ public:
      * @param Maximal value for the calculated output
      * @param Sample time of the controller
      */
-	virtual void create(const double& dKp,
-                        const double& dTi,
-                        const double& dTd,
-                        const double& dOutputMin,
-                        const double& dOutputMax,
-                        const double& dSampleTime) = 0;
+    virtual void create(const double &dKp,
+                        const double &dTi,
+                        const double &dTd,
+                        const double &dOutputMin,
+                        const double &dOutputMax,
+                        const double &dSampleTime) = 0;
 
     /**
      * @brief Method that resets the integral and last error part to zero
@@ -87,8 +85,7 @@ protected:
 /**
  * @brief Class that is derived from the Controller class and implements a PID controller.
  */
-class PIDController : public Controller
-{
+class PIDController : public Controller {
 private:
     double dIntegral = 0;   ///< Value of the integral part
     double dLastError = 0;  ///< Value of error from the last time step
@@ -96,20 +93,21 @@ private:
 public:
     /// Constructor of the PID controller
     PIDController() {}
+
     /// Destructor of the PID controller
     ~PIDController() {}
 
-	void create(const double& dKp,
-                const double& dTi,
-                const double& dTd,
-                const double& dOutputMin,
-                const double& dOutputMax,
-                const double& dSampleTime);
+    void create(const double &dKp,
+                const double &dTi,
+                const double &dTd,
+                const double &dOutputMin,
+                const double &dOutputMax,
+                const double &dSampleTime);
 
     void reset();
 
-	double compute(const double& dCurInput,
-                   const double& dCurSetpoint);
+    double compute(const double &dCurInput,
+                   const double &dCurSetpoint);
 
     /**
      * @brief Method that returns the current integral part of the controller
@@ -117,6 +115,7 @@ public:
      * @return integral part
      */
     double getIntegral() const { return dIntegral; }
+
     /**
      * @brief Method that returns the error from the last time step
      *
@@ -124,6 +123,5 @@ public:
      */
     double getLastError() const { return dLastError; }
 };
-
 
 #endif // CONTROLLER_H

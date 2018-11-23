@@ -286,8 +286,7 @@ class SimulationGui(QMainWindow):
         self.dataPointManipulationLayout.addWidget(self.dataPointLeftButton)
         self.dataPointExportButton = QPushButton(chr(0x25BC), self)
         self.dataPointExportButton.setToolTip(
-            "Export the selected data set from the left to the selected plot "
-            "on the right."
+            "Export the selected data set from the left to a csv file."
         )
         self.dataPointExportButton.clicked.connect(self.exportDatapointFromTree)
         self.dataPointManipulationLayout.addWidget(self.dataPointExportButton)
