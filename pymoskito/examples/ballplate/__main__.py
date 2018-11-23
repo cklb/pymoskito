@@ -19,19 +19,15 @@ if __name__ == '__main__':
 
     # create an Application instance (needed)
     app = QApplication([])
-    prog = None
 
-    if 1:
-        # create simulator
-        prog = pm.SimulationGui()
+    # create simulator
+    prog = pm.SimulationGui()
 
-        # load default config
-        prog.load_regimes_from_file(os.path.join(parent_dir,
-                                                 pkg_name,
-                                                 "default.sreg"))
-        prog.apply_regime_by_name("test-nonlinear")
-    else:
-        prog = pm.PostProcessor()
+    # load default config
+    prog.load_regimes_from_file(os.path.join(parent_dir,
+                                             pkg_name,
+                                             "default.sreg"))
+    prog.apply_regime_by_name("test-nonlinear")
 
     # show gui
     prog.show()

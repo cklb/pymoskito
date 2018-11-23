@@ -509,10 +509,8 @@ try:
 
             actor.PokeMatrix(poke)
 
-        def update_scene(self, x, u):
-            """
-            update the body states
-            """
+        def update_scene(self, *args):
+            x, u = args
 
             Winkel_1, Winkel_2 = u
             # Effe_Winkel_1 = np.arcsin(np.sin(x[2])*np.cos(Winkel_1)+np.sin(x[2])*np.sin(Winkel_1)*np.tan(Winkel_1));
