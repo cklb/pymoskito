@@ -70,7 +70,7 @@ class HighGainObserver(pm.Observer):
         return self.output
 
 
-class CppHighGainObserver(pm.CppObserver):
+class CppHighGainObserver(pm.Observer):
     """
     High Gain Observer implemented in Cpp
     """
@@ -89,6 +89,7 @@ class CppHighGainObserver(pm.CppObserver):
         ("uA0", st.uA0),
         ("dt", 0.1),
         ("Module", 'Observer'),
+        ("binding", True),
     ])
 
     def __init__(self, settings):
@@ -100,8 +101,6 @@ class CppHighGainObserver(pm.CppObserver):
             self.obs = HighGainObserver()
             self.obs.create(self._settings["AT1"],
                             self._settings["AT2"],
-                            self._settings["hT1"],
-                            self._settings["hT2"],
                             self._settings["AS1"],
                             self._settings["AS2"],
                             self._settings["Ku"],
