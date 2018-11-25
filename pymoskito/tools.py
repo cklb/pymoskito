@@ -13,9 +13,14 @@ import numpy as np
 import pandas as pd
 from PyQt5.QtGui import QColor
 
+import numpy as np
+from PyQt5.QtGui import QColor
+
+from . import libs
+
 logger = logging.getLogger(__name__)
 
-__all__ = ["rotation_matrix_xyz", "get_resource"]
+__all__ = ["rotation_matrix_xyz", "get_resource", "generateBinding"]
 
 
 def sort_lists(a, b):
@@ -308,4 +313,84 @@ class Exporter:
 
     def export_csv(self, file_name, sep=','):
         self.df.to_csv(file_name, sep=sep)
+
+
+def generateBinding(moduleName):
+    bindingPath = os.path.join(os.getcwd(), 'binding')
+    moduleHPath = os.path.join(bindingPath, moduleName + ".h")
+    moduleCppPath = os.path.join(bindingPath, moduleName + ".cpp")
+    pybindDir = os.path.join(os.path.dirname(libs.__file__), 'pybind11')
+    cMakeListsPath = os.path.join(bindingPath, 'CMakeLists.txt')
+
+    # check if folder exists
+    if not os.path.isdir(bindingPath):
+        logger.error("Dir binding not available in project folder '{}'".format(os.getcwd()))
+        return
+
+    if not os.path.exists(moduleHPath):
+        logger.error("Module '{}'.h could not found in binding folder".format(moduleHPath))
+        return
+
+    if not os.path.exists(moduleHPath):
+        logger.error("Module '{}'.h could not found in binding folder".format(moduleCppPath))
+        return
+
+    if not os.path.exists(cMakeListsPath):
+        logger.info("No CMakeLists.txt found! Generate...")
+        writeCMakeLists(cMakeListsPath, pybindDir, moduleName)
+    else:
+        checkCMakeLists(cMakeListsPath, moduleName)
+
+    if os.name == 'nt':
+        result = subprocess.run(['cmake', '-A', 'x64', '.'], cwd=bindingPath, shell=True)
+        if result.returncode == 0:
+            result = subprocess.run(['cmake', '--build', '.', '--config', 'Release'], cwd=bindingPath, shell=True)
+    else:
+        result = subprocess.run(['cmake . && make'], cwd=bindingPath, shell=True)
+
+    if result.returncode != 0:
+        logger.error("Make not successfull!")
+
+
+def checkCMakeLists(cMakeListsPath, moduleName):
+    cMakeListsSearch = "pybind11_add_module({} {} {})".format(moduleName,
+                                                              moduleName + '.cpp',
+                                                              'binding_' + moduleName + '.cpp')
+
+    if cMakeListsSearch in open(cMakeListsPath).read():
+        return
+    else:
+        cMakeListstxt = open(cMakeListsPath, "a")
+        cMakeListstxt.write("\n")
+        cMakeListstxt.write(cMakeListsSearch)
+        cMakeListstxt.close()
+
+
+def writeCMakeLists(cMakeListsPath, pybindDir, moduleName):
+    cMakeLists = "cmake_minimum_required(VERSION 2.8.12)\n"
+    cMakeLists += "project({})\n\n".format(moduleName)
+
+    cMakeLists += "set( CMAKE_RUNTIME_OUTPUT_DIRECTORY . )\n"
+    cMakeLists += "set( CMAKE_LIBRARY_OUTPUT_DIRECTORY . )\n"
+    cMakeLists += "set( CMAKE_ARCHIVE_OUTPUT_DIRECTORY . )\n\n"
+
+    cMakeLists += "set( CMAKE_RUNTIME_OUTPUT_DIRECTORY . )\n"
+    cMakeLists += "set( CMAKE_LIBRARY_OUTPUT_DIRECTORY . )\n"
+    cMakeLists += "set( CMAKE_ARCHIVE_OUTPUT_DIRECTORY . )\n\n"
+
+    cMakeLists += "foreach( OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES} )\n"
+    cMakeLists += "\tstring( TOUPPER ${OUTPUTCONFIG} OUTPUTCONFIG )\n"
+    cMakeLists += "\tset( CMAKE_RUNTIME_OUTPUT_DIRECTORY_${OUTPUTCONFIG} . )\n"
+    cMakeLists += "\tset( CMAKE_LIBRARY_OUTPUT_DIRECTORY_${OUTPUTCONFIG} . )\n"
+    cMakeLists += "\tset( CMAKE_ARCHIVE_OUTPUT_DIRECTORY_${OUTPUTCONFIG} . )\n"
+    cMakeLists += "endforeach( OUTPUTCONFIG CMAKE_CONFIGURATION_TYPES )\n\n"
+
+    cMakeLists += "add_subdirectory({} pybind11)\n".format(pybindDir)
+    cMakeLists += "pybind11_add_module({} {} {})".format(moduleName,
+                                                         moduleName + '.cpp',
+                                                         'binding_' + moduleName + '.cpp')
+
+    cMakeListstxt = open(cMakeListsPath, "w")
+    cMakeListstxt.write(cMakeLists)
+    cMakeListstxt.close()
 
