@@ -9,8 +9,6 @@ from PyQt5.QtCore import QObject
 
 pyqtWrapperType = type(QObject)
 
-from . import libs
-
 __all__ = ["SimulationModule", "SimulationException",
            "Trajectory", "Feedforward", "Controller", "Limiter",
            "ModelMixer", "Model", "ModelException",
@@ -72,90 +70,23 @@ class SimulationModule(QObject, metaclass=SimulationModuleMeta):
         self._settings["step width"] = None
         self._settings.pop("modules", None)
 
-        if settings.get("binding", False):
-            self._generateBinding(settings)
+        if settings.get("Module", None) is not None:
+            moduleName = settings['Module']
 
-    def _generateBinding(self, settings):
-        assert ("Module" in settings)
+            bindingPath = os.path.join(os.getcwd(), 'binding')
+            if not os.path.isdir(bindingPath):
+                self._logger.error("Dir binding not available in project folder '{}'".format(os.getcwd()))
+                raise ModelException("Dir binding not available in project folder '{}".format(os.getcwd()))
 
-        moduleName = settings['Module']
+            if os.name == 'nt':
+                result = subprocess.run(['cmake', '--build', '.', '--config', 'Release'], cwd=bindingPath,
+                                        shell=True)
+            else:
+                result = subprocess.run(['make'], cwd=bindingPath, shell=True)
 
-        bindingPath = os.path.join(os.getcwd(), 'binding')
-        moduleHPath = os.path.join(bindingPath, moduleName + ".h")
-        moduleCppPath = os.path.join(bindingPath, settings["Module"] + ".cpp")
-        pybindDir = os.path.join(os.path.dirname(libs.__file__), 'pybind11')
-        cMakeListsPath = os.path.join(bindingPath, 'CMakeLists.txt')
-
-        # check if folder exists
-        if not os.path.isdir(bindingPath):
-            self._logger.error("Dir binding not available in project folder '{}'".format(os.getcwd()))
-            return
-
-        if not os.path.exists(moduleHPath):
-            self._logger.error("Module '{}'.h could not found in binding folder".format(moduleHPath))
-            return
-
-        if not os.path.exists(moduleHPath):
-            self._logger.error("Module '{}'.h could not found in binding folder".format(moduleCppPath))
-            return
-
-        if not os.path.exists(cMakeListsPath):
-            self._logger.info("No CMakeLists.txt found! Generate...")
-            self._writeCMakeLists(cMakeListsPath, pybindDir, moduleName)
-        else:
-            self._checkCMakeLists(cMakeListsPath, moduleName)
-
-        if os.name == 'nt':
-            result = subprocess.run(['cmake', '-A', 'x64', '.'], cwd=bindingPath, shell=True)
-            if result.returncode == 0:
-                result = subprocess.run(['cmake', '--build', '.', '--config', 'Release'], cwd=bindingPath, shell=True)
-        else:
-            result = subprocess.run(['cmake . && make'], cwd=bindingPath, shell=True)
-
-        if result.returncode != 0:
-            self._logger.error("Make not successfull!")
-            raise ModelException("Make of {} not successfull!".format(moduleName))
-
-    def _checkCMakeLists(self, cMakeListsPath, moduleName):
-        cMakeListsSearch = "pybind11_add_module({} {} {})".format(moduleName,
-                                                                  moduleName + '.cpp',
-                                                                  'binding_' + moduleName + '.cpp')
-
-        if cMakeListsSearch in open(cMakeListsPath).read():
-            return
-        else:
-            cMakeListstxt = open(cMakeListsPath, "a")
-            cMakeListstxt.write("\n")
-            cMakeListstxt.write(cMakeListsSearch)
-            cMakeListstxt.close()
-
-    def _writeCMakeLists(self, cMakeListsPath, pybindDir, moduleName):
-        cMakeLists = "cmake_minimum_required(VERSION 2.8.12)\n"
-        cMakeLists += "project({})\n\n".format(moduleName)
-
-        cMakeLists += "set( CMAKE_RUNTIME_OUTPUT_DIRECTORY . )\n"
-        cMakeLists += "set( CMAKE_LIBRARY_OUTPUT_DIRECTORY . )\n"
-        cMakeLists += "set( CMAKE_ARCHIVE_OUTPUT_DIRECTORY . )\n\n"
-
-        cMakeLists += "set( CMAKE_RUNTIME_OUTPUT_DIRECTORY . )\n"
-        cMakeLists += "set( CMAKE_LIBRARY_OUTPUT_DIRECTORY . )\n"
-        cMakeLists += "set( CMAKE_ARCHIVE_OUTPUT_DIRECTORY . )\n\n"
-
-        cMakeLists += "foreach( OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES} )\n"
-        cMakeLists += "\tstring( TOUPPER ${OUTPUTCONFIG} OUTPUTCONFIG )\n"
-        cMakeLists += "\tset( CMAKE_RUNTIME_OUTPUT_DIRECTORY_${OUTPUTCONFIG} . )\n"
-        cMakeLists += "\tset( CMAKE_LIBRARY_OUTPUT_DIRECTORY_${OUTPUTCONFIG} . )\n"
-        cMakeLists += "\tset( CMAKE_ARCHIVE_OUTPUT_DIRECTORY_${OUTPUTCONFIG} . )\n"
-        cMakeLists += "endforeach( OUTPUTCONFIG CMAKE_CONFIGURATION_TYPES )\n\n"
-
-        cMakeLists += "add_subdirectory({} pybind11)\n".format(pybindDir)
-        cMakeLists += "pybind11_add_module({} {} {})".format(moduleName,
-                                                             moduleName + '.cpp',
-                                                             'binding_' + moduleName + '.cpp')
-
-        cMakeListstxt = open(cMakeListsPath, "w")
-        cMakeListstxt.write(cMakeLists)
-        cMakeListstxt.close()
+            if result.returncode != 0:
+                self._logger.error("Make not successful!")
+                raise ModelException("Make of {} not successful!".format(moduleName))
 
     @property
     @abstractmethod

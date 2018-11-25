@@ -20,7 +20,6 @@ class CppPIDController(pm.Controller):
         ("input_state", [0]),
         ("tick divider", 1),
         ("Module", 'Controller'),
-        ("binding", True),
     ])
 
     def __init__(self, settings):
