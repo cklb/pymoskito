@@ -89,7 +89,6 @@ class CppHighGainObserver(pm.Observer):
         ("uA0", st.uA0),
         ("dt", 0.1),
         ("Module", 'Observer'),
-        ("binding", True),
     ])
 
     def __init__(self, settings):
