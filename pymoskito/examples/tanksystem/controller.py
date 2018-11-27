@@ -7,7 +7,7 @@ import numpy as np
 import pymoskito as pm
 
 
-class CppPIDController(pm.Controller):
+class PIDController(pm.Controller):
     """
     PID Controller implemented in cpp with pybind11
     """
@@ -73,4 +73,5 @@ class CppPIDController(pm.Controller):
         return u
 
 
-pm.register_simulation_module(pm.Controller, CppPIDController)
+pm.generate_binding(PIDController.__name__, __file__)
+pm.register_simulation_module(pm.Controller, PIDController)

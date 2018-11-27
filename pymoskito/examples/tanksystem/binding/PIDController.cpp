@@ -1,11 +1,11 @@
-/** @file Controller.cpp
- * This file includes the different controller implementations for the two tank system.
+/** @file PIDController.cpp
+ * This file includes a pid controller implementation for the two tank system.
  *
  */
-#ifndef CONTROLLER_CPP
-#define CONTROLLER_CPP
+#ifndef PIDCONTROLLER_CPP
+#define PIDCONTROLLER_CPP
 
-#include "Controller.h"
+#include "PIDController.h"
 
 
 void PIDController::create(const double &dKp,
@@ -69,4 +69,4 @@ double PIDController::compute(const double &dCurInput,
     return dOut;
 }
 
-#endif // CONTROLLER_CPP
+#endif // PIDCONTROLLER_CPP

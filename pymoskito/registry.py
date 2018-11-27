@@ -2,7 +2,6 @@
 
 from .processing_core import ProcessingModule
 from .simulation_modules import SimulationModule, SignalMixer
-from .tools import generateBinding
 from .visualization import Visualizer
 
 __all__ = ["register_simulation_module", "register_processing_module",
@@ -101,10 +100,6 @@ def register_simulation_module(module_type, cls):
         if not (issubclass(module_type, SignalMixer)
                 and issubclass(cls, SignalMixer)):
             raise TypeError("Class must be instance of {0}".format(module_type))
-
-    # check if simulations module is a binding and build it
-    if cls.public_settings.get("Module", None) is not None:
-        generateBinding(cls.public_settings.get("Module", None))
 
     register_module(SimulationModule, module_type, cls, type_check=False)
 
