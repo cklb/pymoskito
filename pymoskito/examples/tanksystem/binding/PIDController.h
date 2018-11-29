@@ -6,6 +6,7 @@
 #define PIDCONTROLLER_H
 
 #include <math.h>
+#include "Controller.h"
 
 
 /**

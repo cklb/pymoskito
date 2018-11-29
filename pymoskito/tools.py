@@ -389,20 +389,20 @@ def add_binding_config(cmake_lists_path, module_name):
         f.write(config_line)
 
 
-def create_cmake_lists(cmake_lists_path, pybind_dir, module_name):
+def create_cmake_lists(cmake_lists_path, pybind_dir, project_name="cpp_bindings"):
     """
     Create the stub of a `CMakeLists.txt` .
 
     Args:
         cmake_lists_path(str): Path to `CmakeLists.txt`.
         pybind_dir(str): Path of the pybind checkout.
-        module_name(str): Name of module to add.
+        project_name(str): Name of cmake project.
 
     Returns:
 
     """
     c_make_lists = "cmake_minimum_required(VERSION 2.8.12)\n"
-    c_make_lists += "project({})\n\n".format(module_name)
+    c_make_lists += "project({})\n\n".format(project_name)
 
     c_make_lists += "set( CMAKE_RUNTIME_OUTPUT_DIRECTORY . )\n"
     c_make_lists += "set( CMAKE_LIBRARY_OUTPUT_DIRECTORY . )\n"
