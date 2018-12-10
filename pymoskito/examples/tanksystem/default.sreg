@@ -16,11 +16,11 @@
    aTol: 1e-4
 
   Controller:
-   type: PIDController
+   type: CppPIDController
    input_state: [1]
    Kp: 20
-   Ki: 0.5
-   Kd: 0.1
+   Ti: 0.5
+   Td: 0.1
 
   Trajectory:
    type: SmoothTransition
@@ -32,4 +32,4 @@
    Input B: None
 
   Observer:
-   type: HighGainObserver
+   type: CppHighGainObserver

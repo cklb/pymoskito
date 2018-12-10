@@ -68,25 +68,6 @@ class SimulationModule(QObject, metaclass=SimulationModuleMeta):
 
         self._settings["tick divider"] = settings.get("tick divider", 1)
         self._settings["step width"] = None
-        self._settings.pop("modules", None)
-
-        if settings.get("Module", None) is not None:
-            moduleName = settings['Module']
-
-            bindingPath = os.path.join(os.getcwd(), 'binding')
-            if not os.path.isdir(bindingPath):
-                self._logger.error("Dir binding not available in project folder '{}'".format(os.getcwd()))
-                raise ModelException("Dir binding not available in project folder '{}".format(os.getcwd()))
-
-            if os.name == 'nt':
-                result = subprocess.run(['cmake', '--build', '.', '--config', 'Release'], cwd=bindingPath,
-                                        shell=True)
-            else:
-                result = subprocess.run(['make'], cwd=bindingPath, shell=True)
-
-            if result.returncode != 0:
-                self._logger.error("Make not successful!")
-                raise ModelException("Make of {} not successful!".format(moduleName))
 
     @property
     @abstractmethod
