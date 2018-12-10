@@ -3,7 +3,7 @@
 
 namespace py = pybind11;
 
-PYBIND11_MODULE(Controller, m) {
+PYBIND11_MODULE(PIDController, m) {
     m.doc() = "Binding of a PID Controllers";
 
     py::class_<Controller>(m, "Controller")
