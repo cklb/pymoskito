@@ -16,11 +16,10 @@ import subprocess
 import pybind11
 
 import numpy as np
-from PyQt5.QtGui import QColor
 
 logger = logging.getLogger(__name__)
 
-__all__ = ["rotation_matrix_xyz", "get_resource", "generate_binding"]
+__all__ = ["rotation_matrix_xyz", "get_resource"]
 
 
 def sort_lists(a, b):

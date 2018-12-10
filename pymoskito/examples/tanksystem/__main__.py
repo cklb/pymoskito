@@ -27,7 +27,7 @@ if __name__ == '__main__':
     sim.load_regimes_from_file(os.path.join(parent_dir,
                                             pkg_name,
                                             "default.sreg"))
-    sim.apply_regime_by_name("test_python_PID")
+    sim.apply_regime_by_name("test_PID")
     sim.show()
 
     app.exec_()
