@@ -68,6 +68,7 @@ class SimulationModule(QObject, metaclass=SimulationModuleMeta):
 
         self._settings["tick divider"] = settings.get("tick divider", 1)
         self._settings["step width"] = None
+        self._settings.pop("modules", None)
 
     @property
     @abstractmethod
