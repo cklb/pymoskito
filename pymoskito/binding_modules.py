@@ -1,6 +1,7 @@
 import logging
 import os
 import subprocess
+import importlib
 
 from PyQt5.QtCore import QObject
 
@@ -30,10 +31,6 @@ class CppBinding(QObject):
         else:
             self.module_path = module_name
 
-        self.create_binding_config()
-        self.build_binding()
-
-    def create_binding_config(self):
         self.src_path = os.path.join(os.path.dirname(self.module_path), "binding")
         self.module_inc_path = os.path.join(self.src_path, self.module_name + ".h")
         self.module_src_path = os.path.join(self.src_path, self.module_name + ".cpp")
@@ -43,20 +40,24 @@ class CppBinding(QObject):
                                         "pybind11")
         self.cmake_lists_path = os.path.join(self.src_path, 'CMakeLists.txt')
 
+        self.create_binding_config()
+        self.build_binding()
+
+    def create_binding_config(self):
         # check if folder exists
         if not os.path.isdir(self.src_path):
             self._logger.error("Dir binding not available in project folder '{}'"
-                              "".format(os.getcwd()))
+                               "".format(os.getcwd()))
             return
 
         if not os.path.exists(self.module_inc_path):
             self._logger.error("Module '{}'.h could not found in binding folder"
-                              "".format(self.module_inc_path))
+                               "".format(self.module_inc_path))
             return
 
         if not os.path.exists(self.module_inc_path):
             self._logger.error("Module '{}'.h could not found in binding folder"
-                              "".format(self.module_src_path))
+                               "".format(self.module_src_path))
             return
 
         if not os.path.exists(self.cmake_lists_path):
@@ -138,3 +139,11 @@ class CppBinding(QObject):
 
         with open(self.cmake_lists_path, "w") as f:
             f.write(c_make_lists)
+
+    def get_module_instance(self, className):
+        try:
+            module = importlib.import_module('binding.' + self.module_name)
+            return getattr(module, className)
+        except ImportError as e:
+            self._logger.error('Cannot load Observer module: {}'.format(e))
+            raise e

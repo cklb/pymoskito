@@ -34,21 +34,16 @@ class CppHighGainObserver(pm.Observer, pm.CppBinding):
         pm.Observer.__init__(self, settings)
         pm.CppBinding.__init__(self, module_name='Observer', module_path=__file__)
 
-        try:
-            from binding.Observer import HighGainObserver
-            self.obs = HighGainObserver()
-            self.obs.create(self._settings["AT1"],
-                            self._settings["AT2"],
-                            self._settings["AS1"],
-                            self._settings["AS2"],
-                            self._settings["Ku"],
-                            self._settings["uA0"],
-                            self._settings['dt'])
-            self.obs.setInitialState(np.array(self._settings["initial state"]))
-            self.obs.setGain(np.array(self._settings["poles"]))
-        except ImportError as e:
-            self._logger.error('Cannot load Observer module: {}'.format(e))
-            raise e
+        self.obs = self.get_module_instance('HighGainObserver')()
+        self.obs.create(self._settings["AT1"],
+                        self._settings["AT2"],
+                        self._settings["AS1"],
+                        self._settings["AS2"],
+                        self._settings["Ku"],
+                        self._settings["uA0"],
+                        self._settings['dt'])
+        self.obs.setInitialState(np.array(self._settings["initial state"]))
+        self.obs.setGain(np.array(self._settings["poles"]))
 
     def _observe(self, time, system_input, system_output):
         if system_input is None:
