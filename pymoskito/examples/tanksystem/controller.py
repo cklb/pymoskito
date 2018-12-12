@@ -32,17 +32,14 @@ class CppPIDController(pm.Controller, pm.CppBinding):
 
         self.lastTime = 0
         self.lastU = 0
-        try:
-            from binding.PIDController import PIDController
-            self.pid = PIDController()
-            self.pid.create(self._settings["Kp"],
-                            self._settings["Ti"],
-                            self._settings["Td"],
-                            self._settings["output_limits"][0],
-                            self._settings["output_limits"][1],
-                            self._settings['dt'])
-        except ImportError as e:
-            self._logger.error('Can not load Controller module! {}'.format(e))
+
+        self.pid = self.get_module_instance('PIDController')()
+        self.pid.create(self._settings["Kp"],
+                        self._settings["Ti"],
+                        self._settings["Td"],
+                        self._settings["output_limits"][0],
+                        self._settings["output_limits"][1],
+                        self._settings['dt'])
 
     def _control(self,
                  time,
