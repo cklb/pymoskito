@@ -77,7 +77,7 @@ protected:
     double dKp = 1.0;               ///< Gain value for the proportional part
     double dTi = 1.0;               ///< Time value for the integral part
     double dTd = 1.0;               ///< Time value for the derivation part
-    double dOutputMin = -255.0;     ///< Mininal value for the calculated output
+    double dOutputMin = -255.0;     ///< Minimal value for the calculated output
     double dOutputMax = 255.0;      ///< Maximal value for the calculated output
     double dSampleTime = 0.0;       ///< Sample time of the controller
 };

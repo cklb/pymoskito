@@ -7,7 +7,7 @@ import numpy as np
 import pymoskito as pm
 
 
-class CppPIDController(pm.Controller, pm.CppBinding):
+class CppPIDController(pm.Controller, pm.CppBase):
     """
     PID Controller implemented in cpp with pybind11
     """
@@ -28,7 +28,9 @@ class CppPIDController(pm.Controller, pm.CppBinding):
         settings.update(input_type="system_state")
 
         pm.Controller.__init__(self, settings)
-        pm.CppBinding.__init__(self, module_name='PIDController', module_path=__file__)
+        pm.CppBase.__init__(self,
+                            module_name='PIDController',
+                            module_path=__file__)
 
         self.lastTime = 0
         self.lastU = 0
