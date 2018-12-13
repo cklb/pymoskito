@@ -2,10 +2,10 @@
  * This file includes the different observer implementations for the two tank system.
  *
  */
-#ifndef OBSERVER_CPP
-#define OBSERVER_CPP
+#ifndef HIGHGAINOBSERVER_CPP
+#define HIGHGAINOBSERVER_CPP
 
-#include "Observer.h"
+#include "HighGainObserver.h"
 
 
 void HighGainObserver::create(const double &dAT1,
@@ -47,4 +47,4 @@ std::vector<double> HighGainObserver::compute(const double &dhT1,
     return dOut;
 }
 
-#endif // OBSERVER_CPP
+#endif // HIGHGAINOBSERVER_CPP

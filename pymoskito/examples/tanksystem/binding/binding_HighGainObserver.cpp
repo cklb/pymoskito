@@ -1,13 +1,15 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
-#include "Observer.h"
+#include "HighGainObserver.h"
 
 namespace py = pybind11;
 
 PYBIND11_MODULE(Observer, m) {
     m.doc() = "Binding of a High Gain Observer";
 
-    py::class_<HighGainObserver>(m, "HighGainObserver")
+    py::class_<Observer>(m, "Observer");
+
+    py::class_<HighGainObserver, Observer>(m, "HighGainObserver")
             .def(py::init())
             .def("create", &HighGainObserver::create,
                  "Create the observer with all needed constants and initialize the output vector")

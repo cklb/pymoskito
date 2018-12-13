@@ -5,7 +5,7 @@ import importlib
 
 from PyQt5.QtCore import QObject
 
-__all__ = ["CppBinding"]
+__all__ = ["CppBase"]
 
 
 class BindingException(Exception):
@@ -15,25 +15,28 @@ class BindingException(Exception):
     pass
 
 
-class CppBinding(QObject):
+class CppBase(QObject):
     def __init__(self, module_name=None, module_path=None):
         QObject.__init__(self, None)
 
         self._logger = logging.getLogger(self.__class__.__name__)
 
         if module_name is None:
-            raise BindingException("Instanciation of binding class without module_name is not allowed!")
-        else:
-            self.module_name = module_name
+            raise BindingException("Instantiation of binding class without"
+                                   " module_name is not allowed!")
+        self.module_name = module_name
 
         if module_path is None:
-            raise BindingException("Instanciation of binding class without module_path is not allowed!")
-        else:
-            self.module_path = module_name
+            raise BindingException("Instantiation of binding class without"
+                                   " module_path is not allowed!")
+        self.module_path = module_name
 
-        self.src_path = os.path.join(os.path.dirname(self.module_path), "binding")
-        self.module_inc_path = os.path.join(self.src_path, self.module_name + ".h")
-        self.module_src_path = os.path.join(self.src_path, self.module_name + ".cpp")
+        self.src_path = os.path.join(os.path.dirname(self.module_path),
+                                     "binding")
+        self.module_inc_path = os.path.join(self.src_path,
+                                            self.module_name + ".h")
+        self.module_src_path = os.path.join(self.src_path,
+                                            self.module_name + ".cpp")
 
         self.pybind_path = os.path.join(os.path.dirname(__file__),
                                         "libs",
@@ -65,15 +68,17 @@ class CppBinding(QObject):
             self._logger.info("Generating new CMake config.")
             self.create_cmake_lists()
 
-        self.add_binding_config()
+        config_changed = self.update_binding_config()
+        if config_changed:
+            self.build_config()
 
+    def build_config(self):
         # generate config
         if os.name == 'nt':
-            result = subprocess.run(['cmake', '-A', 'x64', '.'],
-                                    cwd=self.src_path,
-                                    shell=True)
+            cmd = ['cmake', '-A', 'x64', '.']
         else:
-            result = subprocess.run(['cmake .'], cwd=self.src_path, shell=True)
+            cmd = ['cmake .']
+        result = subprocess.run(cmd, cwd=self.src_path, shell=True)
 
         if result.returncode != 0:
             self._logger.error("Generation of binding config failed.")
@@ -82,21 +87,22 @@ class CppBinding(QObject):
     def build_binding(self):
         # build
         if os.name == 'nt':
-            result = subprocess.run(
-                ['cmake', '--build', '.', '--config', 'Release'],
-                cwd=self.src_path,
-                shell=True)
+            cmd = ['cmake', '--build', '.', '--config', 'Release']
         else:
-            result = subprocess.run(['make'], cwd=self.src_path, shell=True)
+            cmd = ['make']
+        result = subprocess.run(cmd, cwd=self.src_path, shell=True)
 
         if result.returncode != 0:
             self._logger.error("Build failed!")
             raise BindingException("Build failed!")
 
-    def add_binding_config(self):
+    def update_binding_config(self):
         """
         Add the module config to the cmake lists.
 
+        Returns:
+            bool: True if build config has been changed and cmake has to be
+            rerun.
         """
         config_line = "pybind11_add_module({} {} {})".format(
             self.module_name,
@@ -105,12 +111,14 @@ class CppBinding(QObject):
 
         with open(self.cmake_lists_path, "r") as f:
             if config_line in f.read():
-                return
+                return False
 
         self._logger.info("Appending build info for '{}'".format(self.module_name))
         with open(self.cmake_lists_path, "a") as f:
             f.write("\n")
             f.write(config_line)
+
+        return True
 
     def create_cmake_lists(self):
         """
@@ -140,10 +148,10 @@ class CppBinding(QObject):
         with open(self.cmake_lists_path, "w") as f:
             f.write(c_make_lists)
 
-    def get_module_instance(self, className):
+    def get_module_instance(self, class_name):
         try:
-            module = importlib.import_module('binding.' + self.module_name)
-            return getattr(module, className)
+            module = importlib.import_module("binding." + self.module_name)
+            return getattr(module, class_name)
         except ImportError as e:
-            self._logger.error('Cannot load Observer module: {}'.format(e))
+            self._logger.error("Cannot load module: {}".format(e))
             raise e

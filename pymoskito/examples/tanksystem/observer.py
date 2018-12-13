@@ -8,7 +8,7 @@ import pymoskito as pm
 from . import settings as st
 
 
-class CppHighGainObserver(pm.Observer, pm.CppBinding):
+class CppHighGainObserver(pm.Observer, pm.CppBase):
     """
     High Gain Observer implemented in Cpp
     """
@@ -32,7 +32,9 @@ class CppHighGainObserver(pm.Observer, pm.CppBinding):
     def __init__(self, settings):
         settings.update(output_dim=2)
         pm.Observer.__init__(self, settings)
-        pm.CppBinding.__init__(self, module_name='Observer', module_path=__file__)
+        pm.CppBase.__init__(self,
+                            module_name='HighGainObserver',
+                            module_path=__file__)
 
         self.obs = self.get_module_instance('HighGainObserver')()
         self.obs.create(self._settings["AT1"],
