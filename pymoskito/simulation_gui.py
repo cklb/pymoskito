@@ -102,7 +102,7 @@ class SimulationGui(QMainWindow):
 
         # load settings
         self._settings = QSettings()
-        self._read_settings()
+        self._init_settings()
 
         # initialize logger
         self._logger = logging.getLogger(self.__class__.__name__)
@@ -453,7 +453,8 @@ class SimulationGui(QMainWindow):
         self.logDock.addWidget(self.logBox)
 
         # init logger for logging box
-        self.textLogger = PlainTextLogger(logging.INFO)
+        self.textLogger = PlainTextLogger(self._settings,
+                                          logging.INFO)
         self.textLogger.set_target_cb(self.logBox)
         logging.getLogger().addHandler(self.textLogger)
 
@@ -724,33 +725,54 @@ class SimulationGui(QMainWindow):
             "restored simulation '{}'.".format(sim_name),
             1000)
 
-    def _read_settings(self):
+    def _add_setting(self, setting, value):
+        """
+        Add a setting, if settings is present, no changes are made.
 
-        # add default settings if none are present
-        if not self._settings.contains("path/simulation_results"):
-            self._settings.setValue("path/simulation_results",
-                                    os.path.join(os.path.curdir,
-                                                 "results",
-                                                 "simulation"))
-        if not self._settings.contains("path/postprocessing_results"):
-            self._settings.setValue("path/postprocessing_results",
-                                    os.path.join(os.path.curdir,
-                                                 "results",
-                                                 "postprocessing"))
-        if not self._settings.contains("path/metaprocessing_results"):
-            self._settings.setValue("path/metaprocessing_results",
-                                    os.path.join(os.path.curdir,
-                                                 "results",
-                                                 "metaprocessing"))
+        Args:
+            setting(str): Setting to add.
+            value: Value to be set.
+        """
+        if not self._settings.contains(setting):
+            self._settings.setValue(setting, value)
 
-        if not self._settings.contains("control/autoplay_animation"):
-            self._settings.setValue("control/autoplay_animation", "False")
+    def _init_settings(self):
+        """
+        Provide initial settings for the config file.
 
-        if not self._settings.contains("control/exit_on_batch_completion"):
-            self._settings.setValue("control/exit_on_batch_completion", "False")
+        """
+        # path management
+        self._add_setting("path/simulation_results",
+                          os.path.join(os.path.curdir,
+                                       "results",
+                                       "simulation"))
+        self._add_setting("path/simulation_results",
+                          os.path.join(os.path.curdir,
+                                       "results",
+                                       "simulation"))
+        self._add_setting("path/postprocessing_results",
+                          os.path.join(os.path.curdir,
+                                       "results",
+                                       "postprocessing"))
+        self._add_setting("path/metaprocessing_results",
+                          os.path.join(os.path.curdir,
+                                       "results",
+                                       "metaprocessing"))
 
-        if not self._settings.contains("view/show_coordinates"):
-            self._settings.setValue("view/show_coordinates", "True")
+        # control flow management
+        self._add_setting("control/autoplay_animation", "False")
+        self._add_setting("control/exit_on_batch_completion", "False")
+
+        # view management
+        self._add_setting("view/show_coordinates", "True")
+
+        # log management
+        self._add_setting("log_colors/CRITICAL", "#DC143C")
+        self._add_setting("log_colors/ERROR", "#B22222")
+        self._add_setting("log_colors/WARNING", "#DAA520")
+        self._add_setting("log_colors/INFO", "#101010")
+        self._add_setting("log_colors/DEBUG", "#4682B4")
+        self._add_setting("log_colors/NOTSET", "#000000")
 
         if not self._settings.contains("view/show_time_on_export"):
             self._settings.setValue("view/show_time_on_export", "False")

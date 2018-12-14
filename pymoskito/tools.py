@@ -170,9 +170,10 @@ class PlainTextLogger(logging.Handler):
     Logging handler hat formats log data for line display
     """
 
-    def __init__(self, level=logging.NOTSET):
+    def __init__(self, settings, level=logging.NOTSET):
         logging.Handler.__init__(self, level)
         self.name = "PlainTextLogger"
+        self.settings = settings
 
         formatter = logging.Formatter(
             fmt="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
@@ -190,25 +191,9 @@ class PlainTextLogger(logging.Handler):
     def emit(self, record):
         msg = self.format(record)
         if self.cb:
-            if record.levelname == 'INFO':
-                # green
-                self.cb.setTextColor(QColor('#2ca02c'))
-            elif record.levelname == 'DEBUG':
-                # cyan
-                self.cb.setTextColor(QColor('#17becf'))
-            elif record.levelname == 'ERROR':
-                # red
-                self.cb.setTextColor(QColor('#d62728'))
-            elif record.levelname == 'WARNING':
-                # purple
-                self.cb.setTextColor(QColor('#9467bd'))
-            elif record.levelname == 'CRITICAL':
-                # red
-                self.cb.setTextColor(QColor('#d62728'))
-            else:
-                # black
-                self.cb.setTextColor(QColor('#000000'))
-
+            clr = QColor(self.settings.value("log_colors/"+record.levelname,
+                                             "#000000"))
+            self.cb.setTextColor(clr)
             self.cb.append(msg)
         else:
             logging.getLogger().error("No callback configured!")
