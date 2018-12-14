@@ -774,14 +774,9 @@ class SimulationGui(QMainWindow):
         self._add_setting("log_colors/DEBUG", "#4682B4")
         self._add_setting("log_colors/NOTSET", "#000000")
 
-        if not self._settings.contains("view/show_time_on_export"):
-            self._settings.setValue("view/show_time_on_export", "False")
-
-        if not self._settings.contains("view/export_width"):
-            self._settings.setValue("view/export_width", "800")
-
-        if not self._settings.contains("view/export_height"):
-            self._settings.setValue("view/export_height", "600")
+        self._add_setting("view/show_time_on_export", "False")
+        self._add_setting("view/export_width", "800")
+        self._add_setting("view/export_height", "600")
 
     def _write_settings(self):
         """ Store the application state. """
