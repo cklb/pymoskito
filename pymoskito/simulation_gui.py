@@ -598,9 +598,8 @@ class SimulationGui(QMainWindow):
                 child = QTreeWidgetItem()
                 child.setText(1, dataPoint)
 
-                colorIdxItem = toplevelItem.childCount() % len(self.TABLEAU_COLORS)
-                colorItem = QColor(self.TABLEAU_COLORS[colorIdxItem][1])
-                child.setBackground(0, colorItem)
+                color = self._get_color(toplevelItem.childCount())
+                child.setBackground(0, color)
 
                 toplevelItem.addChild(child)
 
@@ -640,11 +639,19 @@ class SimulationGui(QMainWindow):
         top_item.takeChild(top_item.indexOfChild(items[0]))
 
         for i in range(top_item.childCount()):
-            colorIdxItem = i % len(self.TABLEAU_COLORS)
-            colorItem = QColor(self.TABLEAU_COLORS[colorIdxItem][1])
+            colorItem = self._get_color(i)
             top_item.child(i).setBackground(0, colorItem)
 
         self._update_plot(top_item)
+
+    def _get_color(self, idx):
+        sat_idx = idx % len(self.TABLEAU_COLORS)
+        color = QColor(self.TABLEAU_COLORS[sat_idx][1])
+        return color
+
+    def _get_pen(self, idx):
+        pen = pg.mkPen(self._get_color(idx), width=2)
+        return pen
 
     def plots(self, item):
         title = item.text(0)
@@ -1363,11 +1370,9 @@ class SimulationGui(QMainWindow):
                     if _item.name() in child_names:
                         y_data = self._get_data_by_name(_item.name())
                         if y_data is not None:
-                            c_idx = cnt % len(self.TABLEAU_COLORS)
-                            color = QColor(self.TABLEAU_COLORS[c_idx][1])
-                            cnt += 1
                             _item.setData(x=t, y=y_data)
-                            _item.setPen(pg.mkPen(color, width=2))
+                            _item.setPen(self._get_pen(cnt))
+                            cnt += 1
                         else:
                             _item.clear()
                     else:
@@ -1459,8 +1464,6 @@ class SimulationGui(QMainWindow):
 
     def plot_data_vector_member(self, item, widget):
         idx = item.parent().indexOfChild(item)
-        c_idx = idx % len(self.TABLEAU_COLORS)
-        color = QColor(self.TABLEAU_COLORS[c_idx][1])
 
         data_name = item.text(1)
         t = self.currentDataset["results"]["time"]
@@ -1470,7 +1473,7 @@ class SimulationGui(QMainWindow):
 
         widget.plot(x=t,
                     y=data,
-                    pen=pg.mkPen(color, width=2),
+                    pen=self._get_pen(idx),
                     name=data_name)
 
     def find_all_plot_docks(self):
