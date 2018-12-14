@@ -1,17 +1,17 @@
 # -*- coding: utf-8 -*-
 
-import time
-
 # system
 import logging
 import numpy as np
 import os
 import pickle
+import time
 import pkg_resources
-# pyqtgraph
-import pyqtgraph as pg
 import webbrowser
 import yaml
+from operator import itemgetter
+from scipy.interpolate import interp1d
+
 # Qt
 from PyQt5.QtCore import (pyqtSignal, pyqtSlot, Qt, QTimer, QSize, QSettings,
                           QCoreApplication, QModelIndex, QRectF)
@@ -23,10 +23,10 @@ from PyQt5.QtWidgets import (QWidget, QAction, QSlider, QMainWindow,
                              QTextEdit, QFileDialog, QInputDialog,
                              QFrame, QVBoxLayout, QMessageBox, QApplication, QTreeWidget,
                              QHBoxLayout, QPushButton, QTreeWidgetItem)
-from operator import itemgetter
+# pyqtgraph
+import pyqtgraph as pg
 from pyqtgraph import exporters
 from pyqtgraph.dockarea import DockArea
-from scipy.interpolate import interp1d
 
 # vtk
 vtk_error_msg = ""
@@ -745,6 +745,15 @@ class SimulationGui(QMainWindow):
         if not self._settings.contains("view/show_coordinates"):
             self._settings.setValue("view/show_coordinates", "True")
 
+        if not self._settings.contains("view/show_time_on_export"):
+            self._settings.setValue("view/show_time_on_export", "False")
+
+        if not self._settings.contains("view/export_width"):
+            self._settings.setValue("view/export_width", "800")
+
+        if not self._settings.contains("view/export_height"):
+            self._settings.setValue("view/export_height", "600")
+
     def _write_settings(self):
         """ Store the application state. """
         pass
@@ -1400,19 +1409,29 @@ class SimulationGui(QMainWindow):
         coord_item = pg.TextItem(text='', anchor=(0, 1))
         widget.getPlotItem().addItem(coord_item, ignoreBounds=True)
 
-        def info_wrapper(pos):
+        def _info_wrapper(pos):
             self.update_coord_info(pos, widget, coord_item)
 
-        widget.scene().sigMouseMoved.connect(info_wrapper)
+        widget.scene().sigMouseMoved.connect(_info_wrapper)
 
+        # add custom export entries
         widget.scene().contextMenu = [
             QAction("Export png", self),
             QAction("Export csv", self)
         ]
+
+        def _export_wrapper(export_func):
+            def _wrapper():
+                return export_func(widget.getPlotItem(),
+                                   title,
+                                   coord_item,
+                                   time_line)
+            return _wrapper
+
         widget.scene().contextMenu[0].triggered.connect(
-            lambda: self.export_png(widget.getPlotItem(), title))
+            _export_wrapper(self.export_png))
         widget.scene().contextMenu[1].triggered.connect(
-            lambda: self.export_csv(widget.getPlotItem(), title))
+            _export_wrapper(self.export_csv))
 
         # create dock container and add it to dock area
         dock = pg.dockarea.Dock(title, closable=True)
@@ -1464,38 +1483,58 @@ class SimulationGui(QMainWindow):
 
         return list
 
-    def export_csv(self, plot_item, name):
-        exporter = exporters.CSVExporter(plot_item)
+    def export_csv(self, plot_item, name, *args):
+        exporter = pg.exporters.CSVExporter(plot_item)
         filename = QFileDialog.getSaveFileName(self,
                                                "CSV export", name + ".csv",
                                                "CSV Data (*.csv)")
-        if filename[0]:
-            exporter.export(filename[0])
+        if not filename[0]:
+            return
 
-    def export_png(self, plot_item, name, coord_item):
-        # Notwendig da Fehler in PyQtGraph
-        exporter = exporters.ImageExporter(plot_item)
-        oldGeometry = plot_item.geometry()
-        plot_item.setGeometry(QRectF(0, 0, 1920, 1080))
+        exporter.export(filename[0])
+        self._logger.info("Plot '{}' saved as '{}'".format(name, filename[0]))
 
-        bgBrush = pg.mkBrush('w')
-        exporter.params.param('background').setValue(bgBrush.color())
-        exporter.params.param('width').setValue(1920, blockSignal=exporter.widthChanged)
-        exporter.params.param('height').setValue(1080, blockSignal=exporter.heightChanged)
+    def export_png(self, plot_item, name, coord_item, time_item):
+        """ Custom export handler """
+        filename = QFileDialog.getSaveFileName(self,
+                                               "PNG export",
+                                               name + ".png",
+                                               "PNG Image (*.png)")
+        if not filename[0]:
+            return
 
-        flag = 0
-        if coord_item.isVisible():
+        show_time_on_export = self._settings.value("view/show_time_on_export",
+                                                   type=bool)
+        img_width = self._settings.value("view/export_width", type=int)
+        img_height = self._settings.value("view/export_height", type=int)
+
+        exporter = pg.exporters.ImageExporter(plot_item)
+        bg_brush = pg.mkBrush('w')
+        exporter.params.param('background').setValue(bg_brush.color())
+
+        # hack due to bug in pyqtgraph
+        exporter.params.param('width').setValue(
+            img_width,
+            blockSignal=exporter.widthChanged)
+        exporter.params.param('height').setValue(
+            img_height,
+            blockSignal=exporter.heightChanged)
+
+        was_visible = coord_item.isVisible()
+        if was_visible:
             coord_item.hide()
-            flag = 1
+        if not show_time_on_export:
+            time_item.hide()
 
-        filename = QFileDialog.getSaveFileName(self, "PNG export", name + ".png", "PNG Image (*.png)")
-        if filename[0]:
-            exporter.export(filename[0])
+        # export
+        exporter.export(filename[0])
+        self._logger.info("Plot '{}' saved as '{}'".format(name, filename[0]))
 
         # restore old state
-        if flag == 1:
+        if not show_time_on_export:
+            time_item.show()
+        if was_visible:
             coord_item.show()
-        plot_item.setGeometry(QRectF(oldGeometry))
 
     def _get_data_by_name(self, name):
         tmp = name.split(".")
