@@ -11,6 +11,14 @@
  * @brief Base controller class that can used to derived a P, PI, PD or PID controller.
  */
 class Controller {
+protected:
+    // properties
+    double dKp = 1.0;               ///< Gain value for the proportional part
+    double dTi = 1.0;               ///< Time value for the integral part
+    double dTd = 1.0;               ///< Time value for the derivation part
+    double dOutputMin = -255.0;     ///< Minimal value for the calculated output
+    double dOutputMax = 255.0;      ///< Maximal value for the calculated output
+    double dSampleTime = 0.0;       ///< Sample time of the controller
 public:
     /**
      * @brief Method that sets the gain value of the proportional part
@@ -71,15 +79,6 @@ public:
      * @brief Method that resets the integral and last error part to zero
      */
     virtual void reset() = 0;
-
-protected:
-    // properties
-    double dKp = 1.0;               ///< Gain value for the proportional part
-    double dTi = 1.0;               ///< Time value for the integral part
-    double dTd = 1.0;               ///< Time value for the derivation part
-    double dOutputMin = -255.0;     ///< Minimal value for the calculated output
-    double dOutputMax = 255.0;      ///< Maximal value for the calculated output
-    double dSampleTime = 0.0;       ///< Sample time of the controller
 };
 
 #endif // CONTROLLER_H

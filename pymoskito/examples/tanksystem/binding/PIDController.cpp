@@ -2,9 +2,6 @@
  * This file includes a pid controller implementation for the two tank system.
  *
  */
-#ifndef PIDCONTROLLER_CPP
-#define PIDCONTROLLER_CPP
-
 #include "PIDController.h"
 
 
@@ -68,5 +65,3 @@ double PIDController::compute(const double &dCurInput,
 
     return dOut;
 }
-
-#endif // PIDCONTROLLER_CPP

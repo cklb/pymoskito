@@ -11,6 +11,8 @@
  * @brief Class that implements an Observer.
  */
 class Observer {
+protected:
+    double dSampleTime = 0.0;
 public:
     virtual void create(const double &dAT1,
                         const double &dAT2,
@@ -42,9 +44,6 @@ public:
      */
     virtual std::vector<double> compute(const double &dhT1,
                                         const double &dUA) = 0;
-
-private:
-    double dSampleTime = 0.0;
 };
 
 #endif // OBSERVER_H
