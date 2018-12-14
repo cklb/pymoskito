@@ -26,7 +26,6 @@ private:
     double dKu;
     double dUA0;
     double dOut[2];
-    double dSampleTime;
 
 public:
     /// Constructor of the High Gain observer
