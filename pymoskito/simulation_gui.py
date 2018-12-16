@@ -621,11 +621,7 @@ class SimulationGui(QMainWindow):
         for item in self.dataPointListWidget.selectedItems():
             dataPoints[item.text()] = self._get_data_by_name(item.text())
 
-        exporter = CSVExporter(dataPoints)
-        filename = QFileDialog.getSaveFileName(self, "CSV export", ".csv", "CSV Data (*.csv)")
-        if filename[0]:
-            exporter.export(filename[0])
-            self._logger.info("Export successful.")
+        self.export_csv(dataPoints)
 
     def removeDatapointFromTree(self):
         items = self.dataPointTreeWidget.selectedItems()
@@ -1453,7 +1449,7 @@ class SimulationGui(QMainWindow):
         widget.scene().contextMenu[0].triggered.connect(
             _export_wrapper(self.export_png))
         widget.scene().contextMenu[1].triggered.connect(
-            _export_wrapper(self.export_csv))
+            _export_wrapper(self.exportPlotItem))
 
         # create dock container and add it to dock area
         dock = pg.dockarea.Dock(title, closable=True)
@@ -1503,16 +1499,25 @@ class SimulationGui(QMainWindow):
 
         return list
 
-    def export_csv(self, plot_item, name, *args):
-        exporter = pg.exporters.CSVExporter(plot_item)
-        filename = QFileDialog.getSaveFileName(self,
-                                               "CSV export", name + ".csv",
-                                               "CSV Data (*.csv)")
-        if not filename[0]:
-            return
+    def exportPlotItem(self, plot_item, name, coord_item, time_item):
+        dataPoints = {}
+        for i, c in enumerate(plot_item.curves):
+            if c.getData() is None:
+                continue
+            if len(c.getData()) > 2:
+                self._logger.warning('Can not handle the amount of data!')
+                continue
+            dataPoints[c.name() + str('.0')] = c.getData()[0]
+            dataPoints[c.name() + str('.1')] = c.getData()[1]
 
-        exporter.export(filename[0])
-        self._logger.info("Plot '{}' saved as '{}'".format(name, filename[0]))
+        self.export_csv(dataPoints)
+
+    def export_csv(self, dataPoints):
+        exporter = CSVExporter(dataPoints)
+        filename = QFileDialog.getSaveFileName(self, "CSV export", ".csv", "CSV Data (*.csv)")
+        if filename[0]:
+            exporter.export(filename[0])
+            self._logger.info("Export successful as '{}.".format(filename[0]))
 
     def export_png(self, plot_item, name, coord_item, time_item):
         """ Custom export handler """
