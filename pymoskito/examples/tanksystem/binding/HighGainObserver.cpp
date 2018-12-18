@@ -6,22 +6,6 @@
 #include "HighGainObserver.h"
 
 
-void HighGainObserver::create(const double &dAT1,
-                              const double &dAT2,
-                              const double &dAS1,
-                              const double &dAS2,
-                              const double &dKu,
-                              const double &dUA0,
-                              const double &dSampleTime) {
-    this->dAT1 = dAT1;
-    this->dAT2 = dAT2;
-    this->dAS1 = dAS1;
-    this->dAS2 = dAS2;
-    this->dKu = dKu;
-    this->dSampleTime = dSampleTime;
-}
-
-
 std::vector<double> HighGainObserver::compute(const double &dhT1,
                                               const double &dUA) {
     double du = 0.0;

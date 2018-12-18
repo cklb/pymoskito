@@ -5,25 +5,6 @@
 #include "PIDController.h"
 
 
-void PIDController::create(const double &dKp,
-                           const double &dTi,
-                           const double &dTd,
-                           const double &dOutputMin,
-                           const double &dOutputMax,
-                           const double &dSampleTime) {
-    this->dKp = dKp;
-    this->dTd = dTd;
-    this->dTi = dTi;
-    this->dOutputMin = dOutputMin;
-    this->dOutputMax = dOutputMax;
-
-    this->dSampleTime = dSampleTime;
-
-    this->dIntegral = 0.0;
-    this->dLastError = 0.0;
-}
-
-
 void PIDController::reset() {
     this->dIntegral = 0.0;
     this->dLastError = 0.0;

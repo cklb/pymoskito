@@ -35,13 +35,13 @@ class CppPIDController(pm.Controller, pm.CppBase):
         self.lastTime = 0
         self.lastU = 0
 
-        self.pid = self.get_module_instance('PIDController')()
-        self.pid.create(self._settings["Kp"],
-                        self._settings["Ti"],
-                        self._settings["Td"],
-                        self._settings["output_limits"][0],
-                        self._settings["output_limits"][1],
-                        self._settings['dt'])
+        pidClass = self.get_class_from_module('PIDController')
+        self.pid = pidClass(self._settings["Kp"],
+                            self._settings["Ti"],
+                            self._settings["Td"],
+                            self._settings["output_limits"][0],
+                            self._settings["output_limits"][1],
+                            self._settings['dt'])
 
     def _control(self,
                  time,
