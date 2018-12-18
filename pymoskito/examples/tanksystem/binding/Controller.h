@@ -49,7 +49,7 @@ public:
     double getSampleTime() const { return dSampleTime; }
 
     /**
-     * method the computes the controller output of the current time step for the given input value and setpoint
+     * @brief Method the computes the controller output of the current time step for the given input value and setpoint
      *
      * @param current input value
      * @param current setpoint
@@ -57,23 +57,6 @@ public:
      */
     virtual double compute(const double &dCurInput,
                            const double &dCurSetpoint) = 0;
-
-    /**
-     * @ brief Method that sets the initial values of the PID controller and resets the integral and last error part to zero
-     *
-     * @param Gain value for the proportional part
-     * @param Time value for the integral part
-     * @param Time value for the derivation part
-     * @param Mininal value for the calculated output
-     * @param Maximal value for the calculated output
-     * @param Sample time of the controller
-     */
-    virtual void create(const double &dKp,
-                        const double &dTi,
-                        const double &dTd,
-                        const double &dOutputMin,
-                        const double &dOutputMax,
-                        const double &dSampleTime) = 0;
 
     /**
      * @brief Method that resets the integral and last error part to zero

@@ -28,19 +28,35 @@ private:
     double dOut[2];
 
 public:
-    /// Constructor of the High Gain observer
-    HighGainObserver() {}
+    /**
+     * @ brief Constructor that sets the initial values of the high gain observer
+     *
+     * @param area of tank 1
+     * @param area of tank 2
+     * @param area of sink 1
+     * @param area of sink 2
+     * @param gain value of pump
+     * @param base voltage of pump
+     * @param sample time
+     */
+    HighGainObserver(const double &dAT1,
+                     const double &dAT2,
+                     const double &dAS1,
+                     const double &dAS2,
+                     const double &dKu,
+                     const double &dUA0,
+                     const double &dSampleTime) {
+        this->dAT1 = dAT1;
+        this->dAT2 = dAT2;
+        this->dAS1 = dAS1;
+        this->dAS2 = dAS2;
+        this->dKu = dKu;
+        this->dUA0 = dUA0;
+        this->dSampleTime = dSampleTime;
+    }
 
     /// Destructor of the High Gain observer
     ~HighGainObserver() {}
-
-    void create(const double &dAT1,
-                const double &dAT2,
-                const double &dAS1,
-                const double &dAS2,
-                const double &dKu,
-                const double &dUA0,
-                const double &dSampleTime);
 
     /**
      * Sets the initial state

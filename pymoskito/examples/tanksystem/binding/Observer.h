@@ -14,14 +14,6 @@ class Observer {
 protected:
     double dSampleTime = 0.0;
 public:
-    virtual void create(const double &dAT1,
-                        const double &dAT2,
-                        const double &dAS1,
-                        const double &dAS2,
-                        const double &dKu,
-                        const double &dUA0,
-                        const double &dSampleTime) = 0;
-
     /**
      * Sets the initial state
      * @param dInitialState

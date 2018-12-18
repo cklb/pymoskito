@@ -18,9 +18,9 @@
   Controller:
    type: CppPIDController
    input_state: [1]
-   Kp: 20
+   Kp: 200
    Ti: 0.5
-   Td: 0.1
+   Td: 0
 
   Trajectory:
    type: SmoothTransition

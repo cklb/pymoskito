@@ -148,7 +148,7 @@ class CppBase(QObject):
         with open(self.cmake_lists_path, "w") as f:
             f.write(c_make_lists)
 
-    def get_module_instance(self, class_name):
+    def get_class_from_module(self, class_name):
         try:
             module = importlib.import_module("binding." + self.module_name)
             return getattr(module, class_name)
