@@ -49,3 +49,5 @@ register_simulation_module(Sensor, DeadTimeSensor)
 register_simulation_module(Disturbance, GaussianNoise)
 
 register_processing_module(PostProcessingModule, PlotAll)
+
+os.environ["QT_AUTO_SCREEN_SCALE_FACTOR"] = "1"
