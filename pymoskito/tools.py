@@ -4,9 +4,13 @@ Tools, functions and other funny things
 """
 import copy
 import logging
-import numpy as np
 import os
 import re
+
+import matplotlib.gridspec as gridspec
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
 from PyQt5.QtGui import QColor
 
 logger = logging.getLogger(__name__)
@@ -191,7 +195,7 @@ class PlainTextLogger(logging.Handler):
     def emit(self, record):
         msg = self.format(record)
         if self.cb:
-            clr = QColor(self.settings.value("log_colors/"+record.levelname,
+            clr = QColor(self.settings.value("log_colors/" + record.levelname,
                                              "#000000"))
             self.cb.setTextColor(clr)
             self.cb.append(msg)
@@ -270,38 +274,26 @@ def get_figure_size(scale):
     return fig_size
 
 
-class CSVExporter(object):
-    def __init__(self, dataPoints):
-        self.dataPoints = dataPoints
-        self.sep = ','
+class Exporter(object):
+    def __init__(self, **kwargs):
+        dataPoints = kwargs.get('dataPoints', None)
 
-    def export(self, fileName):
-        fd = open(fileName, 'w')
-        data = []
-        header = []
+        # raise if dataPoints is None
 
-        for key, value in self.dataPoints.items():
-            header.append(key)
-            data.append(value)
+        # build pandas dataframe
+        self.df = pd.DataFrame.from_dict(dataPoints)
 
-        numColumns = len(header)
-        if data:
-            numRows = len(max(data, key=len))
-        else:
-            fd.close()
-            return
 
-        fd.write(self.sep.join(header) + '\n')
+    def export_png(self, fileName):
+        fig = plt.figure(figsize=(10, 10))
+        gs = gridspec.GridSpec(1, 1, hspace=0.25)
+        axes = plt.Subplot(fig, gs[0])
 
-        for i in range(numRows):
-            for j in range(numColumns):
-                if i < len(data[j]):
-                    fd.write(str(data[j][i]))
-                else:
-                    fd.write(str(np.nan))
+        for col in self.df.columns():
+            self.df[col].plot(ax=axes, label=col)
 
-                if j < numColumns - 1:
-                    fd.write(self.sep)
+        fig.savefig(fileName + '.png', format='png', dpi=1200, bbox_inches='tight')
 
-            fd.write('\n')
-        fd.close()
+    def export_csv(self, fileName, sep=','):
+        self.df.to_csv(fileName, sep=sep)
+

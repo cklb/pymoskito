@@ -9,3 +9,4 @@ PyQt5>=5.7.1
 control>=0.7.0
 Sphinx>=1.4.9
 sphinx-rtd-theme>=0.1.9
+pandas>=0.23.4

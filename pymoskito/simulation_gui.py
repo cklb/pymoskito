@@ -50,7 +50,7 @@ from .registry import get_registered_visualizers
 from .simulation_interface import SimulatorInteractor, SimulatorView
 from .visualization import MplVisualizer, VtkVisualizer
 from .processing_gui import PostProcessor
-from .tools import get_resource, PlainTextLogger, LengthList, CSVExporter
+from .tools import get_resource, PlainTextLogger, LengthList, Exporter
 
 __all__ = ["SimulationGui", "run"]
 
@@ -286,7 +286,7 @@ class SimulationGui(QMainWindow):
         self.dataPointManipulationLayout.addWidget(self.dataPointLeftButton)
         self.dataPointExportButton = QPushButton(chr(0x25BC), self)
         self.dataPointExportButton.setToolTip(
-            "Export the selected data set from the left to a csv file."
+            "Export the selected data set from the left to a csv or png file."
         )
         self.dataPointExportButton.clicked.connect(self.exportDatapointFromTree)
         self.dataPointManipulationLayout.addWidget(self.dataPointExportButton)
@@ -621,7 +621,7 @@ class SimulationGui(QMainWindow):
         for item in self.dataPointListWidget.selectedItems():
             dataPoints[item.text()] = self._get_data_by_name(item.text())
 
-        self.export_csv(dataPoints)
+        self.export(dataPoints)
 
     def removeDatapointFromTree(self):
         items = self.dataPointTreeWidget.selectedItems()
@@ -1434,8 +1434,7 @@ class SimulationGui(QMainWindow):
 
         # add custom export entries
         widget.scene().contextMenu = [
-            QAction("Export png", self),
-            QAction("Export csv", self)
+            QAction("Export as ...", self),
         ]
 
         def _export_wrapper(export_func):
@@ -1447,8 +1446,6 @@ class SimulationGui(QMainWindow):
             return _wrapper
 
         widget.scene().contextMenu[0].triggered.connect(
-            _export_wrapper(self.export_png))
-        widget.scene().contextMenu[1].triggered.connect(
             _export_wrapper(self.exportPlotItem))
 
         # create dock container and add it to dock area
@@ -1507,59 +1504,24 @@ class SimulationGui(QMainWindow):
             if len(c.getData()) > 2:
                 self._logger.warning('Can not handle the amount of data!')
                 continue
-            dataPoints[c.name() + str('.0')] = c.getData()[0]
-            dataPoints[c.name() + str('.1')] = c.getData()[1]
+            dataPoints[c.name()] = c.getData()[1]
+        dataPoints['time'] = c.getData()[0]
 
-        self.export_csv(dataPoints)
+        self.export(dataPoints)
 
-    def export_csv(self, dataPoints):
-        exporter = CSVExporter(dataPoints)
-        filename = QFileDialog.getSaveFileName(self, "CSV export", ".csv", "CSV Data (*.csv)")
+    def export(self, dataPoints):
+        exporter = Exporter(dataPoints=dataPoints)
+        filename = QFileDialog.getSaveFileName(self, "Export as ...", ".csv", "CSV Data (*.csv);;PNG Image (*.png)")
         if filename[0]:
-            exporter.export(filename[0])
+            _, ext = os.path.splitext(filename[0])
+            if ext == 'csv':
+                exporter.export_csv(filename[0])
+            elif ext == 'png':
+                exporter.export_png(filename[0])
+            else:
+                self._logger.error("Wrong extension used!")
+                return
             self._logger.info("Export successful as '{}.".format(filename[0]))
-
-    def export_png(self, plot_item, name, coord_item, time_item):
-        """ Custom export handler """
-        filename = QFileDialog.getSaveFileName(self,
-                                               "PNG export",
-                                               name + ".png",
-                                               "PNG Image (*.png)")
-        if not filename[0]:
-            return
-
-        show_time_on_export = self._settings.value("view/show_time_on_export",
-                                                   type=bool)
-        img_width = self._settings.value("view/export_width", type=int)
-        img_height = self._settings.value("view/export_height", type=int)
-
-        exporter = pg.exporters.ImageExporter(plot_item)
-        bg_brush = pg.mkBrush('w')
-        exporter.params.param('background').setValue(bg_brush.color())
-
-        # hack due to bug in pyqtgraph
-        exporter.params.param('width').setValue(
-            img_width,
-            blockSignal=exporter.widthChanged)
-        exporter.params.param('height').setValue(
-            img_height,
-            blockSignal=exporter.heightChanged)
-
-        was_visible = coord_item.isVisible()
-        if was_visible:
-            coord_item.hide()
-        if not show_time_on_export:
-            time_item.hide()
-
-        # export
-        exporter.export(filename[0])
-        self._logger.info("Plot '{}' saved as '{}'".format(name, filename[0]))
-
-        # restore old state
-        if not show_time_on_export:
-            time_item.show()
-        if was_visible:
-            coord_item.show()
 
     def _get_data_by_name(self, name):
         tmp = name.split(".")
