@@ -1510,13 +1510,23 @@ class SimulationGui(QMainWindow):
         self.export(dataPoints)
 
     def export(self, dataPoints):
-        exporter = Exporter(dataPoints=dataPoints)
-        filename = QFileDialog.getSaveFileName(self, "Export as ...", ".csv", "CSV Data (*.csv);;PNG Image (*.png)")
+        try:
+            exporter = Exporter(dataPoints=dataPoints)
+        except Exception as e:
+            self._logger.error("Can't instantiate exporter! " + str(e))
+            return
+
+        defaultPath = os.getenv('HOME')
+        defaultFile = os.path.join(defaultPath, 'export.csv')
+        filename = QFileDialog.getSaveFileName(self,
+                                               "Export as ...",
+                                               defaultFile,
+                                               "CSV Data (*.csv);;PNG Image (*.png)")
         if filename[0]:
             _, ext = os.path.splitext(filename[0])
-            if ext == 'csv':
+            if ext == '.csv':
                 exporter.export_csv(filename[0])
-            elif ext == 'png':
+            elif ext == '.png':
                 exporter.export_png(filename[0])
             else:
                 self._logger.error("Wrong extension used!")

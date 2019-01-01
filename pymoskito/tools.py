@@ -278,21 +278,33 @@ class Exporter(object):
     def __init__(self, **kwargs):
         dataPoints = kwargs.get('dataPoints', None)
 
-        # raise if dataPoints is None
+        if dataPoints is None:
+            raise Exception("Given data points are None!")
 
-        # build pandas dataframe
+        # build pandas data frame
         self.df = pd.DataFrame.from_dict(dataPoints)
 
+        if 'time' in self.df.columns:
+            self.df.set_index('time', inplace=True)
 
     def export_png(self, fileName):
-        fig = plt.figure(figsize=(10, 10))
-        gs = gridspec.GridSpec(1, 1, hspace=0.25)
+        fig = plt.figure(figsize=(10, 6))
+        gs = gridspec.GridSpec(1, 1, hspace=0.1)
         axes = plt.Subplot(fig, gs[0])
 
-        for col in self.df.columns():
+        for col in self.df.columns:
             self.df[col].plot(ax=axes, label=col)
 
-        fig.savefig(fileName + '.png', format='png', dpi=1200, bbox_inches='tight')
+        axes.legend(bbox_to_anchor=(0., 1.02, 1., .102), loc=4,
+                    ncol=4, mode="expand", borderaxespad=0., framealpha=0.5)
+
+        axes.grid(True)
+        if self.df.index.name == 'time':
+            axes.set_xlabel(r"Time (s)")
+
+        fig.add_subplot(axes)
+
+        fig.savefig(fileName, dpi=300)
 
     def export_csv(self, fileName, sep=','):
         self.df.to_csv(fileName, sep=sep)
