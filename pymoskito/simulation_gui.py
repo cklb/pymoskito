@@ -10,6 +10,7 @@ import pkg_resources
 import webbrowser
 import yaml
 from operator import itemgetter
+from pathlib import Path
 from scipy.interpolate import interp1d
 
 # Qt
@@ -1516,7 +1517,7 @@ class SimulationGui(QMainWindow):
             self._logger.error("Can't instantiate exporter! " + str(e))
             return
 
-        defaultPath = os.getenv('HOME')
+        defaultPath = str(Path.home())
         defaultFile = os.path.join(defaultPath, 'export.csv')
         filename = QFileDialog.getSaveFileName(self,
                                                "Export as ...",
