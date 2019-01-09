@@ -755,6 +755,8 @@ class SimulationGui(QMainWindow):
                           os.path.join(os.path.curdir,
                                        "results",
                                        "metaprocessing"))
+        self._add_setting("path/previous_plot_export", os.path.curdir)
+        self._add_setting("path/previous_plot_format", ".csv")
 
         # control flow management
         self._add_setting("control/autoplay_animation", "False")
@@ -1447,7 +1449,7 @@ class SimulationGui(QMainWindow):
             return _wrapper
 
         widget.scene().contextMenu[0].triggered.connect(
-            _export_wrapper(self.exportPlotItem))
+            _export_wrapper(self.export_plot_item))
 
         # create dock container and add it to dock area
         dock = pg.dockarea.Dock(title, closable=True)
@@ -1497,42 +1499,60 @@ class SimulationGui(QMainWindow):
 
         return list
 
-    def exportPlotItem(self, plot_item, name, coord_item, time_item):
-        dataPoints = {}
+    def export_plot_item(self, plot_item, name, coord_item, time_item):
+        plot_data = {}
         for i, c in enumerate(plot_item.curves):
             if c.getData() is None:
                 continue
             if len(c.getData()) > 2:
-                self._logger.warning('Can not handle the amount of data!')
+                self._logger.warning("Can not handle data format of entry"
+                                     "'{}'!".format(c.name()))
                 continue
-            dataPoints[c.name()] = c.getData()[1]
-        dataPoints['time'] = c.getData()[0]
+            if "time" not in plot_data:
+                plot_data["time"] = c.getData()[0]
 
-        self.export(dataPoints)
+            c_name = c.name()
+            c_unit = self._get_units(c_name)
+            if c_unit is not None:
+                c_name += " ({})".format(c_unit)
 
-    def export(self, dataPoints):
+            plot_data[c_name] = c.getData()[1]
+
+        self.export(plot_data)
+
+    def export(self, plot_data):
         try:
-            exporter = Exporter(dataPoints=dataPoints)
+            exporter = Exporter(data_points=plot_data)
         except Exception as e:
             self._logger.error("Can't instantiate exporter! " + str(e))
             return
 
-        defaultPath = str(Path.home())
-        defaultFile = os.path.join(defaultPath, 'export.csv')
+        last_path = self._settings.value("path/previous_plot_export")
+        last_format = self._settings.value("path/previous_plot_format")
+        export_formats = ["CSV Data (*.csv)", "PNG Image (*.png)"]
+        if last_format == ".png":
+            export_formats[:] = export_formats[::-1]
+        format_str = ";;".join(export_formats)
+        default_file = os.path.join(last_path, "export" + last_format)
         filename = QFileDialog.getSaveFileName(self,
                                                "Export as ...",
-                                               defaultFile,
-                                               "CSV Data (*.csv);;PNG Image (*.png)")
+                                               default_file,
+                                               format_str)
+
         if filename[0]:
-            _, ext = os.path.splitext(filename[0])
+            file, ext = os.path.splitext(filename[0])
+            self._settings.setValue("path/previous_plot_export",
+                                    os.path.dirname(file))
             if ext == '.csv':
                 exporter.export_csv(filename[0])
+                self._settings.setValue("path/previous_plot_format", ".csv")
             elif ext == '.png':
                 exporter.export_png(filename[0])
+                self._settings.setValue("path/previous_plot_format", ".png")
             else:
                 self._logger.error("Wrong extension used!")
                 return
-            self._logger.info("Export successful as '{}.".format(filename[0]))
+            self._logger.info("Export successful as '{}'.".format(filename[0]))
 
     def _get_data_by_name(self, name):
         tmp = name.split(".")

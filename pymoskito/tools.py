@@ -274,20 +274,20 @@ def get_figure_size(scale):
     return fig_size
 
 
-class Exporter(object):
+class Exporter:
     def __init__(self, **kwargs):
-        dataPoints = kwargs.get('dataPoints', None)
+        data_points = kwargs.get('data_points', None)
 
-        if dataPoints is None:
+        if data_points is None:
             raise Exception("Given data points are None!")
 
         # build pandas data frame
-        self.df = pd.DataFrame.from_dict(dataPoints)
+        self.df = pd.DataFrame.from_dict(data_points)
 
         if 'time' in self.df.columns:
             self.df.set_index('time', inplace=True)
 
-    def export_png(self, fileName):
+    def export_png(self, file_name):
         fig = plt.figure(figsize=(10, 6))
         gs = gridspec.GridSpec(1, 1, hspace=0.1)
         axes = plt.Subplot(fig, gs[0])
@@ -304,8 +304,8 @@ class Exporter(object):
 
         fig.add_subplot(axes)
 
-        fig.savefig(fileName, dpi=300)
+        fig.savefig(file_name, dpi=300)
 
-    def export_csv(self, fileName, sep=','):
-        self.df.to_csv(fileName, sep=sep)
+    def export_csv(self, file_name, sep=','):
+        self.df.to_csv(file_name, sep=sep)
 
