@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import sys
 import os
+os.environ["QT_AUTO_SCREEN_SCALE_FACTOR"] = "1"  # use high dpi settings
 import importlib
 from PyQt5.QtWidgets import QApplication
 
