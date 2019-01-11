@@ -5,6 +5,7 @@ import pymoskito as pm
 
 from . import settings as st
 
+
 class BallPlateModel(pm.Model):
     """
     Implementation of the Ball and Beam System

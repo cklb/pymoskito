@@ -25,6 +25,7 @@ class LuenbergerObserver(pm.Observer):
 
     def __init__(self, settings):
         settings.update(output_dim=4)
+        super().__init__(settings)
         self.output = np.array(self._settings["initial state"], dtype=float)
 
     def state_func(self, t, q, args):
@@ -44,5 +45,6 @@ class LuenbergerObserver(pm.Observer):
                                  (system_input, system_output))
             self.output += self.step_width * dy
         return self.output
+
 
 pm.register_simulation_module(pm.Observer, LuenbergerObserver)
