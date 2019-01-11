@@ -10,23 +10,24 @@ import pkg_resources
 import webbrowser
 import yaml
 from operator import itemgetter
-from pathlib import Path
 from scipy.interpolate import interp1d
 
 # Qt
 from PyQt5.QtCore import (pyqtSignal, pyqtSlot, Qt, QTimer, QSize, QSettings,
                           QCoreApplication, QModelIndex, QRectF)
 from PyQt5.QtGui import QIcon, QKeySequence, QColor
-from PyQt5.QtWidgets import (QWidget, QAction, QSlider, QMainWindow,
-                             QTreeView, QListWidget, QListWidgetItem,
-                             QAbstractItemView,
-                             QToolBar, QStatusBar, QProgressBar, QLabel,
-                             QTextEdit, QFileDialog, QInputDialog,
-                             QFrame, QVBoxLayout, QMessageBox, QApplication, QTreeWidget,
-                             QHBoxLayout, QPushButton, QTreeWidgetItem)
+from PyQt5.QtWidgets import (
+    QApplication, QMainWindow,
+    QWidget, QAction, QSlider, QLabel, QFrame, QPushButton,
+    QListWidget, QListWidgetItem, QTreeView, QTreeWidget, QTreeWidgetItem,
+    QAbstractItemView,
+    QToolBar, QStatusBar, QProgressBar,
+    QTextEdit, QFileDialog, QInputDialog,
+    QVBoxLayout, QHBoxLayout, QMessageBox,
+)
+
 # pyqtgraph
 import pyqtgraph as pg
-from pyqtgraph import exporters
 from pyqtgraph.dockarea import DockArea
 
 # vtk
@@ -266,52 +267,53 @@ class SimulationGui(QMainWindow):
         self.dataPointManipulationLayout = QVBoxLayout()
         self.dataPointManipulationLayout.addStretch()
         self.dataPointManipulationLayout.setSpacing(5)
-        self.dataPointRightButtonWidget = QWidget()
-        self.dataPointRightButtonLayout = QVBoxLayout()
-        self.dataPointRightButton = QPushButton(chr(0x226b), self)
-        self.dataPointRightButton.setToolTip(
-            "Add the selected data set from the left to the selected plot "
-            "on the right.")
-        self.dataPointRightButton.clicked.connect(self.addDatapointToTree)
-        self.dataPointLabel = QLabel('Datapoints', self)
+        self.dataPointManipulationWidget.setLayout(self.dataPointManipulationLayout)
+        self.dataLayout.addWidget(self.dataPointManipulationWidget)
+
+        self.dataPointLabel = QLabel("Data", self)
         self.dataPointLabel.setAlignment(Qt.AlignCenter)
         self.dataPointManipulationLayout.addWidget(self.dataPointLabel)
-        self.dataPointManipulationLayout.addWidget(self.dataPointRightButton)
-        self.dataPointLeftButtonWidget = QWidget()
-        self.dataPointLeftButtonLayout = QVBoxLayout()
-        self.dataPointLeftButton = QPushButton(chr(0x03A7), self)
-        self.dataPointLeftButton.setToolTip(
+        self.dataPointAddButton = QPushButton(self)
+        self.dataPointAddButton.setIcon(QIcon(get_resource("add.png")))
+        self.dataPointAddButton.setToolTip(
+            "Add the selected data set from the left to the selected plot "
+            "on the right.")
+        self.dataPointAddButton.clicked.connect(self.addDatapointToTree)
+        self.dataPointManipulationLayout.addWidget(self.dataPointAddButton)
+
+        self.dataPointRemoveButton = QPushButton(self)
+        self.dataPointRemoveButton.setIcon(QIcon(get_resource("delete.png")))
+        self.dataPointRemoveButton.setToolTip(
             "Remove the selected data set from the plot on the right."
         )
-        self.dataPointLeftButton.clicked.connect(self.removeDatapointFromTree)
-        self.dataPointManipulationLayout.addWidget(self.dataPointLeftButton)
-        self.dataPointExportButton = QPushButton(chr(0x25BC), self)
+        self.dataPointRemoveButton.clicked.connect(self.removeDatapointFromTree)
+        self.dataPointManipulationLayout.addWidget(self.dataPointRemoveButton)
+
+        self.dataPointExportButton = QPushButton(self)
+        self.dataPointExportButton.setIcon(QIcon(get_resource("export.png")))
         self.dataPointExportButton.setToolTip(
             "Export the selected data set from the left to a csv or png file."
         )
         self.dataPointExportButton.clicked.connect(self.exportDatapointFromTree)
         self.dataPointManipulationLayout.addWidget(self.dataPointExportButton)
-        self.dataPointPlotAddButtonWidget = QWidget()
-        self.dataPointPlotAddButtonLayout = QVBoxLayout()
-        self.dataPointPlotAddButton = QPushButton("+", self)
-        self.dataPointPlotAddButton.setToolTip(
-            "Create a new plot window."
-        )
-        self.dataPointPlotAddButton.clicked.connect(self.addPlotTreeItem)
-        self.plotLabel = QLabel('Plots', self)
+
+        self.plotLabel = QLabel("Plots", self)
         self.plotLabel.setAlignment(Qt.AlignCenter)
         self.dataPointManipulationLayout.addWidget(self.plotLabel)
+
+        self.dataPointPlotAddButton = QPushButton(self)
+        self.dataPointPlotAddButton.setIcon(QIcon(get_resource("add.png")))
+        self.dataPointPlotAddButton.setToolTip("Create a new plot window.")
+        self.dataPointPlotAddButton.clicked.connect(self.addPlotTreeItem)
         self.dataPointManipulationLayout.addWidget(self.dataPointPlotAddButton)
-        self.dataPointPlotRemoveButtonWidget = QWidget()
-        self.dataPointPlotRemoveButtonLayout = QVBoxLayout()
-        self.dataPointPlotRemoveButton = QPushButton("-", self)
+
+        self.dataPointPlotRemoveButton = QPushButton(self)
+        self.dataPointPlotRemoveButton.setIcon(QIcon(get_resource("delete.png")))
         self.dataPointPlotRemoveButton.setToolTip(
             "Delete the selected plot window."
         )
         self.dataPointPlotRemoveButton.clicked.connect(self.removeSelectedPlotTreeItems)
         self.dataPointManipulationLayout.addWidget(self.dataPointPlotRemoveButton)
-        self.dataPointManipulationWidget.setLayout(self.dataPointManipulationLayout)
-        self.dataLayout.addWidget(self.dataPointManipulationWidget)
 
         self.dataPointTreeWidget = QTreeWidget()
         self.dataPointTreeWidget.setHeaderLabels(["PlotTitle", "DataPoint"])
@@ -657,9 +659,9 @@ class SimulationGui(QMainWindow):
         # check if a top level item has been clicked
         if not item.parent():
             if title in self.non_plotting_docks:
-                self._logger.error("Title '{}' not allowed for a plot window since"
-                                   "it would shadow on of the reserved "
-                                   "names".format(title))
+                self._logger.error(
+                    "Title '{}' not allowed for a plot window since it would"
+                    " shadow on of the reserved names".format(title))
                 return
 
             # check if plot has already been opened
@@ -711,7 +713,7 @@ class SimulationGui(QMainWindow):
             self._read_results()
             self._update_data_list()
             self._update_plots()
-            lsettings = self.currentDataset['modules']
+            lsettings = self.currentDataset["modules"]
             lsettings["clear previous"] = True
             self.sim.restore_regime(lsettings)
             self.update_gui()
@@ -1284,7 +1286,7 @@ class SimulationGui(QMainWindow):
         # self.dataList.clear()
         self.dataPointListWidget.clear()
         # TODO lets open and check if possible to plot
-        # TODO create trees with children instead of plain sufffixes
+        # TODO create trees with children instead of plain suffixes
         for module_name, results in self.currentDataset["results"].items():
             if not isinstance(results, np.ndarray):
                 continue
