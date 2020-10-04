@@ -1,3 +1,0 @@
-[submodule "pymoskito/libs/pybind11"]
-	path = pymoskito/libs/pybind11
-	url = https://github.com/pybind/pybind11.git
