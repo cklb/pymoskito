@@ -1,7 +1,8 @@
 import logging
 import os
 import subprocess
-import importlib
+from pathlib import Path
+import importlib.util
 
 from PyQt5.QtCore import QObject
 
@@ -29,41 +30,37 @@ class CppBase(QObject):
         if module_path is None:
             raise BindingException("Instantiation of binding class without"
                                    " module_path is not allowed!")
-        self.module_path = module_name
+        self.module_path = Path(module_path)
 
-        self.src_path = os.path.join(os.path.dirname(self.module_path),
-                                     "binding")
-        self.module_inc_path = os.path.join(self.src_path,
-                                            self.module_name + ".h")
-        self.module_src_path = os.path.join(self.src_path,
-                                            self.module_name + ".cpp")
+        self.src_path = self.module_path / "binding"
 
-        self.pybind_path = os.path.join(os.path.dirname(__file__),
-                                        "libs",
-                                        "pybind11")
-        self.cmake_lists_path = os.path.join(self.src_path, 'CMakeLists.txt')
+        self.module_inc_path = self.module_path / str(self.module_name + ".h")
 
-        self.create_binding_config()
-        self.build_binding()
+        self.module_src_path = self.module_path / str(self.module_name + '.cpp')
+
+        self.cmake_lists_path = self.src_path / "CMakeLists.txt"
+
+        if self.create_binding_config():
+            self.build_binding()
 
     def create_binding_config(self):
         # check if folder exists
-        if not os.path.isdir(self.src_path):
+        if not self.src_path.is_dir():
             self._logger.error("Dir binding not available in project folder '{}'"
                                "".format(os.getcwd()))
-            return
+            return False
 
-        if not os.path.exists(self.module_inc_path):
-            self._logger.error("Module '{}'.h could not found in binding folder"
+        if not self.module_inc_path.exists():
+            self._logger.error("Module '{}' could not found in binding folder"
                                "".format(self.module_inc_path))
-            return
+            return False
 
-        if not os.path.exists(self.module_inc_path):
-            self._logger.error("Module '{}'.h could not found in binding folder"
-                               "".format(self.module_src_path))
-            return
+        if not self.module_inc_path.exists():
+            self._logger.error("Module '{}' could not found in binding folder"
+                               "".format(self.module_inc_path))
+            return False
 
-        if not os.path.exists(self.cmake_lists_path):
+        if not self.cmake_lists_path.exists():
             self._logger.warning("No CMakeLists.txt found!")
             self._logger.info("Generating new CMake config.")
             self.create_cmake_lists()
@@ -71,6 +68,8 @@ class CppBase(QObject):
         config_changed = self.update_binding_config()
         if config_changed:
             self.build_config()
+
+        return True
 
     def build_config(self):
         # generate config
@@ -104,10 +103,22 @@ class CppBase(QObject):
             bool: True if build config has been changed and cmake has to be
             rerun.
         """
-        config_line = "pybind11_add_module({} {} {})".format(
-            self.module_name,
-            self.module_name + '.cpp',
+        config_line = "add_library({} SHARED {} {})".format(
+            self.module_name, self.module_src_path.as_posix(),
             'binding_' + self.module_name + '.cpp')
+
+        if os.name == 'nt':
+            config_line += "\nset_target_properties({} PROPERTIES PREFIX \"\" OUTPUT_NAME \"{}\" SUFFIX \".pyd\")\n".format(
+                self.module_name,
+                self.module_name)
+        else:
+            config_line += "\nset_target_properties({} PROPERTIES PREFIX \"\" OUTPUT_NAME \"{}\" SUFFIX \".so\")\n".format(
+                self.module_name,
+                self.module_name)
+
+        config_line += "target_link_libraries({} ${{PYTHON_LIBRARIES}})".format(
+            self.module_name
+        )
 
         with open(self.cmake_lists_path, "r") as f:
             if config_line in f.read():
@@ -127,8 +138,11 @@ class CppBase(QObject):
         Returns:
 
         """
-        c_make_lists = "cmake_minimum_required(VERSION 2.8.12)\n"
+        c_make_lists = "cmake_minimum_required(VERSION 3.4)\n"
         c_make_lists += "project({})\n\n".format(self.module_name)
+
+        c_make_lists += "set( CMAKE_CXX_STANDARD 11 )\n\n"
+        c_make_lists += "find_package(PythonLibs REQUIRED)\n\n"
 
         c_make_lists += "set( CMAKE_RUNTIME_OUTPUT_DIRECTORY . )\n"
         c_make_lists += "set( CMAKE_LIBRARY_OUTPUT_DIRECTORY . )\n"
@@ -141,17 +155,22 @@ class CppBase(QObject):
         c_make_lists += "\tset( CMAKE_ARCHIVE_OUTPUT_DIRECTORY_${OUTPUTCONFIG} . )\n"
         c_make_lists += "endforeach( OUTPUTCONFIG CMAKE_CONFIGURATION_TYPES )\n\n"
 
-        # TODO get pybind install via pip running and use this line:
-        # c_make_lists += "find_package(pybind11)"
-        c_make_lists += "add_subdirectory({} pybind11)\n".format(self.pybind_path)
+        c_make_lists += "include_directories(${PYTHON_INCLUDE_DIRS})\n"
 
         with open(self.cmake_lists_path, "w") as f:
             f.write(c_make_lists)
 
-    def get_class_from_module(self, class_name):
+    def get_class_from_module(self):
         try:
-            module = importlib.import_module("binding." + self.module_name)
-            return getattr(module, class_name)
+            if os.name == 'nt':
+                module_path = self.src_path / str(self.module_name + '.pyd')
+            else:
+                module_path = self.src_path / str(self.module_name + '.so')
+
+            spec = importlib.util.spec_from_file_location(self.module_name, module_path)
+            module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(module)
+            return module
         except ImportError as e:
             self._logger.error("Cannot load module: {}".format(e))
             raise e
