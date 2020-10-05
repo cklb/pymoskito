@@ -16,7 +16,7 @@ class CppPIDController(pm.Controller, pm.CppBase):
         ("Kp", 12),
         ("Ti", 12),
         ("Td", 12),
-        ("dt", 0.1),
+        ("dt [s]", 0.1),
         ("output_limits", [0, 255]),
         ("input_state", [0]),
         ("tick divider", 1),
@@ -41,7 +41,7 @@ class CppPIDController(pm.Controller, pm.CppBase):
                                                               self._settings["Td"],
                                                               self._settings["output_limits"][0],
                                                               self._settings["output_limits"][1],
-                                                              self._settings['dt'])
+                                                              self._settings['dt [s]'])
 
     def _control(self,
                  time,
@@ -57,7 +57,7 @@ class CppPIDController(pm.Controller, pm.CppBase):
         for idx, state in enumerate(self._settings["input_state"]):
             x[idx] = input_values[int(state)]
 
-        if np.isclose(dt, self._settings['dt']):
+        if np.isclose(dt, self._settings['dt [s]']):
             # save last control time
             self.lastTime = time
 

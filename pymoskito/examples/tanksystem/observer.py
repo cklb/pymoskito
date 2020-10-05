@@ -15,7 +15,7 @@ class CppHighGainObserver(pm.Observer, pm.CppBase):
     """
     public_settings = OrderedDict([
         ("initial state", [0.0, 0.0]),
-        ("poles", [-1, -1]),
+        ("poles", [-10, -10]),
         ("tick divider", 1),
         ("AT1", st.AT1),
         ("AT2", st.AT2),
@@ -26,7 +26,7 @@ class CppHighGainObserver(pm.Observer, pm.CppBase):
         ("g", st.g),
         ("Ku", st.Ku),
         ("uA0", st.uA0),
-        ("dt", 0.1),
+        ("dt [s]", 0.1),
     ])
 
     def __init__(self, settings):
@@ -42,7 +42,7 @@ class CppHighGainObserver(pm.Observer, pm.CppBase):
                                                                  self._settings["AS2"],
                                                                  self._settings["Ku"],
                                                                  self._settings["uA0"],
-                                                                 self._settings['dt'])
+                                                                 self._settings['dt [s]'])
         self.obs.setInitialState(np.array(self._settings["initial state"]))
         self.obs.setGain(np.array(self._settings["poles"]))
 
