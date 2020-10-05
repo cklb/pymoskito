@@ -1,14 +1,8 @@
 /** @file PIDController.cpp
- * This file includes a pid controller implementation for the two tank system.
+ * This file includes a PID controller implementation for the two tank system.
  *
  */
 #include "PIDController.h"
-
-
-void PIDController::reset() {
-    this->dIntegral = 0.0;
-    this->dLastError = 0.0;
-}
 
 
 double PIDController::compute(const double &dCurInput,

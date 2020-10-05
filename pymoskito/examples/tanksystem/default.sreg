@@ -6,6 +6,7 @@
 
   Model:
    type: TwoTankSystem
+   initial state: [0, 0]
 
   Solver:
    type: ODEInt
@@ -18,13 +19,15 @@
   Controller:
    type: CppPIDController
    input_state: [1]
-   Kp: 200
-   Ti: 0.5
+   Kp: 2.3612
+   Ti: 73.204
    Td: 0
+   output_limits: [0, 12]
 
   Trajectory:
    type: SmoothTransition
    states: [0, 0.15]
+   delta t: 300
 
   ModelMixer:
    type: AdditiveMixer
@@ -33,3 +36,4 @@
 
   Observer:
    type: CppHighGainObserver
+   poles: [-0.01, -0.01]

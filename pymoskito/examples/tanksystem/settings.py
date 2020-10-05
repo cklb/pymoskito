@@ -17,6 +17,8 @@ rT2 = 0.060195545420039      # m - radius of tank 2
 rS1 = 0.004065038180786      # m - radius between drain and tank 1 by 1 rotation
 rS2 = 0.003308239534353      # m - radius between drain and tank 2 by 2 rotation
 g = 9.81                     # m / s^2 - gravity
+hV1 = 0.055                  # m - height between ventil and zero height
+hV2 = 0.055                  # m - height between ventil and zero height
 
 AT1 = np.pi * rT1 ** 2       # m**2 - Tank 1 cross section
 AT2 = np.pi * rT2 ** 2       # m**2 - Tank 2 cross section
@@ -32,5 +34,5 @@ scale = 2                    # scale for visualization
 # export settings latex-style
 # -----------------------------------------------------------------------------
 latex_font_size = 14
-label_size = 1*latex_font_size
-title_size = 1.5*latex_font_size
+label_size = 1 * latex_font_size
+title_size = 1.5 * latex_font_size

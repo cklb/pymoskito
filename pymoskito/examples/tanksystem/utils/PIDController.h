@@ -1,5 +1,5 @@
-/** @file Controller.h
- * This file includes a pid controller implementation for the two tank system.
+/** @file PIDController.h
+ * This file includes a PID controller implementation for the two tank system.
  *
  */
 #ifndef PIDCONTROLLER_H
@@ -49,24 +49,9 @@ public:
     /// Destructor of the PID controller
     ~PIDController() {}
 
-    void reset();
-
     double compute(const double &dCurInput,
                    const double &dCurSetpoint);
 
-    /**
-     * @brief Method that returns the current integral part of the controller
-     *
-     * @return integral part
-     */
-    double getIntegral() const { return dIntegral; }
-
-    /**
-     * @brief Method that returns the error from the last time step
-     *
-     * @return error from the last time step
-     */
-    double getLastError() const { return dLastError; }
 };
 
 #endif // PIDCONTROLLER_H

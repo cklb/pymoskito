@@ -12,6 +12,8 @@ class TwoTankSystem(pm.Model):
                                    ("AT2", st.AT2),
                                    ("hT1", st.hT1),
                                    ("hT2", st.hT2),
+                                   ("hV1", st.hV1),
+                                   ("hV2", st.hV2),
                                    ("AS1", st.AS1),
                                    ("AS2", st.AS2),
                                    ("g", st.g),
@@ -46,18 +48,26 @@ class TwoTankSystem(pm.Model):
         AS2 = self.settings['AS2']
         AT1 = self.settings['AT1']
         AT2 = self.settings['AT2']
+        hV1 = self.settings['hV1']
+        hV2 = self.settings['hV2']
 
         a1 = AS1 * np.sqrt(2 * g / (AT1 ** 2 - AS1 ** 2))
         a2 = AS2 * np.sqrt(2 * g / (AT2 ** 2 - AS2 ** 2))
+
+        if x1 <= 1e-6:
+            hV1 = 0.0
+
+        if x2 <= 1e-6:
+            hV2 = 0.0
 
         if uA < uA0:
             u = np.array([0])
         else:
             u = uA - uA0
 
-        dx1 = - a1 * np.sign(x1) * np.sqrt(np.abs(x1)) + Ku / AT1 * u
-        dx2 = - a2 * np.sign(x2) * np.sqrt(np.abs(x2)) + \
-              a1 * np.sign(x1) * np.sqrt(np.abs(x1)) * AT1 / AT2
+        dx1 = - a1 * np.sign(x1 + hV1) * np.sqrt(np.abs(x1 + hV1)) + Ku / AT1 * u
+        dx2 = - a2 * np.sign(x2 + hV2) * np.sqrt(np.abs(x2 + hV2)) + \
+              a1 * np.sign(x1 + hV1) * np.sqrt(np.abs(x1 + hV1)) * AT1 / AT2
 
         return np.array([dx1, dx2])
 

@@ -18,36 +18,8 @@ protected:
     double dTd = 1.0;               ///< Time value for the derivation part
     double dOutputMin = -255.0;     ///< Minimal value for the calculated output
     double dOutputMax = 255.0;      ///< Maximal value for the calculated output
-    double dSampleTime = 0.0;       ///< Sample time of the controller
+    double dSampleTime = 0.0;       ///< Sample time in \f \si{\milli\second} \f
 public:
-    /**
-     * @brief Method that sets the gain value of the proportional part
-     *
-     * @param gain value of the proportional part
-     */
-    void setKp(const double &dKp) { this->dKp = dKp; }
-
-    /**
-     * @brief Method that sets the time value of the integral part
-     *
-     * @param time value of the integral part
-     */
-    void setTi(const double &dTi) { this->dTi = dTi; }
-
-    /**
-     * @brief Method that sets the time value of the derivation part
-     *
-     * @param time value of the derivation part
-     */
-    void setTd(const double &dTd) { this->dTd = dTd; }
-
-    /**
-     * @brief Method that returns the current sample time of the controller
-     *
-     * @return the current sample time of the controller
-     */
-    double getSampleTime() const { return dSampleTime; }
-
     /**
      * @brief Method the computes the controller output of the current time step for the given input value and setpoint
      *
@@ -57,11 +29,6 @@ public:
      */
     virtual double compute(const double &dCurInput,
                            const double &dCurSetpoint) = 0;
-
-    /**
-     * @brief Method that resets the integral and last error part to zero
-     */
-    virtual void reset() = 0;
 };
 
 #endif // CONTROLLER_H
