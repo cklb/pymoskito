@@ -8,15 +8,13 @@ matrix:
   - python: '3.8'
   - python: '3.9'
 
+services:
+  - xvfb
+
 install:
 - pip install --upgrade pip
 - pip install -r requirements.txt
 - pip install .
-
-before_script:
-- export DISPLAY=:99.0
-- sh -e /etc/init.d/xvfb start
-- sleep 3
 
 script:
 - python setup.py test
