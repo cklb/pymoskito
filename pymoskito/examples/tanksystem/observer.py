@@ -33,7 +33,7 @@ class CppHighGainObserver(pm.Observer, pm.CppBase):
         settings.update(output_dim=2)
         pm.Observer.__init__(self, settings)
         pm.CppBase.__init__(self,
-                            module_name='Observer',
+                            module_name='HighGainObserver',
                             module_path=os.path.dirname(__file__) + '/utils/')
 
         self.obs = self.get_class_from_module().HighGainObserver(self._settings["AT1"],

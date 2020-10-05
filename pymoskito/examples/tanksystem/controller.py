@@ -30,7 +30,7 @@ class CppPIDController(pm.Controller, pm.CppBase):
 
         pm.Controller.__init__(self, settings)
         pm.CppBase.__init__(self,
-                            module_name='Controller',
+                            module_name='PIDController',
                             module_path=os.path.dirname(__file__) + '/utils/')
 
         self.lastTime = 0
