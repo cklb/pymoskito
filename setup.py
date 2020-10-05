@@ -2,20 +2,10 @@
 # -*- coding: utf-8 -*-
 
 try:
-    from setuptools import setup, find_packages
+    from setuptools import setup
 except ImportError:
-    from distutils.core import setup, find_packages
+    from distutils.core import setup
 
-import subprocess, os
-
-def check_file(f):
-    if not os.path.exists(f):
-        print("Could not find {}".format(f))
-        subprocess.run(['git submodule update --init --recursive'], cwd=cwd, shell=True)
-
-cwd = os.path.dirname(os.path.abspath(__file__))
-lib_path = os.path.join(cwd, "pymoskito/libs")
-check_file(os.path.join(lib_path, "pybind11", "CMakeLists.txt"))
 
 with open("README.rst") as readme_file:
     readme = readme_file.read()
@@ -55,7 +45,7 @@ setup(
     author="Stefan Ecklebe",
     author_email="stefan.ecklebe@tu-dresden.de",
     license="GPLv3",
-    packages=find_packages(),
+    packages=["pymoskito"],
     package_dir={"pymoskito": "pymoskito"},
     install_requires=requirements,
     include_package_data=True,
