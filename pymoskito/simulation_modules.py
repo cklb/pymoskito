@@ -371,14 +371,17 @@ class Trajectory(SimulationModule):
     """
 
     def __init__(self, settings):
-        control_order = 0
-        feedforward_order = 0
-        if "Controller" in settings["modules"].keys():
-            control_order = settings["modules"]["Controller"].input_order
-        if "Feedforward" in settings["modules"].keys():
-            feedforward_order = settings["modules"]["Feedforward"].input_order
-        settings.update(differential_order=max([control_order,
-                                                feedforward_order]))
+        if "modules" in settings:
+            control_order = 0
+            feedforward_order = 0
+            if "Controller" in settings["modules"].keys():
+                control_order = settings["modules"]["Controller"].input_order
+            if "Feedforward" in settings["modules"].keys():
+                feedforward_order = settings["modules"]["Feedforward"].input_order
+            settings.update(differential_order=max([control_order,
+                                                    feedforward_order]))
+        else:
+            assert "differential_order" in settings
         SimulationModule.__init__(self, settings)
 
     def calc_output(self, input_vector):

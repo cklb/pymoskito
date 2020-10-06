@@ -100,6 +100,79 @@ class TestSimulationModule(unittest.TestCase):
         out = m.calc_output(input_data)
 
 
+class TrajectoryTestCase(unittest.TestCase):
+
+    def setUp(self):
+        self.d_order = 7
+
+    def test_setpoint(self):
+        # check defaults
+        st = pm.Setpoint.public_settings
+        self.assertEqual(st["Setpoint"], [0])
+
+        st["differential_order"] = self.d_order
+        st["Setpoint"] = [1, 4]
+        tr = pm.Setpoint(st)
+
+        # check properties
+        self.assertEqual(tr._settings["differential_order"], self.d_order)
+        self.assertEqual(tr._settings["Setpoint"], [1, 4])
+
+        # check output
+        out_1 = tr.calc_output(dict(time=1))
+        ref_out = np.zeros((2, self.d_order + 1))
+        ref_out[0, 0] = 1
+        ref_out[1, 0] = 4
+        np.testing.assert_array_equal(out_1, ref_out)
+
+        # setpoint should be time independent
+        out_2 = tr.calc_output(dict(time=10))
+        np.testing.assert_array_equal(out_1, out_2)
+
+    def test_smooth_transition(self):
+        # check defaults
+        st = pm.SmoothTransition.public_settings
+        self.assertEqual(st["states"], [[0, 1]])
+        self.assertEqual(st["start time"], 0)
+        self.assertEqual(st["delta t"], 5)
+
+        st["states"] = [-4, 9]
+        st["start time"] = 10
+        st["delta t"] = 7
+        st["differential_order"] = self.d_order
+        # test deprecation
+        with self.assertWarns(DeprecationWarning):
+            tr = pm.SmoothTransition(st)
+
+        st["states"] = [[-4, 9], [10, 20]]
+        tr = pm.SmoothTransition(st)
+
+        # check properties
+        np.testing.assert_array_equal(tr._settings["states"], st["states"])
+        self.assertEqual(tr._settings["start time"], st["start time"])
+        self.assertEqual(tr._settings["delta t"], st["delta t"])
+        self.assertEqual(tr._settings["differential_order"], self.d_order)
+
+        # check trivial outputs in the beginning
+        ref_out = np.zeros((2, self.d_order + 1))
+
+        # check trivial outputs in the beginning
+        ref_out[0, 0] = -4
+        ref_out[1, 0] = 10
+        times = np.linspace(0, 10)
+        for t in times:
+            out = tr.calc_output(dict(time=t))
+            np.testing.assert_array_equal(out, ref_out)
+
+        # check trivial outputs in the end
+        ref_out[0, 0] = 9
+        ref_out[1, 0] = 20
+        times = np.linspace(17, 100)
+        for t in times:
+            out = tr.calc_output(dict(time=t))
+            np.testing.assert_array_equal(out, ref_out)
+
+
 class DummyModel(Model):
 
     public_settings = OrderedDict([("initial state", [1, 2, 3, 4])])
