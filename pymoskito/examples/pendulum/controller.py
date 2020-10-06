@@ -315,9 +315,11 @@ class SwingUpController(pm.Controller):
                                                     input_values=input_values,
                                                     eq=eq_state)
         else:
-            u = self.ljapunov._control(time, trajectory_values, input_values=input_values)
+            u = self.ljapunov._control(time,
+                                       trajectory_values,
+                                       input_values=input_values)
 
-        return u
+        return u.squeeze()
 
 
 def calc_equilibrium(settings):
