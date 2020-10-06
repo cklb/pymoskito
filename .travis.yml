@@ -43,7 +43,7 @@ deploy:
     on:
       branch: master
       tags: false
-      condition: $TRAVIS_PYTHON_VERSION = "3.6"
+      condition: $TRAVIS_PYTHON_VERSION = "3.8"
 
   # pypy deployment
   - provider: pypi
@@ -54,4 +54,4 @@ deploy:
     on:
       branch: master
       tags: true
-    condition: $TRAVIS_PYTHON_VERSION = "3.6"
+    condition: $TRAVIS_PYTHON_VERSION = "3.8"
