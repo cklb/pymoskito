@@ -9,6 +9,7 @@ from . import settings as st
 from .linearization import linearise_system
 #import end
 
+
 class FController(pm.Controller):
     """
     Controller created by changing f(x)
@@ -34,7 +35,7 @@ class FController(pm.Controller):
                  input_values=None, **kwargs):
         # input abbreviations
         x1, x2, x3, x4 = input_values
-        yd = trajectory_values
+        yd = trajectory_values[0]
 
         # calculate nonlinear terms phi
         phi1 = x1
@@ -64,6 +65,7 @@ class FController(pm.Controller):
         
         return self._output
 
+
 class GController(pm.Controller):
     """
     Controller created by changing g(x)
@@ -89,7 +91,7 @@ class GController(pm.Controller):
                  input_values=None, **kwargs):
         # input abbreviations
         x = input_values
-        yd = trajectory_values
+        yd = trajectory_values[0]
 
         # calculate nonlinear terms phi
         phi1 = x[0]
@@ -141,7 +143,7 @@ class JController(pm.Controller):
                  input_values=None, **kwargs):
         # input abbreviations
         x = input_values
-        yd = trajectory_values
+        yd = trajectory_values[0]
 
         # calculate linear terms phi
         phi1 = x[0]
@@ -167,6 +169,7 @@ class JController(pm.Controller):
         u = (v-b)/a
         return u
 
+
 #class begin
 class LSSController(pm.Controller):
     r"""
@@ -181,7 +184,7 @@ class LSSController(pm.Controller):
                                    ("steady tau", 0),
                                    ("tick divider", 1)
                                    ])
-	#init
+    #init
     def __init__(self, settings):
         # add specific "private" settings
         settings.update(input_order=0)
@@ -197,15 +200,16 @@ class LSSController(pm.Controller):
         self.K = pm.place_siso(a_mat, b_mat, self._settings["poles"])
         self.V = pm.calc_prefilter(a_mat, b_mat, c_mat, self.K)
 
-	#control
+    #control
     def _control(self, time, trajectory_values=None, feedforward_values=None,
-                 input_values=None, **kwargs):
+                    input_values=None, **kwargs):
         # input abbreviations
-        yd = trajectory_values
+        yd = trajectory_values[:, 0]
 
-        self._output = -self.K @ input_values + yd[0]*self.V
+        self._output = -self.K @ input_values + yd * self.V
         return self._output
 #class end
+
 
 class PIXController(pm.Controller):
     r"""
@@ -257,6 +261,7 @@ class PIXController(pm.Controller):
         # calculate u
         u = -self.K @ x + yd[0]*self.V + self._settings["Ki"] * self._error
         return u
+
 
 #register
 pm.register_simulation_module(pm.Controller, FController)
