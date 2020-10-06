@@ -987,7 +987,7 @@ class SimulationGui(QMainWindow):
         self.regime_file_name = os.path.split(file_name)[-1][:-5]
         self._logger.info("loading regime file: {0}".format(self.regime_file_name))
         with open(file_name.encode(), "r") as f:
-            self._regimes += yaml.load(f)
+            self._regimes += yaml.full_load(f)
 
         self._update_regime_list()
 

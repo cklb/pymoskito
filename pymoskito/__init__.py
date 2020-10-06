@@ -32,7 +32,7 @@ __version__ = '0.3.0'
 
 # configure logging
 with open(get_resource("logging.yaml", ""), "r") as f:
-    log_conf = yaml.load(f)
+    log_conf = yaml.full_load(f)
 
 logging.config.dictConfig(log_conf)
 
