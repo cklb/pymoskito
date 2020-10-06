@@ -1,13 +1,15 @@
 # -*- coding: utf-8 -*-
 import logging.config
 import os
-
-import matplotlib as mpl
 import yaml
 
-# make everybody use qt5
+# make all plotting libs use qt5
+import matplotlib as mpl
 mpl.use('Qt5Agg')
 os.environ["PYQTGRAPH_QT_LIB"] = "PyQt5"
+
+# enable high dpi scaling
+os.environ["QT_AUTO_SCREEN_SCALE_FACTOR"] = "1"
 
 from .registry import *
 
