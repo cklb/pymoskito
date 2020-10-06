@@ -20,6 +20,12 @@ with open("requirements.txt") as requirements_file:
 test_requirements = [
 ]
 
+extra_requirements = {
+    "3D": ["vtk>=6.3.0"],
+    # "CPP": ["pybind11>=2.6.0"],
+    "test": [],
+}
+
 setup(
     name="pymoskito",
     version="0.3.0",
@@ -33,6 +39,7 @@ setup(
         "Programming Language :: Python :: 3.5",
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
     ],
     keywords="pymoskito control simulation feedback feedforward",
     url="https://github.com/cklb/pymoskito",
@@ -44,6 +51,6 @@ setup(
     install_requires=requirements,
     include_package_data=True,
     test_suite="pymoskito.tests",
-    tests_require=test_requirements,
+    extras_require=extra_requirements,
     zip_safe=False
 )
