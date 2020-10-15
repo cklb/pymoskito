@@ -5,9 +5,8 @@
 Two tanks are connected in series, where tank 1 is filled with a water inflow controled by
 pump.
 
-.. figure:: ../pictures/ballbeam.png
-    :align: center
-    :alt: Image of tanksystem
+.. tikz::
+    :include: ../tikz/tanksystem.tex
 
     The 2-Tanksystem
 
