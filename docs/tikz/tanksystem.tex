@@ -66,9 +66,9 @@
 
     \draw[|-|] (4, 0) -- node[fill=white, inner xsep=0] {$H$} (4, 4);
     \draw[|->|] (2, 0) -- node[fill=cyan!25, inner xsep=0] {$h_1$} (2, 1.2);
-    \draw[|-|] (0, 4.4) -- node[fill=white, inner xsep=0] {$A_{\mathrm{T},1}$} (6, 4.4);
+    \draw[|-|] (0, 4.4) -- node[fill=white, inner xsep=0] {$A_{\mathrm{T}}$} (6, 4.4);
 
-    \draw[->] ([shift={(-32.5mm, 0)}]eingang) node [left] {$\dot{V}_{\mathrm{in},1}$} --  ([shift={(-27.5mm, 0)}]eingang);
+    \draw[->] ([shift={(-32.5mm, 0)}]eingang) node [left] {$q_{\mathrm{in}}$} --  ([shift={(-27.5mm, 0)}]eingang);
     \draw[->] ([shift={(37.5mm, -7.55mm)}]ausgang) --  ([shift={(42.5mm, -7.55mm)}]ausgang);
 
 \end{scope}
@@ -89,9 +89,9 @@
 
     \draw[|-|] (4, 0) -- node[fill=cyan!25, inner xsep=0] {$H$} (4, 4);
     \draw[|->|] (2, 0) -- node[fill=cyan!25, inner xsep=0] {$h_2$} (2, 3.2);
-    \draw[|-|] (0, 4.4) -- node[fill=white, inner xsep=0] {$A_{\mathrm{T},2}$} (6, 4.4);
+    \draw[|-|] (0, 4.4) -- node[fill=white, inner xsep=0] {$A_{\mathrm{T}}$} (6, 4.4);
 
-    \draw[->] ([shift={(37.5mm, 2.5mm)}]ausgang) -- ([shift={(42.5mm, 2.5mm)}]ausgang) node [right] {$\dot{V}_{\mathrm{out},2}$};
+    \draw[->] ([shift={(37.5mm, 2.5mm)}]ausgang) -- ([shift={(42.5mm, 2.5mm)}]ausgang) node [right] {$q_{\mathrm{out}}$};
 
-    \draw[->] ([shift={(-15mm, 7mm)}]eingang) -- node [above] {$\dot{V}_{1,2}$} ([shift={(-5mm, 7mm)}]eingang);
+    \draw[->] ([shift={(-15mm, 7mm)}]eingang) -- node [above] {$q_{1,2}$} ([shift={(-5mm, 7mm)}]eingang);
 \end{scope}
