@@ -1,6 +1,30 @@
  # default regime file that is loaded when the simulation environment starts up
  # use this to create your own files
 
+- Name: OpenLoop
+  clear previous: !!python/bool True # decide whether previous settings should remain or not
+
+  Model:
+   type: TwoTankSystem
+   initial state: [0, 0]
+
+  Solver:
+   type: ODEInt
+   measure rate: 10
+   step size: 0.1
+   end time: 500
+   rTol: 1e-4
+   aTol: 1e-4
+
+  Controller:
+   type: OpenLoop
+   uA: 5
+
+  ModelMixer:
+   type: AdditiveMixer
+   Input A: Controller
+   Input B: None
+
 - Name: test_PID
   clear previous: !!python/bool True # decide whether previous settings should remain or not
 
