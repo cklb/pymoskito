@@ -30,12 +30,12 @@ public:
      * Computes the observer output at current time step for the given tank 1 height and the voltage of the
      * pump with the euler method
      *
-     * @param water level tank 1
-     * @param voltage of the pump
+     * @param dhT2 water level tank 2
+     * @param dUa voltage of the pump
      * @return observed water levels of tank 1 and 2
      */
-    virtual std::vector<double> compute(const double &dhT1,
-                                        const double &dUA) = 0;
+    virtual std::vector<double> compute(const double &dhT2,
+                                        const double &dUa) = 0;
 };
 
 #endif // OBSERVER_H

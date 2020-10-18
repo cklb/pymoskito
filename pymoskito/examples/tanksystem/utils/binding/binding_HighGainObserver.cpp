@@ -18,7 +18,5 @@ PYBIND11_MODULE(HighGainObserver, m) {
                           const double &,
                           const double &,
                           const double &,
-                          const double &,
-                          const double &,
                           const double &>());
 }

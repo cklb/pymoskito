@@ -76,7 +76,7 @@ is given by
     =
     \begin{pmatrix}
         \frac{K}{A_{\mathrm{T}}} u_{\mathrm{A}} - \frac{A_{\mathrm{out},1}}{A_{\mathrm{T}}} \mathrm{sgn}(x_1 - x_2)\sqrt{ 2 g \left|x_1 - x_2\right|} \\
-        \frac{A_{\mathrm{out},1}}{A_{\mathrm{T}}} \mathrm{sgn}(x_1 - x_2)\sqrt{ 2 g \left|x_1 - x_2\right|} - \frac{A_{\mathrm{out},1}}{A_{\mathrm{T}}} \sqrt{ 2 g x_2}
+        \frac{A_{\mathrm{out},1}}{A_{\mathrm{T}}} \mathrm{sgn}(x_1 - x_2)\sqrt{ 2 g \left|x_1 - x_2\right|} - \frac{A_{\mathrm{out},2}}{A_{\mathrm{T}}} \sqrt{ 2 g x_2}
     \end{pmatrix}.
 
 Violations of the model's boundary conditions are the water levels of both tanks exceed the maximal height :math:`H`

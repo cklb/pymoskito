@@ -17,15 +17,12 @@ class CppHighGainObserver(pm.Observer, pm.CppBase):
         ("initial state", [0.0, 0.0]),
         ("poles", [-10, -10]),
         ("tick divider", 1),
-        ("AT1", st.AT1),
-        ("AT2", st.AT2),
-        ("hT1", st.hT1),
-        ("hT2", st.hT2),
+        ("AT", st.AT),
+        ("hT", st.hT),
         ("AS1", st.AS1),
         ("AS2", st.AS2),
         ("g", st.g),
-        ("Ku", st.Ku),
-        ("uA0", st.uA0),
+        ("K", st.K),
         ("dt [s]", 0.1),
     ])
 
@@ -36,12 +33,10 @@ class CppHighGainObserver(pm.Observer, pm.CppBase):
                             module_name='HighGainObserver',
                             module_path=os.path.dirname(__file__) + '/utils/')
 
-        self.obs = self.get_class_from_module().HighGainObserver(self._settings["AT1"],
-                                                                 self._settings["AT2"],
+        self.obs = self.get_class_from_module().HighGainObserver(self._settings["AT"],
                                                                  self._settings["AS1"],
                                                                  self._settings["AS2"],
-                                                                 self._settings["Ku"],
-                                                                 self._settings["uA0"],
+                                                                 self._settings["K"],
                                                                  self._settings['dt [s]'])
         self.obs.setInitialState(np.array(self._settings["initial state"]))
         self.obs.setGain(np.array(self._settings["poles"]))
@@ -50,7 +45,7 @@ class CppHighGainObserver(pm.Observer, pm.CppBase):
         if system_input is None:
             return np.array(self._settings["initial state"])
 
-        y = system_output[0]
+        y = system_output[1]
         uA = system_input[0]
         res = self.obs.compute(y, uA)
 

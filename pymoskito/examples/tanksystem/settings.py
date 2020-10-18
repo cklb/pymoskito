@@ -6,29 +6,20 @@ import numpy as np
 
 # -----------------------------------------------------------------------------
 # parameters of the tank system according to the
-# real test station on the Institute of Automation and Control Engineeringat the
-# Umit
 
-Ku = 1.932928975455609e-05   # m**3 / (s V) - gain of pump
-uA0 = 6.3                    # V - start voltage for the pump
+K = 2e-5                     # m**3 / (s V) - gain of pump
 
-rT1 = 0.060195545420039      # m - radius of tank 1
-rT2 = 0.060195545420039      # m - radius of tank 2
-rS1 = 0.004065038180786      # m - radius between drain and tank 1 by 1 rotation
-rS2 = 0.003308239534353      # m - radius between drain and tank 2 by 2 rotation
+rT = 0.04                    # m - radius of the tanks
 g = 9.81                     # m / s^2 - gravity
-hV1 = 0.055                  # m - height between ventil and zero height
-hV2 = 0.055                  # m - height between ventil and zero height
 
-AT1 = np.pi * rT1 ** 2       # m**2 - Tank 1 cross section
-AT2 = np.pi * rT2 ** 2       # m**2 - Tank 2 cross section
-AS1 = np.pi * rS1 ** 2       # m**2 - Outlet cross section Tank 1
-AS2 = np.pi * rS2 ** 2       # m**2 - Outlet cross section Tank 2
+AT = np.pi * rT ** 2         # m**2 - Tanks cross section
+hT = 0.8                     # m - height of the tanks
 
-hT1 = 0.3                    # m - height Tank 1
-hT2 = 0.3                    # m - height Tank 2
+rS1 = 0.0035                 # m - radius of pipe cross section between tank 1 and 2
+rS2 = 0.0035                 # m - radius of pipe cross section after tank 2
 
-scale = 2                    # scale for visualization
+AS1 = np.pi * rS1 ** 2       # m**2 - Outlet cross section of drain between tank 1 and 2
+AS2 = np.pi * rS2 ** 2       # m**2 - Outlet cross section of drain of tank 2
 
 # -----------------------------------------------------------------------------
 # export settings latex-style
