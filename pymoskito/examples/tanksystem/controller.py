@@ -85,7 +85,7 @@ class CppPIDController(pm.Controller, pm.CppBase):
 
             yd = trajectory_values
 
-            u = np.array([self.pid.compute(x, yd)])
+            u = self.pid.compute(x, yd)
         else:
             u = self.lastU
 

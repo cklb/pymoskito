@@ -9,34 +9,34 @@ double PIDController::compute(const double &dCurInput,
                               const double &dCurSetpoint) {
     double dError = dCurSetpoint - dCurInput;
 
-    this->dIntegral += (dError + dLastError) * this->dSampleTime;
+    double dPartP = dError;
 
-    if (this->dIntegral > this->dOutputMax)
-        this->dIntegral = this->dOutputMax;
-    else if (this->dIntegral < this->dOutputMin)
-        this->dIntegral = this->dOutputMin;
+    double dPartI = 0;
+    if (this->dTi != 0) {
+        if (this->dOutputMin < this->dOut && this->dOut < this->dOutputMax) {
+            this->dIntegral += this->dSampleTime * (dError + this->dLastError) * 0.5;
+        }
 
-    // Compute differential part
-    double dDifferential = (dError - this->dLastError) / this->dSampleTime;
+        dPartI = this->dTi * this->dIntegral;
+    }
 
-    // Compute PID output
-    double dOut = 0.0;
-    if ((long long) (this->dTi * 1000) == 0LL) {
-        dOut = this->dKp * (dError + this->dTd * dDifferential);
-    } else {
-        dOut = this->dKp * (dError +
-                            this->dIntegral / (2.0 * this->dTi) +
-                            this->dTd * dDifferential);
+    double dPartD = 0;
+    if (this->dTd != 0) {
+        dPartD = this->dTd * (dError * dLastError) / this->dSampleTime;
+    }
+
+    if (this->dKp != 0) {
+        this->dOut = dKp * (dPartP + dPartI + dPartD);
     }
 
     // Apply limit to output value
-    if (dOut > this->dOutputMax)
-        dOut = this->dOutputMax;
-    else if (dOut < this->dOutputMin)
-        dOut = this->dOutputMin;
+    if (this->dOut > this->dOutputMax)
+        this->dOut = this->dOutputMax;
+    else if (this->dOut < this->dOutputMin)
+        this->dOut = this->dOutputMin;
 
     // Keep track of some variables for next execution
     this->dLastError = dError;
 
-    return dOut;
+    return this->dOut;
 }
