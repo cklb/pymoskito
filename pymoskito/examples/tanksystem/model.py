@@ -36,6 +36,11 @@ class TwoTankSystem(pm.Model):
         x2 = x[1]
         uA = args[0]
 
+        if x1 < 0:
+            x1 = 0
+        if x2 < 0:
+            x2 = 0
+
         g = self.settings['g']
         K = self.settings['K']
         AS1 = self.settings['AS1']
