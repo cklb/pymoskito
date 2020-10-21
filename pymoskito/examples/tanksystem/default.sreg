@@ -25,6 +25,11 @@
    Input A: Controller
    Input B: None
 
+  Observer:
+   type: CppHighGainObserver
+   poles: [-0.05, -0.05]
+
+
 - Name: test_PID
   clear previous: !!python/bool True # decide whether previous settings should remain or not
 
@@ -46,11 +51,11 @@
    Kp: 2.3612
    Ti: 73.204
    Td: 0
-   output_limits: [0, 12]
+   output_limits: [0, 5]
 
   Trajectory:
    type: SmoothTransition
-   states: [0, 0.15]
+   states: [[0, 0.15]]
    delta t: 300
 
   ModelMixer:
@@ -60,4 +65,4 @@
 
   Observer:
    type: CppHighGainObserver
-   poles: [-0.01, -0.01]
+   poles: [-0.05, -0.05]
