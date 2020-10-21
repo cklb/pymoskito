@@ -19,6 +19,7 @@ protected:
     double dOutputMin = -255.0;     ///< Minimal value for the calculated output
     double dOutputMax = 255.0;      ///< Maximal value for the calculated output
     double dSampleTime = 0.0;       ///< Sample time in \f \si{\milli\second} \f
+    double dOut = 0.0;              ///< Calculated controller value
 public:
     /**
      * @brief Method the computes the controller output of the current time step for the given input value and setpoint

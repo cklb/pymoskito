@@ -48,8 +48,8 @@
   Controller:
    type: CppPIDController
    input_state: [1]
-   Kp: 2.3612
-   Ti: 73.204
+   Kp: 10
+   Ti: 1
    Td: 0
    output_limits: [0, 5]
 

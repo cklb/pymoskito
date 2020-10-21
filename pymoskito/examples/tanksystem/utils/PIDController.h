@@ -35,8 +35,8 @@ public:
                   const double &dOutputMax,
                   const double &dSampleTime) {
         this->dKp = dKp;
-        this->dTd = dTd;
         this->dTi = dTi;
+        this->dTd = dTd;
         this->dOutputMin = dOutputMin;
         this->dOutputMax = dOutputMax;
 
