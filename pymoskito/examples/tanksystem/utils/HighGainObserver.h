@@ -5,7 +5,7 @@
 #ifndef HIGHGAINOBSERVER_H
 #define HIGHGAINOBSERVER_H
 
-#include <math.h>
+#include <cmath>
 #include <vector>
 #include <iterator>
 #include "Observer.h"
@@ -36,14 +36,9 @@ public:
      * @param dSampleTime sample time in \f \si{\milli\second} \f
      */
     HighGainObserver(const double &dAT,
-                     const double &dAS1,
-                     const double &dAS2,
+                     const double &dAS1, const double &dAS2,
                      const double &dK,
-                     const double &dSampleTime) {
-        this->dAT2 = dAT;
-        this->dAS1 = dAS1;
-        this->dAS2 = dAS2;
-        this->dK = dK;
+                     const double &dSampleTime) : dAT(dAT), dAS1(dAS1), dAS2(dAS2), dK(dK) {
         this->dSampleTime = dSampleTime;
     }
 
