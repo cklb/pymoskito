@@ -8,6 +8,8 @@ from PyQt5.QtCore import QObject
 
 __all__ = ["CppBase"]
 
+BINDING_DIR = "binding"
+
 
 class BindingException(Exception):
     """
@@ -34,14 +36,11 @@ class CppBase(QObject):
                                 " module_path is not allowed!")
             raise BindingException("Instantiation of binding class without"
                                    " module_path is not allowed!")
+
         self.module_path = Path(module_path)
-
-        self.src_path = self.module_path / "binding"
-
+        self.src_path = self.module_path / BINDING_DIR
         self.module_inc_path = self.module_path / str(self.module_name + ".h")
-
         self.module_src_path = self.module_path / str(self.module_name + '.cpp')
-
         self.cmake_lists_path = self.src_path / "CMakeLists.txt"
 
         if self.create_binding_config():
@@ -50,13 +49,10 @@ class CppBase(QObject):
     def create_binding_config(self):
         # check if folder exists
         if not self.src_path.is_dir():
-            self._logger.error("Dir binding not available in project folder '{}'"
-                               "".format(os.getcwd()))
-            return False
-
-        if not self.module_inc_path.exists():
-            self._logger.error("Module '{}' could not found in binding folder"
-                               "".format(self.module_inc_path))
+            self._logger.error("CPP bindings could not be found in the given "
+                               "folder '{}'".format(os.getcwd()))
+            self._logger.info("Make sure that the directory '{}' exists in that"
+                              " path.".format(BINDING_DIR))
             return False
 
         if not self.module_inc_path.exists():
