@@ -31,9 +31,9 @@ class CppHighGainObserver(pm.Observer, pm.CppBase):
 
         m_path = os.path.dirname(__file__)
         if 'tanksystem' not in m_path:
-            m_path += '/pymoskito/examples/tanksystem/utils/'
+            m_path += '/pymoskito/examples/tanksystem/src/'
         else:
-            m_path += '/utils/'
+            m_path += '/src/'
 
         pm.Observer.__init__(self, settings)
         pm.CppBase.__init__(self,
