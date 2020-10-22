@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import logging
 import os
 import subprocess
@@ -17,7 +19,7 @@ class BindingException(Exception):
 
 
 class CppBase(QObject):
-    def __init__(self, module_name=None, module_path=None):
+    def __init__(self, module_name=None, module_path=None, binding_class_name=None):
         QObject.__init__(self, None)
 
         self._logger = logging.getLogger(self.__class__.__name__)
@@ -35,10 +37,18 @@ class CppBase(QObject):
             raise BindingException("Instantiation of binding class without"
                                    " module_path is not allowed!")
 
+        if binding_class_name is None:
+            self._logger.error("Instantiation of binding class without"
+                               " binding_class_name is not allowed!")
+            raise BindingException("Instantiation of binding class without"
+                                   " binding_class_name is not allowed!")
+
         self.module_path = Path(module_path)
         self.module_inc_path = self.module_path / str(self.module_name + ".h")
         self.module_src_path = self.module_path / str(self.module_name + '.cpp')
         self.cmake_lists_path = self.module_path / "CMakeLists.txt"
+        self.module_build_path = self.module_path / BUILD_DIR
+        self.binding_class_name = binding_class_name
 
         if self.create_binding_config():
             self.build_binding()
@@ -115,7 +125,7 @@ class CppBase(QObject):
         """
         config_line = "add_library({} SHARED {} {})".format(
             self.module_name, self.module_src_path.as_posix(),
-            'binding_' + self.module_name + '.cpp')
+            self.binding_class_name + '.cpp')
 
         if os.name == 'nt':
             config_line += "\nset_target_properties({} PROPERTIES PREFIX \"\" OUTPUT_NAME \"{}\" SUFFIX \".pyd\")\n".format(
