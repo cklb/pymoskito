@@ -25,11 +25,15 @@ class CppBase(QObject):
         self._logger = logging.getLogger(self.__class__.__name__)
 
         if module_name is None:
+            self._logger.error("Instantiation of binding class without"
+                                   " module_name is not allowed!")
             raise BindingException("Instantiation of binding class without"
                                    " module_name is not allowed!")
         self.module_name = module_name
 
         if module_path is None:
+            self._logger.error("Instantiation of binding class without"
+                                " module_path is not allowed!")
             raise BindingException("Instantiation of binding class without"
                                    " module_path is not allowed!")
 
