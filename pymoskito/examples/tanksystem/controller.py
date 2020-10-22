@@ -50,10 +50,13 @@ class CppPIDController(pm.Controller, pm.CppBase):
         settings.update(output_dim=1)
         settings.update(input_type="system_state")
 
+        proj_dir = os.path.abspath(os.path.dirname(__file__))
+        m_path = os.sep.join([proj_dir, "src"])
+
         pm.Controller.__init__(self, settings)
         pm.CppBase.__init__(self,
                             module_name='PIDController',
-                            module_path=os.path.dirname(__file__) + '/utils/')
+                            module_path=m_path)
 
         self.lastTime = 0
         self.lastU = 0

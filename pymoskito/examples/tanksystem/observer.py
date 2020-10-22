@@ -28,10 +28,14 @@ class CppHighGainObserver(pm.Observer, pm.CppBase):
 
     def __init__(self, settings):
         settings.update(output_dim=2)
+
+        proj_dir = os.path.abspath(os.path.dirname(__file__))
+        m_path = os.sep.join([proj_dir, "src"])
+
         pm.Observer.__init__(self, settings)
         pm.CppBase.__init__(self,
                             module_name='HighGainObserver',
-                            module_path=os.path.dirname(__file__) + '/utils/')
+                            module_path=m_path)
 
         self.obs = self.get_class_from_module().HighGainObserver(self._settings["AT"],
                                                                  self._settings["AS1"],
