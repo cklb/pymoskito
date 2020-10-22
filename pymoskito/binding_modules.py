@@ -8,8 +8,6 @@ from PyQt5.QtCore import QObject
 
 __all__ = ["CppBase"]
 
-BINDING_DIR = "binding"
-
 
 class BindingException(Exception):
     """
@@ -26,29 +24,29 @@ class CppBase(QObject):
 
         if module_name is None:
             self._logger.error("Instantiation of binding class without"
-                                   " module_name is not allowed!")
+                               " module_name is not allowed!")
             raise BindingException("Instantiation of binding class without"
                                    " module_name is not allowed!")
         self.module_name = module_name
 
         if module_path is None:
             self._logger.error("Instantiation of binding class without"
-                                " module_path is not allowed!")
+                               " module_path is not allowed!")
             raise BindingException("Instantiation of binding class without"
                                    " module_path is not allowed!")
 
         self.module_path = Path(module_path)
-        self.src_path = self.module_path / BINDING_DIR
         self.module_inc_path = self.module_path / str(self.module_name + ".h")
         self.module_src_path = self.module_path / str(self.module_name + '.cpp')
-        self.cmake_lists_path = self.src_path / "CMakeLists.txt"
+        self.cmake_lists_path = self.module_path / "CMakeLists.txt"
 
         if self.create_binding_config():
             self.build_binding()
+            self.install_binding()
 
     def create_binding_config(self):
         # check if folder exists
-        if not self.src_path.is_dir():
+        if not self.module_path.is_dir():
             self._logger.error("CPP bindings could not be found in the given "
                                "folder '{}'".format(os.getcwd()))
             self._logger.info("Make sure that the directory '{}' exists in that"
@@ -74,22 +72,34 @@ class CppBase(QObject):
     def build_config(self):
         # generate config
         if os.name == 'nt':
-            cmd = ['cmake', '-A', 'x64', '.']
+            cmd = ['cmake', '-A', 'x64', '-S' , '.', '-B', '_build']
         else:
-            cmd = ['cmake .']
-        result = subprocess.run(cmd, cwd=self.src_path, shell=True)
+            cmd = ['cmake -S . -B _build']
+        result = subprocess.run(cmd, cwd=self.module_path, shell=True)
 
         if result.returncode != 0:
             self._logger.error("Generation of binding config failed.")
             raise BindingException("Generation of binding config failed.")
+
+    def install_binding(self):
+        # generate config
+        if os.name == 'nt':
+            cmd = ['cmake', '--install', '_build']
+        else:
+            cmd = ['cmake --install _build']
+        result = subprocess.run(cmd, cwd=self.module_path, shell=True)
+
+        if result.returncode != 0:
+            self._logger.error("Installation of binding config failed.")
+            raise BindingException("Installation of binding config failed.")
 
     def build_binding(self):
         # build
         if os.name == 'nt':
             cmd = ['cmake', '--build', '.', '--config', 'Release']
         else:
-            cmd = ['make']
-        result = subprocess.run(cmd, cwd=self.src_path, shell=True)
+            cmd = ['cmake --build _build']
+        result = subprocess.run(cmd, cwd=self.module_path, shell=True)
 
         if result.returncode != 0:
             self._logger.error("Build failed!")
@@ -119,6 +129,16 @@ class CppBase(QObject):
         config_line += "target_link_libraries({} ${{PYTHON_LIBRARIES}})".format(
             self.module_name
         )
+        if os.name == 'nt':
+            config_line += "\ninstall(FILES _build/{}.pyd DESTINATION {})".format(
+                self.module_name,
+                self.module_path.as_posix()
+            )
+        else:
+            config_line += "\n\ninstall(FILES _build/{}.so DESTINATION {})".format(
+                self.module_name,
+                self.module_path.as_posix()
+            )
 
         with open(self.cmake_lists_path, "r") as f:
             if config_line in f.read():
@@ -163,9 +183,9 @@ class CppBase(QObject):
     def get_class_from_module(self):
         try:
             if os.name == 'nt':
-                module_path = self.src_path / str(self.module_name + '.pyd')
+                module_path = self.module_path / str(self.module_name + '.pyd')
             else:
-                module_path = self.src_path / str(self.module_name + '.so')
+                module_path = self.module_path / str(self.module_name + '.so')
 
             spec = importlib.util.spec_from_file_location(self.module_name, module_path)
             module = importlib.util.module_from_spec(spec)

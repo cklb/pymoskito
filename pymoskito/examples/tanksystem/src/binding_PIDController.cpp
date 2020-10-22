@@ -1,5 +1,5 @@
 #include <pybind11/pybind11.h>
-#include "../PIDController.h"
+#include "PIDController.h"
 
 namespace py = pybind11;
 
