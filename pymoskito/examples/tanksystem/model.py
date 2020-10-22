@@ -34,7 +34,7 @@ class TwoTankSystem(pm.Model):
         """
         x1 = x[0]
         x2 = x[1]
-        uA = args[0]
+        uA = args[0].squeeze()
 
         if x1 < 0:
             x1 = 0
