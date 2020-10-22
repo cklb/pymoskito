@@ -166,7 +166,7 @@ class MplTankVisualizer(pm.MplVisualizer):
     def update_scene(self, x):
         if 0 < x[0] < st.hT:
             self.conT1.set_color('blue')
-            self.tube1.set_height(x[0])
+            self.tube1.set_height(x[0] * self.hT / st.hT)
         elif x[0] >= st.hT:
             self.conT1.set_color('blue')
             self.tube1.set_height(self.hT)
@@ -176,7 +176,7 @@ class MplTankVisualizer(pm.MplVisualizer):
         if 0 < x[1] < st.hT:
             self.conT1T2.set_color('blue')
             self.conT2.set_color('blue')
-            self.tube2.set_height(x[1])
+            self.tube2.set_height(x[1] * self.hT / st.hT)
         elif x[1] >= st.hT:
             self.conT1.set_color('blue')
             self.tube1.set_height(self.hT)
