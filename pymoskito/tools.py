@@ -142,7 +142,7 @@ def rotation_matrix_xyz(axis, angle, angle_dim):
         :obj:`numpy.ndarray`: rotation matrix
     """
     assert angle_dim == "deg" or angle_dim == "rad"
-    assert axis is "x" or axis == "y" or axis == "z"
+    assert axis == "x" or axis == "y" or axis == "z"
     x = 0
     y = 0
     z = 0
