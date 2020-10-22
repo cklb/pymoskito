@@ -22,9 +22,9 @@ test_requirements = [
 extra_requirements = {
     "3D": ["vtk>=6.3.0"],
     "CPP": ["pybind11>=2.6.0"],
-    "docs": ["Sphinx >= 1.4.9",
-             "sphinx - rtd - theme >= 0.1.9",
-             "sphinxcontrib - tikz >= 0.4.7",
+    "docs": ["Sphinx>=1.4.9",
+             "sphinx-rtd-theme>=0.1.9",
+             "sphinxcontrib-tikz>=0.4.7",
              ],
     "test": [],
 }
