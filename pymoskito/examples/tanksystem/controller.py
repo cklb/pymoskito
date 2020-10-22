@@ -53,6 +53,8 @@ class CppPIDController(pm.Controller, pm.CppBase):
         m_path = os.path.dirname(__file__)
         if 'tanksystem' not in m_path:
             m_path += '/pymoskito/examples/tanksystem/utils/'
+        else:
+            m_path += '/utils/'
 
         pm.Controller.__init__(self, settings)
         pm.CppBase.__init__(self,
