@@ -120,7 +120,7 @@ class CppBase:
         Returns:
 
         """
-        c_make_lists = "cmake_minimum_required(VERSION 3.4)\n"
+        c_make_lists = "cmake_minimum_required(VERSION 3.14)\n"
         c_make_lists += "project(Bindings)\n\n"
 
         c_make_lists += "set( CMAKE_CXX_STANDARD 11 )\n\n"
