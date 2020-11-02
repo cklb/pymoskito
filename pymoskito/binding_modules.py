@@ -166,7 +166,7 @@ class CppBase:
         config_line += "install(FILES {}/{} DESTINATION {})".format(
             BUILD_DIR,
             self.module_name + self.sfx,
-            self.module_lib_path
+            self.module_lib_path.as_posix()
         )
         with open(self.cmake_lists_path, "r") as f:
             if config_line in f.read():
@@ -182,7 +182,7 @@ class CppBase:
     def build_config(self):
         # generate config
         if os.name == 'nt':
-            cmd = ['cmake', '-A', 'x64', '-S .', '-B', BUILD_DIR]
+            cmd = ['cmake', '-A', 'x64', '-S', '.', '-B', BUILD_DIR]
         else:
             cmd = ['cmake', '-DCMAKE_BUILD_TYPE=Debug',
                    '-S', '.', '-B', BUILD_DIR]
@@ -195,7 +195,7 @@ class CppBase:
     def build_binding(self):
         # build
         if os.name == 'nt':
-            cmd = ['cmake', '--build', BUILD_DIR, '--config', 'Release']
+            cmd = ['cmake', '--build', BUILD_DIR, '--config', 'Release', '--target', 'INSTALL']
         else:
             cmd = ['cmake', '--build', BUILD_DIR]
         result = subprocess.run(cmd, cwd=self.module_path)
@@ -207,7 +207,7 @@ class CppBase:
     def install_binding(self):
         # generate config
         if os.name == 'nt':
-            cmd = ['cmake', '--install', BUILD_DIR]
+            return
         else:
             cmd = ['cmake', '--install', BUILD_DIR]
         result = subprocess.run(cmd, cwd=self.module_path)
