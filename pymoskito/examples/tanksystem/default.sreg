@@ -41,22 +41,22 @@
    type: ODEInt
    measure rate: 10
    step size: 0.1
-   end time: 500
+   end time: 200
    rTol: 1e-4
    aTol: 1e-4
 
   Controller:
    type: CppPIDController
    input_state: [1]
-   Kp: 10
-   Ti: 1
+   Kp: 1125
+   Ti: 0.005
    Td: 0
    output_limits: [0, 5]
 
   Trajectory:
    type: SmoothTransition
    states: [[0, 0.15]]
-   delta t: 300
+   delta t: 50
 
   ModelMixer:
    type: AdditiveMixer
