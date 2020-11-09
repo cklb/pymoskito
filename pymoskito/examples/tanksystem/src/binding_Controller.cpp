@@ -22,6 +22,7 @@ PYBIND11_MODULE(Controller, m) {
     py::class_<StateController, Controller>(m, "StateController")
             .def(py::init<std::vector<double>,
                           const double &,
+                          std::vector<double>,
                           const double &,
                           const double &>());
 }

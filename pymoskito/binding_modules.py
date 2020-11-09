@@ -184,7 +184,7 @@ class CppBase:
         if os.name == 'nt':
             cmd = ['cmake', '-A', 'x64', '-S', '.', '-B', BUILD_DIR]
         else:
-            cmd = ['cmake', '-DCMAKE_BUILD_TYPE=Debug',
+            cmd = ['cmake',  # '-DCMAKE_BUILD_TYPE=Debug',
                    '-S', '.', '-B', BUILD_DIR]
         result = subprocess.run(cmd, cwd=self.module_path)
 

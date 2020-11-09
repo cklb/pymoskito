@@ -135,11 +135,13 @@ class CppStateController(pm.CppBase, pm.Controller):
 
         # pole placement of linearized state feedback
         x10, x20, uA0, A, B, C = self.calcLinSys()
+        self.x0 = np.array([x10, x20])
         self._K = pm.controltools.place_siso(A, B, self._settings["poles"])[0]
         self._V = pm.controltools.calc_prefilter(A, B, C, self._K)[0][0]
 
         self.state = self.get_class_from_module().StateController(self._K,
                                                                   self._V,
+                                                                  np.array([x10, x20, uA0]),
                                                                   self._settings["output_limits"][0],
                                                                   self._settings["output_limits"][1])
 
@@ -179,18 +181,13 @@ class CppStateController(pm.CppBase, pm.Controller):
         # step size
         dt = time - self.lastTime
 
-        # input abbreviations
-        x = np.zeros((len(self._settings["input_state"]),))
-        for idx, state in enumerate(self._settings["input_state"]):
-            x[idx] = input_values[int(state)]
-
         if np.isclose(dt, self._settings['dt [s]']):
             # save last control time
             self.lastTime = time
 
             yd = trajectory_values
 
-            u = self.state.compute(np.array([x]), np.array([yd]))
+            u = self.state.compute(np.array(input_values), yd[0])
         else:
             u = self.lastU
 
