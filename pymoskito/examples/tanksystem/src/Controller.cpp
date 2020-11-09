@@ -5,8 +5,8 @@
 #include "Controller.h"
 
 
-double PIDController::compute(double *dCurInput,
-                              double *dCurSetpoint) {
+double PIDController::compute(std::vector<double> dCurInput,
+                              std::vector<double> dCurSetpoint) {
     double dError = dCurSetpoint[0] - dCurInput[0];
 
     double dPartP = dError;
@@ -42,13 +42,16 @@ double PIDController::compute(double *dCurInput,
 }
 
 
-double StateController::compute(double *dCurInput,
-                                double *dCurSetpoint) {
+double StateController::compute(std::vector<double> dCurInput,
+                                std::vector<double> dCurSetpoint) {
     this->dOut = 0;
     for (int i = 0; i < 2; ++i) {
-        double dError = dCurSetpoint[i] - dCurInput[i];
-        this->dOut += this->dGains[i] * dError;
+        this->dOut += - this->dGains[i] * (dCurInput[i] - this->dLinStates[i]);
     }
+
+    this->dOut += this->dPreFiler * (dCurSetpoint[0] - this->dLinStates[1]);
+
+    this->dOut += this->dLinStates[2];
 
     // Apply limit to output value
     if (this->dOut > this->dOutputMax)

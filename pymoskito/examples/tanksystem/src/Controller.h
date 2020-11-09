@@ -15,15 +15,16 @@
 class Controller {
 protected:
     // properties
-    double dKp = 1.0;               ///< Gain value for the proportional part
-    double dTi = 1.0;               ///< Time value for the integral part
-    double dTd = 1.0;               ///< Time value for the derivation part
-    double dOutputMin = -255.0;     ///< Minimal value for the calculated output
-    double dOutputMax = 255.0;      ///< Maximal value for the calculated output
-    double dSampleTime = 0.0;       ///< Sample time in \f \si{\milli\second} \f
-    double dGains[2] = {0.0, 0.0};  ///< Gain values for state controller
-    double dPreFiler = 0.0;         ///< Pre filter value of state controller
-    double dOut = 0.0;              ///< Calculated controller value
+    double dKp = 1.0;                       ///< Gain value for the proportional part
+    double dTi = 1.0;                       ///< Time value for the integral part
+    double dTd = 1.0;                       ///< Time value for the derivation part
+    double dOutputMin = -255.0;             ///< Minimal value for the calculated output
+    double dOutputMax = 255.0;              ///< Maximal value for the calculated output
+    double dSampleTime = 0.0;               ///< Sample time in \f \si{\milli\second} \f
+    double dGains[2] = {0.0, 0.0};          ///< Gain values for state controller
+    double dLinStates[3] = {0.0, 0.0, 0.0}; ///< Equilibrium states for x1, x2 and uA
+    double dPreFiler = 0.0;                 ///< Pre filter value of state controller
+    double dOut = 0.0;                      ///< Calculated controller value
 
 public:
     virtual ~Controller() = default;
@@ -35,8 +36,8 @@ public:
      * @param current setpoint
      * @return controller output in the range of min and max output
      */
-    virtual double compute(double *dCurInput,
-                           double *dCurSetpoint) = 0;
+    virtual double compute(std::vector<double> dCurInput,
+                           std::vector<double> dCurSetpoint) = 0;
 };
 
 /**
@@ -80,8 +81,8 @@ public:
     /// Destructor of the PID controller
     ~PIDController() {}
 
-    double compute(double *dCurInput,
-                   double *dCurSetpoint) override;
+    double compute(std::vector<double> dCurInput,
+                   std::vector<double> dCurSetpoint) override;
 };
 
 
@@ -95,11 +96,13 @@ public:
      *
      * @param dGains array of gains
      * @param dPreFiler value of the pre filter
+     * @param dLinStates array of equilibrium values for x1, x2 and uA
      * @param Mininal value for the calculated output
      * @param Maximal value for the calculated output
      */
     StateController(std::vector<double> dGains,
                     const double &dPreFiler,
+                    std::vector<double> dLinStates,
                     const double &dOutputMin,
                     const double &dOutputMax) {
         this->dOutputMin = dOutputMin;
@@ -110,13 +113,17 @@ public:
         for (int i = 0; i < 2; ++i) {
             this->dGains[i] = dGains[i];
         }
+
+        for(int i = 0; i < 3; ++i) {
+            this->dLinStates[i] = dLinStates[i];
+        }
     }
 
     /// Destructor of the state controller
     ~StateController() {}
 
-    double compute(double *dCurInput,
-                   double *dCurSetpoint) override;
+    double compute(std::vector<double> dCurInput,
+                   std::vector<double> dCurSetpoint) override;
 
 };
 
