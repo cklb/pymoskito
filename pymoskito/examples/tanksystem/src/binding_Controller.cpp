@@ -1,4 +1,5 @@
 #include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
 #include "Controller.h"
 
 namespace py = pybind11;
@@ -19,7 +20,7 @@ PYBIND11_MODULE(Controller, m) {
                           const double &>());
 
     py::class_<StateController, Controller>(m, "StateController")
-            .def(py::init<double*,
+            .def(py::init<std::vector<double>,
                           const double &,
                           const double &,
                           const double &>());
