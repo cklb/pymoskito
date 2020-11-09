@@ -8,7 +8,7 @@
 #include <math.h>
 
 /**
- * @brief Base controller class that can used to derived a P, PI, PD or PID controller.
+ * @brief Base controller class that can used to derived a P, PI, PD, PID or state controller.
  */
 class Controller {
 protected:
@@ -19,7 +19,10 @@ protected:
     double dOutputMin = -255.0;     ///< Minimal value for the calculated output
     double dOutputMax = 255.0;      ///< Maximal value for the calculated output
     double dSampleTime = 0.0;       ///< Sample time in \f \si{\milli\second} \f
+    double dGains[2] = {0.0, 0.0};  ///< Gain values for state controller
+    double dPreFiler = 0.0;         ///< Pre filter value of state controller
     double dOut = 0.0;              ///< Calculated controller value
+
 public:
     virtual ~Controller() = default;
 
@@ -30,8 +33,8 @@ public:
      * @param current setpoint
      * @return controller output in the range of min and max output
      */
-    virtual double compute(const double &dCurInput,
-                           const double &dCurSetpoint) = 0;
+    virtual double compute(double *dCurInput,
+                           double *dCurSetpoint) = 0;
 };
 
 #endif // CONTROLLER_H

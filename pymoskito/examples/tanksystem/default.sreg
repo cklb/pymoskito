@@ -30,7 +30,7 @@
    poles: [-0.05, -0.05]
 
 
-- Name: test_PID
+- Name: controller-PID
   clear previous: !!python/bool True # decide whether previous settings should remain or not
 
   Model:
@@ -51,6 +51,38 @@
    Kp: 1125
    Ti: 0.005
    Td: 0
+   output_limits: [0, 5]
+
+  Trajectory:
+   type: SmoothTransition
+   states: [[0, 0.15]]
+   delta t: 50
+
+  ModelMixer:
+   type: AdditiveMixer
+   Input A: Controller
+   Input B: None
+
+
+- Name: controller-State
+  clear previous: !!python/bool True # decide whether previous settings should remain or not
+
+  Model:
+   type: TwoTankSystem
+   initial state: [0, 0]
+
+  Solver:
+   type: ODEInt
+   measure rate: 10
+   step size: 0.1
+   end time: 200
+   rTol: 1e-4
+   aTol: 1e-4
+
+  Controller:
+   type: CppStateController
+   poles: [-0.05, -0.05]
+   input_state: [1]
    output_limits: [0, 5]
 
   Trajectory:
