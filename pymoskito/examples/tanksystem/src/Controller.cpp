@@ -1,8 +1,8 @@
-/** @file PIDController.cpp
- * This file includes a PID controller implementation for the two tank system.
+/** @file Controller.cpp
+ * This file includes the PID and state controller implementation for the two tank system.
  *
  */
-#include "PIDController.h"
+#include "Controller.h"
 
 
 double PIDController::compute(double *dCurInput,
@@ -37,6 +37,24 @@ double PIDController::compute(double *dCurInput,
 
     // Keep track of some variables for next execution
     this->dLastError = dError;
+
+    return this->dOut;
+}
+
+
+double StateController::compute(double *dCurInput,
+                                double *dCurSetpoint) {
+    this->dOut = 0;
+    for (int i = 0; i < 2; ++i) {
+        double dError = dCurSetpoint[i] - dCurInput[i];
+        this->dOut += this->dGains[i] * dError;
+    }
+
+    // Apply limit to output value
+    if (this->dOut > this->dOutputMax)
+        this->dOut = this->dOutputMax;
+    else if (this->dOut < this->dOutputMin)
+        this->dOut = this->dOutputMin;
 
     return this->dOut;
 }

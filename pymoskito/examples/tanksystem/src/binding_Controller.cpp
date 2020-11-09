@@ -1,10 +1,9 @@
 #include <pybind11/pybind11.h>
-#include "PIDController.h"
-#include "StateController.h"
+#include "Controller.h"
 
 namespace py = pybind11;
 
-PYBIND11_MODULE(PIDController, m) {
+PYBIND11_MODULE(Controller, m) {
     m.doc() = "Binding for Controller";
 
     py::class_<Controller>(m, "Controller")
@@ -19,9 +18,9 @@ PYBIND11_MODULE(PIDController, m) {
                           const double &,
                           const double &>());
 
-//    py::class_<StateController, Controller>(m, "StateController")
-//            .def(py::init<const double &,
-//                          const double &,
-//                          const double &,
-//                          const double &>());
+    py::class_<StateController, Controller>(m, "StateController")
+            .def(py::init<double*,
+                          const double &,
+                          const double &,
+                          const double &>());
 }

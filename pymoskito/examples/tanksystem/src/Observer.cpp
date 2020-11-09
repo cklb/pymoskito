@@ -1,8 +1,8 @@
-/** @file HighGainObserver.cpp
- * This file includes the high gain observer implementations for the two tank system with the water level of tank 1
+/** @file Observer.cpp
+ * This file includes the high gain observer implementations for the two tank system with the water level of tank 2
  * as measurement value.
  */
-#include "HighGainObserver.h"
+#include "Observer.h"
 
 std::vector<double> HighGainObserver::compute(const double &dhT2,
                                               const double &dUa) {
