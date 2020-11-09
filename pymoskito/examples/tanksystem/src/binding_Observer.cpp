@@ -1,10 +1,10 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
-#include "HighGainObserver.h"
+#include "Observer.h"
 
 namespace py = pybind11;
 
-PYBIND11_MODULE(HighGainObserver, m) {
+PYBIND11_MODULE(Observer, m) {
     m.doc() = "Binding for Observer";
 
     py::class_<Observer>(m, "Observer")

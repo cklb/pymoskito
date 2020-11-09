@@ -55,7 +55,7 @@ class CppPIDController(pm.CppBase, pm.Controller):
         pm.Controller.__init__(self, settings)
         pm.CppBase.__init__(self,
                             module_path=m_path,
-                            module_name='PIDController',
+                            module_name='Controller',
                             binding_class_name="binding_Controller")
 
         self.lastTime = 0
@@ -131,10 +131,13 @@ class CppStateController(pm.CppBase, pm.Controller):
         self.lastTime = 0
         self.lastU = 0
 
-        self.state = self.get_class_from_module().PIDController(self._K,
-                                                                self._V,
-                                                                self._settings["output_limits"][0],
-                                                                self._settings["output_limits"][1])
+        self._K = 0
+        self._V = 0
+
+        self.state = self.get_class_from_module().StateController(self._K,
+                                                                  self._V,
+                                                                  self._settings["output_limits"][0],
+                                                                  self._settings["output_limits"][1])
 
     def _control(self,
                  time,
