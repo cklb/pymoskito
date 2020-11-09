@@ -6,6 +6,7 @@
 #define CONTROLLER_H
 
 #include <math.h>
+#include <vector>
 
 
 /**
@@ -97,7 +98,7 @@ public:
      * @param Mininal value for the calculated output
      * @param Maximal value for the calculated output
      */
-    StateController(double *dGains,
+    StateController(std::vector<double> dGains,
                     const double &dPreFiler,
                     const double &dOutputMin,
                     const double &dOutputMax) {
