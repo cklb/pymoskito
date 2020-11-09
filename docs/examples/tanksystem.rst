@@ -102,7 +102,7 @@ and applies static state feedback. The state feedback is implemented in C++ and 
 C++ and python.
 
 The example comes with one observers.
-The :py:class:`CppObserver` implements a High-Gain observer for the nonlinear system in C++, which uses :py:`pybind11`
+The :py:class:`CppHighGainObserver` implements a High-Gain observer for the nonlinear system in C++, which uses :py:`pybind11`
 as binding between C++ and python.
 The second of these improves its performance by using a different method of integration and the third uses the solver
 for integration.

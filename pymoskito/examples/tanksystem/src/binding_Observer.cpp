@@ -5,7 +5,7 @@
 namespace py = pybind11;
 
 PYBIND11_MODULE(HighGainObserver, m) {
-    m.doc() = "Binding of a High Gain Observer";
+    m.doc() = "Binding for Observer";
 
     py::class_<Observer>(m, "Observer")
             .def("setGain", &Observer::setGain)

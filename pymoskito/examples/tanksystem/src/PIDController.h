@@ -19,14 +19,15 @@ private:
 
 public:
     /**
-     * @ brief Constructor that sets the initial values of the PID controller and resets the integral and last error part to zero
+     * @ brief Constructor that sets the initial values of the PID controller and resets the integral and last error
+     * part to zero.
      *
-     * @param Gain value for the proportional part
-     * @param Time value for the integral part
-     * @param Time value for the derivation part
-     * @param Mininal value for the calculated output
-     * @param Maximal value for the calculated output
-     * @param Sample time of the controller
+     * @param dKp Gain value for the proportional part
+     * @param dTi Time value for the integral part
+     * @param dTd Time value for the derivation part
+     * @param dOutputMin Mininal value for the calculated output
+     * @param dOutputMax Maximal value for the calculated output
+     * @param dSampleTime Sample time of the controller
      */
     PIDController(const double &dKp,
                   const double &dTi,
@@ -49,8 +50,8 @@ public:
     /// Destructor of the PID controller
     ~PIDController() {}
 
-    double compute(const double &dCurInput,
-                   const double &dCurSetpoint);
+    double compute(double *dCurInput,
+                   double *dCurSetpoint) override;
 
 };
 

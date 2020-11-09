@@ -5,9 +5,9 @@
 #include "PIDController.h"
 
 
-double PIDController::compute(const double &dCurInput,
-                              const double &dCurSetpoint) {
-    double dError = dCurSetpoint - dCurInput;
+double PIDController::compute(double *dCurInput,
+                              double *dCurSetpoint) {
+    double dError = dCurSetpoint[0] - dCurInput[0];
 
     double dPartP = dError;
 
