@@ -8,8 +8,7 @@ import sympy as sp
 from sympy.solvers import solve
 
 import pymoskito as pm
-
-import settings as st
+from . import settings as st
 
 
 class OpenLoop(pm.Controller):
@@ -38,12 +37,12 @@ class CppPIDController(pm.CppBase, pm.Controller):
     PID Controller implemented in cpp with pybind11
     """
     public_settings = OrderedDict([
-        ("Kp", 12),
-        ("Ti", 12),
-        ("Td", 12),
+        ("Kp", st.Kp),
+        ("Ti", st.Ti),
+        ("Td", st.Td),
         ("dt [s]", 0.1),
-        ("output_limits", [0, 255]),
-        ("input_state", [0]),
+        ("output_limits", st.limitsCtrl),
+        ("input_state", st.inputCtrl),
         ("tick divider", 1),
     ])
 
@@ -67,8 +66,6 @@ class CppPIDController(pm.CppBase, pm.Controller):
 
         self.lastTime = 0
         self.lastU = 0
-
-        self.calcLinSys()
 
         self.pid = self.get_class_from_module().PIDController(self._settings["Kp"],
                                                               self._settings["Ti"],
@@ -111,10 +108,10 @@ class CppStateController(pm.CppBase, pm.Controller):
     State Controller implemented in cpp with pybind11
     """
     public_settings = OrderedDict([
-        ("poles", [-2, -2]),
+        ("poles", st.polesState),
         ("dt [s]", 0.1),
-        ("output_limits", [0, 255]),
-        ("input_state", [0]),
+        ("output_limits", st.limitsCtrl),
+        ("input_state", st.inputCtrl),
         ("tick divider", 1),
     ])
 
