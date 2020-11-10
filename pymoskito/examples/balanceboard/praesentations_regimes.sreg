@@ -1,0 +1,247 @@
+- Name: NoCtrl
+
+  clear previous: !!python/bool True
+
+  Model:
+   type: SymbolicBalanceBoardModel
+   initial state: [0, 0, 0, 0, 0, 0]
+   
+  Solver:
+   type: ODEInt
+   end time: 5
+   
+  ModelMixer:
+   type: AdditiveMixer
+
+   
+   
+- Name: LinearCtrl_eq0_gamma0.1
+
+  clear previous: !!python/bool True
+
+  Model:
+   type: SymbolicBalanceBoardModel
+   initial state: [0, 0.1, 0, 0, 0, 0]
+   
+  Solver:
+   type: ODEInt
+   end time: 5
+   
+  Controller:
+   type: BBLinearController
+   steady_theta: 0
+
+  ModelMixer:
+   type: AdditiveMixer
+   Input A: Controller
+   
+   
+   
+   
+- Name: LinearCtrl_eq0_psi5
+
+  clear previous: !!python/bool True
+
+  Model:
+   type: SymbolicBalanceBoardModel
+   initial state: [5, 0, 0, 0, 0, 0]
+   
+  Solver:
+   type: ODEInt
+   end time: 5
+   
+  Controller:
+   type: BBLinearController
+   steady_theta: 0
+
+  ModelMixer:
+   type: AdditiveMixer
+   Input A: Controller
+   
+   
+   
+   
+- Name: LinearCtrl_eq0_theta10
+
+  clear previous: !!python/bool True
+
+  Model:
+   type: SymbolicBalanceBoardModel
+   initial state: [0, 0, 10, 0, 0, 0]
+   
+  Solver:
+   type: ODEInt
+   end time: 5
+   
+  Controller:
+   type: BBLinearController
+   steady_theta: 0
+
+  ModelMixer:
+   type: AdditiveMixer
+   Input A: Controller
+   
+   
+   
+
+   
+   
+- Name: LinearCtrl_eq0_theta10_RL
+
+  clear previous: !!python/bool True
+
+  Model:
+   type: SymbolicBalanceBoardModel
+   initial state: [0.369396181979, 0.0995426504941, 10, 0, 0, 0]
+   
+  Solver:
+   type: ODEInt
+   end time: 5
+   
+  Controller:
+   type: BBLinearController
+   steady_theta: 0
+
+  ModelMixer:
+   type: AdditiveMixer
+   Input A: Controller
+   
+- Name: LinearCtrl_eq0_theta10_RL_to-10
+
+  clear previous: !!python/bool True
+
+  Model:
+   type: SymbolicBalanceBoardModel
+   initial state: [0.369396181979, 0.0995426504941, 10, 0, 0, 0]
+   
+  Solver:
+   type: ODEInt
+   end time: 5
+   
+  Controller:
+   type: BBLinearController
+   steady_theta: 0
+
+  ModelMixer:
+   type: AdditiveMixer
+   Input A: Controller
+   
+  Trajectory:
+   type: Setpoint
+   State: [10]
+   Setpoint: [-10]
+   
+   
+- Name: LinearCtrl_eq0_theta20_RL_to-20
+
+  clear previous: !!python/bool True
+
+  Model:
+   type: SymbolicBalanceBoardModel
+   initial state: [0.727582961074, 0.185945187395, 20, 0, 0, 0]
+   
+  Solver:
+   type: ODEInt
+   end time: 5
+   
+  Controller:
+   type: BBLinearController
+   steady_theta: 0
+
+  ModelMixer:
+   type: AdditiveMixer
+   Input A: Controller
+   
+  Trajectory:
+   type: Setpoint
+   State: [20]
+   Setpoint: [-20]
+   
+   
+   
+   
+- Name: LinearCtrl_eq0_theta30_RL_to-30
+
+  clear previous: !!python/bool True
+
+  Model:
+   type: SymbolicBalanceBoardModel
+   initial state: [1.06368764577, 0.272408143294, 30, 0, 0, 0]
+   
+  Solver:
+   type: ODEInt
+   end time: 5
+   
+  Controller:
+   type: BBLinearController
+   steady_theta: 0
+
+  ModelMixer:
+   type: AdditiveMixer
+   Input A: Controller
+   
+  Trajectory:
+   type: Setpoint
+   State: [30]
+   Setpoint: [-30]
+
+   
+   
+   
+- Name: LinearCtrl_eq0_theta30_RL_to-30_m10.8_m20.5
+
+  clear previous: !!python/bool True
+
+  Model:
+   type: SymbolicBalanceBoardModel
+   initial state: [1.1991219227, 0.0923517934243, 30, 0, 0, 0]
+   board mass: 0.8
+   carriage mass: 0.5
+   
+  Solver:
+   type: ODEInt
+   end time: 5
+   
+  Controller:
+   type: BBLinearController
+   steady_theta: 0
+   board mass: 0.8
+   carriage mass: 0.5
+
+  ModelMixer:
+   type: AdditiveMixer
+   Input A: Controller
+   
+  Trajectory:
+   type: Setpoint
+   State: [30]
+   Setpoint: [-30]
+   
+   
+
+   
+- Name: GainSchedulingCtrl_theta30_RL_to-30
+
+  clear previous: !!python/bool True
+
+  Model:
+   type: SymbolicBalanceBoardModel
+   initial state: [1.06368764577, 0.272408143294, 30, 0, 0, 0]
+
+   
+  Solver:
+   type: ODEInt
+   step size: 0.01
+   end time: 5
+   
+  Controller:
+   type: BBGainSchedulingController
+
+  ModelMixer:
+   type: AdditiveMixer
+   Input A: Controller
+   
+  Trajectory:
+   type: Setpoint
+   State: [30]
+   Setpoint: [-30]

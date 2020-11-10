@@ -1,0 +1,48 @@
+
+- Name: test-model_origin
+
+  clear previous: !!python/bool True
+
+  Model:
+   type: BalanceBoardModel
+   initial state: [0, 0, 0, 0, 0, 0]
+
+  Solver:
+   type: ODEInt
+   end time: 10
+
+  ModelMixer:
+   type: AdditiveMixer
+   
+
+
+- Name: test-symbolic_model_origin
+
+  clear previous: !!python/bool True
+
+  Model:
+   type: SymbolicBalanceBoardModel
+   initial state: [0, 0, 0, 0, 0, 0]
+
+  Solver:
+   type: ODEInt
+   end time: 10
+
+  ModelMixer:
+   type: AdditiveMixer
+
+   
+- Name: test-model_equilibrium
+
+  clear previous: !!python/bool True
+
+  Model:
+   type: BalanceBoardModel
+   initial state: [0, 0.01317080745341615, 0, 0, 0, 0]
+
+  Solver:
+   type: ODEInt
+   end time: 5
+
+  ModelMixer:
+   type: AdditiveMixer

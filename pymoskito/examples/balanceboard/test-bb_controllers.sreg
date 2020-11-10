@@ -1,0 +1,417 @@
+- Name: Reproduce_Stock
+
+  clear previous: !!python/bool True
+
+  Model:
+   type: SymbolicBalanceBoardModel
+   initial state: [5, 0, 0, 0, 0, 0]
+   board centre of gravity x-direction: -0.003
+   board centre of gravity y-direction: 0.01726
+   board inertia: 0.00115
+   board mass: 1.0149
+   carriage mass: 0.4075
+   carriage centre of gravity y-direction: 0.02574
+   carriage inertia: 0.000126
+   cylinder mass: 3.9901
+   carriage centre of gravity y-direction: -0.0009
+   carriage inertia: 0.00847
+
+  Solver:
+   type: ODEInt
+   end time: 5
+
+  Controller:
+   type: BBLinearController
+   poles: [-4,-4,-5.7,-3.03,-3.3,-1]
+   steady_theta: 0
+   board centre of gravity x-direction: -0.003
+   board centre of gravity y-direction: 0.01726
+   board inertia: 0.00115
+   board mass: 1.0149
+   carriage mass: 0.4075
+   carriage centre of gravity y-direction: 0.02574
+   carriage inertia: 0.000126
+   cylinder mass: 3.9901
+   carriage centre of gravity y-direction: -0.0009
+   carriage inertia: 0.00847
+
+  ModelMixer:
+   type: AdditiveMixer
+   Input A: Controller
+
+- Name: LinearCtrl
+
+  clear previous: !!python/bool True
+
+  Model:
+   type: SymbolicBalanceBoardModel
+   initial state: [5, 0, 0, 0, 0, 0]
+   board mass: 0.8
+   carriage mass: 0.5
+
+  Solver:
+   type: ODEInt
+   end time: 5
+
+  Controller:
+   type: BBLinearController
+   steady_theta: 0
+   board mass: 0.8
+   carriage mass: 0.5
+
+  ModelMixer:
+   type: AdditiveMixer
+   Input A: Controller
+
+- Name: LinearCtrl_theta40_eq0_manMass
+
+  clear previous: !!python/bool True
+
+  Model:
+   type: SymbolicBalanceBoardModel
+   initial state: [0, 0, 40, 0, 0, 0]
+   board mass: 0.8
+   carriage mass: 0.5
+
+  Solver:
+   type: ODEInt
+   end time: 5
+
+  Controller:
+   type: BBLinearController
+   steady_theta: 0
+   board mass: 0.8
+   carriage mass: 0.5
+
+  ModelMixer:
+   type: AdditiveMixer
+   Input A: Controller
+
+- Name: LinearCtrl_gamma0.2_eq0_manMass
+
+  clear previous: !!python/bool True
+
+  Model:
+   type: SymbolicBalanceBoardModel
+   initial state: [0, 0.2, 0, 0, 0, 0]
+   board mass: 0.8
+   carriage mass: 0.5
+
+  Solver:
+   type: ODEInt
+   end time: 5
+
+  Controller:
+   type: BBLinearController
+   steady_theta: 0
+   board mass: 0.8
+   carriage mass: 0.5
+
+  ModelMixer:
+   type: AdditiveMixer
+   Input A: Controller
+
+- Name: LinearCtrl_theta25_eq0_manMass
+
+  clear previous: !!python/bool True
+
+  Model:
+   type: SymbolicBalanceBoardModel
+   initial state: [25, 0, 0, 0, 0, 0]
+   board mass: 0.8
+   carriage mass: 0.5
+
+  Solver:
+   type: ODEInt
+   end time: 5
+
+  Controller:
+   type: BBLinearController
+   steady_theta: 0
+   board mass: 0.8
+   carriage mass: 0.5
+
+  ModelMixer:
+   type: AdditiveMixer
+   Input A: Controller
+
+- Name: LinearCtrl_trans60to-60_eq0_manipulatedMasses
+
+  clear previous: !!python/bool True
+
+  Model:
+   type: SymbolicBalanceBoardModel
+   initial state: [2.07724350574, 0.181691838734, 60, 0, 0, 0]
+   board mass: 0.8
+   carriage mass: 0.5
+
+  Solver:
+   type: ODEInt
+   end time: 7
+
+  Controller:
+   type: BBLinearController
+   steady_theta: 0
+   board mass: 0.8
+   carriage mass: 0.5
+
+  ModelMixer:
+   type: AdditiveMixer
+   Input A: Controller
+
+  Trajectory:
+   type: SmoothTransition
+   states: [60,-60]
+   delta t: 4
+
+- Name: LinearCtrl_start60_SP-60_eq0_manipulatedMasses
+
+  clear previous: !!python/bool True
+
+  Model:
+   type: SymbolicBalanceBoardModel
+   initial state: [2.07724350574, 0.181691838734, 60, 0, 0, 0]
+   board mass: 0.8
+   carriage mass: 0.5
+
+  Solver:
+   type: ODEInt
+   end time: 5
+
+  Controller:
+   type: BBLinearController
+   steady_theta: 0
+   board mass: 0.8
+   carriage mass: 0.5
+
+  ModelMixer:
+   type: AdditiveMixer
+   Input A: Controller
+
+  Trajectory:
+   type: Setpoint
+   State: [60]
+   Setpoint: [-60]
+
+
+- Name: LinearCtrl_start10_eq10
+
+  clear previous: !!python/bool True
+
+  Model:
+   type: SymbolicBalanceBoardModel
+   initial state: [0, 0, 10, 0, 0, 0]
+
+  Solver:
+   type: ODEInt
+   end time: 5
+
+  Controller:
+   type: BBLinearController
+   steady_theta: 10
+
+  ModelMixer:
+   type: AdditiveMixer
+   Input A: Controller
+
+- Name: LinearCtrl_start20_stabilize-20
+
+  clear previous: !!python/bool True
+
+  Model:
+   type: SymbolicBalanceBoardModel
+   initial state: [0.727582961074, 0.185945187395, 20, 0, 0, 0]
+
+  Solver:
+   type: ODEInt
+   end time: 5
+
+  Controller:
+   type: BBLinearController
+   steady_theta: -20
+
+  ModelMixer:
+   type: AdditiveMixer
+   Input A: Controller
+
+
+- Name: LinearCtrl_start20_eq0_SP-20
+
+  clear previous: !!python/bool True
+
+  Model:
+   type: SymbolicBalanceBoardModel
+   initial state: [0.727582961074, 0.185945187395, 20, 0, 0, 0]
+
+  Solver:
+   type: ODEInt
+   end time: 5
+
+  Controller:
+   type: BBLinearController
+   steady_theta: 0
+
+  ModelMixer:
+   type: AdditiveMixer
+   Input A: Controller
+
+  Trajectory:
+   type: Setpoint
+   State: [20]
+   Setpoint: [-20]
+
+- Name: LinearCtrl_manipulatedMasses_20to-20
+
+  clear previous: !!python/bool True
+
+  Model:
+   type: SymbolicBalanceBoardModel
+   initial state: [0.820215840497, 0.0626222711458, 20, 0, 0, 0]
+   board mass: 0.8
+   carriage mass: 0.5
+
+  Solver:
+   type: ODEInt
+   end time: 5
+
+  Controller:
+   type: BBLinearController
+   steady_theta: 0
+   board mass: 0.8
+   carriage mass: 0.5
+
+  ModelMixer:
+   type: AdditiveMixer
+   Input A: Controller
+
+  Trajectory:
+   type: Setpoint
+   State: [20]
+   Setpoint: [-20]
+
+
+- Name: GainSchedulingCtrl
+
+  clear previous: !!python/bool True
+
+  Model:
+   type: BalanceBoardModel
+   initial state: [0, 0, 10, 0, 0, 0]
+
+  Solver:
+   type: ODEInt
+   measure rate: 200
+   step size: 0.01
+   end time: 5
+
+  Controller:
+   type: BBGainSchedulingController
+   initial state: [0, 0, 10, 0, 0, 0]
+
+  ModelMixer:
+   type: AdditiveMixer
+   Input A: Controller
+
+- Name: GainSchedulingCtrl_SetPoint_10deg
+
+  clear previous: !!python/bool True
+
+  Model:
+   type: BalanceBoardModel
+   initial state: [0.369396181979, 0.0995426504941, 10, 0, 0, 0]
+
+  Solver:
+   type: ODEInt
+   measure rate: 500
+   step size: 0.01
+   end time: 5
+
+  Controller:
+   type: BBGainSchedulingController
+
+  ModelMixer:
+   type: AdditiveMixer
+   Input A: Controller
+
+  Trajectory:
+   type: Setpoint
+   State: [10]
+   Setpoint: [-10]
+   
+   
+- Name: GainSchedulingCtrl_SetPoint_20deg
+
+  clear previous: !!python/bool True
+
+  Model:
+   type: BalanceBoardModel
+   initial state: [0.727582961074, 0.185945187395, 20, 0, 0, 0]
+
+  Solver:
+   type: ODEInt
+   measure rate: 500
+   step size: 0.01
+   end time: 5
+
+  Controller:
+   type: BBGainSchedulingController
+
+  ModelMixer:
+   type: AdditiveMixer
+   Input A: Controller
+
+  Trajectory:
+   type: Setpoint
+   State: [20]
+   Setpoint: [-20]
+
+- Name: GainSchedulingCtrl_SetPoint_30deg
+
+  clear previous: !!python/bool True
+
+  Model:
+   type: BalanceBoardModel
+   initial state: [1.06368764577, 0.272408143294, 30, 0, 0, 0]
+
+  Solver:
+   type: ODEInt
+   measure rate: 500
+   step size: 0.01
+   end time: 5
+
+  Controller:
+   type: BBGainSchedulingController
+
+  ModelMixer:
+   type: AdditiveMixer
+   Input A: Controller
+
+  Trajectory:
+   type: Setpoint
+   State: [30]
+   Setpoint: [-30]
+
+- Name: GainSchedulingCtrl_without_input
+
+  clear previous: !!python/bool True
+
+  Model:
+   type: BalanceBoardModel
+   initial state: [0, 0, 30, 0, 0, 0]
+   board mass: 0.8
+   carriage mass: 0.5
+
+  Solver:
+   type: ODEInt
+   measure rate: 500
+   step size: 0.01
+   end time: 3
+
+  Controller:
+   type: BBGainSchedulingController
+   board mass: 0.8
+   carriage mass: 0.5
+
+  ModelMixer:
+   type: AdditiveMixer
+   Input A: Controller
