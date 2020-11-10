@@ -1,13 +1,13 @@
-import numpy as np
 from collections import OrderedDict
 
-import pymoskito as pm
+import numpy as np
 
+import pymoskito as pm
 from . import settings as st
 
 
 class TwoTankSystem(pm.Model):
-    public_settings = OrderedDict([('initial state', [0, 0]),
+    public_settings = OrderedDict([('initial state', st.initialStates),
                                    ("AT", st.AT),
                                    ("hT", st.hT),
                                    ("AS1", st.AS1),

@@ -1,10 +1,8 @@
 # -*- coding: utf-8 -*-
-import numpy as np
 import matplotlib as mpl
 import matplotlib.patches
 
 import pymoskito as pm
-
 from . import settings as st
 
 

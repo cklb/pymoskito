@@ -45,16 +45,23 @@ sys.path.append(os.path.abspath('../pymoskito'))
 extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.todo',
               'sphinx.ext.viewcode',
+              'sphinx.ext.intersphinx',
               'sphinx.ext.imgmath',
               'sphinxcontrib.tikz',
               ]
 
 numfig = True
 
+# Looks for objects in external projects
+intersphinx_mapping = {
+    'pybind11': ('https://pybind11.readthedocs.io/en/stable/', None),
+}
+
 # preamble for latex
 latexPreamble = r'''
 \usepackage{siunitx}
 \usepackage{amsmath}
+\DeclareMathOperator{\sign}{sgn}
 '''
 
 # configuration imagmath rendering
