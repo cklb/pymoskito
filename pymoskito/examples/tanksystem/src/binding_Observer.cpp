@@ -8,8 +8,8 @@ PYBIND11_MODULE(Observer, m) {
     m.doc() = "Binding for Observer";
 
     py::class_<Observer>(m, "Observer")
-            .def("setGain", &Observer::setGain)
-            .def("setInitialState", &Observer::setInitialState)
+            .def("set_gain", &Observer::set_gain)
+            .def("set_initial_state", &Observer::set_initial_state)
             .def("compute", &Observer::compute,
                  "Calculates the observer output");
 

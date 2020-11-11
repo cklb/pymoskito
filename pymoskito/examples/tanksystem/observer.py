@@ -14,8 +14,8 @@ class CppHighGainObserver(pm.CppBase, pm.Observer):
     High Gain Observer implemented in cpp with pybind11
     """
     public_settings = OrderedDict([
-        ("initial state", st.initialStates),
-        ("poles", st.polesObs),
+        ("initial state", st.initial_states),
+        ("poles", st.poles_obs),
         ("AT", st.AT),
         ("hT", st.hT),
         ("AS1", st.AS1),
@@ -43,8 +43,8 @@ class CppHighGainObserver(pm.CppBase, pm.Observer):
                                                                  self._settings["AS2"],
                                                                  self._settings["K"],
                                                                  self._settings['dt [s]'])
-        self.obs.setInitialState(np.array(self._settings["initial state"]))
-        self.obs.setGain(np.array(self._settings["poles"]))
+        self.obs.set_initial_state(np.array(self._settings["initial state"]))
+        self.obs.set_gain(np.array(self._settings["poles"]))
 
     def _observe(self, time, system_input, system_output):
         if system_input is None:

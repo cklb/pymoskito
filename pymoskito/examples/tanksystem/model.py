@@ -7,7 +7,7 @@ from . import settings as st
 
 
 class TwoTankSystem(pm.Model):
-    public_settings = OrderedDict([('initial state', st.initialStates),
+    public_settings = OrderedDict([('initial state', st.initial_states),
                                    ("AT", st.AT),
                                    ("hT", st.hT),
                                    ("AS1", st.AS1),

@@ -41,8 +41,8 @@ class CppPIDController(pm.CppBase, pm.Controller):
         ("Ti", st.Ti),
         ("Td", st.Td),
         ("dt [s]", 0.1),
-        ("output_limits", st.limitsCtrl),
-        ("input_state", st.inputCtrl),
+        ("output_limits", st.limits_ctrl),
+        ("input_state", st.input_ctrl),
         ("tick divider", 1),
     ])
 
@@ -61,8 +61,8 @@ class CppPIDController(pm.CppBase, pm.Controller):
                             module_name='Controller',
                             binding_class_name="binding_Controller")
 
-        self.lastTime = 0
-        self.lastU = 0
+        self.last_time = 0
+        self.last_u = 0
 
         self.pid = self.get_class_from_module().PIDController(self._settings["Kp"],
                                                               self._settings["Ti"],
@@ -78,7 +78,7 @@ class CppPIDController(pm.CppBase, pm.Controller):
                  input_values=None,
                  **kwargs):
         # step size
-        dt = time - self.lastTime
+        dt = time - self.last_time
 
         # input abbreviations
         x = np.zeros((len(self._settings["input_state"]),))
@@ -87,15 +87,15 @@ class CppPIDController(pm.CppBase, pm.Controller):
 
         if np.isclose(dt, self._settings['dt [s]']):
             # save last control time
-            self.lastTime = time
+            self.last_time = time
 
             yd = trajectory_values
 
             u = self.pid.compute(x, yd)
         else:
-            u = self.lastU
+            u = self.last_u
 
-        self.lastU = u
+        self.last_u = u
 
         return u
 
@@ -105,10 +105,10 @@ class CppStateController(pm.CppBase, pm.Controller):
     State Controller implemented in cpp with pybind11
     """
     public_settings = OrderedDict([
-        ("poles", st.polesState),
+        ("poles", st.poles_state),
         ("dt [s]", 0.1),
-        ("output_limits", st.limitsCtrl),
-        ("input_state", st.inputCtrl),
+        ("output_limits", st.limits_ctrl),
+        ("input_state", st.input_ctrl),
         ("tick divider", 1),
     ])
 
@@ -127,11 +127,11 @@ class CppStateController(pm.CppBase, pm.Controller):
                             module_name='Controller',
                             binding_class_name="binding_Controller")
 
-        self.lastTime = 0
-        self.lastU = 0
+        self.last_time = 0
+        self.last_u = 0
 
         # pole placement of linearized state feedback
-        x10, x20, uA0, A, B, C = self.calcLinSys()
+        x10, x20, uA0, A, B, C = self.calc_lin_sys()
         self.x0 = np.array([x10, x20])
         self._K = pm.controltools.place_siso(A, B, self._settings["poles"])[0]
         self._V = pm.controltools.calc_prefilter(A, B, C, self._K)[0][0]
@@ -142,7 +142,7 @@ class CppStateController(pm.CppBase, pm.Controller):
                                                                   self._settings["output_limits"][0],
                                                                   self._settings["output_limits"][1])
 
-    def calcLinSys(self):
+    def calc_lin_sys(self):
         x20 = 0.15
 
         K, AT, Aout1, Aout2, g, x1, x2, uA = sp.symbols('K A_T A_out1 A_out2 g x_1 x_2 u_A')
@@ -156,10 +156,10 @@ class CppStateController(pm.CppBase, pm.Controller):
         x10 = x0[0].subs([(K, st.K), (AT, st.AT), (Aout1, st.AS1), (Aout2, st.AS2), (g, st.g), (x2, x20)])
         uA0 = x0[1].subs([(K, st.K), (AT, st.AT), (Aout1, st.AS1), (Aout2, st.AS2), (g, st.g), (x2, x20)])
 
-        subsList = [(K, st.K), (AT, st.AT), (Aout1, st.AS1), (Aout2, st.AS2), (g, st.g), (x2, x20), (x1, x10),
+        subs_list = [(K, st.K), (AT, st.AT), (Aout1, st.AS1), (Aout2, st.AS2), (g, st.g), (x2, x20), (x1, x10),
                     (uA, uA0)]
-        A = sp.Matrix([[dx1], [dx2]]).jacobian(sp.Matrix([[x1], [x2]])).subs(subsList)
-        B = sp.Matrix([[dx1], [dx2]]).jacobian(sp.Matrix([uA])).subs(subsList)
+        A = sp.Matrix([[dx1], [dx2]]).jacobian(sp.Matrix([[x1], [x2]])).subs(subs_list)
+        B = sp.Matrix([[dx1], [dx2]]).jacobian(sp.Matrix([uA])).subs(subs_list)
         C = sp.Matrix([0, 1]).T
 
         return np.array(x10.evalf()).astype(np.float64), \
@@ -176,19 +176,19 @@ class CppStateController(pm.CppBase, pm.Controller):
                  input_values=None,
                  **kwargs):
         # step size
-        dt = time - self.lastTime
+        dt = time - self.last_time
 
         if np.isclose(dt, self._settings['dt [s]']):
             # save last control time
-            self.lastTime = time
+            self.last_time = time
 
             yd = trajectory_values
 
             u = self.state.compute(np.array(input_values), yd[0])
         else:
-            u = self.lastU
+            u = self.last_u
 
-        self.lastU = u
+        self.last_u = u
 
         return u
 
