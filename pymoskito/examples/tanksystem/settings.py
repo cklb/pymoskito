@@ -21,13 +21,13 @@ rS2 = 0.0035                            # m - radius of pipe cross section after
 AS1 = np.pi * rS1 ** 2                  # m**2 - Outlet cross section of drain between tank 1 and 2
 AS2 = np.pi * rS2 ** 2                  # m**2 - Outlet cross section of drain of tank 2
 
-polesState = np.array([-2, -2])         # poles for the state controller
-polesObs = np.array([-0.05, -0.05])     # poles for the High-Gain observer
+poles_state = np.array([-2, -2])        # poles for the state controller
+poles_obs = np.array([-0.05, -0.05])    # poles for the High-Gain observer
 
-limitsCtrl = np.array([0, 5])           # limits for the controller
-inputCtrl = np.array([1])               # input state for the controller
+limits_ctrl = np.array([0, 5])          # limits for the controller
+input_ctrl = np.array([1])              # input state for the controller
 
-initialStates = np.array([0, 0])           # initial states for the model
+initial_states = np.array([0, 0])       # initial states for the model
 
 Kp = 1125                               # Gain value for the proportional part of PID controller
 Ti = 0.005                              # Time value for the integral part of the PID controller

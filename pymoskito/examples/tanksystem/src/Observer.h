@@ -26,13 +26,13 @@ public:
      * Sets the initial state.
      * @param dInitialState vector with two starting values for the water levels of tank 1 and 2
      */
-    virtual void setInitialState(std::vector<double> dInitialState) = 0;
+    virtual void set_initial_state(std::vector<double> dInitialState) = 0;
 
     /**
      * Sets the observation gain.
      * @param dGain vector with two values for the gains
      */
-    virtual void setGain(std::vector<double> dGain) = 0;
+    virtual void set_gain(std::vector<double> dGain) = 0;
 
     /**
      * Computes the observer output at current time step for the given tank 1 height and the voltage of the
@@ -82,7 +82,7 @@ public:
      * Sets the initial state.
      * @param dInitialState vector with two starting values for the water levels of tank 1 and 2
      */
-    void setInitialState(std::vector<double> dInitialState) {
+    void set_initial_state(std::vector<double> dInitialState) {
         for (int i = 0; i < 2; ++i) {
             this->dOut[i] = dInitialState[i];
         }
@@ -92,7 +92,7 @@ public:
      * Sets the observation gain.
      * @param dGain vector with two values for the gains
      */
-    void setGain(std::vector<double> dGain) {
+    void set_gain(std::vector<double> dGain) {
         for (int i = 0; i < 2; ++i) {
             this->dGain[i] = dGain[i];
         }
