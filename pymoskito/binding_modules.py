@@ -31,6 +31,7 @@ class CppBase:
         :module_path: Path to directory that contains the sources.
         :module_name: Name of the cpp class to use
         :binding_class_name: Name of the file including the binding defintion
+        :additional_lib: dict with key 'lib name' and additional lines for the CMakeLists
 
     Warn:
         The `module_name` will be used to generate the cmake configuration an,
@@ -41,7 +42,8 @@ class CppBase:
     def __init__(self,
                  module_path=None,
                  module_name=None,
-                 binding_class_name=None):
+                 binding_class_name=None,
+                 additional_lib=None):
         self._logger = logging.getLogger(self.__class__.__name__)
 
         # adapt to os-specific extensions
@@ -70,6 +72,11 @@ class CppBase:
         self.cmake_lists_path = self.module_path / CMAKE_LISTS
         self.module_build_path = self.module_path / BUILD_DIR
         self.module_lib_path = self.module_path / LIB_DIR
+
+        self.additional_lib = None
+        if additional_lib is not None:
+            assert (isinstance(additional_lib, dict))
+            self.additional_lib = additional_lib
 
         if binding_class_name is None:
             self._logger.error("Instantiation of binding class without"
@@ -141,6 +148,12 @@ class CppBase:
 
         c_make_lists += "include_directories(${PYTHON_INCLUDE_DIRS})\n"
 
+        if self.additional_lib:
+            c_make_lists += "\n\n"
+            for _, value in self.additional_lib.items():
+                c_make_lists += value
+            c_make_lists += "\n\n"
+
         with open(self.cmake_lists_path, "w") as f:
             f.write(c_make_lists)
 
@@ -162,9 +175,13 @@ class CppBase:
             self.module_name,
             self.sfx
         )
-        config_line += "target_link_libraries({} ${{PYTHON_LIBRARIES}})\n".format(
-            self.module_name
+        config_line += "target_link_libraries({} ${{PYTHON_LIBRARIES}}".format(
+            self.module_name,
         )
+        if self.additional_lib:
+            for key, _ in self.additional_lib.items():
+                config_line += " {}".format(key)
+        config_line += ")\n"
         config_line += "install(FILES {}/{} DESTINATION {})".format(
             BUILD_DIR,
             self.module_name + self.sfx,
