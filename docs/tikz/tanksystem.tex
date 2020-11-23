@@ -1,0 +1,97 @@
+\tikzset{
+    waterIn1/.pic={
+        \fill[cyan!25](-2.5, -0.25) rectangle (0.25, 0.25);
+        \draw[dashed, color=gray, line width=1pt] (-0.4, 0.25) arc (-90:90:0.125 and -0.25);
+        \draw[color=gray, line width=1pt] (-0.4, -0.25) arc (90:270:0.125 and -0.25);
+        \draw[line width=1pt](-2.5, -0.25) -- (0.25, -0.25) (-2.5, 0.25) -- (0.25, 0.25);
+        \node at (-0.4, -0.6) {$A_{in,1}$};
+    },
+    waterIn2/.pic={
+        \fill[cyan!25](-1.0, 0) rectangle (0.75, 0.5);
+        \draw[line width=1pt](-1.0, 0) -- (0.75, 0) (-1.0, 0.5) -- (0.75, 0.5);
+    },
+    waterOut1/.pic={
+        \fill[cyan!25](0, -0.25) rectangle (0.5, -3.5);
+        \draw[dashed, color=gray, line width=1pt] (0.5, -0.75) arc (0:180:0.25 and -0.125);
+        \draw[color=gray, line width=1pt] (0, -0.75) arc (180:0:0.25 and 0.125);
+        \draw[line width=1pt](0, -0.25) -- (0, -3.5) (0.5, -0.25) -- (0.5, -3.5);
+        \node at (-0.4, -0.75) {$A_{\mathrm{out},1}$};
+    },
+    waterOut2/.pic={
+        \fill[cyan!25](0, -0.25) rectangle (0.5, -3.5);
+        \draw[dashed, color=gray, line width=1pt] (0.5, -0.75) arc (0:180:0.25 and -0.125);
+        \draw[color=gray, line width=1pt] (0, -0.75) arc (180:0:0.25 and 0.125);
+        \draw[line width=1pt](0, -0.25) -- (0, -3.5) (0.5, -0.25) -- (0.5, -3.5);
+        \node at (-0.4, -0.75) {$A_{\mathrm{out},2}$};
+    },
+    pumpe/.style={
+        circle,
+        fill=white,
+        draw,
+        thick,
+        minimum size=1cm,
+        path picture={
+        \draw [thick] (path picture bounding box.north) --
+                      (path picture bounding box.east) --
+                      (path picture bounding box.south);
+        },
+    },
+    ventil/.pic={
+        \fill[white] (0.4, 0) rectangle (-0.4, -1.2);
+        \draw[line width=1pt] (-0.4, 0) -- (0.4, 0) -- (-0.4, -1.2) -- (0.4, -1.2) -- cycle;
+    },
+}
+\begin{scope}
+    \fill[cyan!25] decorate[decoration={random steps, segment length=1mm, amplitude=0.5mm}]{(6, 1.2) -- (0, 1.2)}--(0,0) -- (6, 0) -- cycle;
+    \draw[line width=1pt] (0,0) rectangle (6, 4);
+
+    \coordinate (eingang) at (0, 4.0 - 0.7);
+    \coordinate (ausgang) at (5.5, 0);
+
+    \pic[xshift=-2.5mm + 0.5pt] at (eingang) {waterIn1};
+    \pic[xshift=2.5mm - 0.5pt, rotate=90] at (ausgang) {waterOut1};
+
+    \fill[cyan!25] ([shift={(0.5pt, -2.5mm)}]eingang) parabola (0.3 * 6, 1pt) -- (0.5 * 6, 1pt) parabola[bend at end] ([shift={(0.5pt, 2.5mm)}]eingang);
+
+    \draw[thick] (-1.5, 4.0 - 0.7) -- (-1.5, 4.4);
+    \draw[thick] (-2.0, 4.0 - 0.7) -- (-2.0, 4.4);
+    \draw[thick] (-1.5, 4.5) circle (0.1);
+    \draw[thick] (-2, 4.5) circle (0.1);
+    \draw (-1.5, 4.5) node [right] {$+$};
+    \draw (-2, 4.5) node [left] {$-$};
+
+    \draw[->] (-1.5, 4.7) to [out=130, in=50] node [above] {\large $u_{\mathrm{A}}$} (-2, 4.7);
+
+    \node[pumpe] at (-1.75, 4.0 - 0.7) () {};
+
+    \draw[|-|] (4, 0) -- node[fill=white, inner xsep=0] {$H$} (4, 4);
+    \draw[|->|] (2, 0) -- node[fill=cyan!25, inner xsep=0] {$h_1$} (2, 1.2);
+    \draw[|-|] (0, 4.4) -- node[fill=white, inner xsep=0] {$A_{\mathrm{T}}$} (6, 4.4);
+
+    \draw[->] ([shift={(-32.5mm, 0)}]eingang) node [left] {$q_{\mathrm{in}}$} --  ([shift={(-27.5mm, 0)}]eingang);
+    \draw[->] ([shift={(37.5mm, -7.55mm)}]ausgang) --  ([shift={(42.5mm, -7.55mm)}]ausgang);
+
+\end{scope}
+
+\begin{scope}[shift={(85mm, 0)}]
+    \fill[cyan!25] decorate[decoration={random steps, segment length=1mm, amplitude=0.5mm}]{(6, 3.2) -- (0, 3.2)}--(0,0) -- (6, 0) -- cycle;
+    \draw[line width=1pt] (0,0) rectangle (6, 4);
+
+    \coordinate (eingang) at (0, 0);
+    \coordinate (ausgang) at (5.5, 0);
+
+    \pic[xshift=-7.4mm] at (eingang) {waterIn2};
+    \pic[xshift=2.5mm - 0.5pt, rotate=90] at (ausgang) {waterOut2};
+
+    \pic[xshift=-10pt, yshift=6.5pt, rotate=-90] at (eingang) {ventil};
+
+    \pic[xshift=90pt, yshift=6.5pt, rotate=-90] at (ausgang) {ventil};
+
+    \draw[|-|] (4, 0) -- node[fill=cyan!25, inner xsep=0] {$H$} (4, 4);
+    \draw[|->|] (2, 0) -- node[fill=cyan!25, inner xsep=0] {$h_2$} (2, 3.2);
+    \draw[|-|] (0, 4.4) -- node[fill=white, inner xsep=0] {$A_{\mathrm{T}}$} (6, 4.4);
+
+    \draw[->] ([shift={(37.5mm, 2.5mm)}]ausgang) -- ([shift={(42.5mm, 2.5mm)}]ausgang) node [right] {$q_{\mathrm{out}}$};
+
+    \draw[->] ([shift={(-15mm, 7mm)}]eingang) -- node [above] {$q_{1,2}$} ([shift={(-5mm, 7mm)}]eingang);
+\end{scope}

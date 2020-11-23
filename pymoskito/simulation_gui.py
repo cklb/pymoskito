@@ -1,32 +1,34 @@
 # -*- coding: utf-8 -*-
 
-import time
-
 # system
 import logging
 import numpy as np
 import os
 import pickle
+import time
 import pkg_resources
-# pyqtgraph
-import pyqtgraph as pg
 import webbrowser
 import yaml
+from operator import itemgetter
+from scipy.interpolate import interp1d
+
 # Qt
 from PyQt5.QtCore import (pyqtSignal, pyqtSlot, Qt, QTimer, QSize, QSettings,
                           QCoreApplication, QModelIndex, QRectF)
 from PyQt5.QtGui import QIcon, QKeySequence, QColor
-from PyQt5.QtWidgets import (QWidget, QAction, QSlider, QMainWindow,
-                             QTreeView, QListWidget, QListWidgetItem,
-                             QAbstractItemView,
-                             QToolBar, QStatusBar, QProgressBar, QLabel,
-                             QPlainTextEdit, QFileDialog, QInputDialog,
-                             QFrame, QVBoxLayout, QMessageBox, QApplication, QTreeWidget,
-                             QHBoxLayout, QPushButton, QTreeWidgetItem)
-from operator import itemgetter
-from pyqtgraph import exporters
+from PyQt5.QtWidgets import (
+    QApplication, QMainWindow,
+    QWidget, QAction, QSlider, QLabel, QFrame, QPushButton,
+    QListWidget, QListWidgetItem, QTreeView, QTreeWidget, QTreeWidgetItem,
+    QAbstractItemView,
+    QToolBar, QStatusBar, QProgressBar,
+    QTextEdit, QFileDialog, QInputDialog,
+    QVBoxLayout, QHBoxLayout, QMessageBox,
+)
+
+# pyqtgraph
+import pyqtgraph as pg
 from pyqtgraph.dockarea import DockArea
-from scipy.interpolate import interp1d
 
 # vtk
 vtk_error_msg = ""
@@ -50,7 +52,7 @@ from .registry import get_registered_visualizers
 from .simulation_interface import SimulatorInteractor, SimulatorView
 from .visualization import MplVisualizer, VtkVisualizer
 from .processing_gui import PostProcessor
-from .tools import get_resource, PlainTextLogger, LengthList
+from .tools import get_resource, PlainTextLogger, LengthList, Exporter
 
 __all__ = ["SimulationGui", "run"]
 
@@ -102,7 +104,7 @@ class SimulationGui(QMainWindow):
 
         # load settings
         self._settings = QSettings()
-        self._read_settings()
+        self._init_settings()
 
         # initialize logger
         self._logger = logging.getLogger(self.__class__.__name__)
@@ -263,48 +265,55 @@ class SimulationGui(QMainWindow):
 
         self.dataPointManipulationWidget = QWidget()
         self.dataPointManipulationLayout = QVBoxLayout()
-        self.dataPointManipulationLayout.addStretch(0)
-        self.dataPointRightButtonWidget = QWidget()
-        self.dataPointRightButtonLayout = QVBoxLayout()
-        self.dataPointRightButton = QPushButton(chr(0x226b), self)
-        self.dataPointRightButton.setToolTip(
-            "Add the selected data set from the left to the selected plot "
-            "on the right.")
-        self.dataPointRightButton.clicked.connect(self.addDatapointToTree)
-        self.dataPointLabel = QLabel('Datapoints', self)
+        self.dataPointManipulationLayout.addStretch()
+        self.dataPointManipulationLayout.setSpacing(5)
+        self.dataPointManipulationWidget.setLayout(self.dataPointManipulationLayout)
+        self.dataLayout.addWidget(self.dataPointManipulationWidget)
+
+        self.dataPointLabel = QLabel("Data", self)
         self.dataPointLabel.setAlignment(Qt.AlignCenter)
         self.dataPointManipulationLayout.addWidget(self.dataPointLabel)
-        self.dataPointManipulationLayout.addWidget(self.dataPointRightButton)
-        self.dataPointLeftButtonWidget = QWidget()
-        self.dataPointLeftButtonLayout = QVBoxLayout()
-        self.dataPointLeftButton = QPushButton(chr(0x03A7), self)
-        self.dataPointLeftButton.setToolTip(
+        self.dataPointAddButton = QPushButton(self)
+        self.dataPointAddButton.setIcon(QIcon(get_resource("add.png")))
+        self.dataPointAddButton.setToolTip(
+            "Add the selected data set from the left to the selected plot "
+            "on the right.")
+        self.dataPointAddButton.clicked.connect(self.addDatapointToTree)
+        self.dataPointManipulationLayout.addWidget(self.dataPointAddButton)
+
+        self.dataPointRemoveButton = QPushButton(self)
+        self.dataPointRemoveButton.setIcon(QIcon(get_resource("delete.png")))
+        self.dataPointRemoveButton.setToolTip(
             "Remove the selected data set from the plot on the right."
         )
-        self.dataPointLeftButton.clicked.connect(self.removeDatapointFromTree)
-        self.dataPointManipulationLayout.addWidget(self.dataPointLeftButton)
-        self.dataPointManipulationLayout.addStretch(0)
-        self.dataPointPlotAddButtonWidget = QWidget()
-        self.dataPointPlotAddButtonLayout = QVBoxLayout()
-        self.dataPointPlotAddButton = QPushButton("+", self)
-        self.dataPointPlotAddButton.setToolTip(
-            "Create a new plot window."
+        self.dataPointRemoveButton.clicked.connect(self.removeDatapointFromTree)
+        self.dataPointManipulationLayout.addWidget(self.dataPointRemoveButton)
+
+        self.dataPointExportButton = QPushButton(self)
+        self.dataPointExportButton.setIcon(QIcon(get_resource("export.png")))
+        self.dataPointExportButton.setToolTip(
+            "Export the selected data set from the left to a csv or png file."
         )
-        self.dataPointPlotAddButton.clicked.connect(self.addPlotTreeItem)
-        self.plotLabel = QLabel('Plots', self)
+        self.dataPointExportButton.clicked.connect(self.exportDatapointFromTree)
+        self.dataPointManipulationLayout.addWidget(self.dataPointExportButton)
+
+        self.plotLabel = QLabel("Plots", self)
         self.plotLabel.setAlignment(Qt.AlignCenter)
         self.dataPointManipulationLayout.addWidget(self.plotLabel)
+
+        self.dataPointPlotAddButton = QPushButton(self)
+        self.dataPointPlotAddButton.setIcon(QIcon(get_resource("add.png")))
+        self.dataPointPlotAddButton.setToolTip("Create a new plot window.")
+        self.dataPointPlotAddButton.clicked.connect(self.addPlotTreeItem)
         self.dataPointManipulationLayout.addWidget(self.dataPointPlotAddButton)
-        self.dataPointPlotRemoveButtonWidget = QWidget()
-        self.dataPointPlotRemoveButtonLayout = QVBoxLayout()
-        self.dataPointPlotRemoveButton = QPushButton("-", self)
+
+        self.dataPointPlotRemoveButton = QPushButton(self)
+        self.dataPointPlotRemoveButton.setIcon(QIcon(get_resource("delete.png")))
         self.dataPointPlotRemoveButton.setToolTip(
             "Delete the selected plot window."
         )
         self.dataPointPlotRemoveButton.clicked.connect(self.removeSelectedPlotTreeItems)
         self.dataPointManipulationLayout.addWidget(self.dataPointPlotRemoveButton)
-        self.dataPointManipulationWidget.setLayout(self.dataPointManipulationLayout)
-        self.dataLayout.addWidget(self.dataPointManipulationWidget)
 
         self.dataPointTreeWidget = QTreeWidget()
         self.dataPointTreeWidget.setHeaderLabels(["PlotTitle", "DataPoint"])
@@ -440,13 +449,16 @@ class SimulationGui(QMainWindow):
         self.postprocessor = None
 
         # log dock
-        self.logBox = QPlainTextEdit(self)
+        self.logBox = QTextEdit(self)
         self.logBox.setReadOnly(True)
+        self.logBox.setLineWrapMode(QTextEdit.NoWrap)
+        self.logBox.ensureCursorVisible()
         self.logDock.addWidget(self.logBox)
 
         # init logger for logging box
-        self.textLogger = PlainTextLogger(logging.INFO)
-        self.textLogger.set_target_cb(self.logBox.appendPlainText)
+        self.textLogger = PlainTextLogger(self._settings,
+                                          logging.INFO)
+        self.textLogger.set_target_cb(self.logBox)
         logging.getLogger().addHandler(self.textLogger)
 
         # menu bar
@@ -589,6 +601,10 @@ class SimulationGui(QMainWindow):
             if dataPoint not in topLevelItemList:
                 child = QTreeWidgetItem()
                 child.setText(1, dataPoint)
+
+                color = self._get_color(toplevelItem.childCount())
+                child.setBackground(0, color)
+
                 toplevelItem.addChild(child)
 
                 if dock:
@@ -598,6 +614,17 @@ class SimulationGui(QMainWindow):
                 self._logger.error("Can't add data set: "
                                    "Set '{}' is already present selected plot"
                                    "".format(dataPoint))
+
+    def exportDatapointFromTree(self):
+        if not self.dataPointListWidget.selectedIndexes():
+            self._logger.error("Can't export data set: no data set selected.")
+            return
+
+        dataPoints = {}
+        for item in self.dataPointListWidget.selectedItems():
+            dataPoints[item.text()] = self._get_data_by_name(item.text())
+
+        self.export(dataPoints)
 
     def removeDatapointFromTree(self):
         items = self.dataPointTreeWidget.selectedItems()
@@ -610,7 +637,21 @@ class SimulationGui(QMainWindow):
             top_item = top_item.parent()
 
         top_item.takeChild(top_item.indexOfChild(items[0]))
+
+        for i in range(top_item.childCount()):
+            colorItem = self._get_color(i)
+            top_item.child(i).setBackground(0, colorItem)
+
         self._update_plot(top_item)
+
+    def _get_color(self, idx):
+        sat_idx = idx % len(self.TABLEAU_COLORS)
+        color = QColor(self.TABLEAU_COLORS[sat_idx][1])
+        return color
+
+    def _get_pen(self, idx):
+        pen = pg.mkPen(self._get_color(idx), width=2)
+        return pen
 
     def plots(self, item):
         title = item.text(0)
@@ -618,9 +659,9 @@ class SimulationGui(QMainWindow):
         # check if a top level item has been clicked
         if not item.parent():
             if title in self.non_plotting_docks:
-                self._logger.error("Title '{}' not allowed for a plot window since"
-                                   "it would shadow on of the reserved "
-                                   "names".format(title))
+                self._logger.error(
+                    "Title '{}' not allowed for a plot window since it would"
+                    " shadow on of the reserved names".format(title))
                 return
 
             # check if plot has already been opened
@@ -672,7 +713,7 @@ class SimulationGui(QMainWindow):
             self._read_results()
             self._update_data_list()
             self._update_plots()
-            lsettings = self.currentDataset['modules']
+            lsettings = self.currentDataset["modules"]
             lsettings["clear previous"] = True
             self.sim.restore_regime(lsettings)
             self.update_gui()
@@ -683,33 +724,60 @@ class SimulationGui(QMainWindow):
             "restored simulation '{}'.".format(sim_name),
             1000)
 
-    def _read_settings(self):
+    def _add_setting(self, setting, value):
+        """
+        Add a setting, if settings is present, no changes are made.
 
-        # add default settings if none are present
-        if not self._settings.contains("path/simulation_results"):
-            self._settings.setValue("path/simulation_results",
-                                    os.path.join(os.path.curdir,
-                                                 "results",
-                                                 "simulation"))
-        if not self._settings.contains("path/postprocessing_results"):
-            self._settings.setValue("path/postprocessing_results",
-                                    os.path.join(os.path.curdir,
-                                                 "results",
-                                                 "postprocessing"))
-        if not self._settings.contains("path/metaprocessing_results"):
-            self._settings.setValue("path/metaprocessing_results",
-                                    os.path.join(os.path.curdir,
-                                                 "results",
-                                                 "metaprocessing"))
+        Args:
+            setting(str): Setting to add.
+            value: Value to be set.
+        """
+        if not self._settings.contains(setting):
+            self._settings.setValue(setting, value)
 
-        if not self._settings.contains("control/autoplay_animation"):
-            self._settings.setValue("control/autoplay_animation", "False")
+    def _init_settings(self):
+        """
+        Provide initial settings for the config file.
 
-        if not self._settings.contains("control/exit_on_batch_completion"):
-            self._settings.setValue("control/exit_on_batch_completion", "False")
+        """
+        # path management
+        self._add_setting("path/simulation_results",
+                          os.path.join(os.path.curdir,
+                                       "results",
+                                       "simulation"))
+        self._add_setting("path/simulation_results",
+                          os.path.join(os.path.curdir,
+                                       "results",
+                                       "simulation"))
+        self._add_setting("path/postprocessing_results",
+                          os.path.join(os.path.curdir,
+                                       "results",
+                                       "postprocessing"))
+        self._add_setting("path/metaprocessing_results",
+                          os.path.join(os.path.curdir,
+                                       "results",
+                                       "metaprocessing"))
+        self._add_setting("path/previous_plot_export", os.path.curdir)
+        self._add_setting("path/previous_plot_format", ".csv")
 
-        if not self._settings.contains("view/show_coordinates"):
-            self._settings.setValue("view/show_coordinates", "True")
+        # control flow management
+        self._add_setting("control/autoplay_animation", "False")
+        self._add_setting("control/exit_on_batch_completion", "False")
+
+        # view management
+        self._add_setting("view/show_coordinates", "True")
+
+        # log management
+        self._add_setting("log_colors/CRITICAL", "#DC143C")
+        self._add_setting("log_colors/ERROR", "#B22222")
+        self._add_setting("log_colors/WARNING", "#DAA520")
+        self._add_setting("log_colors/INFO", "#101010")
+        self._add_setting("log_colors/DEBUG", "#4682B4")
+        self._add_setting("log_colors/NOTSET", "#000000")
+
+        self._add_setting("view/show_time_on_export", "False")
+        self._add_setting("view/export_width", "800")
+        self._add_setting("view/export_height", "600")
 
     def _write_settings(self):
         """ Store the application state. """
@@ -919,7 +987,7 @@ class SimulationGui(QMainWindow):
         self.regime_file_name = os.path.split(file_name)[-1][:-5]
         self._logger.info("loading regime file: {0}".format(self.regime_file_name))
         with open(file_name.encode(), "r") as f:
-            self._regimes += yaml.load(f)
+            self._regimes += yaml.full_load(f)
 
         self._update_regime_list()
 
@@ -1218,7 +1286,7 @@ class SimulationGui(QMainWindow):
         # self.dataList.clear()
         self.dataPointListWidget.clear()
         # TODO lets open and check if possible to plot
-        # TODO create trees with children instead of plain sufffixes
+        # TODO create trees with children instead of plain suffixes
         for module_name, results in self.currentDataset["results"].items():
             if not isinstance(results, np.ndarray):
                 continue
@@ -1314,12 +1382,15 @@ class SimulationGui(QMainWindow):
             child_names = [item.child(c_idx).text(1)
                            for c_idx in range(item.childCount())]
             del_list = []
+            cnt = 0
             for _item in widget.getPlotItem().items:
                 if isinstance(_item, pg.PlotDataItem):
                     if _item.name() in child_names:
                         y_data = self._get_data_by_name(_item.name())
                         if y_data is not None:
                             _item.setData(x=t, y=y_data)
+                            _item.setPen(self._get_pen(cnt))
+                            cnt += 1
                         else:
                             _item.clear()
                     else:
@@ -1361,19 +1432,26 @@ class SimulationGui(QMainWindow):
         coord_item = pg.TextItem(text='', anchor=(0, 1))
         widget.getPlotItem().addItem(coord_item, ignoreBounds=True)
 
-        def info_wrapper(pos):
+        def _info_wrapper(pos):
             self.update_coord_info(pos, widget, coord_item)
 
-        widget.scene().sigMouseMoved.connect(info_wrapper)
+        widget.scene().sigMouseMoved.connect(_info_wrapper)
 
+        # add custom export entries
         widget.scene().contextMenu = [
-            QAction("Export png", self),
-            QAction("Export csv", self)
+            QAction("Export as ...", self),
         ]
+
+        def _export_wrapper(export_func):
+            def _wrapper():
+                return export_func(widget.getPlotItem(),
+                                   title,
+                                   coord_item,
+                                   time_line)
+            return _wrapper
+
         widget.scene().contextMenu[0].triggered.connect(
-            lambda: self.export_png(widget.getPlotItem(), title))
-        widget.scene().contextMenu[1].triggered.connect(
-            lambda: self.export_csv(widget.getPlotItem(), title))
+            _export_wrapper(self.export_plot_item))
 
         # create dock container and add it to dock area
         dock = pg.dockarea.Dock(title, closable=True)
@@ -1401,8 +1479,6 @@ class SimulationGui(QMainWindow):
 
     def plot_data_vector_member(self, item, widget):
         idx = item.parent().indexOfChild(item)
-        c_idx = idx % len(self.TABLEAU_COLORS)
-        color = QColor(self.TABLEAU_COLORS[c_idx][1])
 
         data_name = item.text(1)
         t = self.currentDataset["results"]["time"]
@@ -1412,7 +1488,7 @@ class SimulationGui(QMainWindow):
 
         widget.plot(x=t,
                     y=data,
-                    pen=pg.mkPen(color, width=2),
+                    pen=self._get_pen(idx),
                     name=data_name)
 
     def find_all_plot_docks(self):
@@ -1425,34 +1501,60 @@ class SimulationGui(QMainWindow):
 
         return list
 
-    def export_csv(self, plot_item, name):
-        exporter = exporters.CSVExporter(plot_item)
+    def export_plot_item(self, plot_item, name, coord_item, time_item):
+        plot_data = {}
+        for i, c in enumerate(plot_item.curves):
+            if c.getData() is None:
+                continue
+            if len(c.getData()) > 2:
+                self._logger.warning("Can not handle data format of entry"
+                                     "'{}'!".format(c.name()))
+                continue
+            if "time" not in plot_data:
+                plot_data["time"] = c.getData()[0]
+
+            c_name = c.name()
+            c_unit = self._get_units(c_name)
+            if c_unit is not None:
+                c_name += " ({})".format(c_unit)
+
+            plot_data[c_name] = c.getData()[1]
+
+        self.export(plot_data)
+
+    def export(self, plot_data):
+        try:
+            exporter = Exporter(data_points=plot_data)
+        except Exception as e:
+            self._logger.error("Can't instantiate exporter! " + str(e))
+            return
+
+        last_path = self._settings.value("path/previous_plot_export")
+        last_format = self._settings.value("path/previous_plot_format")
+        export_formats = ["CSV Data (*.csv)", "PNG Image (*.png)"]
+        if last_format == ".png":
+            export_formats[:] = export_formats[::-1]
+        format_str = ";;".join(export_formats)
+        default_file = os.path.join(last_path, "export" + last_format)
         filename = QFileDialog.getSaveFileName(self,
-                                               "CSV export", name + ".csv",
-                                               "CSV Data (*.csv)")
+                                               "Export as ...",
+                                               default_file,
+                                               format_str)
+
         if filename[0]:
-            exporter.export(filename[0])
-
-    def export_png(self, plot_item, name):
-        # required due to bug in pyqtgraph
-        exporter = exporters.ImageExporter(plot_item)
-        old_geometry = plot_item.geometry()
-        plot_item.setGeometry(QRectF(0, 0, 1920, 1080))
-        # TODO change colors of background, grid and pen
-        # exporter.parameters()['background'] = QColor(255, 255, 255)
-        exporter.params.param('width').setValue(1920,
-                                                blockSignal=exporter.widthChanged)
-        exporter.params.param('height').setValue(1080,
-                                                 blockSignal=exporter.heightChanged)
-
-        filename = QFileDialog.getSaveFileName(self,
-                                               "PNG export", name + ".png",
-                                               "PNG Image (*.png)")
-        if filename[0]:
-            exporter.export(filename[0])
-
-        # restore old state
-        plot_item.setGeometry(QRectF(old_geometry))
+            file, ext = os.path.splitext(filename[0])
+            self._settings.setValue("path/previous_plot_export",
+                                    os.path.dirname(file))
+            if ext == '.csv':
+                exporter.export_csv(filename[0])
+                self._settings.setValue("path/previous_plot_format", ".csv")
+            elif ext == '.png':
+                exporter.export_png(filename[0])
+                self._settings.setValue("path/previous_plot_format", ".png")
+            else:
+                self._logger.error("Wrong extension used!")
+                return
+            self._logger.info("Export successful as '{}'.".format(filename[0]))
 
     def _get_data_by_name(self, name):
         tmp = name.split(".")

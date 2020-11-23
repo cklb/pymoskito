@@ -67,3 +67,11 @@ then look at the output of::
     $ ldd PATH/TO/SITE-PKGS/vtk/vtkIOAMRPython.so
 
 to see which libs are missing.
+
+**GUI looks blurry on high-dpi displays**
+
+You may add the line::
+
+    os.environ["QT_AUTO_SCREEN_SCALE_FACTOR"] = "1"
+
+before you import pymoskito to enable autoscaling in Qt.

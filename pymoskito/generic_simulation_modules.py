@@ -1,6 +1,7 @@
 from collections import OrderedDict
 import os
 import pickle
+import warnings
 
 from scipy.integrate import ode
 from scipy.signal import StateSpace
@@ -177,17 +178,17 @@ class SmoothTransition(Trajectory):
     """
     provides (differential) smooth transition between two scalar states
     """
-    # TODO enable generation of transitions for state vector
-    public_settings = {"states": [0, 1],
+    public_settings = {"states": [[0, 1]],
                        "start time": 0,
                        "delta t": 5,
                        }
 
     def __init__(self, settings):
+        settings["states"] = np.asarray(settings["states"])
         Trajectory.__init__(self, settings)
 
         # setup symbolic expressions
-        tau, k = sp.symbols('tau, k')
+        tau, k = sp.symbols("tau, k")
 
         gamma = self._settings["differential_order"] + 1
         alpha = sp.factorial(2 * gamma + 1)
@@ -203,29 +204,38 @@ class SmoothTransition(Trajectory):
         # lambdify
         self.dphi_num = []
         for der in dphi_sym:
-            self.dphi_num.append(sp.lambdify(tau, der, 'numpy'))
+            self.dphi_num.append(sp.lambdify(tau, der, "numpy"))
+
+        # issue deprecation warning
+        if self._settings["states"].ndim == 1:
+            msg = "SmoothTransition will require 2d data for 'states' " \
+                  "in the next version, please update your configuration."
+            warnings.warn(msg, DeprecationWarning)
+            self._logger.warn(msg)
+            self._settings["states"] = self._settings["states"][None, :]
 
     def _desired_values(self, t):
         """
         Calculates desired trajectory
         """
-        y = np.zeros((len(self.dphi_num),))
         yd = self._settings['states']
         t0 = self._settings['start time']
         dt = self._settings['delta t']
 
+        y = np.zeros((yd.shape[0], len(self.dphi_num)))
         if t < t0:
-            y[0] = yd[0]
+            y[:, 0] = yd[:, 0]
         elif t > t0 + dt:
-            y[0] = yd[1]
+            y[:, 0] = yd[:, 1]
         else:
             for order, dphi in enumerate(self.dphi_num):
                 if order == 0:
-                    ya = yd[0]
+                    ya = yd[:, 0]
                 else:
-                    ya = 0
+                    ya = np.zeros_like(yd[:, 0])
 
-                y[order] = ya + (yd[1] - yd[0]) * dphi((t - t0) / dt) * 1 / dt ** order
+                scale = dphi((t - t0) / dt) * 1 / dt ** order
+                y[:, order] = ya + (yd[:, 1] - yd[:, 0]) * scale
 
         return y
 

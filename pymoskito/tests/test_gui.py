@@ -36,7 +36,11 @@ class TestGUIBasics(unittest.TestCase):
         self.assertFalse(self.gui.actSimulateAll.isEnabled())
         self.assertFalse(self.gui.actPlayPause.isEnabled())
         self.assertFalse(self.gui.actStop.isEnabled())
-        self.assertFalse(self.gui.actResetCamera.isEnabled())
+        try:
+            import vtk
+            self.assertTrue(self.gui.actResetCamera.isEnabled())
+        except ImportError:
+            self.assertFalse(self.gui.actResetCamera.isEnabled())
 
         # timeline
         self.assertFalse(self.gui.timeSlider.isEnabled())

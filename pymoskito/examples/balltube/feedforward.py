@@ -23,8 +23,7 @@ class BallInTubeFeedforward(pm.Feedforward):
         pm.Feedforward.__init__(self, settings)
 
     def _feedforward(self, time, trajectory_values):
-
-        yd = trajectory_values
+        yd = trajectory_values[0]
         x1_flat = (np.sqrt((yd[2] + st.g)*st.m*st.A_Sp**2/st.k_L)
                    + st.A_B*yd[1])/st.k_V
         x2_flat = (yd[3]*st.m*st.A_Sp**2/(2*st.k_V*st.k_L*(st.k_V*x1_flat

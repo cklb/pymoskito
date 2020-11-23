@@ -326,7 +326,7 @@
   Solver:
    type: ODEInt
    measure rate: 500
-   step size: 0.01
+   step size: 0.005
    end time: 30
 
   Controller:

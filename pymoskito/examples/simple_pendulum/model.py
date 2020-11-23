@@ -36,7 +36,7 @@ class PendulumModel(pm.Model):
         phi = x[1]
         ds = x[2]
         dphi = x[3]
-        F = args[0]
+        F = args[0].squeeze()
 
         # shortcuts for readability
         M = self._settings["cart mass"]

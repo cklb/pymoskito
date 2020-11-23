@@ -72,7 +72,7 @@
 
   Trajectory:
    type: SmoothTransition
-   states: [0.0, 1.0]
+   states: [[0.0, 1.0]]
    start time: 2
    delta t: 5
 

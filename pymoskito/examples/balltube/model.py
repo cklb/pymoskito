@@ -60,7 +60,7 @@ class BallInTubeModel(pm.Model):
         x2 = x[1]
         # x3 = x[2] is not used
         x4 = x[3]
-        u = args[0]
+        u = args[0].squeeze()
 
         dx1 = x2
         dx2 = -x1/self.T**2 - 2*self.d*x2/self.T + self.k_s*u*st.Vcc/(255*self.T**2)
@@ -161,7 +161,7 @@ class BallInTubeSpringModel(pm.Model):
         x2 = x[1]
         x3 = x[2]
         x4 = x[3]
-        u = args[0]
+        u = args[0].squeeze()
 
         dx1 = x2
         dx2 = -x1/self.T**2 - 2*self.d*x2/self.T + self.k_s*u*12/(255*self.T**2)
@@ -207,6 +207,7 @@ class BallInTubeSpringModel(pm.Model):
         :return: ball position
         """
         return input_vector[2]
+
 
 pm.register_simulation_module(pm.Model, BallInTubeModel)
 pm.register_simulation_module(pm.Model, BallInTubeSpringModel)

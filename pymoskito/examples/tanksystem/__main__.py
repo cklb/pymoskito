@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import sys
 import os
-os.environ["QT_AUTO_SCREEN_SCALE_FACTOR"] = "1"  # use high dpi settings
 import importlib
 from PyQt5.QtWidgets import QApplication
 
@@ -22,20 +21,13 @@ if __name__ == '__main__':
     # create an Application instance (needed)
     app = QApplication([])
     prog = None
+    sim = pm.SimulationGui()
 
-    if 1:
-        # create simulator
-        prog = pm.SimulationGui()
-
-        # load default config
-        prog.load_regimes_from_file(os.path.join(parent_dir,
-                                                 pkg_name,
-                                                 "default.sreg"))
-        prog.apply_regime_by_name("test-nonlinear-f")
-    else:
-        prog = pm.PostProcessor()
-
-    # show gui
-    prog.show()
+    # load defaults
+    sim.load_regimes_from_file(os.path.join(parent_dir,
+                                            pkg_name,
+                                            "default.sreg"))
+    sim.apply_regime_by_name("OpenLoop")
+    sim.show()
 
     app.exec_()

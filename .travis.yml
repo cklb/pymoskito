@@ -5,20 +5,32 @@ matrix:
   - python: '3.5'
   - python: '3.6'
   - python: '3.7'
-    dist: xenial    # required for Python 3.7 (travis-ci/travis-ci#9069)
-    sudo: required  # required for Python 3.7 (travis-ci/travis-ci#9069)
+  - python: '3.8'
+#  - python: '3.9'
+
+services:
+  - xvfb
+
+addons:
+  apt:
+    packages:
+      # Needed to start x virtual framebuffer (this is not the right way...)
+      - libxcb1
+      - libxkbcommon-x11-0
+      - libxcb-icccm4
+      - libxcb-image0
+      - libxcb-keysyms1
+      - libxcb-randr0
+      - libxcb-render-util0
+      - libxcb-xinerama0
 
 install:
+- pip install --upgrade pip
 - pip install -r requirements.txt
-- pip install .
-
-before_script:
-- export DISPLAY=:99.0
-- sh -e /etc/init.d/xvfb start
-- sleep 3
+- pip install ".[CPP, test]"
 
 script:
-- python setup.py test
+- python -m unittest -v -b
 
 deploy:
   # pypy test deployment
@@ -31,7 +43,7 @@ deploy:
     on:
       branch: master
       tags: false
-      condition: $TRAVIS_PYTHON_VERSION = "3.6"
+      condition: $TRAVIS_PYTHON_VERSION = "3.8"
 
   # pypy deployment
   - provider: pypi
@@ -42,4 +54,4 @@ deploy:
     on:
       branch: master
       tags: true
-    condition: $TRAVIS_PYTHON_VERSION = "3.6"
+    condition: $TRAVIS_PYTHON_VERSION = "3.8"

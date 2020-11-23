@@ -14,17 +14,18 @@ import pymoskito as pm
 if __name__ == '__main__':
     name = sys.argv[1]
     import_module("pymoskito.examples." + name)
+    orig_dir = os.path.dirname(__file__)
+    ex_dir = os.sep.join([orig_dir, os.pardir, "examples", name])
+    res_dir = os.sep.join([orig_dir, "results", name])
+    os.makedirs(res_dir, exist_ok=True)
+    os.chdir(os.path.abspath(ex_dir))
 
     app = QApplication([])
     gui = pm.SimulationGui()
-    mod_dir = os.path.dirname(__file__)
-    gui.load_regimes_from_file(os.sep.join([os.path.dirname(__file__),
-                                            "..",
-                                            "examples",
-                                            name,
-                                            "default.sreg"]))
+    gui.load_regimes_from_file("default.sreg")
     gui.actExitOnBatchCompletion.setChecked(True)
-    gui._settings.setValue("path/simulation_results",
-                           os.path.abspath(os.curdir))
+    gui._settings.setValue("path/simulation_results", os.path.abspath(res_dir))
     gui.start_regime_execution()
+
+    os.chdir(orig_dir)
     app.exec_()
