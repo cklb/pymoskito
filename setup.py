@@ -22,7 +22,7 @@ test_requirements = [
 
 extra_requirements = {
     "3D": ["vtk>=6.3.0"],
-    # "CPP": ["pybind11>=2.6.0"],
+    "CPP": ["pybind11>=2.6.0"],
     "test": [],
 }
 
