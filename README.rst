@@ -2,7 +2,7 @@
 PyMoskito
 =========
 
-.. image:: https://github.com/cklb/pymoskito/actions/workflows/ci.yaml/badge.svg)
+.. image:: https://github.com/cklb/pymoskito/actions/workflows/ci.yaml/badge.svg
     :target: https://github.com/cklb/pymoskito/actions/workflows/ci.yaml
     :alt: Continuous Integration Tests
 
