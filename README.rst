@@ -2,9 +2,9 @@
 PyMoskito
 =========
 
-.. image:: https://img.shields.io/travis/cklb/pymoskito.svg
-    :target: https://travis-ci.org/cklb/pymoskito
-    :alt: Status of continuous integration
+.. image:: https://github.com/cklb/pymoskito/actions/workflows/ci.yaml/badge.svg)
+    :target: https://github.com/cklb/pymoskito/actions/workflows/ci.yaml
+    :alt: Continuous Integration Tests
 
 .. image:: https://img.shields.io/pypi/v/pymoskito.svg
     :target: https://pypi.python.org/pypi/pymoskito
