@@ -48,7 +48,7 @@ class CppBase:
         self._logger = logging.getLogger(self.__class__.__name__)
 
         # adapt to os-specific extensions
-        if os.name == 'nt' and 'GCC' not in sys.version:
+        if os.name == 'nt':
             self.sfx = '.pyd'
         else:
             self.sfx = '.so'
