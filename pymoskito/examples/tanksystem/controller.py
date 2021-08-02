@@ -58,11 +58,18 @@ class CppPIDController(pm.CppBase, pm.Controller):
         else:
             m_path += '/src/'
 
+        addLib = "add_library(pybind11 INTERFACE)\n"
+        addLib += "target_include_directories(pybind11 INTERFACE $(VENV)/lib/$(PYVERS)/site-packages/pybind11/include/)\n"
+
         pm.Controller.__init__(self, settings)
         pm.CppBase.__init__(self,
                             module_path=m_path,
                             module_name='Controller',
-                            binding_class_name="binding_Controller")
+                            binding_class_name="binding_Controller",
+                            # If pybind is not global installed, use the uncomment the following line and set $(VENV) 
+                            # as also as $(PYVERS) in the target_include_directories string.
+                            # additional_lib={'pybind11': addLib}
+                            )
 
         self.last_time = 0
         self.last_u = 0
@@ -124,12 +131,18 @@ class CppStateController(pm.CppBase, pm.Controller):
         proj_dir = os.path.abspath(os.path.dirname(__file__))
         m_path = os.sep.join([proj_dir, "src"])
 
+        addLib = "add_library(pybind11 INTERFACE)\n"
+        addLib += "target_include_directories(pybind11 INTERFACE $(VENV)/lib/$(PYVERS)/site-packages/pybind11/include/)\n"
+
         pm.Controller.__init__(self, settings)
         pm.CppBase.__init__(self,
                             module_path=m_path,
                             module_name='Controller',
-                            binding_class_name="binding_Controller")
-
+                            binding_class_name="binding_Controller",
+                            # If pybind is not global installed, use the uncomment the following line and set $(VENV) 
+                            # as also as $(PYVERS) in the target_include_directories string.
+                            # additional_lib={'pybind11': addLib}
+                            )
         self.last_time = 0
         self.last_u = 0
 

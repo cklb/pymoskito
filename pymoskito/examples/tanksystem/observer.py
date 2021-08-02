@@ -35,11 +35,18 @@ class CppHighGainObserver(pm.CppBase, pm.Observer):
         else:
             m_path += '/src/'
 
+        addLib = "add_library(pybind11 INTERFACE)\n"
+        addLib += "target_include_directories(pybind11 INTERFACE $(VENV)/lib/$(PYVERS)/site-packages/pybind11/include/)\n"
+
         pm.Observer.__init__(self, settings)
         pm.CppBase.__init__(self,
                             module_path=m_path,
                             module_name='Observer',
-                            binding_class_name="binding_Observer")
+                            binding_class_name="binding_Observer",
+                            # If pybind is not global installed, use the uncomment the following line and set $(VENV) 
+                            # as also as $(PYVERS) in the target_include_directories string.
+                            # additional_lib={'pybind11': addLib}
+                            )
 
         self.obs = self.get_class_from_module().HighGainObserver(self._settings["AT"],
                                                                  self._settings["AS1"],
