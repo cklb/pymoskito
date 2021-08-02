@@ -2,6 +2,7 @@
 
 import logging
 import os
+import sys
 import subprocess
 from pathlib import Path
 import importlib.util
@@ -47,7 +48,7 @@ class CppBase:
         self._logger = logging.getLogger(self.__class__.__name__)
 
         # adapt to os-specific extensions
-        if os.name == 'nt':
+        if os.name == 'nt' and 'GCC' not in sys.version:
             self.sfx = '.pyd'
         else:
             self.sfx = '.so'
@@ -200,7 +201,7 @@ class CppBase:
 
     def build_config(self):
         # generate config
-        if os.name == 'nt':
+        if os.name == 'nt' and 'GCC' not in sys.version:
             cmd = ['cmake', '-A', 'x64', '-S', '.', '-B', BUILD_DIR]
         else:
             cmd = ['cmake',  # '-DCMAKE_BUILD_TYPE=Debug',
@@ -213,7 +214,7 @@ class CppBase:
 
     def build_binding(self):
         # build
-        if os.name == 'nt':
+        if os.name == 'nt' and 'GCC' not in sys.version:
             cmd = ['cmake', '--build', BUILD_DIR, '--config', 'Release', '--target', 'INSTALL']
         else:
             cmd = ['cmake', '--build', BUILD_DIR]
@@ -225,7 +226,7 @@ class CppBase:
 
     def install_binding(self):
         # generate config
-        if os.name == 'nt':
+        if os.name == 'nt' and 'GCC' not in sys.version:
             return
         else:
             cmd = ['cmake', '--install', BUILD_DIR]
