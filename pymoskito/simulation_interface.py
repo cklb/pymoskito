@@ -350,6 +350,33 @@ class SimulatorInteractor(QObject):
 
         return False
 
+    def getModuleSettings(self):
+        set = {}
+        for row in range(self.target_model.rowCount()):
+            module_item = self.target_model.item(row, 0)
+            module_name = str(module_item.text())
+
+            if module_name != 'Model' and module_name != 'Disturbance' \
+                and module_name != 'Sensor' and module_name != 'Observer' \
+                and module_name != 'FeedForward' and module_name != 'Controller' \
+                and module_name != 'Trajectory':
+                continue
+
+            sub_module_item = self.target_model.item(row, 1)
+            sub_module_name = str(sub_module_item.text())
+
+            if sub_module_name == 'None':
+                continue
+
+            # get public settings for module
+            settings = self._get_settings(self.target_model, module_item.text())
+            if settings is None:
+                continue
+                
+            set[module_name] = settings
+            
+        return set
+
     def set_regime(self, reg):
         """
         Load the given regimes settings into the target model.

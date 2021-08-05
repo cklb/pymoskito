@@ -37,7 +37,7 @@ class Visualizer(metaclass=ABCMeta):
         self.can_reset_view = False
 
     @abstractmethod
-    def update_scene(self, x):
+    def update_scene(self, x, settings):
         """
         Hook to update the current visualization state
         :param x: system state vector
