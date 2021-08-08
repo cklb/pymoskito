@@ -449,7 +449,7 @@ try:
 
                 actor.PokeMatrix(poke)
 
-        def update_scene(self, x):
+        def update_scene(self, x, settings):
             """
             update the body states
             """
@@ -529,7 +529,7 @@ class MplTwoPendulumVisualizer(pm.MplVisualizer):
         self.axes.add_patch(self.long_pendulum)
         self.axes.add_patch(self.long_pendulum_weight)
 
-    def update_scene(self, x):
+    def update_scene(self, x, settings):
         x0 = x[0]
         phi1 = np.rad2deg(x[2])
         phi2 = np.rad2deg(x[4])

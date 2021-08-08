@@ -120,7 +120,7 @@ try:
 
             actor.PokeMatrix(poke)
 
-        def update_scene(self, x):
+        def update_scene(self, x, settings):
             """
             update the body states
             """
@@ -164,7 +164,7 @@ class MplBallInTubeVisualizer(pm.MplVisualizer):
         self.ball.set_edgecolor("black")
         self.axes.add_patch(self.ball)
 
-    def update_scene(self, x):
+    def update_scene(self, x, settings):
 
         self.ball.center = (0, x[2] + st.d_R*st.scale/2.0)
         self.canvas.draw()

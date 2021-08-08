@@ -1281,7 +1281,7 @@ class SimulationGui(QMainWindow):
             settings = self.sim.getModuleSettings()
             # states
             state = self.interpolator(self.playbackTime)
-            self.visualizer.update_scene(state, settings=settings)
+            self.visualizer.update_scene(state, settings)
             if isinstance(self.visualizer, MplVisualizer):
                 pass
             elif isinstance(self.visualizer, VtkVisualizer):

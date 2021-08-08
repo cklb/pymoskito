@@ -442,7 +442,7 @@ class TwoPendulumVisualizer(pm.VtkVisualizer):
 
             actor.PokeMatrix(poke)
 
-    def update_scene(self, x):
+    def update_scene(self, x, settings):
         """
         update the body states
         """

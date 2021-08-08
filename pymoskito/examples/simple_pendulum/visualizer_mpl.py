@@ -71,7 +71,7 @@ class MplPendulumVisualizer(pm.MplVisualizer):
         self.axes.add_patch(self.pendulum)
 
     # update callback
-    def update_scene(self, x):
+    def update_scene(self, x, settings):
         cart_pos = x[0]
         phi = np.rad2deg(x[1])
 

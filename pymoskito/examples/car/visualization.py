@@ -17,9 +17,9 @@ class CarVisualizer(pm.MplVisualizer):
         self.axes.set_aspect('equal')
         self.axes.set_xlabel(r'$\xi_1/m$')
         self.axes.set_ylabel(r'$\xi_2/m$')
-        self.update_scene(st.initial_state)
+        self.update_scene(st.initial_state, None)
 
-    def update_scene(self, x):
+    def update_scene(self, x, settings):
         x1, x2, theta1, theta2, theta3 = x
         d1, l2, d2, l3 = st.d1, st.l2, st.d2, st.l3
         dia = st.dia

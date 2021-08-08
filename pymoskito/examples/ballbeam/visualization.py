@@ -80,7 +80,7 @@ try:
             self.ren.SetBackground2(38 / 255, 139 / 255, 210 / 255)
 
             # apply some sane initial state
-            self.update_scene(np.array([0, 0, 0, 0]))
+            self.update_scene(np.array([0, 0, 0, 0]), None)
 
             # get everybody into the frame
             self.ren.ResetCamera()
@@ -122,7 +122,7 @@ try:
 
             actor.PokeMatrix(poke)
 
-        def update_scene(self, x):
+        def update_scene(self, x, settings):
             """
             update the body states
             """
@@ -170,7 +170,7 @@ class MplBallBeamVisualizer(pm.MplVisualizer):
         self.axes.add_patch(self.ball_highlight)
         self.axes.add_patch(self.beam)
 
-    def update_scene(self, x):
+    def update_scene(self, x, settings):
         x_ball, dx_ball, theta_beam, dtheta_beam = x
         theta_ball = -x_ball / st.visR
 
