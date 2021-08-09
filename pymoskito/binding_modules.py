@@ -134,7 +134,7 @@ class CppBase:
         c_make_lists += "project(Bindings)\n\n"
 
         c_make_lists += "set( CMAKE_CXX_STANDARD 11 )\n\n"
-        c_make_lists += "find_package(PythonLibs REQUIRED)\n\n"
+        c_make_lists += "find_package(Python COMPONENTS Interpreter Development)\n\n"
 
         c_make_lists += "set( CMAKE_RUNTIME_OUTPUT_DIRECTORY . )\n"
         c_make_lists += "set( CMAKE_LIBRARY_OUTPUT_DIRECTORY . )\n"
@@ -147,7 +147,7 @@ class CppBase:
         c_make_lists += "\tset( CMAKE_ARCHIVE_OUTPUT_DIRECTORY_${OUTPUTCONFIG} . )\n"
         c_make_lists += "endforeach( OUTPUTCONFIG CMAKE_CONFIGURATION_TYPES )\n\n"
 
-        c_make_lists += "include_directories(${PYTHON_INCLUDE_DIRS})\n"
+        c_make_lists += "include_directories(${Python_INCLUDE_DIRS})\n"
 
         if self.additional_lib:
             c_make_lists += "\n\n"
