@@ -7,7 +7,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ['3.5', '3.6', '3.7', '3.8', '3.9']
+        python-version: [
+        #'3.5', '3.6', '3.7', '3.8',
+         '3.9'
+         ]
 
     steps:
     - uses: actions/checkout@v2
@@ -23,4 +26,4 @@ jobs:
         pip install ".[tests, CPP]";
     - name: Test with unittest
       run: |
-        xvfb-run python -m unittest -v -b
+        xvfb-run python -u -m unittest -v -b
