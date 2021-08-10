@@ -22,7 +22,7 @@ std::vector<double> HighGainObserver::compute(const double &dhT2,
         this->dOut[0] = 0;
     }
     if (this->dOut[1] <= 0) {
-        this->dOut[1] = 0
+        this->dOut[1] = 0;
     }
 
     std::vector<double> dOut(std::begin(this->dOut), std::end(this->dOut));
