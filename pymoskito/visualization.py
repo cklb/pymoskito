@@ -45,6 +45,12 @@ class Visualizer(metaclass=ABCMeta):
         pass
 
 
+class DummyVisualizer(Visualizer):
+
+    def update_scene(self, x):
+        pass
+
+
 class VtkVisualizer(Visualizer):
     """
     Base Class with some functionality the help visualizing the system using vtk

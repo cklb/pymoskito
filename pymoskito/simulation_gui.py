@@ -18,7 +18,7 @@ from PyQt5.QtCore import (pyqtSignal, pyqtSlot, Qt, QTimer, QSize, QSettings,
 from PyQt5.QtGui import QIcon, QKeySequence, QColor
 from PyQt5.QtWidgets import (
     QApplication, QMainWindow,
-    QWidget, QAction, QSlider, QLabel, QFrame, QPushButton,
+    QWidget, QAction, QSlider, QLabel, QFrame, QPushButton, QComboBox,
     QListWidget, QListWidgetItem, QTreeView, QTreeWidget, QTreeWidgetItem,
     QAbstractItemView,
     QToolBar, QStatusBar, QProgressBar,
@@ -50,7 +50,7 @@ except ImportError as e:
 # pymoskito
 from .registry import get_registered_visualizers
 from .simulation_interface import SimulatorInteractor, SimulatorView
-from .visualization import MplVisualizer, VtkVisualizer
+from .visualization import MplVisualizer, VtkVisualizer, DummyVisualizer
 from .processing_gui import PostProcessor
 from .tools import get_resource, PlainTextLogger, LengthList, Exporter
 
@@ -162,44 +162,9 @@ class SimulationGui(QMainWindow):
         # add widgets to the docks
         self.propertyDock.addWidget(self.targetView)
 
-        if not vtk_available:
-            self._logger.warning("loading vtk failed with:{}".format(vtk_error_msg))
-
-        # check if there is a registered visualizer
-        available_vis = get_registered_visualizers()
-        self._logger.info("found visualizers: {}".format(
-            [name for cls, name in available_vis]))
-        if available_vis:
-            # instantiate the first visualizer
-            self._logger.info("loading visualizer '{}'".format(available_vis[0][1]))
-            self.animationLayout = QVBoxLayout()
-
-            if issubclass(available_vis[0][0], MplVisualizer):
-                self.animationWidget = QWidget()
-                self.visualizer = available_vis[0][0](self.animationWidget,
-                                                      self.animationLayout)
-                self.animationDock.addWidget(self.animationWidget)
-            elif issubclass(available_vis[0][0], VtkVisualizer):
-                if vtk_available:
-                    # vtk window
-                    self.animationFrame = QFrame()
-                    self.vtkWidget = QVTKRenderWindowInteractor(
-                        self.animationFrame)
-                    self.animationLayout.addWidget(self.vtkWidget)
-                    self.animationFrame.setLayout(self.animationLayout)
-                    self.animationDock.addWidget(self.animationFrame)
-                    self.vtk_renderer = vtkRenderer()
-                    self.vtkWidget.GetRenderWindow().AddRenderer(
-                        self.vtk_renderer)
-                    self.visualizer = available_vis[0][0](self.vtk_renderer)
-                    self.vtkWidget.Initialize()
-                else:
-                    self._logger.warning("visualizer depends on vtk which is "
-                                         "not available on this system!")
-            elif available_vis:
-                raise NotImplementedError
-        else:
-            self.visualizer = None
+        # setup the visualizer
+        self.visuComboBox = QComboBox()
+        self._init_visualizer()
 
         # regime window
         self.regime_list = QListWidget(self)
@@ -409,10 +374,9 @@ class SimulationGui(QMainWindow):
 
         self.actResetCamera = QAction(self)
         self.actResetCamera.setText("Reset Camera")
-        self.actResetCamera.setIcon(QIcon(get_resource("reset_camera.png")))
+        self.actResetCamera.setIcon(QIcon(get_resource("video_camera.png")))
         self.actResetCamera.setDisabled(True)
-        if available_vis:
-            self.actResetCamera.setEnabled(self.visualizer.can_reset_view)
+        self.actResetCamera.setEnabled(self.visualizer.can_reset_view)
         self.actResetCamera.triggered.connect(self.reset_camera_clicked)
 
         # postprocessing
@@ -445,8 +409,10 @@ class SimulationGui(QMainWindow):
         self.toolbarSim.addWidget(self.speedControl)
         self.toolbarSim.addAction(self.actFast)
         self.toolbarSim.addSeparator()
-        self.toolbarSim.addAction(self.actPostprocessing)
         self.toolbarSim.addAction(self.actResetCamera)
+        self.toolbarSim.addWidget(self.visuComboBox)
+        self.toolbarSim.addSeparator()
+        self.toolbarSim.addAction(self.actPostprocessing)
         self.postprocessor = None
 
         # log dock
@@ -518,6 +484,77 @@ class SimulationGui(QMainWindow):
         self.statusBar().addPermanentWidget(self.coordLabel)
 
         self._logger.info("Simulation GUI is up and running.")
+
+    def _init_visualizer(self):
+        """ Initialize the visualizer combobox """
+        self.visualizer = None
+        self.visuComboBox.currentTextChanged.connect(self._visualizer_changed)
+        self.visuComboBox.addItem("None")
+
+        if not vtk_available:
+            self._logger.warning(
+                "loading vtk failed with:{}".format(vtk_error_msg))
+
+        # get all registered visualizers
+        available_vis = get_registered_visualizers()
+
+        # fill the combo box
+        for cls, name in available_vis:
+            self.visuComboBox.addItem(name)
+
+        # instantiate the first visualizer
+        self.visuComboBox.setCurrentIndex(0)
+
+    @pyqtSlot(str)
+    def _visualizer_changed(self, name):
+        """ Slot to update the visualizer """
+        self._logger.info(
+            "selecting visualizer '{}'".format(name))
+        available_vis = get_registered_visualizers()
+        cls = next((_c for _c, _n in available_vis if _n == name),
+                   DummyVisualizer)
+        self._update_visualizer(cls)
+
+    def _update_visualizer(self, visu_cls):
+        """ Update the current visualizer """
+        if self.animationDock.widgets:
+            self.animationDock.layout.removeWidget(
+                self.animationDock.widgets[0])
+            self.animationDock.widgets[0].deleteLater()
+            del self.animationDock.widgets[0]
+
+        self.animationLayout = QVBoxLayout()
+        if visu_cls is DummyVisualizer:
+            self.visualizer = DummyVisualizer()
+            # self.animationWidget = QWidget()
+            # self.animationDock.addWidget(self.animationWidget, row=0)
+        elif issubclass(visu_cls, MplVisualizer):
+            self.animationWidget = QWidget()
+            self.visualizer = visu_cls(self.animationWidget,
+                                       self.animationLayout)
+            self.animationDock.addWidget(self.animationWidget, row=0)
+        elif issubclass(visu_cls, VtkVisualizer):
+            if vtk_available:
+                # vtk window
+                self.animationFrame = QFrame()
+                self.vtkWidget = QVTKRenderWindowInteractor(
+                    self.animationFrame)
+                self.animationLayout.addWidget(self.vtkWidget)
+                self.animationFrame.setLayout(self.animationLayout)
+                self.animationDock.addWidget(self.animationFrame, row=0)
+                self.vtk_renderer = vtkRenderer()
+                self.vtkWidget.GetRenderWindow().AddRenderer(
+                    self.vtk_renderer)
+                self.visualizer = visu_cls(self.vtk_renderer)
+                self.vtkWidget.Initialize()
+            else:
+                self._logger.warning("visualizer depends on vtk which is "
+                                     "not available on this system!")
+        else:
+            raise NotImplementedError("Unsupported visualizer type '{}'"
+                                      "".format(visu_cls))
+        if hasattr(self, "actResetCamera"):
+            self.actResetCamera.setEnabled(self.visualizer.can_reset_view)
 
     def addPlotTreeItem(self, default=False):
         text = "plot_{:03d}".format(self.dataPointTreeWidget.topLevelItemCount())
