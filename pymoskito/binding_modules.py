@@ -93,10 +93,8 @@ class CppBase:
     def create_binding_config(self):
         # check if folder exists
         if not self.module_path.is_dir():
-            self._logger.error("CPP bindings could not be found in the given "
-                               "folder '{}'".format(os.getcwd()))
-            self._logger.info("Make sure that the directory '{}' exists in that"
-                              " path.".format(BINDING_DIR))
+            self._logger.error("Config folder '{}' does not exist."
+                               "".format(self.module_path))
             return False
 
         if not self.module_src_path.is_file():
@@ -135,6 +133,7 @@ class CppBase:
 
         c_make_lists += "set( CMAKE_CXX_STANDARD 11 )\n\n"
         c_make_lists += "find_package(Python COMPONENTS Interpreter Development)\n\n"
+        c_make_lists += "find_package(pybind CONFIG REQUIRED)\n\n"
 
         c_make_lists += "set( CMAKE_RUNTIME_OUTPUT_DIRECTORY . )\n"
         c_make_lists += "set( CMAKE_LIBRARY_OUTPUT_DIRECTORY . )\n"
