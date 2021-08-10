@@ -131,9 +131,10 @@ class CppBase:
 
         Returns:
         """
-        c_make_lists = "cmake_minimum_required(VERSION 3.12)\n"
+        c_make_lists = "cmake_minimum_required(VERSION 3.15)\n"
         c_make_lists += "project(Bindings)\n\n"
 
+        c_make_lists += "set (Python_FIND_VIRTUALENV STANDARD)\n"
         c_make_lists += "find_package(Python COMPONENTS Interpreter Development)\n\n"
 
         c_make_lists += "set( CMAKE_CXX_STANDARD 11 )\n\n"
