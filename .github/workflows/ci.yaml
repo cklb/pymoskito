@@ -23,7 +23,7 @@ jobs:
         sudo apt install -y xvfb python3-pyqt5
         export QT_DEBUG_PLUGINS=1
         python -m pip install --upgrade pip
-        pip install ".[tests, CPP]";
+        python -m pip install ".[tests, CPP]";
     - name: Test with unittest
       run: |
         xvfb-run python -u -m unittest -v -b
