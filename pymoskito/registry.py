@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
-from .simulation_modules import SimulationModule, SignalMixer
 from .processing_core import ProcessingModule
+from .simulation_modules import SimulationModule, SignalMixer
 from .visualization import Visualizer
 
 __all__ = ["register_simulation_module", "register_processing_module",

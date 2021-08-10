@@ -12,6 +12,10 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from PyQt5.QtGui import QColor
+import subprocess
+import pybind11
+
+import numpy as np
 
 logger = logging.getLogger(__name__)
 

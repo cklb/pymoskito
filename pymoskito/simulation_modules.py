@@ -1,9 +1,12 @@
 import logging
-from copy import copy
+import os
+import subprocess
 from abc import ABCMeta, abstractmethod
 from collections import OrderedDict
+from copy import copy
 
 from PyQt5.QtCore import QObject
+
 pyqtWrapperType = type(QObject)
 
 __all__ = ["SimulationModule", "SimulationException",
@@ -412,6 +415,7 @@ class SignalMixer(SimulationModule):
     """
     Base class for all Signal mixing modules
     """
+
     def __init__(self, settings):
         assert "input signals" in settings
         SimulationModule.__init__(self, settings)

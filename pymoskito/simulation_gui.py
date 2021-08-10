@@ -249,8 +249,9 @@ class SimulationGui(QMainWindow):
 
         # last sim window
         self.lastSimList = QListWidget(self)
+        self.lastSimList.setFocusPolicy(Qt.NoFocus)
         self.lastSimDock.addWidget(self.lastSimList)
-        self._lastSimulations = LengthList(20)
+        self._lastSimulations = []
         self.lastSimList.itemDoubleClicked.connect(self.load_last_sim)
 
         # data window
@@ -1171,9 +1172,10 @@ class SimulationGui(QMainWindow):
                            }
             display_name = "{}:{}".format(lastSimCount,
                                           self._current_regime_name)
-            self._lastSimulations.push(lastSimData)
+            self._lastSimulations.append(lastSimData)
             new_item = QListWidgetItem(display_name)
             self.lastSimList.addItem(new_item)
+            self.lastSimList.scrollToItem(new_item)
             self.setQListItemBold(self.lastSimList, new_item)
 
         if self._settings.value("control/autoplay_animation") == "True":
