@@ -752,6 +752,7 @@ class SimulationGui(QMainWindow):
             self._update_data_list()
             self._update_plots()
             lsettings = self.currentDataset["modules"]
+            self.visualizer.update_config(lsettings)
             lsettings["clear previous"] = True
             self.sim.restore_regime(lsettings)
             self.update_gui()
@@ -1199,6 +1200,7 @@ class SimulationGui(QMainWindow):
             self._read_results()
             self._update_data_list()
             self._update_plots()
+            self.visualizer.update_config(data["modules"])
 
             # add results to history
             lastSimCount = self.lastSimList.count()
