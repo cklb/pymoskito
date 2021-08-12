@@ -1,3 +1,4 @@
+import logging
 from abc import ABCMeta, abstractmethod
 
 from matplotlib.backends.backend_qt5agg import (
@@ -35,6 +36,15 @@ class Visualizer(metaclass=ABCMeta):
 
     def __init__(self):
         self.can_reset_view = False
+        self._config = {}
+        self._logger = logging.getLogger(self.__class__.__name__)
+
+    def update_config(self, config):
+        """
+        Hook to update the current visualization configuration
+        :param config: Current simulation config
+        """
+        self._config = config
 
     @abstractmethod
     def update_scene(self, x):
@@ -42,6 +52,12 @@ class Visualizer(metaclass=ABCMeta):
         Hook to update the current visualization state
         :param x: system state vector
         """
+        pass
+
+
+class DummyVisualizer(Visualizer):
+
+    def update_scene(self, x):
         pass
 
 

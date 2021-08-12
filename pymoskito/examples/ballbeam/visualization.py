@@ -89,22 +89,39 @@ try:
             # save this view
             self.save_camera_pose()
 
-        @staticmethod
-        def calc_positions(x):
+        def update_config(self, config):
+            super().update_config(config)
+
+            model = self._config["Model"]
+            radius = st.ballScale * model["R"]
+            length = model["beam length"]
+            width = model["beam width"]
+            depth = model["beam depth"]
+
+            self.ball.SetRadius(radius)
+            self.beam.SetXLength(length)
+            self.beam.SetYLength(width)
+            self.beam.SetZLength(depth)
+
+        def calc_positions(self, x):
             """
             Calculate stationary vectors and rot. matrices for bodies
             """
+            model = self._config.get("Model", {})
+            radius = st.ballScale * model.get("R", st.R)
+            width = model.get("beam width", st.beam_width)
+
             # beam
             t_beam = np.array([[np.cos(x[2]), -np.sin(x[2]), 0],
                                [np.sin(x[2]), np.cos(x[2]), 0],
                                [0, 0, 1]])
-            r_beam0 = np.array([0, -st.visR - st.visBeamWidth / 2, 0])
+            r_beam0 = np.array([0, -radius - width / 2, 0])
             r_beam = np.dot(t_beam, r_beam0)
 
             # ball
             r_ball0 = np.array([x[0], 0, 0])
             r_ball = np.dot(t_beam, r_ball0)
-            phi = x[0] / st.visR
+            phi = x[0] / radius
             t_ball = np.array([[np.cos(phi), -np.sin(phi), 0],
                                [np.sin(phi), np.cos(phi), 0],
                                [0, 0, 1]])
@@ -170,6 +187,21 @@ class MplBallBeamVisualizer(pm.MplVisualizer):
         self.axes.add_patch(self.ball_highlight)
         self.axes.add_patch(self.beam)
 
+    def update_config(self, config):
+        super().update_config(config)
+
+        model = self._config["Model"]
+        radius = st.ballScale * model["R"]
+        length = model["beam length"]
+        width = model["beam width"]
+
+        self.ball_base.set_radius(radius)
+        self.ball_highlight.set_radius(radius)
+        self.beam.set_xy([-length / 2, -(radius + width)])
+        self.beam.set_width(length)
+        self.beam.set_height(width)
+        self.canvas.draw()
+
     def update_scene(self, x):
         x_ball, dx_ball, theta_beam, dtheta_beam = x
         theta_ball = -x_ball / st.visR
@@ -185,7 +217,6 @@ class MplBallBeamVisualizer(pm.MplVisualizer):
         self.ball_highlight.set_transform(t_ball)
 
         # beam
-        self.beam.set_y(-(st.visR + st.visBeamWidth))
         self.beam.set_transform(t_beam)
 
         self.canvas.draw()
