@@ -502,8 +502,11 @@ class SimulationGui(QMainWindow):
         for cls, name in available_vis:
             self.visuComboBox.addItem(name)
 
-        # instantiate the first visualizer
-        self.visuComboBox.setCurrentIndex(0)
+        # instantiate the first visualizer or None
+        if self.visuComboBox.count() > 0:
+            self.visuComboBox.setCurrentIndex(1)
+        else:
+            self.visuComboBox.setCurrentIndex(0)
 
     @pyqtSlot(str)
     def _visualizer_changed(self, name):
