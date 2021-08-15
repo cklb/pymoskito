@@ -1,0 +1,51 @@
+- Name: test-linear
+  clear previous: !!python/bool True
+
+  Model:
+   type: BallPlateModel
+   initial state: [0, 0, 2, 0]
+
+  Solver:
+   type: ODEInt
+   measure rate: 10
+   end time: 10
+
+  Controller:
+   type: LinearController
+
+  Trajectory:
+   type: SmoothTransition
+   states: [-4, 4]
+   start time: 0
+   delta t: 8
+
+  ModelMixer:
+   type: AdditiveMixer
+   Input A: Controller
+   Input B: None
+
+- Name: test-nonlinear
+  clear previous: !!python/bool True
+
+  Model:
+   type: BallPlateModel_nonlinear
+   initial state: [0.8, 0, 0.4, 0]
+
+  Solver:
+   type: ODEInt
+   measure rate: 10
+   end time: 10
+
+  Controller:
+   type: LinearController
+
+  Trajectory:
+   type: SmoothTransition
+   states: [-4, 4]
+   start time: 0
+   delta t: 8
+
+  ModelMixer:
+   type: AdditiveMixer
+   Input A: Controller
+   Input B: None

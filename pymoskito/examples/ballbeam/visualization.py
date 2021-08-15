@@ -221,4 +221,5 @@ class MplBallBeamVisualizer(pm.MplVisualizer):
 
         self.canvas.draw()
 
+
 pm.register_visualizer(MplBallBeamVisualizer)
