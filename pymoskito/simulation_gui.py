@@ -245,7 +245,7 @@ class SimulationGui(QMainWindow):
         self.dataPointAddButton.setToolTip(
             "Add the selected data set from the left to the selected plot "
             "on the right.")
-        self.dataPointAddButton.clicked.connect(self.addDatapointToTree)
+        self.dataPointAddButton.clicked.connect(self.add_data_point_to_tree)
         self.dataPointManipulationLayout.addWidget(self.dataPointAddButton)
 
         self.dataPointRemoveButton = QPushButton(self)
@@ -253,7 +253,7 @@ class SimulationGui(QMainWindow):
         self.dataPointRemoveButton.setToolTip(
             "Remove the selected data set from the plot on the right."
         )
-        self.dataPointRemoveButton.clicked.connect(self.removeDatapointFromTree)
+        self.dataPointRemoveButton.clicked.connect(self.remove_data_point_from_tree)
         self.dataPointManipulationLayout.addWidget(self.dataPointRemoveButton)
 
         self.dataPointExportButton = QPushButton(self)
@@ -261,7 +261,7 @@ class SimulationGui(QMainWindow):
         self.dataPointExportButton.setToolTip(
             "Export the selected data set from the left to a csv or png file."
         )
-        self.dataPointExportButton.clicked.connect(self.exportDatapointFromTree)
+        self.dataPointExportButton.clicked.connect(self.export_data_points_from_tree)
         self.dataPointManipulationLayout.addWidget(self.dataPointExportButton)
 
         self.plotLabel = QLabel("Plots", self)
@@ -271,7 +271,7 @@ class SimulationGui(QMainWindow):
         self.dataPointPlotAddButton = QPushButton(self)
         self.dataPointPlotAddButton.setIcon(QIcon(get_resource("add.png")))
         self.dataPointPlotAddButton.setToolTip("Create a new plot window.")
-        self.dataPointPlotAddButton.clicked.connect(self.addPlotTreeItem)
+        self.dataPointPlotAddButton.clicked.connect(self.add_plot_tree_item)
         self.dataPointManipulationLayout.addWidget(self.dataPointPlotAddButton)
 
         self.dataPointPlotRemoveButton = QPushButton(self)
@@ -279,7 +279,7 @@ class SimulationGui(QMainWindow):
         self.dataPointPlotRemoveButton.setToolTip(
             "Delete the selected plot window."
         )
-        self.dataPointPlotRemoveButton.clicked.connect(self.removeSelectedPlotTreeItems)
+        self.dataPointPlotRemoveButton.clicked.connect(self.remove_selected_plot_tree_items)
         self.dataPointManipulationLayout.addWidget(self.dataPointPlotRemoveButton)
 
         self.dataPointTreeWidget = QTreeWidget()
@@ -560,7 +560,7 @@ class SimulationGui(QMainWindow):
         if hasattr(self, "actResetCamera"):
             self.actResetCamera.setEnabled(self.visualizer.can_reset_view)
 
-    def addPlotTreeItem(self, default=False):
+    def add_plot_tree_item(self, default=False):
         text = "plot_{:03d}".format(self.dataPointTreeWidget.topLevelItemCount())
         if not default:
             name, ok = QInputDialog.getText(self,
@@ -585,78 +585,78 @@ class SimulationGui(QMainWindow):
                                "".format(name))
             return
 
-        toplevelitem = QTreeWidgetItem()
-        toplevelitem.setText(0, name)
-        self.dataPointTreeWidget.addTopLevelItem(toplevelitem)
-        toplevelitem.setExpanded(1)
-        self.dataPointTreeWidget.setCurrentItem(toplevelitem)
-        self.plot_vector_double_clicked(toplevelitem)
+        top_level_item = QTreeWidgetItem()
+        top_level_item.setText(0, name)
+        self.dataPointTreeWidget.addTopLevelItem(top_level_item)
+        top_level_item.setExpanded(1)
+        self.dataPointTreeWidget.setCurrentItem(top_level_item)
+        self.plot_vector_double_clicked(top_level_item)
 
-    def removeSelectedPlotTreeItems(self):
+    def remove_selected_plot_tree_items(self):
         items = self.dataPointTreeWidget.selectedItems()
         if not items:
             self._logger.error("Can't remove plot: no plot selected.")
             return
 
         for item in items:
-            self.removePlotTreeItem(item)
+            self.remove_plot_tree_item(item)
 
-    def removePlotTreeItem(self, item):
+    def remove_plot_tree_item(self, item):
         # get the  top item
         while item.parent():
             item = item.parent()
 
         text = "The marked plot '" + item.text(0) + "' will be deleted!"
-        buttonReply = QMessageBox.warning(self, "Plot delete", text,
+        reply_button = QMessageBox.warning(self, "Plot delete", text,
                                           QMessageBox.Ok | QMessageBox.Cancel)
-        if buttonReply == QMessageBox.Ok:
-            openDocks = [dock.title() for dock in self.find_all_plot_docks()]
-            if item.text(0) in openDocks:
+        if reply_button == QMessageBox.Ok:
+            open_docks = [dock.title() for dock in self.find_all_plot_docks()]
+            if item.text(0) in open_docks:
                 self.area.docks[item.text(0)].close()
 
             self.dataPointTreeWidget.takeTopLevelItem(
                 self.dataPointTreeWidget.indexOfTopLevelItem(item))
 
-    def addDatapointToTree(self):
+    def add_data_point_to_tree(self):
         if not self.dataPointListWidget.selectedIndexes():
             self._logger.error("Can't add data set: no data set selected.")
             return
 
-        dataPoints = []
+        data_points = []
         for item in self.dataPointListWidget.selectedItems():
-            dataPoints.append(item.text())
+            data_points.append(item.text())
 
-        toplevelItems = self.dataPointTreeWidget.selectedItems()
-        if not toplevelItems:
+        top_level_items = self.dataPointTreeWidget.selectedItems()
+        if not top_level_items:
             if self.dataPointTreeWidget.topLevelItemCount() < 2:
                 if self.dataPointTreeWidget.topLevelItemCount() < 1:
-                    self.addPlotTreeItem(default=True)
-                toplevelItem = self.dataPointTreeWidget.topLevelItem(0)
+                    self.add_plot_tree_item(default=True)
+                top_level_item = self.dataPointTreeWidget.topLevelItem(0)
             else:
                 self._logger.error("Can't add data set: no plot selected.")
                 return
         else:
-            toplevelItem = toplevelItems[0]
+            top_level_item = top_level_items[0]
 
-        while toplevelItem.parent():
-            toplevelItem = toplevelItem.parent()
+        while top_level_item.parent():
+            top_level_item = top_level_item.parent()
 
-        topLevelItemList = []
-        for i in range(toplevelItem.childCount()):
-            topLevelItemList.append(toplevelItem.child(i).text(1))
+        top_level_item_list = []
+        for i in range(top_level_item.childCount()):
+            top_level_item_list.append(top_level_item.child(i).text(1))
 
         dock = next((d for d in self.find_all_plot_docks()
-                     if d.title() == toplevelItem.text(0)), None)
+                     if d.title() == top_level_item.text(0)), None)
 
-        for dataPoint in dataPoints:
-            if dataPoint not in topLevelItemList:
+        for data_point in data_points:
+            if data_point not in top_level_item_list:
                 child = QTreeWidgetItem()
-                child.setText(1, dataPoint)
+                child.setText(1, data_point)
 
-                color = self._get_color(toplevelItem.childCount())
+                color = self._get_color(top_level_item.childCount())
                 child.setBackground(0, color)
 
-                toplevelItem.addChild(child)
+                top_level_item.addChild(child)
 
                 if dock:
                     widget = dock.widgets[0]
@@ -664,20 +664,20 @@ class SimulationGui(QMainWindow):
             else:
                 self._logger.error("Can't add data set: "
                                    "Set '{}' is already present selected plot"
-                                   "".format(dataPoint))
+                                   "".format(data_point))
 
-    def exportDatapointFromTree(self):
-        if not self.dataPointListWidget.selectedIndexes():
-            self._logger.error("Can't export data set: no data set selected.")
+    def export_data_points_from_tree(self):
+        data_points = {}
+        for item in self.dataPointListWidget.selectedItems():
+            data_points[item.text()] = self._get_data_by_name(item.text())
+
+        if not data_points:
+            self._logger.error("Data export failed: No data selected.")
             return
 
-        dataPoints = {}
-        for item in self.dataPointListWidget.selectedItems():
-            dataPoints[item.text()] = self._get_data_by_name(item.text())
+        self.export(data_points)
 
-        self.export(dataPoints)
-
-    def removeDatapointFromTree(self):
+    def remove_data_point_from_tree(self):
         items = self.dataPointTreeWidget.selectedItems()
         if not items:
             self._logger.error("Can't remove data set: no set selected.")
@@ -690,8 +690,8 @@ class SimulationGui(QMainWindow):
         top_item.takeChild(top_item.indexOfChild(items[0]))
 
         for i in range(top_item.childCount()):
-            colorItem = self._get_color(i)
-            top_item.child(i).setBackground(0, colorItem)
+            color_item = self._get_color(i)
+            top_item.child(i).setBackground(0, color_item)
 
         self._update_plot(top_item)
 
