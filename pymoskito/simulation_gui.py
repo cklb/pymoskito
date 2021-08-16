@@ -18,7 +18,9 @@ from PyQt5.QtCore import (pyqtSignal, pyqtSlot, Qt, QTimer, QSize, QSettings,
 from PyQt5.QtGui import QIcon, QKeySequence, QColor
 from PyQt5.QtWidgets import (
     QApplication, QMainWindow,
-    QWidget, QAction, QSlider, QLabel, QFrame, QPushButton, QComboBox,
+    QWidget, QAction,
+    QSlider, QLabel, QFrame,
+    QPushButton, QComboBox,
     QListWidget, QListWidgetItem, QTreeView, QTreeWidget, QTreeWidgetItem,
     QAbstractItemView,
     QToolBar, QStatusBar, QProgressBar,
@@ -52,7 +54,9 @@ from .registry import get_registered_visualizers
 from .simulation_interface import SimulatorInteractor, SimulatorView
 from .visualization import MplVisualizer, VtkVisualizer, DummyVisualizer
 from .processing_gui import PostProcessor
-from .tools import get_resource, PlainTextLogger, Exporter
+from .tools import (
+    get_resource, PlainTextLogger, Exporter, create_button_from_action
+)
 
 __all__ = ["SimulationGui", "run"]
 
@@ -230,65 +234,79 @@ class SimulationGui(QMainWindow):
         self.dataPointListWidget.setSelectionMode(QAbstractItemView.ExtendedSelection)
         self.dataLayout.addWidget(self.dataPointListWidget)
 
-        self.dataPointManipulationWidget = QWidget()
         self.dataPointManipulationLayout = QVBoxLayout()
         self.dataPointManipulationLayout.addStretch()
         self.dataPointManipulationLayout.setSpacing(5)
+        self.dataPointManipulationWidget = QWidget()
         self.dataPointManipulationWidget.setLayout(self.dataPointManipulationLayout)
         self.dataLayout.addWidget(self.dataPointManipulationWidget)
 
         self.dataPointLabel = QLabel("Data", self)
         self.dataPointLabel.setAlignment(Qt.AlignCenter)
         self.dataPointManipulationLayout.addWidget(self.dataPointLabel)
-        self.dataPointAddButton = QPushButton(self)
-        self.dataPointAddButton.setIcon(QIcon(get_resource("add.png")))
-        self.dataPointAddButton.setToolTip(
+
+        self.actAddDataPointToPlot = QAction(self)
+        self.actAddDataPointToPlot.setText("&Add selected data to plot")
+        self.actAddDataPointToPlot.setIcon(QIcon(get_resource("add.png")))
+        self.actAddDataPointToPlot.setToolTip(
             "Add the selected data set from the left to the selected plot "
             "on the right.")
-        self.dataPointAddButton.clicked.connect(self.add_data_point_to_tree)
-        self.dataPointManipulationLayout.addWidget(self.dataPointAddButton)
+        self.actAddDataPointToPlot.triggered.connect(self.add_data_point_to_tree)
+        self.dataPointManipulationLayout.addWidget(
+            create_button_from_action(self.actAddDataPointToPlot))
 
-        self.dataPointRemoveButton = QPushButton(self)
-        self.dataPointRemoveButton.setIcon(QIcon(get_resource("delete.png")))
-        self.dataPointRemoveButton.setToolTip(
-            "Remove the selected data set from the plot on the right."
-        )
-        self.dataPointRemoveButton.clicked.connect(self.remove_data_point_from_tree)
-        self.dataPointManipulationLayout.addWidget(self.dataPointRemoveButton)
-
-        self.dataPointExportButton = QPushButton(self)
-        self.dataPointExportButton.setIcon(QIcon(get_resource("export.png")))
-        self.dataPointExportButton.setToolTip(
+        self.actExportDataPoint = QAction(self)
+        self.actExportDataPoint.setText("&Export selected data")
+        self.actExportDataPoint.setIcon(QIcon(get_resource("export.png")))
+        self.actExportDataPoint.setToolTip(
             "Export the selected data set from the left to a csv or png file."
         )
-        self.dataPointExportButton.clicked.connect(self.export_data_points_from_tree)
-        self.dataPointManipulationLayout.addWidget(self.dataPointExportButton)
+        self.actExportDataPoint.triggered.connect(self.export_data_points_from_tree)
+        self.dataPointManipulationLayout.addWidget(
+            create_button_from_action(self.actExportDataPoint))
+
+        self.actRemoveDataPointFromPlot = QAction(self)
+        self.actRemoveDataPointFromPlot.setText("&Remove selected data from plot")
+        self.actRemoveDataPointFromPlot.setIcon(QIcon(get_resource("delete.png")))
+        self.actRemoveDataPointFromPlot.setToolTip(
+            "Remove the selected data set from the plot on the right."
+        )
+        self.actRemoveDataPointFromPlot.triggered.connect(
+            self.remove_data_point_from_tree)
+        self.dataPointManipulationLayout.addWidget(
+            create_button_from_action(self.actRemoveDataPointFromPlot))
 
         self.plotLabel = QLabel("Plots", self)
         self.plotLabel.setAlignment(Qt.AlignCenter)
         self.dataPointManipulationLayout.addWidget(self.plotLabel)
 
-        self.dataPointPlotAddButton = QPushButton(self)
-        self.dataPointPlotAddButton.setIcon(QIcon(get_resource("add.png")))
-        self.dataPointPlotAddButton.setToolTip("Create a new plot.")
-        self.dataPointPlotAddButton.clicked.connect(self.add_plot_tree_item)
-        self.dataPointManipulationLayout.addWidget(self.dataPointPlotAddButton)
+        self.actCreatePlot = QAction(self)
+        self.actCreatePlot.setIcon(QIcon(get_resource("add.png")))
+        self.actCreatePlot.setText("&Create a new plot")
+        self.actCreatePlot.setToolTip("Create a new plot.")
+        self.actCreatePlot.triggered.connect(self.add_plot_tree_item)
+        self.dataPointManipulationLayout.addWidget(
+            create_button_from_action(self.actCreatePlot))
 
-        self.dataPointPlotShowButton = QPushButton(self)
-        self.dataPointPlotShowButton.setIcon(QIcon(get_resource("view.png")))
-        self.dataPointPlotShowButton.setToolTip(
-            "Show the selected plot. (double-click on name)"
+        self.actShowPlot = QAction(self)
+        self.actShowPlot.setText("&Show the selected plot")
+        self.actShowPlot.setIcon(QIcon(get_resource("view.png")))
+        self.actShowPlot.setToolTip(
+            "Show the selected plot (double-click on name)."
         )
-        self.dataPointPlotShowButton.clicked.connect(self.show_selected_plot_tree_item)
-        self.dataPointManipulationLayout.addWidget(self.dataPointPlotShowButton)
+        self.actShowPlot.triggered.connect(self.show_selected_plot_tree_item)
+        self.dataPointManipulationLayout.addWidget(
+            create_button_from_action(self.actShowPlot))
 
-        self.dataPointPlotRemoveButton = QPushButton(self)
-        self.dataPointPlotRemoveButton.setIcon(QIcon(get_resource("delete.png")))
-        self.dataPointPlotRemoveButton.setToolTip(
+        self.actDeletePlot = QAction(self)
+        self.actDeletePlot.setText("&Delete selected plot")
+        self.actDeletePlot.setIcon(QIcon(get_resource("delete.png")))
+        self.actDeletePlot.setToolTip(
             "Delete the selected plot."
         )
-        self.dataPointPlotRemoveButton.clicked.connect(self.remove_selected_plot_tree_items)
-        self.dataPointManipulationLayout.addWidget(self.dataPointPlotRemoveButton)
+        self.actDeletePlot.triggered.connect(self.remove_selected_plot_tree_items)
+        self.dataPointManipulationLayout.addWidget(
+            create_button_from_action(self.actDeletePlot))
 
         self.dataPointTreeWidget = QTreeWidget()
         self.dataPointTreeWidget.setHeaderLabels(["PlotTitle", "DataPoint"])
@@ -478,6 +496,14 @@ class SimulationGui(QMainWindow):
                            QKeySequence(Qt.CTRL + Qt.Key_0))
         animMenu.addAction(self.actAutoPlay)
         animMenu.addAction(self.actResetCamera)
+
+        plotMenu = self.menuBar().addMenu("&Plotting")
+        plotMenu.addAction(self.actAddDataPointToPlot)
+        plotMenu.addAction(self.actExportDataPoint)
+        plotMenu.addAction(self.actRemoveDataPointFromPlot)
+        plotMenu.addAction(self.actCreatePlot)
+        plotMenu.addAction(self.actShowPlot)
+        plotMenu.addAction(self.actDeletePlot)
 
         helpMenu = self.menuBar().addMenu("&Help")
         helpMenu.addAction("&Online Documentation", self.show_online_docs)

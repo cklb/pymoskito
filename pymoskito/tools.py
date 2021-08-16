@@ -11,6 +11,7 @@ import matplotlib.gridspec as gridspec
 import matplotlib.pyplot as plt
 import pandas as pd
 from PyQt5.QtGui import QColor
+from PyQt5.QtWidgets import QPushButton
 
 import numpy as np
 
@@ -299,3 +300,14 @@ class Exporter:
 
     def export_csv(self, file_name, sep=','):
         self.df.to_csv(file_name, sep=sep)
+
+
+def create_button_from_action(action):
+    """
+    QPushButton that is generated from a QAction
+    """
+    btn = QPushButton()
+    btn.setIcon(action.icon())
+    btn.setToolTip(action.toolTip())
+    btn.clicked.connect(action.activate)
+    return btn
