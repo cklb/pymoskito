@@ -270,14 +270,22 @@ class SimulationGui(QMainWindow):
 
         self.dataPointPlotAddButton = QPushButton(self)
         self.dataPointPlotAddButton.setIcon(QIcon(get_resource("add.png")))
-        self.dataPointPlotAddButton.setToolTip("Create a new plot window.")
+        self.dataPointPlotAddButton.setToolTip("Create a new plot.")
         self.dataPointPlotAddButton.clicked.connect(self.add_plot_tree_item)
         self.dataPointManipulationLayout.addWidget(self.dataPointPlotAddButton)
+
+        self.dataPointPlotShowButton = QPushButton(self)
+        self.dataPointPlotShowButton.setIcon(QIcon(get_resource("view.png")))
+        self.dataPointPlotShowButton.setToolTip(
+            "Show the selected plot. (double-click on name)"
+        )
+        self.dataPointPlotShowButton.clicked.connect(self.show_selected_plot_tree_item)
+        self.dataPointManipulationLayout.addWidget(self.dataPointPlotShowButton)
 
         self.dataPointPlotRemoveButton = QPushButton(self)
         self.dataPointPlotRemoveButton.setIcon(QIcon(get_resource("delete.png")))
         self.dataPointPlotRemoveButton.setToolTip(
-            "Delete the selected plot window."
+            "Delete the selected plot."
         )
         self.dataPointPlotRemoveButton.clicked.connect(self.remove_selected_plot_tree_items)
         self.dataPointManipulationLayout.addWidget(self.dataPointPlotRemoveButton)
@@ -592,6 +600,11 @@ class SimulationGui(QMainWindow):
         self.dataPointTreeWidget.setCurrentItem(top_level_item)
         self.plot_vector_double_clicked(top_level_item)
 
+    def show_selected_plot_tree_item(self):
+        items = self.dataPointTreeWidget.selectedItems()
+        for item in items:
+            self.show_plot_tree_item(item)
+
     def remove_selected_plot_tree_items(self):
         items = self.dataPointTreeWidget.selectedItems()
         if not items:
@@ -706,11 +719,11 @@ class SimulationGui(QMainWindow):
 
     def plot_vector_double_clicked(self, item):
         # check if a top level item has been clicked
-        if item.parent():
-            return
+        if not item.parent():
+            self.show_plot_tree_item(item)
 
+    def show_plot_tree_item(self, item):
         title = item.text(0)
-
         # check if plot has already been opened
         open_docks = [dock.title() for dock in self.find_all_plot_docks()]
         if title in open_docks:
