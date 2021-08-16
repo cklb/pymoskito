@@ -285,7 +285,7 @@ class SimulationGui(QMainWindow):
         self.dataPointTreeWidget = QTreeWidget()
         self.dataPointTreeWidget.setHeaderLabels(["PlotTitle", "DataPoint"])
         # self.dataPointTreeWidget.setSelectionMode(QAbstractItemView.MultiSelection)
-        self.dataPointTreeWidget.itemDoubleClicked.connect(self.plot_vector_clicked)
+        self.dataPointTreeWidget.itemDoubleClicked.connect(self.plot_vector_double_clicked)
         self.dataPointTreeWidget.setExpandsOnDoubleClick(0)
         self.dataPointTreeLayout = QVBoxLayout()
 
@@ -564,8 +564,8 @@ class SimulationGui(QMainWindow):
         text = "plot_{:03d}".format(self.dataPointTreeWidget.topLevelItemCount())
         if not default:
             name, ok = QInputDialog.getText(self,
-                                            "PlotTitle",
-                                            "PlotTitle:",
+                                            "Select a plot title",
+                                            "name of the new plot:",
                                             text=text)
             if not (ok and name):
                 return
@@ -575,13 +575,22 @@ class SimulationGui(QMainWindow):
         similar_items = self.dataPointTreeWidget.findItems(name,
                                                            Qt.MatchExactly)
         if similar_items:
-            self._logger.error("Name '{}' already exists".format(name))
+            self._logger.error("A plot with name '{}' already exists"
+                               "".format(name))
+            return
+
+        if name in self.non_plotting_docks:
+            self._logger.error("Name '{}' not allowed for a plot window "
+                               "since it is already taken by another dock."
+                               "".format(name))
             return
 
         toplevelitem = QTreeWidgetItem()
         toplevelitem.setText(0, name)
         self.dataPointTreeWidget.addTopLevelItem(toplevelitem)
         toplevelitem.setExpanded(1)
+        self.dataPointTreeWidget.setCurrentItem(toplevelitem)
+        self.plot_vector_double_clicked(toplevelitem)
 
     def removeSelectedPlotTreeItems(self):
         items = self.dataPointTreeWidget.selectedItems()
@@ -695,44 +704,24 @@ class SimulationGui(QMainWindow):
         pen = pg.mkPen(self._get_color(idx), width=2)
         return pen
 
-    def plots(self, item):
-        title = item.text(0)
-
-        # check if a top level item has been clicked
-        if not item.parent():
-            if title in self.non_plotting_docks:
-                self._logger.error(
-                    "Title '{}' not allowed for a plot window since it would"
-                    " shadow on of the reserved names".format(title))
-                return
-
-            # check if plot has already been opened
-            openDocks = [dock.title() for dock in self.find_all_plot_docks()]
-            if title in openDocks:
-                self._update_plot(item)
-
-    def plot_vector_clicked(self, item):
-
+    def plot_vector_double_clicked(self, item):
         # check if a top level item has been clicked
         if item.parent():
             return
 
         title = item.text(0)
-        if title in self.non_plotting_docks:
-            self._logger.error("Title '{}' not allowed for a plot window since"
-                               "it would shadow on of the reserved "
-                               "names".format(title))
-            return
 
         # check if plot has already been opened
-        openDocks = [dock.title() for dock in self.find_all_plot_docks()]
-        if title in openDocks:
+        open_docks = [dock.title() for dock in self.find_all_plot_docks()]
+        if title in open_docks:
+            # update and raise the dock
             self._update_plot(item)
             try:
                 self.area.docks[title].raiseDock()
             except:
                 pass
         else:
+            # create a new dock
             self.plot_data_vector(item)
 
     def load_last_sim(self, item):
