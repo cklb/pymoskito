@@ -278,7 +278,7 @@ class SimulatorInteractor(QObject):
     def _get_settings(self, model, module_name):
         item = model.findItems(module_name).pop(0)
 
-        # TODO this is not the good way --> switch to pyqtgraphs implementation
+        # TODO this is not the good way --> switch to pyqtgraph's implementation
         settings = OrderedDict()
         for row in range(item.rowCount()):
             property_name = self.target_model.data(item.child(row, 0).index(),
@@ -335,7 +335,8 @@ class SimulatorInteractor(QObject):
             try:
                 slot = sub_module_cls(settings)
             except Exception as e:
-                self._logger.error("Init of module {} failed with\n \"{}\"!".format(module_name, e))
+                self._logger.error("Init of module '{}' failed with\n"
+                                   "'{}'!".format(module_name, e))
                 return False
 
             # add to simulation modules

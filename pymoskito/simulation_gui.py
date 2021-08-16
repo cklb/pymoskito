@@ -14,7 +14,7 @@ from scipy.interpolate import interp1d
 
 # Qt
 from PyQt5.QtCore import (pyqtSignal, pyqtSlot, Qt, QTimer, QSize, QSettings,
-                          QCoreApplication, QModelIndex, QRectF)
+                          QCoreApplication, QModelIndex)
 from PyQt5.QtGui import QIcon, QKeySequence, QColor
 from PyQt5.QtWidgets import (
     QApplication, QMainWindow,
@@ -52,7 +52,7 @@ from .registry import get_registered_visualizers
 from .simulation_interface import SimulatorInteractor, SimulatorView
 from .visualization import MplVisualizer, VtkVisualizer, DummyVisualizer
 from .processing_gui import PostProcessor
-from .tools import get_resource, PlainTextLogger, LengthList, Exporter
+from .tools import get_resource, PlainTextLogger, Exporter
 
 __all__ = ["SimulationGui", "run"]
 

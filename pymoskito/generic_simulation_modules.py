@@ -4,7 +4,6 @@ import pickle
 import warnings
 
 from scipy.integrate import ode
-from scipy.signal import StateSpace
 import sympy as sp
 import numpy as np
 
@@ -420,10 +419,11 @@ class PIDController(Controller):
         Controller.__init__(self, settings)
 
         # define variables for data saving in the right dimension
-        self.e_old = np.zeros((len(self._settings["input_state"]), ))  # column vector
-        self.integral_old = np.zeros((len(self._settings["input_state"]), ))  # column vector
-        self.last_u = np.zeros((len(self._settings["input_state"]), ))  # column vector
-        self.output = np.zeros((len(self._settings["input_state"]), ))  # column vector
+        # (columns vectors)
+        self.e_old = np.zeros((len(self._settings["input_state"]), ))
+        self.integral_old = np.zeros((len(self._settings["input_state"]), ))
+        self.last_u = np.zeros((len(self._settings["input_state"]), ))
+        self.output = np.zeros((len(self._settings["input_state"]), ))
 
     def _control(self, time, trajectory_values=None, feedforward_values=None, input_values=None, **kwargs):
         # input abbreviations

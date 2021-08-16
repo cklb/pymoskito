@@ -6,8 +6,11 @@ from .visualization import Visualizer
 
 __all__ = ["register_simulation_module", "register_processing_module",
            "register_visualizer",
-           "get_registered_modules", "get_registered_simulation_modules",
-           "get_registered_processing_modules"]
+           "get_registered_modules",
+           "get_registered_simulation_modules",
+           "get_registered_processing_modules",
+           "get_registered_visualizers",
+           ]
 
 """
 wrapper for easy user interaction

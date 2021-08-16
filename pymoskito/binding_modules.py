@@ -35,8 +35,9 @@ class CppBase:
     Args:
         :module_path: Path to directory that contains the sources.
         :module_name: Name of the cpp class to use
-        :binding_class_name: Name of the file including the binding defintion
-        :additional_lib: dict with key 'lib name' and additional lines for the CMakeLists
+        :binding_class_name: Name of the file including the binding definition
+        :additional_lib: dict with key 'lib name' and additional lines for the
+          CMakeLists
 
     Warn:
         The `module_name` will be used to generate the cmake configuration an,

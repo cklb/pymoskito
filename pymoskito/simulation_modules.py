@@ -1,6 +1,4 @@
 import logging
-import os
-import subprocess
 from abc import ABCMeta, abstractmethod
 from collections import OrderedDict
 from copy import copy
@@ -48,9 +46,9 @@ class SimulationModule(QObject, metaclass=SimulationModuleMeta):
             `output info`:
                 Dict holding an information dictionaries with keys `Name` and
                 `Unit` for each element in the output data.
-                If available, these information are used to display reasonable names
-                in the result view and to display the corresponding units for the
-                result plots.
+                If available, these information are used to display reasonable
+                names in the result view and to display the corresponding units
+                for the result plots.
 
     Warn:
         Do NOT use '.' in the `output_info` name field.
@@ -142,6 +140,7 @@ class Model(SimulationModule):
         Args:
             x(Array-like): System state.
             t(float): System time.
+            args: Extra arguments.
 
         Returns:
             Temporal derivative of the system state at time t.
@@ -205,7 +204,7 @@ class Solver(SimulationModule):
         try:
             self._model.check_consistency(self.next_output)
         except ModelException as e:
-            raise SolverException("Timestep Integration failed! "
+            raise SolverException("Time step integration failed! "
                                   "Model raised: {0}".format(e))
         return output
 
@@ -380,7 +379,8 @@ class Trajectory(SimulationModule):
             if "Controller" in settings["modules"].keys():
                 control_order = settings["modules"]["Controller"].input_order
             if "Feedforward" in settings["modules"].keys():
-                feedforward_order = settings["modules"]["Feedforward"].input_order
+                feedforward_order = settings["modules"]["Feedforward"
+                ].input_order
             settings.update(differential_order=max([control_order,
                                                     feedforward_order]))
         else:

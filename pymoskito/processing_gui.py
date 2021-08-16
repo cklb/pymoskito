@@ -4,7 +4,7 @@ import logging
 import os
 
 from PyQt5.QtCore import Qt, pyqtSignal, QSize, QSettings
-from PyQt5.QtGui import QIcon, QKeySequence, QCloseEvent
+from PyQt5.QtGui import QIcon, QKeySequence
 from PyQt5.QtWidgets import (
     QWidget, QAction, QMainWindow, QListWidget, QListWidgetItem, QToolBar,
     QStatusBar, QLabel, QShortcut, QFileDialog, QGridLayout, QSizePolicy,
@@ -13,7 +13,7 @@ from PyQt5.QtWidgets import (
 
 from . import registry as pm
 from .processing_core import PostProcessingModule, MetaProcessingModule
-from .tools import get_resource, PlainTextLogger, PostFilter
+from .tools import get_resource, PlainTextLogger
 from .mpl_settings import enable_latex, disable_latex
 
 __all__ = ["PostProcessor"]
@@ -289,7 +289,8 @@ class PostProcessor(QMainWindow):
             self._logger.info("executing processor '{0}'".format(name))
             figs = processor.process(result_files)
         except Exception as err:
-            self._logger.exception("Error in processor")
+            self._logger.error("Error in processor")
+            self._logger.exception(err)
 
         self.figures_changed.emit(figs, processor_type)
         self._logger.info("finished postprocessing")

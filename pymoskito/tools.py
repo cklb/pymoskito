@@ -9,17 +9,14 @@ import re
 
 import matplotlib.gridspec as gridspec
 import matplotlib.pyplot as plt
-import numpy as np
 import pandas as pd
 from PyQt5.QtGui import QColor
-import subprocess
-import pybind11
 
 import numpy as np
 
 logger = logging.getLogger(__name__)
 
-__all__ = ["rotation_matrix_xyz", "get_resource"]
+__all__ = ["rotation_matrix_xyz", "get_resource", "sort_tree"]
 
 
 def sort_lists(a, b):
@@ -40,7 +37,9 @@ def get_resource(res_name, res_type="icons"):
         str: path to resource
     """
     own_path = os.path.dirname(__file__)
-    resource_path = os.path.abspath(os.path.join(own_path, "resources", res_type))
+    resource_path = os.path.abspath(os.path.join(own_path,
+                                                 "resources",
+                                                 res_type))
     return os.path.join(resource_path, res_name)
 
 
@@ -131,7 +130,8 @@ def _add_sub_value(top_dict, keys, val):
 
 def rotation_matrix_xyz(axis, angle, angle_dim):
     """
-    Calculate the rotation matrix for a rotation around a given axis with the angle :math:`\\varphi`.
+    Compute the rotation matrix for a rotation around a given axis with the
+    angle :math:`\\varphi`.
 
     Args:
         axis (str): choose rotation axis "x", "y" or "z"
@@ -167,9 +167,16 @@ def rotation_matrix_xyz(axis, angle, angle_dim):
 
     s = np.sin(a)
     c = np.cos(a)
-    rotation_matrix = np.array([[c + x ** 2 * (1 - c), x * y * (1 - c) - z * s, x * z * (1 - c) + y * s],
-                                [y * x * (1 - c) + z * s, c + y ** 2 * (1 - c), y * z * (1 - c) - x * s],
-                                [z * x * (1 - c) - y * s, z * y * (1 - c) + x * s, c + z ** 2 * (1 - c)]])
+    rotation_matrix = np.array([
+        [c + x ** 2 * (1 - c),
+         x * y * (1 - c) - z * s,
+         x * z * (1 - c) + y * s],
+        [y * x * (1 - c) + z * s,
+         c + y ** 2 * (1 - c),
+         y * z * (1 - c) - x * s],
+        [z * x * (1 - c) - y * s,
+         z * y * (1 - c) + x * s,
+         c + z ** 2 * (1 - c)]])
     return rotation_matrix
 
 
@@ -242,26 +249,6 @@ def swap_rows(arr, frm, to):
     return arr
 
 
-class LengthList(object):
-    def __init__(self, maxLength):
-        self.maxLength = maxLength
-        self.ls = []
-
-    def push(self, st):
-        if len(self.ls) == self.maxLength:
-            self.ls.pop(0)
-        self.ls.append(st)
-
-    def get_list(self):
-        return self.ls
-
-    def __len__(self):
-        return len(self.ls)
-
-    def __getitem__(self, key):
-        return self.ls[key]
-
-
 def get_figure_size(scale):
     """
     calculate optimal figure size with the golden ratio
@@ -312,4 +299,3 @@ class Exporter:
 
     def export_csv(self, file_name, sep=','):
         self.df.to_csv(file_name, sep=sep)
-

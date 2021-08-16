@@ -25,7 +25,9 @@ class ProcessingModuleMeta(ABCMeta, pyqtWrapperType):
 class ProcessingModule(QObject, metaclass=ProcessingModuleMeta):
     """
     Base Class for processing Modules.
-    Each Module's run method is called with a list of results by the processing_gui
+
+    Each Module's run method is called with a list of results by the
+    processing_gui
     """
 
     # fonts
@@ -204,7 +206,8 @@ class PostProcessingModule(ProcessingModule):
         """
         result_list = []
         for data in files:
-            self._logger.info("processing data set: {0}".format(data["regime name"]))
+            self._logger.info("processing data set: {0}"
+                              "".format(data["regime name"]))
             result_list.extend(self.run(data))
 
         return result_list
@@ -290,7 +293,10 @@ class MetaProcessingModule(ProcessingModule):
         self._file_info = "Meta Output Files"
         self._file_type = ".mof"
 
-    def set_plot_labeling(self, title="", grid=True, x_label="", y_label="", line_type="line"):
+    def set_plot_labeling(self, title="",
+                          grid=True,
+                          x_label="", y_label="",
+                          line_type="line"):
         """
         helper to quickly set axis labeling with the good font sizes
         :param title:
@@ -305,7 +311,8 @@ class MetaProcessingModule(ProcessingModule):
         self.axes.set_ylabel(y_label, size=self._label_font_size)
 
         if grid:
-            self.axes.grid(color=self._grid_color, linestyle=self._grid_line_style)
+            self.axes.grid(color=self._grid_color,
+                           linestyle=self._grid_line_style)
 
         if line_type != "bar":
             self.axes.legend(loc=0, fontsize='small', prop={'size': 8})
@@ -341,7 +348,7 @@ class MetaProcessingModule(ProcessingModule):
                     x_all.append(val)
 
             if mode == 'line':
-                self.axes.plot(x_list, y_list, 'o-', label=member)  # , color=st.color_cycle[member])
+                self.axes.plot(x_list, y_list, 'o-', label=member)
             elif mode == 'bar':
                 # remove all None from yList
                 x_list[:] = [x for x, y in zip(x_list, y_list) if y]
@@ -350,7 +357,7 @@ class MetaProcessingModule(ProcessingModule):
                 # correction for the position of the bar
                 x_list[:] = [k + width * counter for k in x_list]
 
-                self.axes.bar(x_list, y_list, width, label=member)  # , color=st.color_cycle[controller])
+                self.axes.bar(x_list, y_list, width, label=member)
                 counter += 1
 
         if (mode == 'bar') and (len(x_all) > 1):

@@ -5,7 +5,6 @@ import logging
 import sys
 
 import numpy as np
-from copy import deepcopy
 from PyQt5.QtCore import QObject, pyqtSignal, pyqtSlot
 
 from .simulation_modules import SimulationException
@@ -175,14 +174,6 @@ class Simulator(QObject):
         self._choose_system_input(self._input_vector)
         self._calc_module("Solver")
 
-        if 0:
-            # calculate system state changes
-            self._current_outputs["State_Changes"] = \
-                self._simulation_modules["Model"]\
-                    .state_function(self._current_outputs["time"],
-                                    self._current_outputs["Solver"],
-                                    self._current_outputs["ModelMixer"])
-
         return
 
     def _choose_system_input(self, input_vector):
@@ -250,7 +241,7 @@ class Simulator(QObject):
                 try:
                     self._calc_step()
 
-                except Exception as e:
+                except Exception:
                     # catch all to avoid loosing data
                     self._abort(sys.exc_info())
                     return

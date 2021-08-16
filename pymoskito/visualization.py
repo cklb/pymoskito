@@ -101,22 +101,23 @@ class VtkVisualizer(Visualizer):
             self.ren.ResetCamera()
 
     def save_camera_pose(self):
-            # add camera reset functionality
-            camera = self.ren.GetActiveCamera()
-            self.position = camera.GetPosition()
-            self.focal_point = camera.GetFocalPoint()
-            self.view_up = camera.GetViewUp()
-            self.view_angle = camera.GetViewAngle()
-            self.parallel_projection = camera.GetParallelProjection()
-            self.parallel_scale = camera.GetParallelScale()
-            self.clipping_range = camera.GetClippingRange()
+        # add camera reset functionality
+        camera = self.ren.GetActiveCamera()
+        self.position = camera.GetPosition()
+        self.focal_point = camera.GetFocalPoint()
+        self.view_up = camera.GetViewUp()
+        self.view_angle = camera.GetViewAngle()
+        self.parallel_projection = camera.GetParallelProjection()
+        self.parallel_scale = camera.GetParallelScale()
+        self.clipping_range = camera.GetClippingRange()
 
-            self.can_reset_view = True
+        self.can_reset_view = True
 
 
 class MplVisualizer(Visualizer):
     """
-    Base Class with some function the help visualizing the system using matplotlib
+    Base Class with some function the help visualizing the system using
+    matplotlib
     """
 
     def __init__(self, q_widget, q_layout):
