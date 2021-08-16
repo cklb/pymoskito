@@ -164,6 +164,7 @@ class SimulationGui(QMainWindow):
 
         # setup the visualizer
         self.visuComboBox = QComboBox()
+        self.visualizer = None
         self._init_visualizer()
 
         # regime window
@@ -488,7 +489,6 @@ class SimulationGui(QMainWindow):
 
     def _init_visualizer(self):
         """ Initialize the visualizer combobox """
-        self.visualizer = None
         self.visuComboBox.currentTextChanged.connect(self._visualizer_changed)
         self.visuComboBox.addItem("None")
 
@@ -1247,7 +1247,6 @@ class SimulationGui(QMainWindow):
             "measure rate"]
         self.currentStartTime = self.currentDataset["simulation"]["start time"]
         self.currentEndTime = self.currentDataset["simulation"]["end time"]
-        self.validData = True
 
     def increment_playback_speed(self):
         self.speedControl.setValue(self.speedControl.value()
@@ -1286,8 +1285,13 @@ class SimulationGui(QMainWindow):
         self.playbackTimeChanged.emit()
 
     def _update_time_slider(self):
+        time_delta = self.currentEndTime - self.currentStartTime
+        if time_delta == 0:
+            # no meaningful context to update the slider
+            return
+
         rel_pos = (self.playbackTime - self.currentStartTime) / (
-                self.currentEndTime - self.currentStartTime)
+            time_delta)
         pos = int(rel_pos * self.timeSliderRange)
         self.timeSlider.blockSignals(True)
         self.timeSlider.setValue(pos)
@@ -1313,9 +1317,6 @@ class SimulationGui(QMainWindow):
             - visualisation window
             - time cursors in diagrams
         """
-        if not self.validData:
-            return
-
         self.timeLabel.setText("t={0:.3e}".format(self.playbackTime))
 
         # update timing elements
@@ -1323,7 +1324,7 @@ class SimulationGui(QMainWindow):
         self._update_time_cursors()
 
         # update state of rendering
-        if self.visualizer:
+        if self.visualizer is not None and self.interpolator is not None:
             state = self.interpolator(self.playbackTime)
             self.visualizer.update_scene(state)
             if isinstance(self.visualizer, MplVisualizer):
