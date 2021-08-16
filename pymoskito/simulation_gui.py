@@ -322,7 +322,7 @@ class SimulationGui(QMainWindow):
         self.actPlayPause.setIcon(QIcon(get_resource("play.png")))
         self.actPlayPause.setDisabled(True)
         self.actPlayPause.setShortcut(QKeySequence(Qt.Key_Space))
-        self.actPlayPause.triggered.connect(self.play_animation)
+        self.actPlayPause.triggered.connect(self.start_animation)
 
         self.actStop = QAction(self)
         self.actStop.setText("Stop")
@@ -363,10 +363,11 @@ class SimulationGui(QMainWindow):
         self.timeSlider.setDisabled(True)
         self.timeSlider.valueChanged.connect(self.update_playback_time)
 
-        self.playbackTime = .0
+        self.playbackTime = 0
         self.playbackGain = 1
-        self.currentStepSize = .0
-        self.currentEndTime = .0
+        self.currentStepSize = 0
+        self.currentStartTime = 0
+        self.currentEndTime = 0
         self.playbackTimer = QTimer()
         self.playbackTimer.timeout.connect(self.increment_playback_time)
         self.playbackTimeChanged.connect(self.update_gui)
@@ -846,19 +847,20 @@ class SimulationGui(QMainWindow):
         self.vtkWidget.Initialize()
 
     @pyqtSlot()
-    def play_animation(self):
+    def start_animation(self):
         """
-        play the animation
+        start the animation
         """
         self._logger.info("Starting Playback")
 
         # if we are at the end, start from the beginning
-        if self.playbackTime == self.currentEndTime:
-            self.timeSlider.setValue(0)
+        if self.playbackTime >= self.currentEndTime:
+            self.playbackTime = self.currentStartTime
+            self.playbackTimeChanged.emit()
 
         self.actPlayPause.setText("Pause Animation")
         self.actPlayPause.setIcon(QIcon(get_resource("pause.png")))
-        self.actPlayPause.triggered.disconnect(self.play_animation)
+        self.actPlayPause.triggered.disconnect(self.start_animation)
         self.actPlayPause.triggered.connect(self.pause_animation)
         self.playbackTimer.start(self.playbackTimeout)
 
@@ -872,7 +874,7 @@ class SimulationGui(QMainWindow):
         self.actPlayPause.setText("Play Animation")
         self.actPlayPause.setIcon(QIcon(get_resource("play.png")))
         self.actPlayPause.triggered.disconnect(self.pause_animation)
-        self.actPlayPause.triggered.connect(self.play_animation)
+        self.actPlayPause.triggered.connect(self.start_animation)
 
     def stop_animation(self):
         """
@@ -885,9 +887,10 @@ class SimulationGui(QMainWindow):
             self.actPlayPause.setText("Play Animation")
             self.actPlayPause.setIcon(QIcon(get_resource("play.png")))
             self.actPlayPause.triggered.disconnect(self.pause_animation)
-            self.actPlayPause.triggered.connect(self.play_animation)
+            self.actPlayPause.triggered.connect(self.start_animation)
 
-        self.timeSlider.setValue(0)
+        self.playbackTime = self.currentStartTime
+        self.playbackTimeChanged.emit()
 
     @pyqtSlot()
     def start_simulation(self):
@@ -1242,6 +1245,7 @@ class SimulationGui(QMainWindow):
                                      fill_value=(state[0], state[-1]))
         self.currentStepSize = 1.0 / self.currentDataset["simulation"][
             "measure rate"]
+        self.currentStartTime = self.currentDataset["simulation"]["start time"]
         self.currentEndTime = self.currentDataset["simulation"]["end time"]
         self.validData = True
 
@@ -1264,11 +1268,6 @@ class SimulationGui(QMainWindow):
         self.speedControl.setValue(self.speedControl.maximum())
 
     def update_playback_speed(self, val):
-        """
-        adjust playback time to slider value
-
-        :param val:
-        """
         maximum = self.speedControl.maximum()
         self.playbackGain = 10 ** (3.0 * (val - maximum / 2) / maximum)
 
@@ -1277,27 +1276,32 @@ class SimulationGui(QMainWindow):
         """
         go one time step forward in playback
         """
-        if self.playbackTime == self.currentEndTime:
+        if self.playbackTime >= self.currentEndTime:
             self.pause_animation()
             return
 
         increment = self.playbackGain * self.playbackTimeout / 1000
         self.playbackTime = min(self.currentEndTime,
                                 self.playbackTime + increment)
-        pos = int(self.playbackTime / self.currentEndTime
-                  * self.timeSliderRange)
+        self.playbackTimeChanged.emit()
+
+    def _update_time_slider(self):
+        rel_pos = (self.playbackTime - self.currentStartTime) / (
+                self.currentEndTime - self.currentStartTime)
+        pos = int(rel_pos * self.timeSliderRange)
         self.timeSlider.blockSignals(True)
         self.timeSlider.setValue(pos)
         self.timeSlider.blockSignals(False)
-        self.playbackTimeChanged.emit()
 
     def update_playback_time(self):
         """
         adjust playback time to slider value
         """
-        self.playbackTime = self.timeSlider.value() / self.timeSliderRange * self.currentEndTime
+        self.playbackTime = self.timeSlider.value() / self.timeSliderRange * (
+                self.currentEndTime
+                - self.currentStartTime
+        ) + self.currentStartTime
         self.playbackTimeChanged.emit()
-        return
 
     def update_gui(self):
         """
@@ -1314,7 +1318,8 @@ class SimulationGui(QMainWindow):
 
         self.timeLabel.setText("t={0:.3e}".format(self.playbackTime))
 
-        # update time cursor in plots
+        # update timing elements
+        self._update_time_slider()
         self._update_time_cursors()
 
         # update state of rendering

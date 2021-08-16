@@ -29,7 +29,9 @@
    type: ODEInt
    # the measure rate controls how dense the returned data will be
    measure rate: 10
-   end time: 10
+   # these settings control the simulation's duration
+   start time: 1
+   end time: 11
 
   # Class Name of the controller
   Controller:
