@@ -56,6 +56,7 @@ numfig = True
 intersphinx_mapping = {
     'pybind11': ('https://pybind11.readthedocs.io/en/stable/', None),
 }
+intersphinx_timeout = 10
 
 # preamble for latex
 latexPreamble = r'''
