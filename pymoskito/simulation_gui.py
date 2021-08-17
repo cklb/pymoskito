@@ -148,8 +148,8 @@ class SimulationGui(QMainWindow):
         self.propertyDock = pg.dockarea.Dock("Properties")
         self.animationDock = pg.dockarea.Dock("Animation")
         self.regimeDock = pg.dockarea.Dock("Regimes")
-        self.lastSimDock = pg.dockarea.Dock("Last Simulations")
-        self.dataDock = pg.dockarea.Dock("Data")
+        self.lastSimDock = pg.dockarea.Dock("Previous Simulations")
+        self.dataDock = pg.dockarea.Dock("Data & Plots")
         self.logDock = pg.dockarea.Dock("Log")
 
         # arrange docks
@@ -307,6 +307,7 @@ class SimulationGui(QMainWindow):
         self.actDeletePlot.triggered.connect(self.remove_selected_plot_tree_items)
         self.dataPointManipulationLayout.addWidget(
             create_button_from_action(self.actDeletePlot))
+        self.dataPointManipulationLayout.addStretch()
 
         self.dataPointTreeWidget = QTreeWidget()
         self.dataPointTreeWidget.setHeaderLabels(["PlotTitle", "DataPoint"])
@@ -512,7 +513,7 @@ class SimulationGui(QMainWindow):
         # status bar
         self.status = QStatusBar(self)
         self.setStatusBar(self.status)
-        self.statusLabel = QLabel("Ready.")
+        self.statusLabel = QLabel("Idle")
         self.statusBar().addPermanentWidget(self.statusLabel)
         self.timeLabel = QLabel("t=0.0")
         self.statusBar().addPermanentWidget(self.timeLabel)
