@@ -41,8 +41,8 @@ latex_settings = {
 
 def enable_latex():
     _logger.info("LaTeX export enabled")
-    mpl.rcParams['text.latex.preamble'].append(r'\usepackage{lmodern}'),
-    mpl.rcParams['text.latex.preamble'].append(r'\usepackage{siunitx}'),
+    mpl.rcParams['text.latex.preamble'] += r"\usepackage{lmodern}"
+    mpl.rcParams['text.latex.preamble'] += r"\usepackage{siunitx}"
     mpl.rcParams.update(latex_settings)
 
 

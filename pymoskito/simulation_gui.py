@@ -1699,7 +1699,7 @@ class SimulationGui(QMainWindow):
         self._logger.info("launching postprocessor")
         self.statusBar().showMessage("launching postprocessor", 1000)
         if self.postprocessor is None:
-            self.postprocessor = PostProcessor()
+            self.postprocessor = PostProcessor(self._settings)
 
         self.postprocessor.show()
 

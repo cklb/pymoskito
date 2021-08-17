@@ -8,7 +8,7 @@ from PyQt5.QtGui import QIcon, QKeySequence
 from PyQt5.QtWidgets import (
     QWidget, QAction, QMainWindow, QListWidget, QListWidgetItem, QToolBar,
     QStatusBar, QLabel, QShortcut, QFileDialog, QGridLayout, QSizePolicy,
-    QPlainTextEdit
+    QTextEdit
 )
 
 from . import registry as pm
@@ -26,10 +26,12 @@ class PostProcessor(QMainWindow):
 
     figures_changed = pyqtSignal(list, str)
 
-    def __init__(self, parent=None):
+    def __init__(self, settings=None, parent=None):
         QMainWindow.__init__(self, parent)
-        self._settings = QSettings()
         self._logger = logging.getLogger(self.__class__.__name__)
+        self._settings = settings
+        if settings is None:
+            self._settings = QSettings()
 
         self.setWindowTitle("Processing")
         self.setWindowIcon(QIcon(get_resource("processing.png")))
@@ -133,13 +135,10 @@ class PostProcessor(QMainWindow):
         self.delShortPost.activated.connect(self.remove_post_result_item)
 
         # log dock
-        self.logBox = QPlainTextEdit(self)
+        self.logBox = QTextEdit(self)
         self.logBox.setReadOnly(True)
-
-        # init logger for logging box
-        self.textLogger = PlainTextLogger(logging.INFO)
-        self.textLogger.set_target_cb(self.logBox.appendPlainText)
-        logging.getLogger().addHandler(self.textLogger)
+        self.logBox.setLineWrapMode(QTextEdit.NoWrap)
+        self.logBox.ensureCursorVisible()
 
         self.grid.addWidget(QLabel("Result Files:"), 0, 0)
         self.grid.addWidget(self.sim_result_list, 1, 0)
@@ -158,6 +157,11 @@ class PostProcessor(QMainWindow):
 
         self.mainFrame.setLayout(self.grid)
         self.setCentralWidget(self.mainFrame)
+
+        # init logger for logging box
+        self.textLogger = PlainTextLogger(self._settings, logging.INFO)
+        self.textLogger.set_target_cb(self.logBox)
+        logging.getLogger().addHandler(self.textLogger)
 
         # status bar
         self.statusBar = QStatusBar(self)
