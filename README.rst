@@ -36,21 +36,9 @@ Documentation can be found at https://pymoskito.readthedocs.org.
 
 PyMoskito at work:
 ------------------
-The main application simulating the **Ball and Beam** system:
+The main application simulating the **Tandem Pendulum** system:
 
-.. image:: ./docs/pictures/pm_2.png
-
-The postprocessing application:
-
-.. image:: ./docs/pictures/pm_3.png
-
-Another example a **Double Pendulum**:
-
-.. image:: ./docs/pictures/pm_4.png
-
-with custom prostprocessors:
-
-.. image:: ./docs/pictures/pm_5.png
+.. image:: ./docs/pictures/pm_1.png
 
 Still here? So PyMoskito features:
 ----------------------------------
@@ -63,5 +51,15 @@ Still here? So PyMoskito features:
 * playback functions for 3D visualization
 * ready-to-go graphs for all simulation signals
 
+Getting started:
+----------------
+
+Install with pip::
+
+    $ pip install pymoskito
+
+and run an example!::
+
+    $ python -m pymoskito.examples.pendulum
 
 .. include:: AUTHORS.rst
