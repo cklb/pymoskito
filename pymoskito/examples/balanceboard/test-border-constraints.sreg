@@ -1,0 +1,55 @@
+
+
+   
+- Name: test_boardBounce
+
+  clear previous: !!python/bool True
+
+  Model:
+   type: ReducedBalanceBoardModelParLin
+   initial state: [0, 0.1, 0, 0, 0, 0]
+
+  Solver:
+   type: ODEInt
+   end time: 10
+
+  ModelMixer:
+   type: AdditiveMixer
+   
+   
+   
+- Name: test_criticalAngle
+
+  clear previous: !!python/bool True
+
+  Model:
+   type: ReducedBalanceBoardModelParLin
+   initial state: [0, 0.09, 0, 0, 0, 0]
+   board length: 0.2
+
+  Solver:
+   type: ODEInt
+   end time: 15
+
+  ModelMixer:
+   type: AdditiveMixer
+   
+   
+   
+- Name: test_boardFalls
+
+  clear previous: !!python/bool True
+
+  Model:
+   type: BalanceBoardModel
+   initial state: [0, 0, 230, 0, 0, 0]
+
+  Solver:
+   type: ODEInt
+   end time: 5
+
+  ModelMixer:
+   type: AdditiveMixer
+   
+   
+   
