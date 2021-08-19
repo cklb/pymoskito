@@ -22,6 +22,7 @@ jobs:
         python-version: ${{ matrix.python-version }}
     - name: Install dependencies
       run: |
+        sudo apt update
         sudo apt install -y xvfb python3-pyqt5
         export QT_DEBUG_PLUGINS=1
         python -m pip install --upgrade pip

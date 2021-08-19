@@ -46,6 +46,7 @@ setup(
         "Programming Language :: Python :: 3.9",
     ],
     keywords="pymoskito control simulation feedback feedforward",
+    long_description_content_type="text/x-rst",
     url="https://github.com/cklb/pymoskito",
     author="Stefan Ecklebe",
     author_email="stefan.ecklebe@tu-dresden.de",
