@@ -3,7 +3,6 @@
 import logging
 import os
 import sys
-import platform
 import subprocess
 from pathlib import Path
 import importlib.util
@@ -137,10 +136,10 @@ class CppBase:
         c_make_lists += "project(Bindings)\n\n"
 
         c_make_lists += "set (Python_FIND_VIRTUALENV STANDARD)\n"
-        py_ver = platform.python_version()
-        c_make_lists += "find_package(Python {} EXACT REQUIRED " \
+        py_ver = sys.version_info
+        c_make_lists += "find_package(Python {}.{} EXACT REQUIRED " \
                         "COMPONENTS Interpreter Development)\n\n" \
-                        "".format(py_ver)
+                        "".format(py_ver.major, py_ver.minor)
 
         c_make_lists += "set( CMAKE_CXX_STANDARD 11 )\n\n"
         c_make_lists += "set( CMAKE_RUNTIME_OUTPUT_DIRECTORY . )\n"
