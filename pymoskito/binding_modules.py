@@ -154,8 +154,8 @@ class CppBase:
         c_make_lists += "endforeach( OUTPUTCONFIG CMAKE_CONFIGURATION_TYPES )\n\n"
 
         c_make_lists += "include_directories(${Python_INCLUDE_DIRS})\n"
-        pybind_headers = pybind11.get_include()
-        c_make_lists += "include_directories({})\n".format(pybind_headers)
+        pybind_headers = Path(pybind11.get_include())
+        c_make_lists += "include_directories({})\n".format(pybind_headers.as_posix())
 
         if self.additional_lib:
             c_make_lists += "\n\n"
@@ -184,13 +184,26 @@ class CppBase:
             self.module_name,
             self.sfx
         )
-        config_line += "target_link_libraries({} ${{PYTHON_LIBRARIES}}".format(
-            self.module_name,
+        
+        config_target_line = lambda lib : "\ttarget_link_libraries({} ${{{}}}".format(
+            self.module_name, lib, 
         )
+        
+        config_target_libs = ""
         if self.additional_lib:
             for key, _ in self.additional_lib.items():
-                config_line += " {}".format(key)
-        config_line += ")\n"
+                config_target_libs += " {}".format(key)
+        config_target_libs += ")\n"
+
+        
+        config_line += "if(WIN32 AND MSVC)\n"
+        config_line += config_target_line("Python_LIBRARY_RELEASE")
+        config_line += config_target_libs
+        config_line += "else()\n"
+        config_line += config_target_line("PYTHON_LIBRARIES")
+        config_line += config_target_libs
+        config_line += "endif()\n"
+        
         config_line += "install(FILES {}/{} DESTINATION {})".format(
             BUILD_DIR,
             self.module_name + self.sfx,
