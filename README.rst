@@ -1,3 +1,5 @@
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fcklb%2Fpymoskito.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fcklb%2Fpymoskito?ref=badge_shield)
+
 =========
 PyMoskito
 =========
@@ -65,3 +67,7 @@ Still here? So PyMoskito features:
 
 
 .. include:: AUTHORS.rst
+
+
+## License
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fcklb%2Fpymoskito.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fcklb%2Fpymoskito?ref=badge_large)
