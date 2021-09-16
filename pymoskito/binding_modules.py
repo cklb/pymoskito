@@ -7,7 +7,11 @@ import subprocess
 from pathlib import Path
 import importlib.util
 
-import pybind11
+try:
+    import pybind11
+except ModuleNotFoundError:
+    logging.warning("Package 'pybind11' could not be loaded, binding modules "
+                    "will not be available")
 
 __all__ = ["CppBase"]
 
