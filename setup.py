@@ -32,7 +32,7 @@ extra_requirements = {
 
 setup(
     name="pymoskito",
-    version="0.4.0rc3",
+    version="0.4.0rc4",
     description="Python based modular simulation & postprocessing kickass "
                 "toolbox",
     long_description=readme + "\n\n" + history,
