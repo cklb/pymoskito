@@ -73,7 +73,7 @@ class TwoPendulumModel(pm.Model):
         x4 = x[3]
         x5 = x[4]
         x6 = x[5]
-        F_star = args[0]
+        F_star = args[0].squeeze()
         M1_star = 0
         M2_star = 0
 
@@ -182,7 +182,7 @@ class TwoPendulumRigidBodyModel(pm.Model):
         x4 = x[3]
         x5 = x[4]
         x6 = x[5]
-        F = args[0]
+        F = args[0].squeeze()
         M1 = 0
         M2 = 0
 
@@ -301,7 +301,7 @@ class TwoPendulumModelParLin(pm.Model):
         x4 = x[3]
         x5 = x[4]
         x6 = x[5]
-        u = args[0][0]
+        u = args[0].squeeze()
 
         dx1 = x2
         dx2 = u

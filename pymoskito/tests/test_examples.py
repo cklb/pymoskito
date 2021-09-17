@@ -23,6 +23,9 @@ class TestExamples(unittest.TestCase):
     def test_car(self):
         self._test_example("car", debug=False)
 
+    def test_tanksystem(self):
+        self._test_example("tanksystem", debug=True)
+
     def _test_example(self, name: str, debug=False):
         """
         Run the given example while listening for errors on stdout

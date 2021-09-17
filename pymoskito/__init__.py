@@ -1,13 +1,15 @@
 # -*- coding: utf-8 -*-
 import logging.config
 import os
-
-import matplotlib as mpl
 import yaml
 
-# make everybody use qt5
+# make all plotting libs use qt5
+import matplotlib as mpl
 mpl.use('Qt5Agg')
 os.environ["PYQTGRAPH_QT_LIB"] = "PyQt5"
+
+# enable high dpi scaling
+os.environ["QT_AUTO_SCREEN_SCALE_FACTOR"] = "1"
 
 from .registry import *
 
@@ -19,6 +21,8 @@ from .simulation_gui import *
 from .simulation_modules import *
 from .generic_simulation_modules import *
 
+from .binding_modules import *
+
 from .tools import *
 from .controltools import *
 from .visualization import *
@@ -26,11 +30,11 @@ from .resources import *
 
 __author__ = 'Stefan Ecklebe'
 __email__ = 'stefan.ecklebe@tu-dresden.de'
-__version__ = '0.3.0'
+__version__ = '0.4.0rc4'
 
 # configure logging
 with open(get_resource("logging.yaml", ""), "r") as f:
-    log_conf = yaml.load(f)
+    log_conf = yaml.full_load(f)
 
 logging.config.dictConfig(log_conf)
 

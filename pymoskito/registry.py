@@ -1,13 +1,16 @@
 # -*- coding: utf-8 -*-
 
-from .simulation_modules import SimulationModule, SignalMixer
 from .processing_core import ProcessingModule
+from .simulation_modules import SimulationModule, SignalMixer
 from .visualization import Visualizer
 
 __all__ = ["register_simulation_module", "register_processing_module",
            "register_visualizer",
-           "get_registered_modules", "get_registered_simulation_modules",
-           "get_registered_processing_modules"]
+           "get_registered_modules",
+           "get_registered_simulation_modules",
+           "get_registered_processing_modules",
+           "get_registered_visualizers",
+           ]
 
 """
 wrapper for easy user interaction

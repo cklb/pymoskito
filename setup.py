@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-
 try:
     from setuptools import setup
 except ImportError:
@@ -20,9 +19,20 @@ with open("requirements.txt") as requirements_file:
 test_requirements = [
 ]
 
+extra_requirements = {
+    "3d": ["vtk>=6.3.0"],
+    "cpp": ["pybind11>=2.7.0"],
+    "docs": ["Sphinx>=1.4.9",
+             "sphinx-rtd-theme>=0.1.9",
+             "sphinxcontrib-tikz>=0.4.7",
+             "docutils",
+             ],
+    "test": [],
+}
+
 setup(
     name="pymoskito",
-    version="0.3.0",
+    version="0.4.0rc4",
     description="Python based modular simulation & postprocessing kickass "
                 "toolbox",
     long_description=readme + "\n\n" + history,
@@ -30,11 +40,13 @@ setup(
         "Development Status :: 4 - Beta",
         "Intended Audience :: Developers",
         "Natural Language :: English",
-        "Programming Language :: Python :: 3.5",
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
     ],
     keywords="pymoskito control simulation feedback feedforward",
+    long_description_content_type="text/x-rst",
     url="https://github.com/cklb/pymoskito",
     author="Stefan Ecklebe",
     author_email="stefan.ecklebe@tu-dresden.de",
@@ -44,6 +56,6 @@ setup(
     install_requires=requirements,
     include_package_data=True,
     test_suite="pymoskito.tests",
-    tests_require=test_requirements,
+    extras_require=extra_requirements,
     zip_safe=False
 )

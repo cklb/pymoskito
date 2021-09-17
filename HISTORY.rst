@@ -4,6 +4,21 @@
 History
 =======
 
+
+0.4.0 (2021-08-XX)
+------------------
+
+* Added support to compile and call external C and C++ functions
+  for hardware in the loop tests (Thanks to Jens)
+* Add the possibility for the visualization the render the current model
+  parameters (#56)
+* Various improvements regarding plot creation and handling
+* Visualizers can now be changed during runtime
+* Migrated CI pipeline to Github Actions
+* Fix various coding style issues
+* Fix issue in playback logic (#62)
+* Dropped support for Python 3.6
+
 0.3.0 (2018-10-01)
 ------------------
 

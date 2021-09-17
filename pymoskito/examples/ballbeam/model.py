@@ -5,6 +5,7 @@ import pymoskito as pm
 
 from . import settings as st
 
+
 #class
 class BallBeamModel(pm.Model):
     """
@@ -20,8 +21,8 @@ class BallBeamModel(pm.Model):
                                    ("beam depth", st.beam_depth),
                                    ("initial state", st.initial_state)
                                    ])
-	
-	#init
+
+    #init
     def __init__(self, settings):
         # add specific "private" settings
         settings.update(state_count=4)
@@ -40,7 +41,7 @@ class BallBeamModel(pm.Model):
         self.G = self._settings['G']
         self.B = self.M / (self.Jb / self.R ** 2 + self.M)
 
-	#state
+    #state
     def state_function(self, t, x, args):
         """
         Calculations of system state changes
@@ -54,7 +55,7 @@ class BallBeamModel(pm.Model):
         x2 = x[1]
         x3 = x[2]
         x4 = x[3]
-        tau = args[0]
+        tau = args[0].squeeze()
 
         dx1 = x2
         dx2 = self.B * (x1 * x4 ** 2 - self.G * np.sin(x3))
@@ -67,8 +68,8 @@ class BallBeamModel(pm.Model):
         dx4 = u
 
         return np.array([dx1, dx2, dx3, dx4])
-	
-	#root
+
+    #root
     def root_function(self, x):
         """
         is not used
@@ -77,7 +78,7 @@ class BallBeamModel(pm.Model):
         """
         return [False]
 
-	#consistency
+    #consistency
     def check_consistency(self, x):
         """
         Check if the ball remains on the beam
@@ -88,7 +89,7 @@ class BallBeamModel(pm.Model):
         if abs(x[2]) > np.pi / 2:
             raise pm.ModelException('Beam reached critical angle.')
 
-	#output
+    #output
     def calc_output(self, input_vector):
         """
         return ball position as output
@@ -96,6 +97,7 @@ class BallBeamModel(pm.Model):
         :return: ball position
         """
         return input_vector[0]
+
 
 #register
 pm.register_simulation_module(pm.Model, BallBeamModel)

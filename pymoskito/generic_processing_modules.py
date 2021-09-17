@@ -199,6 +199,7 @@ class StepResponse(PostProcessingModule):
             measured_values(array): Array holding the measured outputs.
             desired_values(array): Array holding the desired outputs.
             step_width(float): Simulation step width.
+            output(dict): Values computed by this module.
 
         Returns:
             dict: Calculated metrics.

@@ -45,10 +45,34 @@ sys.path.append(os.path.abspath('../pymoskito'))
 extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.todo',
               'sphinx.ext.viewcode',
+              'sphinx.ext.intersphinx',
               'sphinx.ext.imgmath',
+              'sphinxcontrib.tikz',
               ]
 
 numfig = True
+
+# Looks for objects in external projects
+intersphinx_mapping = {
+    'pybind11': ('https://pybind11.readthedocs.io/en/stable/', None),
+}
+intersphinx_timeout = 10
+
+# preamble for latex
+latexPreamble = r'''
+\usepackage{siunitx}
+\usepackage{amsmath}
+\DeclareMathOperator{\sign}{sgn}
+'''
+
+# configuration imagmath rendering
+imgmath_image_format = 'svg'
+imgmath_latex_preamble = latexPreamble
+
+# configuration of tikz
+tikz_proc_suite = 'ImageMagick'
+tikz_tikzlibraries = 'plotmarks,math,positioning,shapes,arrows,backgrounds,circuits.logic.IEC,circuits.ee.IEC,decorations.pathmorphing,patterns,shapes.geometric,calc,fit,spy,matrix,decorations.pathreplacing,decorations.markings'
+tikz_latex_preamble = latexPreamble
 
 # Add napoleon to the extension (to write/precompile google style docstrings)
 
@@ -227,7 +251,7 @@ latex_elements = {
     # 'pointsize': '10pt',
 
     # Additional stuff for the LaTeX preamble.
-    # 'preamble': '',
+    'preamble': latexPreamble,
 }
 
 # Grouping the document tree into LaTeX files. List of tuples

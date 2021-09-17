@@ -6,9 +6,10 @@
 # Use them as starting point to build your own ones.
 
 # Name of the regime, this will be displayed in the "Regimes" window.
-- Name: test-nonlinear
+- Name: test-nonlinear-f
   # This regime shows a transition of the ball from the left to the right side
-  # of the beam using a nonlinear controller
+  # of the beam using a nonlinear controller derived by manipulation the systems
+  # f (state) mapping
 
   # decide whether previous settings should remain or not. Typically regimes
   # become a lot shorter if you only overwrite the value that change
@@ -28,7 +29,9 @@
    type: ODEInt
    # the measure rate controls how dense the returned data will be
    measure rate: 10
-   end time: 10
+   # these settings control the simulation's duration
+   start time: 1
+   end time: 11
 
   # Class Name of the controller
   Controller:
@@ -37,7 +40,7 @@
   # Class Name and settings of the Trajectory
   Trajectory:
    type: SmoothTransition
-   states: [-4, 4]
+   states: [[-4, 4]]
    start time: 0
    delta t: 8
 
@@ -47,6 +50,35 @@
    type: AdditiveMixer
    Input A: Controller
    Input B: None
+
+- Name: test-nonlinear-g
+  # This regime shows a transition of the ball from the left to the right side
+  # of the beam using a nonlinear controller derived by manipulation the systems
+  # g (output) mapping
+  clear previous: !!python/bool True
+
+  Model:
+    type: BallBeamModel
+    initial state: [-4, 0, 0, 0]
+
+  Solver:
+    type: ODEInt
+    measure rate: 10
+    end time: 10
+
+  Controller:
+    type: GController
+
+  Trajectory:
+    type: SmoothTransition
+    states: [[-4, 4]]
+    start time: 0
+    delta t: 8
+
+  ModelMixer:
+    type: AdditiveMixer
+    Input A: Controller
+    Input B: None
 
 - Name: test-linear
   # This regimes shows a typical step response of a linear controller
