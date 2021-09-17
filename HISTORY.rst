@@ -5,7 +5,7 @@ History
 =======
 
 
-0.4.0 (2021-08-XX)
+0.4.0 (2021-09-17)
 ------------------
 
 * Added support to compile and call external C and C++ functions
