@@ -117,7 +117,7 @@ class CppBase:
             return False
 
         if not self.cmake_lists_path.is_file():
-            self._logger.warning("CMakeLists.txt not found in module path.")
+            self._logger.info("CMakeLists.txt not found in module path.")
             self._logger.info("Generating new CMake config.")
             self.create_cmake_lists()
 
