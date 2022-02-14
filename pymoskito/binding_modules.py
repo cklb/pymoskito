@@ -62,17 +62,15 @@ class CppBase:
             self.sfx = '.so'
 
         if module_name is None:
-            self._logger.error("Instantiation of binding class without"
-                               " module_name is not allowed!")
-            raise BindingException("Instantiation of binding class without"
-                                   " module_name is not allowed!")
+            message = "Instantiation of binding class without module_name is not allowed!"
+            self._logger.error(message)
+            raise BindingException(message)
         self.module_name = module_name
 
         if module_path is None:
-            self._logger.error("Instantiation of binding class without"
-                               " module_path is not allowed!")
-            raise BindingException("Instantiation of binding class without"
-                                   " module_path is not allowed!")
+            message = "Instantiation of binding class without module_path is not allowed!"
+            self._logger.error(message)
+            raise BindingException(message)
 
         self.module_path = Path(module_path)
         self.module_stem = self.module_path / self.module_name
@@ -88,10 +86,9 @@ class CppBase:
             self.additional_lib = additional_lib
 
         if binding_class_name is None:
-            self._logger.error("Instantiation of binding class without"
-                               " binding_class_name is not allowed!")
-            raise BindingException("Instantiation of binding class without"
-                                   " binding_class_name is not allowed!")
+            message = "Instantiation of binding class without binding_class_name is not allowed!"
+            self._logger.error(message)
+            raise BindingException(message)
         self.binding_class_name = binding_class_name
 
         if self.create_binding_config():
@@ -188,18 +185,18 @@ class CppBase:
             self.module_name,
             self.sfx
         )
-        
+
         config_target_line = lambda lib : "\ttarget_link_libraries({} ${{{}}}".format(
-            self.module_name, lib, 
+            self.module_name, lib,
         )
-        
+
         config_target_libs = ""
         if self.additional_lib:
             for key, _ in self.additional_lib.items():
                 config_target_libs += " {}".format(key)
         config_target_libs += ")\n"
 
-        
+
         config_line += "if(WIN32 AND MSVC)\n"
         config_line += config_target_line("Python_LIBRARY_RELEASE")
         config_line += config_target_libs
@@ -207,7 +204,7 @@ class CppBase:
         config_line += config_target_line("PYTHON_LIBRARIES")
         config_line += config_target_libs
         config_line += "endif()\n"
-        
+
         config_line += "install(FILES {}/{} DESTINATION {})".format(
             BUILD_DIR,
             self.module_name + self.sfx,
@@ -234,8 +231,9 @@ class CppBase:
         result = subprocess.run(cmd, cwd=self.module_path)
 
         if result.returncode != 0:
-            self._logger.error("Generation of binding config failed.")
-            raise BindingException("Generation of binding config failed.")
+            message = "Generation of binding config failed."
+            self._logger.error(message)
+            raise BindingException(message)
 
     def build_binding(self):
         # build
@@ -246,8 +244,9 @@ class CppBase:
         result = subprocess.run(cmd, cwd=self.module_path)
 
         if result.returncode != 0:
-            self._logger.error("Build failed!")
-            raise BindingException("Build failed!")
+            message = "Build failed!"
+            self._logger.error(message)
+            raise BindingException(message)
 
     def install_binding(self):
         # generate config
@@ -256,10 +255,10 @@ class CppBase:
         else:
             cmd = ['cmake', '--install', BUILD_DIR]
         result = subprocess.run(cmd, cwd=self.module_path)
-
         if result.returncode != 0:
-            self._logger.error("Installation of bindings failed.")
-            raise BindingException("Installation of bindings failed.")
+            message = "Installation of bindings failed."
+            self._logger.error(message)
+            raise BindingException(message)
 
     def get_class_from_module(self):
         try:
