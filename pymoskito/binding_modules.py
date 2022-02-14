@@ -53,6 +53,7 @@ class CppBase:
                  module_name=None,
                  binding_source=None,
                  additional_sources=None,
+                 binding_class_name=None,
                  additional_lib=None):
         self._logger = logging.getLogger(self.__class__.__name__)
 
@@ -74,9 +75,15 @@ class CppBase:
             raise BindingException(message)
 
         if binding_source is None:
-            message = "Instantiation of binding class without binding_source is not allowed!"
-            self._logger.error(message)
-            raise BindingException(message)
+            if binding_class_name is not None:
+                binding_source = binding_class_name + ".cpp"
+                module_source = module_name + ".cpp"
+                additional_sources = additional_sources.append(module_source) if additional_sources else [module_source]
+                self._logger.warn("Use of binding_class_name is deprecated. Please migrate to binding_source")
+            else:
+                message = "Instantiation of binding class without binding_source is not allowed!"
+                self._logger.error(message)
+                raise BindingException(message)
 
         self.module_path = Path(module_path)
         self.module_binding = self.module_path / binding_source
