@@ -37,21 +37,22 @@ class CppBase:
 
     Args:
         :module_path: Path to directory that contains the sources.
-        :module_name: Name of the cpp class to use
-        :binding_class_name: Name of the file including the binding definition
+        :module_name: Name of the module
+        :binding_source: cpp file including the binding definition
+        :additional_sources: List of additional cpp files to compile into module
         :additional_lib: dict with key 'lib name' and additional lines for the
           CMakeLists
 
     Warn:
-        The `module_name` will be used to generate the cmake configuration an,
-        thus, expects ${module_name}.cpp and ${module_name}.h files.
+        `additional_sources` will be added to the compilation unit.
         *Every other file* is ignored by this routine so far.
 
     """
     def __init__(self,
                  module_path=None,
                  module_name=None,
-                 binding_class_name=None,
+                 binding_source=None,
+                 additional_sources=None,
                  additional_lib=None):
         self._logger = logging.getLogger(self.__class__.__name__)
 
@@ -72,24 +73,26 @@ class CppBase:
             self._logger.error(message)
             raise BindingException(message)
 
+        if binding_source is None:
+            message = "Instantiation of binding class without binding_source is not allowed!"
+            self._logger.error(message)
+            raise BindingException(message)
+
         self.module_path = Path(module_path)
-        self.module_stem = self.module_path / self.module_name
-        self.module_inc_path = self.module_stem.with_suffix(".h")
-        self.module_src_path = self.module_stem.with_suffix(".cpp")
+        self.module_binding = self.module_path / binding_source
         self.cmake_lists_path = self.module_path / CMAKE_LISTS
         self.module_build_path = self.module_path / BUILD_DIR
         self.module_lib_path = self.module_path / LIB_DIR
+
+        self.additional_sources = None
+        if additional_sources is not None:
+            assert (isinstance(additional_sources, list))
+            self.additional_sources = additional_sources
 
         self.additional_lib = None
         if additional_lib is not None:
             assert (isinstance(additional_lib, dict))
             self.additional_lib = additional_lib
-
-        if binding_class_name is None:
-            message = "Instantiation of binding class without binding_class_name is not allowed!"
-            self._logger.error(message)
-            raise BindingException(message)
-        self.binding_class_name = binding_class_name
 
         if self.create_binding_config():
             self.build_binding()
@@ -102,17 +105,10 @@ class CppBase:
                                "".format(self.module_path))
             return False
 
-        if not self.module_src_path.is_file():
+        if not self.module_binding.is_file():
             self._logger.error("CPP binding '{}' could not be found in the "
                                "given module path '{}'."
-                               "".format(self.module_src_path,
-                                         self.module_path))
-            return False
-
-        if not self.module_inc_path.is_file():
-            self._logger.error("Header file '{}' could not be found in the "
-                               "given module path '{}'."
-                               "".format(self.module_inc_path,
+                               "".format(self.module_binding,
                                          self.module_path))
             return False
 
@@ -177,8 +173,8 @@ class CppBase:
         """
         config_line = "add_library({} SHARED {} {})\n".format(
             self.module_name,
-            self.module_src_path.as_posix(),
-            self.binding_class_name + '.cpp'
+            " ".join(self.additional_sources if self.additional_sources else ""),
+            self.module_binding
         )
         config_line += "set_target_properties({} PROPERTIES PREFIX \"\" OUTPUT_NAME \"{}\" SUFFIX \"{}\")\n".format(
             self.module_name,
