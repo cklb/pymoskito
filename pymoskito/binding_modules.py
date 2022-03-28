@@ -181,7 +181,7 @@ class CppBase:
         config_line = "add_library({} SHARED {} {})\n".format(
             self.module_name,
             " ".join(self.additional_sources if self.additional_sources else ""),
-            self.module_binding
+            self.module_binding.as_posix()
         )
         config_line += "set_target_properties({} PROPERTIES PREFIX \"\" OUTPUT_NAME \"{}\" SUFFIX \"{}\")\n".format(
             self.module_name,
