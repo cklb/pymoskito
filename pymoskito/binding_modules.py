@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 
+import importlib.util
 import logging
 import os
-import sys
 import subprocess
+import sys
 from pathlib import Path
-import importlib.util
 
 try:
     import pybind11
@@ -14,7 +14,6 @@ except ModuleNotFoundError:
                     "will not be available")
 
 __all__ = ["CppBase"]
-
 
 BUILD_DIR = "_build"
 CMAKE_LISTS = "CMakeLists.txt"
@@ -47,6 +46,7 @@ class CppBase:
         *Every other file* is ignored by this routine so far.
 
     """
+
     def __init__(self,
                  module_path=None,
                  module_name=None,
@@ -96,9 +96,8 @@ class CppBase:
         if self.create_binding_config():
             self.build_binding()
             ModuleFinder().register(self.module_name,
-                                (self.build_path/self.module_name).with_suffix(self.sfx))
+                                    (self.build_path / self.module_name).with_suffix(self.sfx))
             self.bindings = self.load()
-
 
     def create_binding_config(self):
         # check if folder exists
@@ -113,12 +112,12 @@ class CppBase:
         for src in self.sources:
             if not (self.module_path / src).is_file():
                 self._logger.error("Source file '{}' could not be found in the "
-                               "given module path '{}'."
-                               "".format(src,
-                                         self.module_path))
+                                   "given module path '{}'."
+                                   "".format(src,
+                                             self.module_path))
                 return False
 
-        if not (self.build_path/CMAKE_LISTS).is_file():
+        if not (self.build_path / CMAKE_LISTS).is_file():
             self._logger.info("CMakeLists.txt not found in module build dir.")
             self._logger.info("Generating new CMake config.")
             self.create_cmake_lists()
@@ -147,7 +146,7 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY .)
 set(PYTHON_MODULE_EXTENSION ".so")
 """
 
-        with open(self.build_path/CMAKE_LISTS, "w") as f:
+        with open(self.build_path / CMAKE_LISTS, "w") as f:
             f.write(c_make_lists)
 
     def update_binding_config(self):
@@ -160,13 +159,13 @@ set(PYTHON_MODULE_EXTENSION ".so")
         """
         cmake_line = "\ninclude({}.cmake)\n".format(self.module_name)
         config_line = "\npybind11_add_module({} SHARED {})\n".format(
-                    self.module_name,
-                    " ".join([os.path.relpath(self.module_path/src ,self.build_path) for src in self.sources]),
+            self.module_name,
+            " ".join([os.path.relpath(self.module_path / src, self.build_path) for src in self.sources]),
         )
         if self.additional_lib:
             for value in self.additional_lib.values():
                 config_line += value
-            config_line += "\ntarget_link_libraries({} {})\n".format(
+            config_line += "\ntarget_link_libraries({} PRIVATE {})\n".format(
                 self.module_name,
                 " ".join(self.additional_lib.keys()),
             )
@@ -176,7 +175,7 @@ set(PYTHON_MODULE_EXTENSION ".so")
                 f.write(config_line)
                 ret = True
 
-        with open(self.build_path/CMAKE_LISTS, "r+") as f:
+        with open(self.build_path / CMAKE_LISTS, "r+") as f:
             if cmake_line not in f.read():
                 self._logger.info("Appending build info for '{}'".format(self.module_name))
                 f.write(cmake_line)
@@ -189,7 +188,7 @@ set(PYTHON_MODULE_EXTENSION ".so")
         if os.name == 'nt' and 'GCC' not in sys.version:
             cmd = ['cmake', '-A', 'x64', '-S', '.', '-B', '.']
         else:
-            cmd = ['cmake',  '.']
+            cmd = ['cmake', '.']
         result = subprocess.run(cmd, cwd=self.build_path)
 
         if result.returncode != 0:
@@ -215,8 +214,10 @@ set(PYTHON_MODULE_EXTENSION ".so")
             del sys.modules[self.module_name]
         return importlib.import_module(self.module_name)
 
+
 class ModuleFinder(importlib.abc.MetaPathFinder):
     _instance = None
+
     def __new__(cls):
         if cls._instance is None:
             cls._instance = super(ModuleFinder, cls).__new__(cls)
