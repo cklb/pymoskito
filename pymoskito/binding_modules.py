@@ -160,7 +160,7 @@ set(PYTHON_MODULE_EXTENSION ".so")
         cmake_line = "\ninclude({}.cmake)\n".format(self.module_name)
         config_line = "\npybind11_add_module({} SHARED {})\n".format(
             self.module_name,
-            " ".join([os.path.relpath(self.module_path / src, self.build_path) for src in self.sources]),
+            " ".join([Path(os.path.relpath(self.module_path / src, self.build_path)).as_posix() for src in self.sources]),
         )
         if self.additional_lib:
             for value in self.additional_lib.values():
