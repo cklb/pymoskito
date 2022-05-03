@@ -25,13 +25,14 @@ extra_requirements = {
     "docs": ["Sphinx>=1.4.9",
              "sphinx-rtd-theme>=0.1.9",
              "sphinxcontrib-tikz>=0.4.7",
+             "docutils",
              ],
     "test": [],
 }
 
 setup(
     name="pymoskito",
-    version="0.3.0",
+    version="0.4.0",
     description="Python based modular simulation & postprocessing kickass "
                 "toolbox",
     long_description=readme + "\n\n" + history,
@@ -45,6 +46,7 @@ setup(
         "Programming Language :: Python :: 3.9",
     ],
     keywords="pymoskito control simulation feedback feedforward",
+    long_description_content_type="text/x-rst",
     url="https://github.com/cklb/pymoskito",
     author="Stefan Ecklebe",
     author_email="stefan.ecklebe@tu-dresden.de",
