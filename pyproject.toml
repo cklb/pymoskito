@@ -1,6 +1,6 @@
 [project]
 name = "pymoskito"
-version = "0.4.0"
+version = "0.4.1"
 description = "Python based modular simulation & postprocessing kickass toolbox"
 keywords = ["pymoskito control simulation feedback feedforward"]
 readme = "README.rst"
