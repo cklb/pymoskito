@@ -6,7 +6,7 @@ import numpy as np
 import os
 import pickle
 import time
-import pkg_resources
+from importlib import metadata
 import webbrowser
 import yaml
 from operator import itemgetter
@@ -102,8 +102,7 @@ class SimulationGui(QMainWindow):
 
         QCoreApplication.setOrganizationName("RST")
         QCoreApplication.setOrganizationDomain("https://tu-dresden.de/rst")
-        QCoreApplication.setApplicationVersion(
-            pkg_resources.require("PyMoskito")[0].version)
+        QCoreApplication.setApplicationVersion(metadata.version("pymoskito"))
         QCoreApplication.setApplicationName(globals()["__package__"])
 
         # load settings
@@ -1719,7 +1718,7 @@ class SimulationGui(QMainWindow):
                "Institute of Control Theory</a>" \
                " at the <a href=\'https://tu-dresden.de'>" \
                "Dresden University of Technology</a>. <br />" \
-               "".format(pkg_resources.require("PyMoskito")[0].version) \
+               "".format(metadata.version("pymoskito")) \
                + "<br />" + icon_lic
         box = QMessageBox.about(self, "PyMoskito", text)
 
