@@ -1,0 +1,55 @@
+[project]
+name = "pymoskito"
+version = "0.4.0"
+description = "Python based modular simulation & postprocessing kickass toolbox"
+keywords = ["pymoskito control simulation feedback feedforward"]
+readme = "README.rst"
+authors = [
+    { name = "Stefan Ecklebe", email = "stefan.ecklebe@umit-tirol.at" },
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Natural Language :: English",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+dependencies = [
+    "wheel>=0.38.1",
+    "sympy>=1.11",
+    "scipy>=1.10.1",
+    "numpy>=1.24.1",
+    "control>=0.10.0",
+    "PyYaml>=3.12",
+    "pandas>=1.5.3",
+    "pyqtgraph>=0.13.0",
+    "matplotlib>=3.6.0",
+    "PyQt5>=5.15",
+]
+license = { text = "GPLv3" }
+requires-python = ">=3.8"
+
+[project.urls]
+Homepage = "https://github.com/cklb/pymoskito"
+
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project.optional-dependencies]
+3d = [
+    "vtk>=6.3.0",
+]
+cpp = [
+    "pybind11>=2.7.0",
+]
+docs = [
+    "Sphinx>=1.4.9",
+    "docutils",
+    "sphinx-rtd-theme>=0.1.9",
+    "sphinxcontrib-tikz>=0.4.7",
+]
+test = []
