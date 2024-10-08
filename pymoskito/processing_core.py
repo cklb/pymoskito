@@ -4,7 +4,7 @@ from abc import ABCMeta, abstractmethod
 from pickle import dump
 
 import numpy as np
-from scipy.integrate import simps
+from scipy.integrate import simpson
 from PyQt5.QtCore import QObject, QSettings
 from PyQt5.QtWidgets import QMessageBox, QFileDialog
 pyqtWrapperType = type(QObject)
@@ -256,7 +256,7 @@ class PostProcessingModule(ProcessingModule):
 
         t = np.array([x * step_width for x in range(len(desired_values))])
         err = e_func(t)
-        l1norm_itae = simps(err, t)
+        l1norm_itae = simpson(err, t)
         return l1norm_itae
 
     @staticmethod
@@ -277,7 +277,7 @@ class PostProcessingModule(ProcessingModule):
 
         t = np.array([x * step_width for x in range(len(desired_values))])
         err = e_func(t)
-        l1norm_abs = simps(err, t)
+        l1norm_abs = simpson(y=err, x=t)
         return l1norm_abs
 
 
