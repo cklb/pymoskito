@@ -1713,11 +1713,11 @@ class SimulationGui(QMainWindow):
         icon_lic = open(get_resource("license.txt"), "r").read()
         text = "This application was build using PyMoskito ver. {} .<br />" \
                "PyMoskito is free software distributed under GPLv3. <br />" \
-               "It is developed by members of the " \
-               "<a href=\'https://tu-dresden.de/ing/elektrotechnik/rst'>" \
-               "Institute of Control Theory</a>" \
-               " at the <a href=\'https://tu-dresden.de'>" \
-               "Dresden University of Technology</a>. <br />" \
+               "It is currently developed by members of the " \
+               "<a href=\'https://www.umit-tirol.at/page.cfm?vpath=departments/technik/iace&switchLocale=en_US'>" \
+               "Institute of Automation and Control Engineering</a>" \
+               " at <a href=\'https://www.umit-tirol.at'>" \
+               "UMIT-Triol</a>. <br />" \
                "".format(metadata.version("pymoskito")) \
                + "<br />" + icon_lic
         box = QMessageBox.about(self, "PyMoskito", text)
