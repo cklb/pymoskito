@@ -6,8 +6,8 @@ import numpy as np
 
 # -----------------------------------------------------------------------------
 # parameters of the ball in tube system according to the
-# real test station on the institute of control theory at the
-# TU-Dresden
+# real test station on the institute of control theory at
+# TU Dresden
 
 initial_state = [0, 0, 0, 0]
 
