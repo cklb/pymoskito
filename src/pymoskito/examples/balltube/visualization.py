@@ -142,17 +142,13 @@ class MplBallInTubeVisualizer(pm.MplVisualizer):
         pm.MplVisualizer.__init__(self, q_widget, q_layout)
 
         self.axes.set_xlim(-0.3, 0.3)
-        self.axes.set_ylim(-0.05, 1.55)
+        self.axes.set_ylim(-0.05, 1.65)
         self.axes.set_aspect("equal")
         self.axes.get_xaxis().set_visible(False)
-#        tube = mpl.patches.Rectangle(xy=[-st.d_R*st.scale/2.0, 0],
-#                                     width=st.d_R*st.scale,
-#                                     height=st.tube_length,
-#                                     fill=False)
-#        self.axes.add_patch(tube)
+
         tube_out = mpl.patches.Rectangle(xy=[-st.d_R_out * st.scale / 2.0, 0],
                                          width=st.d_R_out * st.scale,
-                                         height=st.tube_length,
+                                         height=st.tube_length + st.d_B*st.scale/2.0,
                                          linewidth=1,
                                          fill=False)
         self.axes.add_patch(tube_out)
@@ -165,8 +161,7 @@ class MplBallInTubeVisualizer(pm.MplVisualizer):
         self.axes.add_patch(self.ball)
 
     def update_scene(self, x):
-
-        self.ball.center = (0, x[2] + st.d_R*st.scale/2.0)
+        self.ball.center = (0, x[2] + st.d_B*st.scale/2.0)
         self.canvas.draw()
 
 pm.register_visualizer(MplBallInTubeVisualizer)

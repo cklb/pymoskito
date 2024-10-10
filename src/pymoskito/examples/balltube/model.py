@@ -32,6 +32,9 @@ class BallInTubeModel(pm.Model):
         }})
         pm.Model.__init__(self, settings)
 
+        # events
+        self.events = None
+
         # shortcuts for readability
         self.d_B = self._settings['d_B']
         self.d_R = self._settings['d_R']
@@ -58,36 +61,22 @@ class BallInTubeModel(pm.Model):
         # definitional
         x1 = x[0]
         x2 = x[1]
-        # x3 = x[2] is not used
+        x3 = x[2]
         x4 = x[3]
         u = args[0].squeeze()
 
         dx1 = x2
         dx2 = -x1/self.T**2 - 2*self.d*x2/self.T + self.k_s*u*st.Vcc/(255*self.T**2)
+
         dx3 = x4
-        dx4 = (self.k_L*((self.k_V*x1 - self.A_B*x4)/self.A_Sp)**2 - self.m*self.g)/self.m
+        if x3 >= 0:
+            # ball is in the air
+            dx4 = (self.k_L*((self.k_V*x1 - self.A_B*x4)/self.A_Sp)**2 - self.m*self.g)/self.m
+        else:
+            # ball is in contact with the ground
+            dx4 = 1e2 * x3
 
         return np.array([dx1, dx2, dx3, dx4])
-
-    def root_function(self, x):
-        """
-        in this case this means zero crossing detection for the balls elevation.
-        :param x: state
-        """
-        x0 = x
-        flag = False
-
-        if x[2] <= 0:
-            x0[2] = 0
-            x0[3] = 0
-            flag = True
-
-        if x[0] <= 0:
-            x0[0] = 0
-            x0[1] = 0
-            flag = True
-
-        return flag, x0
 
     def check_consistency(self, x):
         """
@@ -131,6 +120,9 @@ class BallInTubeSpringModel(pm.Model):
         settings.update(input_count=1)
         pm.Model.__init__(self, settings)
 
+        # register events
+        self.events = [self.ball_event_lower, self.ball_event_upper]
+
         # shortcuts for readability
         self.d_B = self._settings['d_B']
         self.d_R = self._settings['d_R']
@@ -151,11 +143,15 @@ class BallInTubeSpringModel(pm.Model):
     def state_function(self, t, x, args):
         """
         Calculations of system state changes
+
+        If the ball should get in contact with either the tube flor or ceiling,
+        an extra spring with spring stiffness K and a damping D is added to simulate
+        the contact.
+
         :param x: state
         :param t: time
         :type args: system input u
         """
-
         # definitional
         x1 = x[0]
         x2 = x[1]
@@ -168,36 +164,31 @@ class BallInTubeSpringModel(pm.Model):
         dx3 = x4
 
         if x3 < 0:
-            # realize a extra spring with spring stiffness K and spring damping D
+            # contact with the floor
             dx4 = -(self.K*x3)/self.m - (self.D*x4)/self.m \
                   + (self.k_L*((self.k_V*x1 - self.A_B*x4)/self.A_Sp)**2)/self.m - self.g
-        else:
+        elif x3 + self.d_B < self.tube_length:
+            # ball is free floating
             dx4 = (self.k_L*((self.k_V*x1 - self.A_B*x4)/self.A_Sp)**2)/self.m - self.g
+        else:
+            # contact with the ceiling
+            dx4 = -(self.K * (x3 + self.d_B - self.tube_length)) / self.m - (self.D * x4) / self.m \
+                      + (self.k_L * ((self.k_V * x1 - self.A_B * x4) / self.A_Sp) ** 2) / self.m - self.g
 
         return np.array([dx1, dx2, dx3, dx4])
 
-    def root_function(self, x):
-        """
-        in this case this means zero crossing detection for the balls elevation.
-        :param x: state
-        """
-        x0 = x
-        flag = False
+    def ball_event_lower(self, t, x):
+        return x[2]
 
-        # fan speed
-        if x[0] <= 0:
-            x0[0] = 0
-            x0[1] = 0
-            flag = True
-
-        return flag, x0
+    def ball_event_upper(self, t, x):
+        return x[2] + self.d_B - self.tube_length
 
     def check_consistency(self, x):
         """
         Checks if the model rules are violated
         :param x: state
         """
-        if x[2] > (self._settings['tube_length']):  # + self._settings['tube_length']*0.2):
+        if x[2] > 1.2 * self.tube_length:
             raise pm.ModelException('Ball flew out of the tube')
 
     def calc_output(self, input_vector):
