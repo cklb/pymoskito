@@ -139,3 +139,45 @@
    type: AdditiveMixer
    Input A: Controller
    Input B: Feedforward
+
+
+- Name: event_check_lower
+  clear previous: !!python/bool True # decide whether previous settings should remain or not
+
+  Model:
+   type: BallInTubeSpringModel
+   initial state: [0, 0, 1, 0]
+
+  Solver:
+   type: ODEInt
+   measure rate: 500
+   step size: 0.01
+   end time: 3
+
+  ModelMixer:
+   type: AdditiveMixer
+   Input A: None
+   Input B: None
+
+- Name: event_upper
+  clear previous: !!python/bool True # decide whether previous settings should remain or not
+
+  Model:
+   type: BallInTubeSpringModel
+   initial state: [0, 0, 0, 0]
+
+  Solver:
+   type: ODEInt
+   measure rate: 500
+   step size: 0.01
+   end time: 3
+
+  Controller:
+   type: OpenLoop
+   pwm: 250
+
+  ModelMixer:
+   type: AdditiveMixer
+   Input A: Controller
+   Input B: None
+
