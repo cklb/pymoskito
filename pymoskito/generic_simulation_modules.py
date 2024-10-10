@@ -4,6 +4,7 @@ import pickle
 import warnings
 
 from scipy.integrate import ode
+from scipy.optimize import bisect
 import sympy as sp
 import numpy as np
 
@@ -120,6 +121,10 @@ class ODEInt(Solver):
     def __init__(self, settings):
         Solver.__init__(self, settings)
 
+        # setup bisection fields
+        self._cur_state = np.atleast_1d(self._model.initial_state)
+        self._cur_events = self._eval_events(self._settings["start time"], self._cur_state)
+
         # setup solver
         if hasattr(self._model, "jacobian"):
             self._solver = ode(self._model.state_function,
@@ -133,8 +138,20 @@ class ODEInt(Solver):
                                     atol=self._settings["aTol"],
                                     max_step=self._settings["step size"]
                                     )
-        self._solver.set_initial_value(np.atleast_1d(self._model.initial_state),
-                                       t=self._settings["start time"])
+        self._solver.set_initial_value(self._cur_state, t=self._settings["start time"])
+
+    def _eval_events(self, t, x):
+        """ Evaluation helper for the event function """
+        func = self._model.events
+        if func is None:
+            return None
+        elif callable(func):
+            return np.array([func(t, x)])
+        elif isinstance(func, list):
+            return np.array([f(t, x) for f in func])
+        else:
+            raise TypeError("'func' has to be callable or a list of callables")
+
 
     @property
     def t(self):
@@ -160,18 +177,50 @@ class ODEInt(Solver):
         :param t: target time
         :return: system state at target time
         """
-        state = self._solver.integrate(t + self._settings["step size"])
-
-        # check model constraints
-        new_state = self._model.root_function(state)
-        if new_state[0]:
-            # reset solver since discontinuous change in equations happened
-            self._solver.set_initial_value(new_state[1], self.t)
+        new_time = t + self._settings["step size"]
+        new_state = self._solver.integrate(new_time)
 
         if not self._solver.successful():
             raise SolverException("Integration has not been successful.")
 
-        return state
+        # check for events in rhs
+        new_events = self._eval_events(new_time, new_state)
+        e_idx = np.where(self._cur_events * new_events < 0)[0]
+        if len(e_idx) > 1:
+            self._logger.warning("Multiple events detected in same step. Only the first one will be handled.")
+            e_idx = e_idx[:1]
+        if len(e_idx) > 0:
+            self._logger.debug(f"Event with index {e_idx} detected between {t} and {new_time}")
+
+            # run bisection to get exact event time
+            e_time = bisect(self._b_func, a=t, b=new_time,
+                            args=(t, self._cur_state, e_idx))
+            self._logger.debug(f"Bisection yielded event time {e_time}")
+
+            # reset the solver to the original starting time
+            self._solver.set_initial_value(self._cur_state, t)
+            # integrate up to event time
+            temp_state = self._solver.integrate(e_time)
+            self._logger.debug(f"State at {e_time} is {temp_state}")
+            # reset the solver to the event time
+            self._solver.set_initial_value(temp_state, e_time)
+            # integrate up to the desired time
+            new_state = self._solver.integrate(new_time)
+
+        # update internal fields
+        self._cur_state = new_state
+        self._cur_events = new_events
+
+        return new_state
+
+    def _b_func(self, t_end, t_start, x_start, e_idx):
+        """
+        Helper function for bisection of the exact event time
+        """
+        self._solver.set_initial_value(x_start, t_start)
+        x_end = self._solver.integrate(t_end)
+        e_end = self._eval_events(t_end, x_end)
+        return e_end[e_idx]
 
 
 class SmoothTransition(Trajectory):

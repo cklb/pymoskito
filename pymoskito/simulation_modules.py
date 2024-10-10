@@ -126,6 +126,7 @@ class Model(SimulationModule):
         assert ("input_count" in settings)
         assert ("initial state" in settings)
         assert len(settings["initial state"]) == settings["state_count"]
+        self.events = self.example_event
 
     @property
     def initial_state(self):
@@ -147,24 +148,23 @@ class Model(SimulationModule):
         """
         pass
 
-    def root_function(self, x):
+    def example_event(self, t, x):
         """
-        Check whether a reinitialisation of the integrator should be performed.
-        
-        
-        This can be the case if there are discontinuities in the system dynamics
-        such as switching.
-        
+        This must be a continuous function of time and state.
+
+        Sign changes of this function are considered to be an event
+        where a reinitialisation of the integrator must be performed
+        because of discontinuities in the system dynamics.
+
         Args:
+            t: Current time.
             x(array-like): Current system state.
             
         Returns: 
-            tuple: 
-                * bool: `True` if reset is advised.
-                * array-like: State to continue with.
+            Float
                 
         """
-        return False, x
+        return 0
 
     def check_consistency(self, x):
         """
