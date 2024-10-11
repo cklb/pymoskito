@@ -40,20 +40,30 @@ class TestExamples(unittest.TestCase):
                 "- ERROR -".
         """
         print("Testing Example: {}".format(name))
-        pattern = re.compile(r"(- ERROR -)")
+        start_pattern = re.compile(r"(- ERROR -)")
+        end_pattern = re.compile(r"(- WARNING -)")
         script = os.sep.join([os.path.dirname(__file__), "example_runner.py"])
         cmd = [sys.executable, script, name]
 
+        failed = False
         with subprocess.Popen(cmd,
                               stdout=subprocess.PIPE,
                               bufsize=1,
                               universal_newlines=True) as proc:
+            e_lines = []
             for line in proc.stdout:
                 if debug:
-                    print(line, end="")
-                if pattern.search(line):
-                    proc.kill()
-                    self.fail(line)
+                    print(line)
+                if not failed:
+                    if start_pattern.search(line):
+                        failed = True
+                        e_lines.append(line)
+                else:
+                    if end_pattern.search(line):
+                        proc.kill()
+                        self.fail("".join(e_lines))
+                    else:
+                        e_lines.append(line)
 
         if proc.returncode != 0:
             raise self.failureException("Process terminated with: {}"
