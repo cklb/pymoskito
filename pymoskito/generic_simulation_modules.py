@@ -144,13 +144,13 @@ class ODEInt(Solver):
         """ Evaluation helper for the event function """
         func = self._model.events
         if func is None:
-            return None
+            return np.array([0])
         elif callable(func):
             return np.array([func(t, x)])
         elif isinstance(func, list):
             return np.array([f(t, x) for f in func])
         else:
-            raise TypeError("'func' has to be callable or a list of callables")
+            raise TypeError("'func' has to be either None, callable or a list of callables")
 
 
     @property
