@@ -25,6 +25,10 @@ class TwoTankSystem(pm.Model):
         }})
         pm.Model.__init__(self, settings)
 
+        # register events
+        self.events = [self.event_level_1_low, self.event_level_2_low,
+                       self.event_level_1_high, self.event_level_2_high]
+
     def state_function(self, t, x, args):
         """
         Calculations of system state changes
@@ -34,41 +38,45 @@ class TwoTankSystem(pm.Model):
         """
         x1 = x[0]
         x2 = x[1]
+
         uA = args[0].squeeze()
-
-        if x1 < 0:
-            x1 = 0
-        if x2 < 0:
-            x2 = 0
-
         g = self.settings['g']
         K = self.settings['K']
         AS1 = self.settings['AS1']
         AS2 = self.settings['AS2']
         AT = self.settings['AT']
 
-        dx1 = - AS1 / AT * np.sign(x1 - x2) * np.sqrt(2 * g * np.abs(x1 - x2)) + K / AT * uA
-        dx2 = AS1 / AT * np.sign(x1 - x2) * np.sqrt(2 * g * np.abs(x1 - x2)) - AS2 / AT * np.sqrt(2 * g * x2)
+        if x1 < 0:
+            # tank empty -> nothing flows out
+            dx1 = K / AT * uA
+        elif x1 < self.settings["hT"]:
+            dx1 = - AS1 / AT * np.sign(x1 - x2) * np.sqrt(2 * g * np.abs(x1 - x2)) + K / AT * uA
+        else:
+            # tank full -> nothing flows in
+            dx1 = - AS1 / AT * np.sign(x1 - x2) * np.sqrt(2 * g * np.abs(x1 - x2))
+
+        if x2 < 0:
+            # tank empty -> nothing flows out
+            dx2 = AS1 / AT * np.sign(x1 - x2) * np.sqrt(2 * g * np.abs(x1 - x2))
+        elif x2 < self.settings["hT"]:
+            dx2 = AS1 / AT * np.sign(x1 - x2) * np.sqrt(2 * g * np.abs(x1 - x2)) - AS2 / AT * np.sqrt(2 * g * x2)
+        else:
+            # tank full -> nothing flows in
+            dx2 = - AS2 / AT * np.sqrt(2 * g * x2)
 
         return np.array([dx1, dx2])
 
-    def root_function(self, x):
-        """
-        in this case this means zero crossing detection for the water height elevation.
-        :param x: state
-        """
-        x0 = x
-        flag = False
+    def event_level_1_low(self, t, x):
+        return x[0]
 
-        if x[0] <= 0:
-            x0[0] = 0
-            flag = True
+    def event_level_2_low(self, t, x):
+        return x[1]
 
-        if x[1] <= 0:
-            x0[1] = 0
-            flag = True
+    def event_level_1_high(self, t, x):
+        return x[0] - self.settings["hT"]
 
-        return flag, x0
+    def event_level_2_high(self, t, x):
+        return x[1] - self.settings["hT"]
 
     def calc_output(self, input_vector):
         return [input_vector[0], input_vector[1] + np.random.random(1)[0] / 100]
