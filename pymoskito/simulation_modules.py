@@ -23,7 +23,7 @@ class SimulationException(Exception):
 
 class SimulationModule(QObject, metaclass=SimulationModuleMeta):
     """
-    Smallest unit pof the simulation framework.
+    Base unit of the simulation framework.
 
     This class provides necessary functions like output calculation and holds
     all settings that can be accessed by the user.
@@ -71,6 +71,12 @@ class SimulationModule(QObject, metaclass=SimulationModuleMeta):
     @property
     @abstractmethod
     def public_settings(self):
+        """
+        Dict of public settings.
+
+        This contains all settings that will be shown and can be edited
+        in the GUI.
+        """
         pass
 
     @property
@@ -79,10 +85,27 @@ class SimulationModule(QObject, metaclass=SimulationModuleMeta):
 
     @property
     def tick_divider(self):
+        """
+        Simulation tick divider.
+
+        This property controls the frequency at which this Module is evaluated
+        in the main simulation loop. If e.g. a value of `2` is provided, the
+        module will be evaluated at every 2nd step that the solver makes.
+
+        This feature comes in handy if discrete setups with different sample rates
+        are simulated.
+        """
         return self._settings["tick divider"]
 
     @property
     def step_width(self):
+        """
+        The discrete step width that this module is called with.
+
+        This parameter will be set when the simulation is initialised
+        and is based on the solver step size and the selected tick
+        divider of the module.
+        """
         return self._settings["step width"]
 
     @step_width.setter
@@ -91,6 +114,13 @@ class SimulationModule(QObject, metaclass=SimulationModuleMeta):
 
     @abstractmethod
     def calc_output(self, input_vector):
+        """
+        Main evaluation routine.
+
+        Every time the solver has made the amount of steps specified in `tick_divider`,
+        this method will be called to compute the next output of the module.
+        This is typically where the main logic of a module is implemented.
+        """
         pass
 
 
