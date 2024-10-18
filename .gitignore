@@ -46,6 +46,12 @@ examples/results/processing*
 /*.egg-info
 /*.egg
 
+# pymoskio result files
+*.pmr
+
+# pickle files
+*.pkl
+
 # log files, created during runtime of PyMoskito
 pymoskito.log.1
 pymoskito.log.2
