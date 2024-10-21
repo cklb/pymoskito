@@ -252,12 +252,12 @@ class Solver(SimulationModule):
         self.set_input(input_vector["model_input"])
         output = self.next_output
 
-        self.next_output = self.integrate(input_vector["time"])
+        self.next_output = self.integrate(t=None)
         try:
             self._model.check_consistency(self.next_output)
         except ModelException as e:
-            raise SolverException("Time step integration failed! "
-                                  "Model raised: {0}".format(e))
+            self._logger.exception(e)
+            raise SolverException("Time step integration failed!")
         return output
 
     @abstractmethod

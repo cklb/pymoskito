@@ -3,18 +3,19 @@
 
   Trajectory:
    type: Setpoint
-   Setpoint: [5]
+   Setpoint: [0]
 
   Feedforward:
    type: Feedthrough
 
   Model:
    type: TwoTankSystem
+   initial state: [0.4, 0.4]
 
   Solver:
    type: ODEInt
    measure rate: 10
-   step size: 0.1
+   step size: 10
    end time: 500
    rTol: 1e-4
    aTol: 1e-4

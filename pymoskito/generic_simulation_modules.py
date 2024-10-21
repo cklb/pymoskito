@@ -170,42 +170,67 @@ class ODEInt(Solver):
             # TODO Test
             self._solver.set_jac_params(args)
 
-    def integrate(self, t):
+    def integrate(self, *, t=None):
         """
         Integrate until target step is reached.
 
         :param t: target time
+        :param dt: target time step
         :return: system state at target time
         """
-        new_time = t + self._settings["step size"]
-        new_state = self._solver.integrate(new_time)
+        cur_time = self.t
+        cur_state = self._cur_state
 
-        if not self._solver.successful():
-            raise SolverException("Integration has not been successful.")
+        if t is None:
+            new_time = cur_time + self._settings["step size"]
+        else:
+            new_time = t
+        new_state = self._solver.integrate(new_time)
 
         # check for events in rhs
         new_events = self._eval_events(new_time, new_state)
         e_idx = np.where(self._cur_events * new_events < 0)[0]
-        if len(e_idx) > 1:
-            self._logger.warning("Multiple events detected in same step. Only the first one will be handled.")
-            e_idx = e_idx[:1]
+
+        if (not self._solver.successful()) and (len(e_idx) == 0):
+            raise SolverException("Integration has not been successful.")
+
+        e_times = []
         if len(e_idx) > 0:
-            self._logger.debug(f"Event with index {e_idx} detected between {t} and {new_time}")
+            # run bisection to get exact time for each event
+            for e in e_idx:
+                self._logger.debug(f"Event with index {e} detected between "
+                                   f"{cur_time} and {new_time}")
+                try:
+                    e_t = bisect(self._b_func, a=cur_time, b=new_time,
+                                    args=(cur_time, cur_state, e))
+                except ValueError:
+                    self._logger.debug(f"Bisection yielded no result")
+                    continue
 
-            # run bisection to get exact event time
-            e_time = bisect(self._b_func, a=t, b=new_time,
-                            args=(t, self._cur_state, e_idx))
-            self._logger.debug(f"Bisection yielded event time {e_time}")
+                self._logger.debug(f"Bisection yielded event time {e_t}")
+                e_times.append(e_t)
 
+        if len(e_times) > 0:
+            # take the smallest time stamp and continue
+            e_time = min(e_times)
+
+            self._logger.debug(f"Restarting at original t={cur_time} from state {cur_state} "
+                               f"and solving up to event at t={e_time}")
             # reset the solver to the original starting time
-            self._solver.set_initial_value(self._cur_state, t)
+            self._solver.set_initial_value(cur_state, cur_time)
             # integrate up to event time
             temp_state = self._solver.integrate(e_time)
-            self._logger.debug(f"State at {e_time} is {temp_state}")
+            temp_events = self._eval_events(e_time, temp_state)
+
+            self._logger.debug(f"Restarting at event t={e_time} from state {temp_state} "
+                               f"and solving up to desired t={new_time}")
             # reset the solver to the event time
             self._solver.set_initial_value(temp_state, e_time)
             # integrate up to the desired time
-            new_state = self._solver.integrate(new_time)
+            self._cur_state = temp_state
+            self._cur_events = temp_events
+            new_state = self.integrate(t=new_time)
+            self._logger.debug(f"Event handled")
 
         # update internal fields
         self._cur_state = new_state
