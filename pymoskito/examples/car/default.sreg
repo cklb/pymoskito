@@ -4,6 +4,13 @@
 - Name: test
   clear previous: !!python/bool True # decide whether previous settings should remain or not
 
+  Trajectory:
+   type: Setpoint
+   Setpoint: [1, 1]
+
+  Feedforward:
+    type:  Feedthrough
+
   Model:
    type: CarModel
    initial state: [0, 0, 0, 0, 0]
@@ -13,8 +20,3 @@
    measure rate: 500
    step size: 0.001
    end time: 10
-
-  ModelMixer:
-   type: AdditiveMixer
-   Input A: Controller
-   Input B: Feedforward

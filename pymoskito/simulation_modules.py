@@ -516,8 +516,9 @@ class SignalMixer(SimulationModule):
         SimulationModule.__init__(self, settings)
 
     def calc_output(self, input_vector):
-        signals = [value for signal, value in input_vector.items()
-                   if signal in self._settings["input signals"]]
+        signals = [input_vector[s]
+                   for s in self._settings["input signals"]
+                   if s != "None" and s is not None]
         return self._mix(signals)
 
 
