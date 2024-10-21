@@ -20,7 +20,7 @@ class LinearStateFeedback(pm.Controller):
         # add specific private settings
         settings.update(input_order=0)
         settings.update(ouput_dim=1)
-        settings.update(input_type='system_state')
+        settings.update(input_type='Model_State')
 
         pm.Controller.__init__(self, settings)
 
@@ -70,7 +70,7 @@ class LinearStateFeedbackParLin(pm.Controller):
         # add specific private settings
         settings.update(input_order=0)
         settings.update(ouput_dim=1)
-        settings.update(input_type='system_state')
+        settings.update(input_type='Model_State')
 
         pm.Controller.__init__(self, settings)
 
@@ -131,7 +131,7 @@ class LinearQuadraticRegulator(pm.Controller):
         # add specific private settings
         settings.update(input_order=0)
         settings.update(ouput_dim=1)
-        settings.update(input_type='system_state')
+        settings.update(input_type='Model_State')
 
         pm.Controller.__init__(self, settings)
 
@@ -189,7 +189,7 @@ class LjapunovController(pm.Controller):
     def __init__(self, settings):
         settings.update(input_order=0)
         settings.update(output_order=1)
-        settings.update(input_type="system_state")
+        settings.update(input_type="Model_State")
         pm.Controller.__init__(self, settings)
 
         self.w = st.m1*st.l1/(st.m2*st.l2)
@@ -253,7 +253,7 @@ class SwingUpController(pm.Controller):
     def __init__(self, settings):
         settings.update(input_order=0)
         settings.update(output_order=1)
-        settings.update(input_type="system_state")
+        settings.update(input_type="Model_State")
         self.module_settings = {"modules": settings["modules"]}
         pm.Controller.__init__(self, settings)
 

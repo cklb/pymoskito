@@ -22,7 +22,7 @@ class OpenLoop(pm.Controller):
         # add specific "private" settings
         settings.update(input_order=0)
         settings.update(output_dim=1)
-        settings.update(input_type="system_state")
+        settings.update(input_type="Model_State")
 
         pm.Controller.__init__(self, settings)
 
@@ -50,7 +50,7 @@ class CppPIDController(pm.CppBase, pm.Controller):
         # add specific "private" settings
         settings.update(input_order=0)
         settings.update(output_dim=1)
-        settings.update(input_type="system_state")
+        settings.update(input_type="Model_State")
 
         m_path = os.path.dirname(__file__)
         if 'tanksystem' not in m_path:
@@ -126,7 +126,7 @@ class CppStateController(pm.CppBase, pm.Controller):
         # add specific "private" settings
         settings.update(input_order=0)
         settings.update(output_dim=1)
-        settings.update(input_type="system_state")
+        settings.update(input_type="Model_State")
 
         proj_dir = os.path.abspath(os.path.dirname(__file__))
         m_path = os.sep.join([proj_dir, "src"])

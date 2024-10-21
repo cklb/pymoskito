@@ -13,7 +13,7 @@ class BasicController(pm.Controller):
     # init
     def __init__(self, settings):
         settings.update(input_order=0)
-        settings.update(input_type="system_state")
+        settings.update(input_type="Model_State")
 
         pm.Controller.__init__(self, settings)
 

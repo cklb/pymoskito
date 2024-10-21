@@ -249,7 +249,7 @@ class Solver(SimulationModule):
         assert self.tick_divider == 1
 
     def calc_output(self, input_vector):
-        self.set_input(input_vector["system_input"])
+        self.set_input(input_vector["model_input"])
         output = self.next_output
 
         self.next_output = self.integrate(input_vector["time"])
@@ -313,16 +313,26 @@ class Controller(SimulationModule):
 
             :input_type:
                 Source for the feedback calculation and one of the following:
-                `system_state` , `system_output` , `Observer` or `Sensor` .
+                `Model_State` , `Model_Output` , `Observer` or `Sensor` .
     """
     # selectable input sources for controller
     input_sources = ["Model_State", "Model_Output", "Observer", "Sensor"]
 
     def __init__(self, settings):
-        SimulationModule.__init__(self, settings)
         assert ("input_order" in settings)
         assert ("input_type" in settings)
-        assert (settings["input_type"] in self.input_sources)
+        SimulationModule.__init__(self, settings)
+        if self._settings["input_type"] == "system_state":
+            self._logger.warning(
+                "Input source `system_state` is being deprecated in favour of `Model_State`."
+                " Please adapt your implementation.")
+            self._settings["input_type"] = "Model_State"
+        if self._settings["input_type"] == "system_output":
+            self._logger.warning(
+                "Input source `system_output` is being deprecated in favour of `Model_Output`."
+                " Please adapt your implementation.")
+            self._settings["input_type"] = "Model_Output"
+        assert (self._settings["input_type"] in self.input_sources)
 
     @property
     def input_order(self):
@@ -373,15 +383,15 @@ class Observer(SimulationModule):
         SimulationModule.__init__(self, settings)
 
     def calc_output(self, input_vector):
-        system_input = input_vector.get("system_input", None)
+        model_input = input_vector.get("model_input", None)
         if "ObserverMixer" in input_vector:
-            system_output = input_vector["ObserverMixer"]
-        elif "system_output" in input_vector:
-            system_output = input_vector["system_output"]
+            model_output = input_vector["ObserverMixer"]
+        elif "Model_Output" in input_vector:
+            model_output = input_vector["Model_Output"]
         else:
             raise SimulationException("No Observer input specified")
 
-        return self._observe(input_vector["time"], system_input, system_output)
+        return self._observe(input_vector["time"], model_input, model_output)
 
     @abstractmethod
     def _observe(self, time, system_input, system_output):

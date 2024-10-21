@@ -156,27 +156,27 @@ class Simulator(QObject):
         self._current_outputs["time"] = self._simulation_modules["Solver"].t
         self._input_vector.update(
             time=self._current_outputs["time"],
-            system_state=np.atleast_1d(
+            Model_State=np.atleast_1d(
                 self._simulation_modules["Solver"].next_output)
         )
 
         # apply new output
         self._current_outputs["Model"] = np.atleast_1d(
             self._simulation_modules["Model"].calc_output(
-                self._input_vector["system_state"]))
-        self._input_vector.update(system_output=self._current_outputs["Model"])
+                self._input_vector["Model_State"]))
+        self._input_vector.update(Model_Output=self._current_outputs["Model"])
 
         # compute all dynamic modules
         for mod in self._dynamic_module_list:
             self._calc_module(mod)
 
         # integrate model
-        self._choose_system_input(self._input_vector)
+        self._choose_model_input(self._input_vector)
         self._calc_module("Solver")
 
         return
 
-    def _choose_system_input(self, input_vector):
+    def _choose_model_input(self, input_vector):
         """ This is mainly done for convenience.
         """
         if "Limiter" in input_vector:
@@ -192,9 +192,9 @@ class Simulator(QObject):
         elif "Feedforward" in input_vector:
             _input = input_vector["Feedforward"]
         else:
-            raise SimulationException("No system input given.")
+            raise SimulationException("No model input given.")
 
-        self._input_vector["system_input"] = _input
+        self._input_vector["model_input"] = _input
 
     def _store_values(self):
         """

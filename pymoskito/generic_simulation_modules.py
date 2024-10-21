@@ -398,7 +398,7 @@ class LinearStateSpaceController(Controller):
     """
 
     public_settings = OrderedDict([
-        ("input source", "system_state"),
+        ("input source", "Model_State"),
         ("config file", None),
         ("poles", None),
     ])
@@ -481,7 +481,7 @@ class PIDController(Controller):
         # add specific "private" settings
         settings.update(input_order=0)
         settings.update(output_dim=len(self.public_settings["input_state"]))
-        settings.update(input_type="system_state")
+        settings.update(input_type="Model_State")
         Controller.__init__(self, settings)
 
         # define variables for data saving in the right dimension
@@ -593,7 +593,7 @@ class DeadTimeSensor(Sensor):
                                    ("delay", 1)])
 
     def __init__(self, settings):
-        settings.update([("input signal", "system_state")])
+        settings.update([("input signal", "Model_State")])
         Sensor.__init__(self, settings)
         self._storage = None
 
