@@ -593,10 +593,12 @@ class Disturbance(SimulationModule):
         SimulationModule.__init__(self, settings)
 
     def calc_output(self, input_dict):
-        return self._disturb(input_dict[self._settings["input signal"]])
+        return self._disturb(
+            input_dict["time"],
+            input_dict.get(self._settings["input signal"], None))
 
     @abstractmethod
-    def _disturb(self, value):
+    def _disturb(self, t, signal):
         """
         Placeholder for disturbance calculations.
 
@@ -604,7 +606,8 @@ class Disturbance(SimulationModule):
         to create the noise.
 
         Args:
-            value (array-like float): Values from the source selected by the
+            t (float): Current simulation time.
+            signal (array-like float): Values from the source selected by the
                 ``input_signal`` property.
         Returns:
             array-like float: Noise that will be mixed with a signal later on.

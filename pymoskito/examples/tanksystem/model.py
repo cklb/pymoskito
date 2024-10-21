@@ -79,7 +79,7 @@ class TwoTankSystem(pm.Model):
         return x[1] - self.settings["hT"]
 
     def calc_output(self, input_vector):
-        return [input_vector[0], input_vector[1] + np.random.random(1)[0] / 100]
+        return input_vector
 
 
 pm.register_simulation_module(pm.Model, TwoTankSystem)
