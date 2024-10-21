@@ -1,6 +1,13 @@
 - Name: test_model
   clear previous: !!python/bool True # decide whether previous settings should remain or not
 
+  Trajectory:
+    type: Setpoint
+    Setpoint: [0]
+
+  Feedforward:
+   type: Feedthrough
+
   Model:
    type: PendulumModel
    initial state: [0, 100, 0, 0]
@@ -9,8 +16,6 @@
    type: ODEInt
    end time: 10
 
-  ModelMixer:
-   type: AdditiveMixer
 
 # Stabilization of the pendulum
 - Name: test_stab

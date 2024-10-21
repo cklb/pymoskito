@@ -1,8 +1,12 @@
- # default regime file that is loaded when the simulation environment starts up
- # use this to create your own files
-
 - Name: OpenLoop
   clear previous: !!python/bool True # decide whether previous settings should remain or not
+
+  Trajectory:
+   type: Setpoint
+   Setpoint: [5]
+
+  Feedforward:
+   type: Feedthrough
 
   Model:
    type: TwoTankSystem
@@ -15,50 +19,51 @@
    rTol: 1e-4
    aTol: 1e-4
 
-  Controller:
-   type: OpenLoop
-   uA: 5
+- Name: Observer
+  clear previous: !!python/bool True # decide whether previous settings should remain or not
 
-  ModelMixer:
-   type: AdditiveMixer
-   Input A: Controller
-   Input B: None
+  Trajectory:
+   type: Setpoint
+   Setpoint: [5]
+
+  Feedforward:
+   type: Feedthrough
+
+  Model:
+   type: TwoTankSystem
+
+  Solver:
+   type: ODEInt
+   measure rate: 10
+   step size: 0.1
+   end time: 500
+   rTol: 1e-4
+   aTol: 1e-4
+
+  Disturbance:
+    type: GaussianNoise
+    sigma: .01
+    mean: 0
+
+  ObserverMixer:
+    type: AdditiveMixer
+    Input A: Model_Output
+    Input B: Disturbance
 
   Observer:
    type: CppHighGainObserver
 
-
 - Name: controller-PID
   clear previous: !!python/bool True # decide whether previous settings should remain or not
 
-  Model:
-   type: TwoTankSystem
-
-  Solver:
-   type: ODEInt
-   measure rate: 10
-   step size: 0.1
-   end time: 200
-   rTol: 1e-4
-   aTol: 1e-4
+  Trajectory:
+   type: SmoothTransition
+   states: [[0, 0.15]]
+   delta t: 50
 
   Controller:
    type: CppPIDController
 
-  Trajectory:
-   type: SmoothTransition
-   states: [[0, 0.15]]
-   delta t: 50
-
-  ModelMixer:
-   type: AdditiveMixer
-   Input A: Controller
-   Input B: None
-
-
-- Name: controller-State
-  clear previous: !!python/bool True # decide whether previous settings should remain or not
-
   Model:
    type: TwoTankSystem
 
@@ -70,18 +75,27 @@
    rTol: 1e-4
    aTol: 1e-4
 
-  Controller:
-   type: CppStateController
+- Name: controller-State
+  clear previous: !!python/bool True # decide whether previous settings should remain or not
 
   Trajectory:
    type: SmoothTransition
    states: [[0, 0.15]]
    delta t: 50
 
-  ModelMixer:
-   type: AdditiveMixer
-   Input A: Controller
-   Input B: None
+  Controller:
+   type: CppStateController
+
+  Model:
+   type: TwoTankSystem
+
+  Solver:
+   type: ODEInt
+   measure rate: 10
+   step size: 0.1
+   end time: 200
+   rTol: 1e-4
+   aTol: 1e-4
 
   Observer:
    type: CppHighGainObserver
