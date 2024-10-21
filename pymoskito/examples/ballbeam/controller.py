@@ -15,7 +15,7 @@ class FController(pm.Controller):
     Controller created by changing f(x)
     """
     public_settings = OrderedDict([("poles", [-3.1, -3.1, -3.1, -3.1]),
-                                   ("source", "system_state"),
+                                   ("source", "Model_State"),
                                    ("tick divider", 1),
                                    ])
 
@@ -71,7 +71,7 @@ class GController(pm.Controller):
     Controller created by changing g(x)
     """
     public_settings = OrderedDict([("poles", [-2.8, -2.8, -2.8, -2.8]),
-                                   ("source", "system_state"),
+                                   ("source", "Model_State"),
                                    ("tick divider", 1),
                                    ])
 
@@ -123,7 +123,7 @@ class JController(pm.Controller):
     Controller based on the standard jacobian approximation.
     """
     public_settings = OrderedDict([("poles", [-2, -2, -2, -2]),
-                                   ("source", "system_state"),
+                                   ("source", "Model_State"),
                                    ("tick divider", 1),
                                    ])
 
@@ -179,7 +179,7 @@ class LSSController(pm.Controller):
     given by :math:`(\boldsymbol{x}^e, \tau^e)` .
     """
     public_settings = OrderedDict([("poles", [-3.1, -3.1, -3.1, -3.1]),
-                                   ("source", "system_state"),
+                                   ("source", "Model_State"),
                                    ("steady state", [0, 0, 0, 0]),
                                    ("steady tau", 0),
                                    ("tick divider", 1)
@@ -220,7 +220,7 @@ class PIXController(pm.Controller):
     given by :math:`(\boldsymbol{x}^e, \tau^e)` .
     """
     public_settings = OrderedDict([("poles", [-3.1, -3.1, -3.1, -3.1]),
-                                   ("source", "system_state"),
+                                   ("source", "Model_State"),
                                    ("steady state", [0, 0, 0, 0]),
                                    ("steady tau", 0),
                                    ("step width", .01),

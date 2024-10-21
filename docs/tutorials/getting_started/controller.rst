@@ -74,8 +74,8 @@ Within the constructor, it is obligatory to set the :py:class:`input order` and
 an :py:class:`input type`.
 The :py:class:`input order` determines how many derivatives of the trajectory
 will be required, sinc eour controller is very simple a ``0`` will do here.
-Valid entries for :py:data:`input type` are *system_state*, *system_output*,
-*Observer* and *Sensor*. In our case we will go for ``system_state``.
+Valid entries for :py:data:`input type` are *Model_State*, *Model_Output*,
+*Observer* and *Sensor*. In our case we will go for ``Model_State``.
 After all necessary updates, call the constructor of the base class as seen in
 line :py:data:`20`.
 Store the linearized system matrices and the equilibrium state.
