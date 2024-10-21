@@ -23,7 +23,7 @@ considered reusable,
 therefore PyMoskito provides these classes ready to go.
 On the other hand, the model and the controller are determined by 
 the specific system and have to be implemented to suit your problem.
-If you would like to implement one of the nonhighlighted classes,
+If you would like to implement one of the non highlighted classes,
 see the
 :doc:`Users Guide <../../guide/index>`
 or other
