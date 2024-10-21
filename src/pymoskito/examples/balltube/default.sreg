@@ -33,6 +33,15 @@
   Feedforward:
    type: BallInTubeFeedforward
 
+  Trajectory:
+   type: SmoothTransition
+   states: [[0.0, 1.0]]
+   start time: 2
+   delta t: 5
+
+  Feedforward:
+   type: BallInTubeFeedforward
+
   Model:
    type: BallInTubeModel
    # 75.23 is the fan speed in the equilibrium
