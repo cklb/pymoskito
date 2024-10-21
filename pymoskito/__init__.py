@@ -29,7 +29,7 @@ from .visualization import *
 from .resources import *
 
 __author__ = 'Stefan Ecklebe'
-__email__ = 'stefan.ecklebe@tu-dresden.de'
+__email__ = 'stefan.ecklebe@umit-tirol.at'
 __version__ = '0.4.1'
 
 # configure logging
