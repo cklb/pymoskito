@@ -4,13 +4,14 @@
 History
 =======
 
-0.4.1 (2024-10-08)
+0.4.1 (2024-10-21)
 ------------------
 
 * Fix issue with renamed scipy function (#88)
 * Add support for Python 3.12 and drop support for 3.7
 * Bump version requirements
 * Migrate installation form setup.py to pyproject.toml
+* Update docs
 
 0.4.0 (2021-09-17)
 ------------------
