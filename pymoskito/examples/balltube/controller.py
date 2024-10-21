@@ -18,6 +18,9 @@ class OpenLoop(pm.Controller):
         settings.update(input_order=0)
         settings.update(output_dim=1)
         settings.update(input_type="system_state")
+        settings.update({"output_info": {
+            0: {"Name": "Fan PWM", "Unit": "1"},
+        }})
 
         pm.Controller.__init__(self, settings)
 
