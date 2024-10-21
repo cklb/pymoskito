@@ -1,3 +1,9 @@
+"""
+Base classes for all modules of the simulation loop.
+
+Every block of the pymoskito simulation loop is implemented
+by subclassing `SimulationModule`.
+"""
 import logging
 from abc import ABCMeta, abstractmethod
 from collections import OrderedDict
@@ -23,13 +29,13 @@ class SimulationException(Exception):
 
 class SimulationModule(QObject, metaclass=SimulationModuleMeta):
     """
-    Smallest unit pof the simulation framework.
+    Base unit of the simulation framework.
 
     This class provides necessary functions like output calculation and holds
     all settings that can be accessed by the user.
     The :py:attr:`public_settings` are read by the
     :py:class:`.SimulationInterface` and the rendered by the GUI. All entries
-    stated in this dictionary will be available as changeable settings for the
+    stated in this dictionary will be available as editable settings for the
     module.
     On initialization, a possibly modified (in terms of its values) version of
     this dict will be passed back to this class and is thenceforward available
@@ -43,9 +49,13 @@ class SimulationModule(QObject, metaclass=SimulationModuleMeta):
             These entries will be shown in the properties view and can be
             changed by the user. The important entries for this base class are:
 
+            `tick_divider`:
+                See the property.
             `output info`:
-                Dict holding an information dictionaries with keys `Name` and
-                `Unit` for each element in the output data.
+                Dict holding information about the model output that are used
+                in the GUI. For every item in the output array, a key for its
+                index can be provided, under whose value another dict with the
+                keys keys `Name` and `Unit` is expected.
                 If available, these information are used to display reasonable
                 names in the result view and to display the corresponding units
                 for the result plots.
@@ -54,7 +64,7 @@ class SimulationModule(QObject, metaclass=SimulationModuleMeta):
         Do NOT use '.' in the `output_info` name field.
 
     TODO:
-        Get rif of the point restriction
+        Get rid of the point restriction
     """
 
     def __init__(self, settings):
@@ -71,6 +81,12 @@ class SimulationModule(QObject, metaclass=SimulationModuleMeta):
     @property
     @abstractmethod
     def public_settings(self):
+        """
+        Dict of public settings.
+
+        This contains all settings that will be shown and can be edited
+        in the GUI.
+        """
         pass
 
     @property
@@ -79,10 +95,31 @@ class SimulationModule(QObject, metaclass=SimulationModuleMeta):
 
     @property
     def tick_divider(self):
+        """
+        Simulation tick divider.
+
+        This property controls the frequency at which this Module is evaluated
+        in the main simulation loop. If e.g. a value of `2` is provided, the
+        module will be evaluated at every 2nd step that the solver makes.
+
+        This feature comes in handy if discrete setups with different sample rates
+        are simulated.
+
+        Note:
+            This setting is ignored for the Solver module, whose `tick_divider` is
+            fixed at 1.
+        """
         return self._settings["tick divider"]
 
     @property
     def step_width(self):
+        """
+        The discrete step width that this module is called with.
+
+        This parameter will be set when the simulation is initialised
+        and is based on the solver step size and the selected tick
+        divider of the module.
+        """
         return self._settings["step width"]
 
     @step_width.setter
@@ -91,6 +128,13 @@ class SimulationModule(QObject, metaclass=SimulationModuleMeta):
 
     @abstractmethod
     def calc_output(self, input_vector):
+        """
+        Main evaluation routine.
+
+        Every time the solver has made the amount of steps specified in `tick_divider`,
+        this method will be called to compute the next output of the module.
+        This is typically where the main logic of a module is implemented.
+        """
         pass
 
 
@@ -107,8 +151,8 @@ class Model(SimulationModule):
     Base class for all user defined system models in state-space form.
 
     Args:
-        settings (dict): Dictionary holding the config options for this module.
-            It must contain the following keys:
+        settings (OrderedDict): Dictionary holding the config options for this module.
+            It *must* contain the following keys:
 
             :input_count:
                 The length of the input vector for this model.
@@ -129,7 +173,7 @@ class Model(SimulationModule):
 
     @property
     def initial_state(self):
-        """ Return the initial state of the system. """
+        """ Return the initial state of the model. """
         return self._settings["initial state"]
 
     @abstractmethod
@@ -182,12 +226,19 @@ class Model(SimulationModule):
 
 
 class SolverException(SimulationException):
+    """
+    Exception to be raised if the solver encounters any problems
+    while integrating the system.
+    """
     pass
 
 
 class Solver(SimulationModule):
     """
-    Base Class for solver implementations
+    Base Class for solver implementations.
+
+    After initialization, for every step in the simulation
+    `set_input` will be called, followed by `integrate`.
     """
 
     def __init__(self, settings):
@@ -195,6 +246,7 @@ class Solver(SimulationModule):
         self._model = settings["modules"]["Model"]
         self.next_output = None
         SimulationModule.__init__(self, settings)
+        assert self.tick_divider == 1
 
     def calc_output(self, input_vector):
         self.set_input(input_vector["system_input"])
@@ -210,15 +262,27 @@ class Solver(SimulationModule):
 
     @abstractmethod
     def set_input(self, *args):
+        """
+        Updates the inputs for the next integration step.
+        """
         pass
 
     @abstractmethod
     def integrate(self, t):
+        """
+        Perform numerical integration.
+
+        Args:
+            t(float): New time up to which the model is to be integrated.
+        """
         pass
 
     @property
     @abstractmethod
     def t(self):
+        """
+        The current simulation time.
+        """
         pass
 
     @property
@@ -228,6 +292,9 @@ class Solver(SimulationModule):
 
 
 class ControllerException(SimulationException):
+    """
+    Exception to be raised if the controller encounters any problems.
+    """
     pass
 
 
@@ -235,8 +302,10 @@ class Controller(SimulationModule):
     """
     Base class for controllers.
 
+    After subclassing, the method `_control` has to be implemented.
+
     Args:
-        settings (dict): Dictionary holding the config options for this module.
+        settings (OrderedDict): Dictionary holding the config options for this module.
             It must contain the following keys:
 
             :input_order:
@@ -247,7 +316,7 @@ class Controller(SimulationModule):
                 `system_state` , `system_output` , `Observer` or `Sensor` .
     """
     # selectable input sources for controller
-    input_sources = ["system_state", "system_output", "Observer", "Sensor"]
+    input_sources = ["Model_State", "Model_Output", "Observer", "Sensor"]
 
     def __init__(self, settings):
         SimulationModule.__init__(self, settings)
@@ -295,7 +364,9 @@ class Controller(SimulationModule):
 
 class Observer(SimulationModule):
     """
-    Base class for observers
+    Base class for observers.
+
+    After subclassing, the method `_observe` has to be implemented.
     """
 
     def __init__(self, settings):
@@ -316,6 +387,10 @@ class Observer(SimulationModule):
     def _observe(self, time, system_input, system_output):
         """
         Placeholder for observer law.
+
+        Note:
+            For integration of the observer dynamics, the attribute `step_width`
+            should be used the use the correct step size.
         
         Args:
             time: Current time.
@@ -330,7 +405,9 @@ class Observer(SimulationModule):
 
 class Feedforward(SimulationModule):
     """
-    Base class for all feedforward implementations
+    Base class for all feedforward implementations.
+
+    After subclassing, the method `_feedforward` has to be implemented.
     """
 
     def __init__(self, settings):
@@ -340,6 +417,11 @@ class Feedforward(SimulationModule):
 
     @property
     def input_order(self):
+        """
+        This field can be used to specify
+        the derivative order of the reference trajectories that have to
+        be provided by the trajectory generator.
+        """
         return self._settings["input_order"]
 
     def calc_output(self, input_dict):
@@ -364,12 +446,15 @@ class Feedforward(SimulationModule):
 
 
 class TrajectoryException(SimulationException):
+    """
+    Exception to be raised for errors during trajectory generation.
+    """
     pass
 
 
 class Trajectory(SimulationModule):
     """
-    Base class for all trajectory generators
+    Base class for all trajectory generators.
     """
 
     def __init__(self, settings):

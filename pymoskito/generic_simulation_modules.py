@@ -16,6 +16,7 @@ from .controltools import calc_prefilter, place_siso
 
 __all__ = ["LinearStateSpaceModel", "ODEInt", "ModelInputLimiter",
            "Setpoint", "HarmonicTrajectory", "SmoothTransition",
+           "Feedthrough",
            "PIDController", "LinearStateSpaceController",
            "DeadTimeSensor", "GaussianNoise",
            "AdditiveMixer"]
@@ -306,6 +307,22 @@ class Setpoint(Trajectory):
 
     def _desired_values(self, t):
         return self.yd
+
+
+class Feedthrough(Feedforward):
+    """
+    A simple feedthrough that passes the reference trajectory to its output.
+    """
+    public_settings = OrderedDict([
+        ("tick divider", 1),
+    ])
+
+    def __init__(self, settings):
+        settings.update(input_order=0)
+        Feedforward.__init__(self, settings)
+
+    def _feedforward(self, time, trajectory_values):
+        return trajectory_values
 
 
 class LinearStateSpaceController(Controller):

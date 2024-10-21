@@ -335,8 +335,8 @@ class SimulatorInteractor(QObject):
             try:
                 slot = sub_module_cls(settings)
             except Exception as e:
-                self._logger.error("Init of module '{}' failed with\n"
-                                   "'{}'!".format(module_name, e))
+                self._logger.error("Init of module '{}' failed.".format(module_name))
+                self._logger.exception(e)
                 return False
 
             # add to simulation modules
