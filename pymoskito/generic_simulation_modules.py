@@ -578,10 +578,10 @@ class GaussianNoise(Disturbance):
                                    ("mean", 0)])
 
     def __init__(self, settings):
-        settings.update([("input signal", "Sensor")])
+        settings.update([("input signal", "Model_Output")])
         Disturbance.__init__(self, settings)
 
-    def _disturb(self, value):
+    def _disturb(self, t, signal):
         return np.random.normal(self._settings['mean'],
                                 self._settings['sigma'],
-                                value.output_dim)
+                                signal.shape)

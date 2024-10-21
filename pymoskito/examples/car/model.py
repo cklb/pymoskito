@@ -46,7 +46,7 @@ class CarModel(pm.Model):
         """
 
         x1, x2, x3, x4, x5 = x
-        v, w = 1, 1
+        v, w = args[0]
 
         return np.array([v * np.cos(x3),
                          v * np.sin(x3),
