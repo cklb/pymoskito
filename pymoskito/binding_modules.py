@@ -231,10 +231,10 @@ class CppBase:
         else:
             cmd = ['cmake',  # '-DCMAKE_BUILD_TYPE=Debug',
                    '-S', '.', '-B', BUILD_DIR]
-        result = subprocess.run(cmd, cwd=self.module_path)
+        result = subprocess.run(cmd, cwd=self.module_path, capture_output=True)
 
         if result.returncode != 0:
-            self._logger.error("Generation of binding config failed.")
+            self._logger.error(f"Generation of binding config failed with {result.stderr}")
             raise BindingException("Generation of binding config failed.")
 
     def build_binding(self):
@@ -243,10 +243,10 @@ class CppBase:
             cmd = ['cmake', '--build', BUILD_DIR, '--config', 'Release', '--target', 'INSTALL']
         else:
             cmd = ['cmake', '--build', BUILD_DIR]
-        result = subprocess.run(cmd, cwd=self.module_path)
+        result = subprocess.run(cmd, cwd=self.module_path, capture_output=True)
 
         if result.returncode != 0:
-            self._logger.error("Build failed!")
+            self._logger.error(f"Build process returned with:\n{result.stderr}")
             raise BindingException("Build failed!")
 
     def install_binding(self):
