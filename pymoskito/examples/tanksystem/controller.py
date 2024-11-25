@@ -40,7 +40,6 @@ class CppPIDController(pm.CppBase, pm.Controller):
         ("Kp", st.Kp),
         ("Ti", st.Ti),
         ("Td", st.Td),
-        ("dt [s]", 0.1),
         ("output_limits", st.limits_ctrl),
         ("input_state", st.input_ctrl),
         ("tick divider", 1),
@@ -66,20 +65,16 @@ class CppPIDController(pm.CppBase, pm.Controller):
                             module_path=m_path,
                             module_name='Controller',
                             binding_class_name="binding_Controller",
-                            # If pybind is not global installed, use the uncomment the following line and set $(VENV) 
-                            # as also as $(PYVERS) in the target_include_directories string.
+                            # If pybind is not installed globally, uncomment the following line and set $(VENV)
+                            # as well as $(PYVERS) in the target_include_directories string.
                             # additional_lib={'pybind11': addLib}
                             )
-
-        self.last_time = 0
-        self.last_u = 0
-
         self.pid = self.get_class_from_module().PIDController(self._settings["Kp"],
                                                               self._settings["Ti"],
                                                               self._settings["Td"],
                                                               self._settings["output_limits"][0],
                                                               self._settings["output_limits"][1],
-                                                              self._settings['dt [s]'])
+                                                              self._settings['step size'])
 
     def _control(self,
                  time,
@@ -87,25 +82,15 @@ class CppPIDController(pm.CppBase, pm.Controller):
                  feedforward_values=None,
                  input_values=None,
                  **kwargs):
-        # step size
-        dt = time - self.last_time
 
         # input abbreviations
         x = np.zeros((len(self._settings["input_state"]),))
         for idx, state in enumerate(self._settings["input_state"]):
             x[idx] = input_values[int(state)]
+        yd = trajectory_values
 
-        if np.isclose(dt, self._settings['dt [s]']):
-            # save last control time
-            self.last_time = time
-
-            yd = trajectory_values
-
-            u = self.pid.compute(x, yd)
-        else:
-            u = self.last_u
-
-        self.last_u = u
+        # call cpp controller
+        u = self.pid.compute(x, yd)
 
         return u
 
@@ -139,12 +124,10 @@ class CppStateController(pm.CppBase, pm.Controller):
                             module_path=m_path,
                             module_name='Controller',
                             binding_class_name="binding_Controller",
-                            # If pybind is not global installed, use the uncomment the following line and set $(VENV) 
-                            # as also as $(PYVERS) in the target_include_directories string.
+                            # If pybind is not installed globally, uncomment the following line and set $(VENV)
+                            # as well as $(PYVERS) in the target_include_directories string.
                             # additional_lib={'pybind11': addLib}
                             )
-        self.last_time = 0
-        self.last_u = 0
 
         # pole placement of linearized state feedback
         x10, x20, uA0, A, B, C = self.calc_lin_sys()
@@ -191,20 +174,8 @@ class CppStateController(pm.CppBase, pm.Controller):
                  feedforward_values=None,
                  input_values=None,
                  **kwargs):
-        # step size
-        dt = time - self.last_time
-
-        if np.isclose(dt, self._settings['dt [s]']):
-            # save last control time
-            self.last_time = time
-
-            yd = trajectory_values
-
-            u = self.state.compute(np.array(input_values), yd[0])
-        else:
-            u = self.last_u
-
-        self.last_u = u
+        yd = trajectory_values
+        u = self.state.compute(np.array(input_values), yd[0])
 
         return u
 

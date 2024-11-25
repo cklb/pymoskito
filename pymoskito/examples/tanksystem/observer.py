@@ -22,7 +22,6 @@ class CppHighGainObserver(pm.CppBase, pm.Observer):
         ("AS2", st.AS2),
         ("g", st.g),
         ("K", st.K),
-        ("dt [s]", 0.1),
         ("tick divider", 1),
     ])
 
@@ -43,8 +42,8 @@ class CppHighGainObserver(pm.CppBase, pm.Observer):
                             module_path=m_path,
                             module_name='Observer',
                             binding_class_name="binding_Observer",
-                            # If pybind is not global installed, use the uncomment the following line and set $(VENV) 
-                            # as also as $(PYVERS) in the target_include_directories string.
+                            # If pybind is not installed globally , uncomment the following line and set $(VENV)
+                            # as well as $(PYVERS) in the target_include_directories string.
                             # additional_lib={'pybind11': addLib}
                             )
 
@@ -52,7 +51,7 @@ class CppHighGainObserver(pm.CppBase, pm.Observer):
                                                                  self._settings["AS1"],
                                                                  self._settings["AS2"],
                                                                  self._settings["K"],
-                                                                 self._settings['dt [s]'])
+                                                                 self._settings['step size'])
         self.obs.set_initial_state(np.array(self._settings["initial state"]))
         self.obs.set_gain(np.array(self._settings["poles"]))
 

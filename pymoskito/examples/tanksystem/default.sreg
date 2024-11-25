@@ -52,6 +52,7 @@
 
   Observer:
    type: CppHighGainObserver
+   tick divider: 10
 
 - Name: controller-PID
   clear previous: !!python/bool True # decide whether previous settings should remain or not
@@ -63,6 +64,7 @@
 
   Controller:
    type: CppPIDController
+   tick divider: 20
 
   Model:
    type: TwoTankSystem
@@ -85,6 +87,7 @@
 
   Controller:
    type: CppStateController
+   tick divider: 20
 
   Model:
    type: TwoTankSystem
@@ -99,3 +102,4 @@
 
   Observer:
    type: CppHighGainObserver
+   tick divider: 10
