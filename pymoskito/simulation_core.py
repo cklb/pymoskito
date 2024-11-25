@@ -119,11 +119,7 @@ class Simulator(QObject):
     def _init_settings(self):
         """ Initialize module settings that depend on other modules.
         """
-        # calculate the correct step width for every block
-        for mod_name, obj in self._simulation_modules.items():
-            obj.step_width = obj.tick_divider * self._settings.step_size
-
-        return
+        pass
 
     def _calc_module(self, module_name):
         """ Calculates the output of a simulation module

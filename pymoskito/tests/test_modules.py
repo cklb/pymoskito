@@ -59,7 +59,7 @@ class TestSimulationModule(unittest.TestCase):
         # check default attributes
         m = DummyModule(settings)
         m._settings["tick divider"] = 1
-        m._settings["step width"] = None
+        m._settings["step size"] = None
 
         # modules entry has to be deleted after init is completed
         with self.assertRaises(KeyError):
@@ -67,33 +67,33 @@ class TestSimulationModule(unittest.TestCase):
 
         # check acquisition of attributes
         settings["tick divider"] = 1234
-        settings["step width"] = 13.26  # this _CANNOT_ be known a priori
+        # this is computed by the SimulatorInteractor
+        settings["step size"] = 13.26
         info = {0: dict(Name="Centripetal Force",
                         Unit="Newton [N]")}
         settings["output info"] = info
         m = DummyModule(settings)
         self.assertEqual(m._settings["tick divider"], 1234)
-        self.assertEqual(m._settings["step width"], None)
+        self.assertEqual(m._settings["step size"], 13.26)
         self.assertEqual(m._settings["output info"], info)
 
     def test_properties(self):
         settings = DummyModule.public_settings
         settings["tick divider"] = 1234
-        settings["step width"] = 13.26  # this _CANNOT_ be known a priori
+        # this is computed by the SimulatorInteractor
+        settings["step size"] = 13.26
         m = DummyModule(settings)
 
         self.assertTrue(isinstance(m.public_settings, OrderedDict))
 
         self.assertEqual(m.tick_divider, 1234)
-        self.assertEqual(m.step_width, None)
-
-        m.step_width = 13.37
-        self.assertEqual(m.step_width, 13.37)
+        self.assertEqual(m.step_size, 13.26)
 
     def test_calc_output(self):
         settings = DummyModule.public_settings
         settings["tick divider"] = 1234
-        settings["step width"] = 13.26  # this _CANNOT_ be known a priori
+        # this is computed by the SimulatorInteractor
+        settings["step size"] = 13.26
         m = DummyModule(settings)
 
         input_data = dict(foo="bar")  # later dict of pairs module-type: output

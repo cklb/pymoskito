@@ -330,6 +330,12 @@ class SimulatorInteractor(QObject):
                     settings["end time"],
                     settings["step size"],
                     settings["measure rate"])
+            if module_name not in ["Model", "Solver"]:
+                if "step size" in settings:
+                    raise ValueError("Parameter 'step size' is not allowed in settings."
+                                     "Choose an appropriate 'tick divider' instead.")
+                settings["step size"] = (settings.get("tick divider", 1)
+                                         * self._sim_settings.step_size)
 
             # build object
             try:

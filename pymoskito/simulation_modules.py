@@ -50,7 +50,11 @@ class SimulationModule(QObject, metaclass=SimulationModuleMeta):
             changed by the user. The important entries for this base class are:
 
             `tick_divider`:
-                See the property.
+                This property controls the frequency at which this Module is evaluated
+                in the main simulation loop. If e.g. a value of `2` is provided, the
+                module will be evaluated at every 2nd step that the solver makes.
+                This feature comes in handy if discrete setups with different sample rates
+                are simulated.
             `output info`:
                 Dict holding information about the model output that are used
                 in the GUI. For every item in the output array, a key for its
@@ -59,6 +63,10 @@ class SimulationModule(QObject, metaclass=SimulationModuleMeta):
                 If available, these information are used to display reasonable
                 names in the result view and to display the corresponding units
                 for the result plots.
+
+    Note:
+        The 'tick_divider' setting is ignored for the Solver and Model modules, whose `tick_divider` is
+        fixed at 1.
 
     Warn:
         Do NOT use '.' in the `output_info` name field.
@@ -75,7 +83,7 @@ class SimulationModule(QObject, metaclass=SimulationModuleMeta):
         self._settings = copy(settings)
 
         self._settings["tick divider"] = settings.get("tick divider", 1)
-        self._settings["step width"] = None
+        self._settings["step width"] =  settings.get("step width", None)
         self._settings.pop("modules", None)
 
     @property
@@ -96,35 +104,20 @@ class SimulationModule(QObject, metaclass=SimulationModuleMeta):
     @property
     def tick_divider(self):
         """
-        Simulation tick divider.
-
-        This property controls the frequency at which this Module is evaluated
-        in the main simulation loop. If e.g. a value of `2` is provided, the
-        module will be evaluated at every 2nd step that the solver makes.
-
-        This feature comes in handy if discrete setups with different sample rates
-        are simulated.
-
-        Note:
-            This setting is ignored for the Solver module, whose `tick_divider` is
-            fixed at 1.
+        The module tick divider.
         """
         return self._settings["tick divider"]
 
     @property
-    def step_width(self):
+    def step_size(self):
         """
-        The discrete step width that this module is called with.
+        The step size that this module is called with.
 
-        This parameter will be set when the simulation is initialised
+        This parameter will be computed when the simulation is initialised
         and is based on the solver step size and the selected tick
         divider of the module.
         """
-        return self._settings["step width"]
-
-    @step_width.setter
-    def step_width(self, value):
-        self._settings["step width"] = value
+        return self._settings["step size"]
 
     @abstractmethod
     def calc_output(self, input_vector):
@@ -170,6 +163,8 @@ class Model(SimulationModule):
         assert ("input_count" in settings)
         assert ("initial state" in settings)
         assert len(settings["initial state"]) == settings["state_count"]
+        assert self.tick_divider == 1
+
 
     @property
     def initial_state(self):
