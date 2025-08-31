@@ -246,7 +246,7 @@ class CppBase:
         result = subprocess.run(cmd, cwd=self.module_path, capture_output=True)
 
         if result.returncode != 0:
-            self._logger.error(f"Build process returned with:\n{result.stderr}")
+            self._logger.error(f"Build process returned with:\n{result.stderr.decode('UTF-8')}")
             raise BindingException("Build failed!")
 
     def install_binding(self):
