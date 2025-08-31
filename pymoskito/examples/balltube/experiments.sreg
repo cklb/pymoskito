@@ -18,6 +18,8 @@
    Kp: 600
    Ki: 570
    Kd: 230
+   output limits: [0, 255]
+   input indexes: [0]
 
   Trajectory:
    type: SmoothTransition
@@ -140,6 +142,8 @@
    Kp: 600
    Ki: 570
    Kd: 230
+   output limits: [0, 255]
+   input indexes: [0]
 
   Trajectory:
    type: HarmonicTrajectory
@@ -169,6 +173,8 @@
    Kp: 600
    Ki: 570
    Kd: 230
+   output limits: [0, 255]
+   input indexes: [0]
 
   Trajectory:
    type: SmoothTransition

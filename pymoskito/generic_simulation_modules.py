@@ -336,7 +336,7 @@ class LinearStateSpaceController(Controller):
 
     If poles is given (differing from `None` ) the state-feedback will be
     computed using :py:func:`pymoskito.place_siso` .
-    Furthermore an appropriate prefilter is calculated, which establishes
+    Furthermore, an appropriate prefilter is calculated, which establishes
     stationary attainment of the desired output values.
 
     Note:
@@ -418,71 +418,59 @@ class LinearStateSpaceController(Controller):
 
 class PIDController(Controller):
     """
-    PID Controller
+    A simple scalar PID Controller with basic anti-windup
+
+    This class will run a PID controller with the given settings for each
+    component of the model output listed in 'input indexes'.
     """
-    public_settings = OrderedDict([("Kp", 700),
-                                   ("Ki", 500),
-                                   ("Kd", 200),
-                                   ("output_limits", [0, 255]),
-                                   ("input_state", [2]),
-                                   ("tick divider", 1)])
-    last_time = 0
+    public_settings = OrderedDict([
+        ("input indexes", [0]),
+        ("Kp", 1),
+        ("Ki", 1),
+        ("Kd", 1),
+        ("output limits", [-1, 1]),
+        ("tick divider", 1)])
 
     def __init__(self, settings):
         # add specific "private" settings
-        settings.update(input_order=0)
-        settings.update(output_dim=len(self.public_settings["input_state"]))
-        settings.update(input_type="Model_State")
+        settings.update(input_order=0)  # no reference derivatives required
+        settings.update(input_type="Model_Output")  # use the model output to compute the control error
+        output_dim = len(self.public_settings["input indexes"])
+        settings.update(output_dim=output_dim)
         Controller.__init__(self, settings)
 
-        # define variables for data saving in the right dimension
-        # (columns vectors)
-        self.e_old = np.zeros((len(self._settings["input_state"]), ))
-        self.integral_old = np.zeros((len(self._settings["input_state"]), ))
-        self.last_u = np.zeros((len(self._settings["input_state"]), ))
-        self.output = np.zeros((len(self._settings["input_state"]), ))
+        self.dt = settings["step size"]
+        self.error_integral = np.zeros(output_dim)
+        self.previous_error = np.zeros(output_dim)
 
     def _control(self, time, trajectory_values=None, feedforward_values=None, input_values=None, **kwargs):
-        # input abbreviations
-        x = np.zeros((len(self._settings["input_state"]), ))
-        for idx, state in enumerate(self._settings["input_state"]):
-            x[idx] = input_values[int(state)]
+        #  compute the control error
+        y = np.asarray(input_values)[self._settings["input indexes"]]
+        yd = np.atleast_2d(trajectory_values)[:, 0]  # ignore reference derivatives
+        error = yd - y
 
-        yd = trajectory_values
+        # compute the error integral
+        integral = self.error_integral + error * self.dt
 
-        # step size
-        dt = time - self.last_time
-        # save current time
-        self.last_time = time
+        # compute the error derivative
+        differential = (error - self.previous_error) / self.dt
 
-        if dt != 0:
-            for i in range(len(x)):
-                # error
-                e = yd[i] - x[i]
-                integral = e * dt + self.integral_old[i]
-                if integral > self._settings["output_limits"][1]:
-                    integral = self._settings["output_limits"][1]
-                elif integral < self._settings["output_limits"][0]:
-                    integral = self._settings["output_limits"][0]
-                differential = (e - self.e_old[i]) / dt
+        # compute control outputs
+        output = (self._settings["Kp"] * error
+                          + self._settings["Ki"] * integral
+                          + self._settings["Kd"] * differential)
 
-                self.output[i] = (self._settings["Kp"] * e
-                                  + self._settings["Ki"] * integral
-                                  + self._settings["Kd"] * differential)
+        # saturate the outputs
+        sat_output = np.clip(output, *self._settings["output limits"])
 
-                if self.output[i] > self._settings["output_limits"][1]:
-                    self.output[i] = self._settings["output_limits"][1]
-                elif self.output[i] < self._settings["output_limits"][0]:
-                    self.output[i] = self._settings["output_limits"][0]
+        # only integrate errors of unsaturated outputs
+        unsat_idxs = output == sat_output
+        self.error_integral[unsat_idxs] = integral[unsat_idxs]
 
-                # save data for new calculation
-                self.e_old[i] = e
-                self.integral_old[i] = integral
-            u = self.output
-        else:
-            u = self.last_u
-        self.last_u = u
-        return u
+        # store current error
+        self.previous_error = error
+
+        return sat_output
 
 
 class AdditiveMixer(SignalMixer):

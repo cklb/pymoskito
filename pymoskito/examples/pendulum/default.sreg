@@ -219,8 +219,8 @@
    Kp: 30
    Ki: 20
    Kd: 5
-   output_limits: [-10, 10]
-   input_state: [0]
+   output limits: [-10, 10]
+   input indexes: [0]
 
   Trajectory:
    type: Setpoint

@@ -57,8 +57,8 @@
    Kp: 300
    Ki: 310
    Kd: 72
-   output_limits: [0, 255]
-   input_state: [2]
+   output limits: [0, 255]
+   input indexes: [0]
 
   Model:
    type: BallInTubeModel
@@ -70,6 +70,41 @@
    step size: 0.001
    end time: 10
 
+
+- Name: ClosedLoop_with_2dof
+  clear previous: !!python/bool True # decide whether previous settings should remain or not
+
+  Trajectory:
+   type: SmoothTransition
+   states: [[0.0, 1.0]]
+   start time: 2
+   delta t: 5
+
+  Feedforward:
+   type: BallInTubeFeedforward
+
+  Controller:
+   type: PIDController
+   Kp: 300
+   Ki: 310
+   Kd: 72
+   output limits: [0, 255]
+   input indexes: [0]
+
+  ModelMixer:
+    type: AdditiveMixer
+    Input A: Feedforward
+    Input B: Controller
+
+  Model:
+   type: BallInTubeModel
+   initial state: [0, 0, 0, 0]
+
+  Solver:
+   type: ODEInt
+   measure rate: 500
+   step size: 0.001
+   end time: 10
 
 - Name: test_spring_with_dead_time
   clear previous: !!python/bool True # decide whether previous settings should remain or not
