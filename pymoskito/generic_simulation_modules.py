@@ -104,17 +104,22 @@ class LinearStateSpaceModel(Model):
 
 class ODEInt(Solver):
     """
-    Wrapper for ode_int from Scipy project
+    Wrapper for ode_int from the Scipy project
+
+    Args:
+        settings (OrderedDict): Dictionary holding the config options for this module.
+            See :py:class:`Solver` and scipy's odeint for details.
+
     """
     public_settings = OrderedDict([
+        ("measure rate", 500),
+        ("start time", 0),
+        ("end time", 5),
         ("Mode", "vode"),
         ("Method", "adams"),
-        ("measure rate", 500),
         ("step size", 1e-3),
         ("rTol", 1e-6),
         ("aTol", 1e-9),
-        ("start time", 0),
-        ("end time", 5)
     ])
 
     def __init__(self, settings):

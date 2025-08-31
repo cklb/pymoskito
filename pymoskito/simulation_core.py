@@ -100,6 +100,7 @@ class Simulator(QObject):
         self._init_settings()
         self.updated_time = 0
         self._storage = dict()
+        self._storage_interval = 1 / self._settings.measure_rate
 
     def _init_states(self):
         self._input_vector = {}
@@ -223,13 +224,12 @@ class Simulator(QObject):
         self.state_changed.emit(SimulationStateChange(type="start"))
 
         first_run = True
-        rate = 1 / self._settings.measure_rate
         solver = self._simulation_modules["Solver"]
 
         while self._current_outputs["time"] < self._settings.end_time:
             t = solver.t
             dt = 0
-            while dt < rate:
+            while dt < self._storage_interval:
                 if not self._run:
                     self._abort("Simulation aborted by user")
                     break
@@ -243,7 +243,7 @@ class Simulator(QObject):
                     return
 
                 dt = solver.t - t
-                if dt < rate and first_run:
+                if dt < self._storage_interval and first_run:
                     self._store_values()
                 first_run = False
 

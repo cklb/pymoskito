@@ -234,6 +234,18 @@ class Solver(SimulationModule):
 
     After initialization, for every step in the simulation
     `set_input` will be called, followed by `integrate`.
+
+    Args:
+        settings (OrderedDict): Dictionary holding the config options for this module.
+            It must contain the following keys:
+
+            :start time: Time stamp to start the simulation.
+
+            :end time: Time stamp to end the simulation.
+
+            :measure rate: How many results to store per second, e.g. a 'measure rate' of 500 will
+            result of 500 values per second, thus one value every 2 milliseconds.
+
     """
 
     def __init__(self, settings):
@@ -503,7 +515,10 @@ class MixerException(Exception):
 
 class SignalMixer(SimulationModule):
     """
-    Base class for all Signal mixing modules
+    Base class for all signal mixing modules
+
+    Requires the key 'input signals' to be present in the settings dictionary.
+    For all possible keys see :py:class:`pymoskito.simulation_core.simulator._dynamic_module_list`.
     """
 
     def __init__(self, settings):
