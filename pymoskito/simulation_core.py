@@ -175,7 +175,9 @@ class Simulator(QObject):
         return
 
     def _choose_model_input(self, input_vector):
-        """ This is mainly done for convenience.
+        """
+        Try to decide what the user wanted as the model input
+        and fail for ambiguous configurations.
         """
         if "Limiter" in input_vector:
             _input = input_vector["Limiter"]
@@ -184,13 +186,13 @@ class Simulator(QObject):
         elif "Controller" in input_vector:
             if "Feedforward" in input_vector:
                 raise SimulationException(
-                    "Controller and Feedforward present but no"
-                    "ModelMixer. Ambiguous Situation")
+                    "Feedforward and Controller selected but no ModelMixer configured. "
+                    "Aborting due to ambiguous situation.")
             _input = input_vector["Controller"]
         elif "Feedforward" in input_vector:
             _input = input_vector["Feedforward"]
         else:
-            raise SimulationException("No model input given.")
+            raise SimulationException("No model input given. Configure at least a Feedforward or a Controller.")
 
         self._input_vector["model_input"] = _input
 
