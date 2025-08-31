@@ -98,7 +98,8 @@ class Simulator(QObject):
 
         self._init_states()
         self._init_settings()
-        self.updated_time = 0
+        self._update_time = 0
+        self._update_interval = 0.01 * (self._settings.end_time - self._settings.start_time)
         self._storage = dict()
         self._storage_interval = 1 / self._settings.measure_rate
 
@@ -205,15 +206,14 @@ class Simulator(QObject):
 
         return
 
-    def _check_time(self):
+    def _send_update(self):
         """
-        send update notification every second
+        Send update notifications to the GUI
         """
         t = self._current_outputs["time"]
-        if t - self.updated_time > 1:
+        if t - self._update_time > self._update_interval:
             self.state_changed.emit(SimulationStateChange(type="time", t=t))
-            # self.timeChanged.emit(t)
-            self.updated_time = t
+            self._update_time = t
 
     @pyqtSlot()
     def run(self):
@@ -248,7 +248,7 @@ class Simulator(QObject):
                 first_run = False
 
             self._store_values()
-            self._check_time()
+            self._send_update()
 
         self._finish()
 
