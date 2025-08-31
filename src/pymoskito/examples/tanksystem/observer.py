@@ -16,8 +16,10 @@ class CppHighGainObserver(pm.CppBase, pm.Observer):
     public_settings = OrderedDict([
         ("initial state", st.initial_states),
         ("poles", st.poles_obs),
-        ("AT", st.AT),
+        ("AT1", st.AT1),
+        ("AT2", st.AT2),
         ("hT", st.hT),
+        ("hV", st.hV),
         ("AS1", st.AS1),
         ("AS2", st.AS2),
         ("g", st.g),
@@ -47,9 +49,12 @@ class CppHighGainObserver(pm.CppBase, pm.Observer):
                             # additional_lib={'pybind11': addLib}
                             )
 
-        self.obs = self.get_class_from_module().HighGainObserver(self._settings["AT"],
+        self.obs = self.get_class_from_module().HighGainObserver(self._settings["AT1"],
+                                                                 self._settings["AT2"],
                                                                  self._settings["AS1"],
                                                                  self._settings["AS2"],
+                                                                 self._settings["hT"],
+                                                                 self._settings["hV"],
                                                                  self._settings["K"],
                                                                  self._settings['step size'])
         self.obs.set_initial_state(np.array(self._settings["initial state"]))

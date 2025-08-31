@@ -11,7 +11,6 @@
 
 
 #define M_G 9.81
-#define sign(a) ( ( (a) < 0 )  ?  -1   : ( (a) > 0 ) )
 
 /**
  * @brief Basis class of an observer implementation.
@@ -52,27 +51,39 @@ public:
 class HighGainObserver : public Observer {
 private:
     double dGain[2] = {};   ///< gain values of the observer
-    double dAT;             ///< area of tanks 1 and 2
+    double dAT1;            ///< area of tank 1
+    double dAT2;            ///< area of tank 2
     double dAS1;            ///< area of sink 1
     double dAS2;            ///< area of sink 2
+    double dhT;              ///< height of tanks
+    double dhV;              ///< height of sinks
     double dK;              ///< gain value of pump
+    double da1;
+    double da2;
     double dOut[2] = {};    ///< observed states respectively water level of tank 1 and 2
 
 public:
     /**
      * @ brief Constructor that sets the initial values of the observer.
      *
-     * @param dAT area of tanks 1 and 2
+     * @param dAT1 area of tank 1
+     * @param dAT2 area of tank 2
      * @param dAS1 area of sink 1
      * @param dAS2 area of sink 2
+     * @param hT height of tanks
+     * @param hV height of sinks
      * @param dK gain value of pump
      * @param dSampleTime sample time in \f \si{\milli\second} \f
      */
-    HighGainObserver(const double &dAT,
+    HighGainObserver(const double &dAT1, const double &dAT2,
                      const double &dAS1, const double &dAS2,
+                     const double &dhT, const double &dhV,
                      const double &dK,
-                     const double &dSampleTime) : dAT(dAT), dAS1(dAS1), dAS2(dAS2), dK(dK) {
+                     const double &dSampleTime
+                     ) : dAT1(dAT1), dAT2(dAT2), dAS1(dAS1), dAS2(dAS2), dhT(dhT), dhV(dhV), dK(dK) {
         this->dSampleTime = dSampleTime;
+        this->da1 = this->dAS1 * sqrt(2 * M_G / (this->dAT1*this->dAT1 - this->dAS1*this->dAS1));
+        this->da2 = this->dAS2 * sqrt(2 * M_G / (this->dAT2*this->dAT2 - this->dAS2*this->dAS2));
     }
 
     /// Destructor of the High Gain observer

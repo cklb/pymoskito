@@ -18,5 +18,8 @@ PYBIND11_MODULE(Observer, m) {
                           const double &,
                           const double &,
                           const double &,
+                          const double &,
+                          const double &,
+                          const double &,
                           const double &>());
 }

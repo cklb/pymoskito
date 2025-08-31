@@ -8,10 +8,12 @@ from . import settings as st
 
 class TwoTankSystem(pm.Model):
     public_settings = OrderedDict([('initial state', st.initial_states),
-                                   ("AT", st.AT),
                                    ("hT", st.hT),
+                                   ("hV", st.hV),
                                    ("AS1", st.AS1),
                                    ("AS2", st.AS2),
+                                   ("AT1", st.AT1),
+                                   ("AT2", st.AT2),
                                    ("g", st.g),
                                    ("K", st.K)])
 
@@ -44,27 +46,29 @@ class TwoTankSystem(pm.Model):
         K = self.settings['K']
         AS1 = self.settings['AS1']
         AS2 = self.settings['AS2']
-        AT = self.settings['AT']
+        AT1 = self.settings['AT1']
+        AT2 = self.settings['AT2']
+        hT = self.settings["hT"]
+        hV = self.settings["hV"]
+        a1 = AS1 * np.sqrt(2 * g / (AT1 ** 2 - AS1 ** 2))
+        a2 = AS2 * np.sqrt(2 * g / (AT2 ** 2 - AS2 ** 2))
 
-        if x1 < 0:
-            # tank empty -> nothing flows out
-            dx1 = K / AT * uA
-        elif x1 < self.settings["hT"]:
-            dx1 = - AS1 / AT * np.sign(x1 - x2) * np.sqrt(2 * g * np.abs(x1 - x2)) + K / AT * uA
-        else:
-            # tank full -> nothing flows in
-            dx1 = - AS1 / AT * np.sign(x1 - x2) * np.sqrt(2 * g * np.abs(x1 - x2))
+        dx = np.zeros(2)
+        if x1 >= 0:
+            # tank not empty, count outflow
+            dx[0] -= a1 * np.sqrt(x1 + hV)
+        if x1 < hT:
+            # tank not full, count inflow
+            dx[0] += K / AT1 * uA
 
-        if x2 < 0:
-            # tank empty -> nothing flows out
-            dx2 = AS1 / AT * np.sign(x1 - x2) * np.sqrt(2 * g * np.abs(x1 - x2))
-        elif x2 < self.settings["hT"]:
-            dx2 = AS1 / AT * np.sign(x1 - x2) * np.sqrt(2 * g * np.abs(x1 - x2)) - AS2 / AT * np.sqrt(2 * g * x2)
-        else:
-            # tank full -> nothing flows in
-            dx2 = - AS2 / AT * np.sqrt(2 * g * x2)
+        if x2 >= 0:
+            # tank not empty, count outflow
+            dx[1] -= a2 * np.sqrt(x2 + hV)
+        if x2 < hT:
+            # tank not full, count inflow
+            dx[1] += a1 * np.sqrt(x1 + hV)
 
-        return np.array([dx1, dx2])
+        return dx
 
     def event_level_1_low(self, t, x):
         return x[0]
