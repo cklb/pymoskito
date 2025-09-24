@@ -161,16 +161,20 @@ class MplTankVisualizer(pm.MplVisualizer):
         self.axes.text(self.rT, self.hT + 0.01, 'Tank 1', horizontalalignment='center')
         self.axes.text(4 * self.rT + 3 * self.rT, self.hT + 0.01, 'Tank 2', horizontalalignment='center')
 
-    def update_scene(self, x):
-        if 0 < x[0] < st.hT:
+    def update_scene(self, x, u):
+        if u > 0:
             self.conT1.set_color('blue')
+        else:
+            self.conT1.set_color('white')
+
+        if 0 < x[0] < st.hT:
             self.tube1.set_height(x[0] * self.hT / st.hT)
         elif x[0] >= st.hT:
-            self.conT1.set_color('blue')
             self.tube1.set_height(self.hT)
         else:
             self.conT1.set_color('white')
             self.tube1.set_height(0)
+
         if 0 < x[1] < st.hT:
             self.conT1T2.set_color('blue')
             self.conT2.set_color('blue')
@@ -182,7 +186,7 @@ class MplTankVisualizer(pm.MplVisualizer):
             self.conT1T2.set_color('white')
             self.conT2.set_color('white')
             self.tube2.set_height(0)
-        self.canvas.draw()
 
+        self.canvas.draw()
 
 pm.register_visualizer(MplTankVisualizer)

@@ -139,7 +139,7 @@ try:
 
             actor.PokeMatrix(poke)
 
-        def update_scene(self, x):
+        def update_scene(self, x, u):
             """
             update the body states
             """
@@ -202,7 +202,7 @@ class MplBallBeamVisualizer(pm.MplVisualizer):
         self.beam.set_height(width)
         self.canvas.draw()
 
-    def update_scene(self, x):
+    def update_scene(self, x, u):
         x_ball, dx_ball, theta_beam, dtheta_beam = x
         theta_ball = -x_ball / st.visR
 

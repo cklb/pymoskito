@@ -47,17 +47,18 @@ class Visualizer(metaclass=ABCMeta):
         self._config = config
 
     @abstractmethod
-    def update_scene(self, x):
+    def update_scene(self, x, u):
         """
         Hook to update the current visualization state
         :param x: system state vector
+        :param u: system input
         """
         pass
 
 
 class DummyVisualizer(Visualizer):
 
-    def update_scene(self, x):
+    def update_scene(self, x, u):
         pass
 
 

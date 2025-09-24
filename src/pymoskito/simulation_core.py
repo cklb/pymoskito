@@ -194,7 +194,7 @@ class Simulator(QObject):
         else:
             raise SimulationException("No model input given. Configure at least a Feedforward or a Controller.")
 
-        self._input_vector["model_input"] = _input
+        self._input_vector["Model_Input"] = _input
 
     def _store_values(self):
         """

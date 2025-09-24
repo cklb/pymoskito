@@ -132,7 +132,8 @@ class SimulationGui(QMainWindow):
         self.stopSimulation.connect(self.sim.stop_simulation)
         self.sim.simulation_finalized.connect(self.new_simulation_data)
         self.currentDataset = None
-        self.interpolator = None
+        self.inputInterpolator = None
+        self.stateInterpolator = None
 
         # sim setup viewer
         self.targetView = SimulatorView(self)
@@ -1279,12 +1280,20 @@ class SimulationGui(QMainWindow):
             self.actSimulateAll.setDisabled(False)
 
     def _read_results(self):
+        sources = ["Limiter", "ModelMixer", "Controller", "Feedforward"]
+        input_source = next(s for s in sources if s in self.currentDataset["results"])
+        model_input = self.currentDataset["results"][input_source]
+        self.inputInterpolator = interp1d(self.currentDataset["results"]["time"],
+                                          model_input,
+                                          axis=0,
+                                          bounds_error=False,
+                                          fill_value=(model_input[0], model_input[-1]))
         state = self.currentDataset["results"]["Solver"]
-        self.interpolator = interp1d(self.currentDataset["results"]["time"],
-                                     state,
-                                     axis=0,
-                                     bounds_error=False,
-                                     fill_value=(state[0], state[-1]))
+        self.stateInterpolator = interp1d(self.currentDataset["results"]["time"],
+                                          state,
+                                          axis=0,
+                                          bounds_error=False,
+                                          fill_value=(state[0], state[-1]))
         self.currentStepSize = 1.0 / self.currentDataset["simulation"][
             "measure rate"]
         self.currentStartTime = self.currentDataset["simulation"]["start time"]
@@ -1366,9 +1375,10 @@ class SimulationGui(QMainWindow):
         self._update_time_cursors()
 
         # update state of rendering
-        if self.visualizer is not None and self.interpolator is not None:
-            state = self.interpolator(self.playbackTime)
-            self.visualizer.update_scene(state)
+        if self.visualizer is not None and self.stateInterpolator is not None:
+            inp = self.inputInterpolator(self.playbackTime)
+            state = self.stateInterpolator(self.playbackTime)
+            self.visualizer.update_scene(state, inp)
             if isinstance(self.visualizer, MplVisualizer):
                 pass
             elif isinstance(self.visualizer, VtkVisualizer):

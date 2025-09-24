@@ -275,7 +275,7 @@ class Solver(SimulationModule):
         assert self.tick_divider == 1
 
     def calc_output(self, input_vector):
-        self.set_input(input_vector["model_input"])
+        self.set_input(input_vector["Model_Input"])
         output = self.next_output
 
         self.next_output = self.integrate(t=None)
@@ -409,7 +409,7 @@ class Observer(SimulationModule):
         SimulationModule.__init__(self, settings)
 
     def calc_output(self, input_vector):
-        model_input = input_vector.get("model_input", None)
+        model_input = input_vector.get("Model_Input", None)
         if "ObserverMixer" in input_vector:
             model_output = input_vector["ObserverMixer"]
         elif "Model_Output" in input_vector:
