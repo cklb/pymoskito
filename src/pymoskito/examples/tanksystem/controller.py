@@ -144,18 +144,18 @@ class CppStateController(pm.CppBase, pm.Controller):
     def calc_lin_sys(self):
         x20 = 0.15
 
-        K, AT, Aout1, Aout2, g, x1, x2, uA = sp.symbols('K A_T A_out1 A_out2 g x_1 x_2 u_A')
+        K, AT1, AT2, Aout1, Aout2, g, x1, x2, uA = sp.symbols('K A_T1 A_T2 A_out1 A_out2 g x_1 x_2 u_A')
 
         # equilibrium
-        dx1 = K / AT * uA - Aout1 / AT * sp.sqrt(2 * g * (x1 - x2))
-        dx2 = Aout1 / AT * sp.sqrt(2 * g * (x1 - x2)) - Aout2 / AT * sp.sqrt(2 * g * x2)
+        dx1 = K / AT1 * uA - Aout1 / AT2 * sp.sqrt(2 * g * (x1 - x2))
+        dx2 = Aout1 / AT1 * sp.sqrt(2 * g * (x1 - x2)) - Aout2 / AT2 * sp.sqrt(2 * g * x2)
 
-        x0 = solve([dx1, dx2], [x1, uA], exclude=[K, AT, Aout1, Aout1, x2])[0]
+        x0 = solve([dx1, dx2], [x1, uA], exclude=[K, AT1, AT2, Aout1, Aout1, x2])[0]
 
-        x10 = x0[0].subs([(K, st.K), (AT, st.AT), (Aout1, st.AS1), (Aout2, st.AS2), (g, st.g), (x2, x20)])
-        uA0 = x0[1].subs([(K, st.K), (AT, st.AT), (Aout1, st.AS1), (Aout2, st.AS2), (g, st.g), (x2, x20)])
+        x10 = x0[0].subs([(K, st.K), (AT1, st.AT1), (AT2, st.AT2), (Aout1, st.AS1), (Aout2, st.AS2), (g, st.g), (x2, x20)])
+        uA0 = x0[1].subs([(K, st.K), (AT1, st.AT1), (AT2, st.AT2), (Aout1, st.AS1), (Aout2, st.AS2), (g, st.g), (x2, x20)])
 
-        subs_list = [(K, st.K), (AT, st.AT), (Aout1, st.AS1), (Aout2, st.AS2), (g, st.g), (x2, x20), (x1, x10),
+        subs_list = [(K, st.K), (AT1, st.AT1), (AT2, st.AT2), (Aout1, st.AS1), (Aout2, st.AS2), (g, st.g), (x2, x20), (x1, x10),
                     (uA, uA0)]
         A = sp.Matrix([[dx1], [dx2]]).jacobian(sp.Matrix([[x1], [x2]])).subs(subs_list)
         B = sp.Matrix([[dx1], [dx2]]).jacobian(sp.Matrix([uA])).subs(subs_list)
