@@ -32,9 +32,6 @@ class BallInTubeModel(pm.Model):
         }})
         pm.Model.__init__(self, settings)
 
-        # events
-        self.events = None
-
         # shortcuts for readability
         self.d_B = self._settings['d_B']
         self.d_R = self._settings['d_R']
@@ -78,14 +75,6 @@ class BallInTubeModel(pm.Model):
 
         return np.array([dx1, dx2, dx3, dx4])
 
-    def check_consistency(self, x):
-        """
-        Checks if the model rules are violated
-        :param x: state
-        """
-        if x[2] > (self._settings['tube_length']):  # + self._settings['tube_length']*0.2):
-            raise pm.ModelException('Ball flew out of the tube')
-
     def calc_output(self, input_vector):
         """
         return ball position as output
@@ -121,7 +110,8 @@ class BallInTubeSpringModel(pm.Model):
         pm.Model.__init__(self, settings)
 
         # register events
-        self.events = [self.ball_event_lower, self.ball_event_upper]
+        self.register_event(self.ball_event_lower)
+        self.register_event(self.ball_event_upper)
 
         # shortcuts for readability
         self.d_B = self._settings['d_B']
@@ -182,14 +172,6 @@ class BallInTubeSpringModel(pm.Model):
 
     def ball_event_upper(self, t, x):
         return x[2] + self.d_B - self.tube_length
-
-    def check_consistency(self, x):
-        """
-        Checks if the model rules are violated
-        :param x: state
-        """
-        if x[2] > 1.2 * self.tube_length:
-            raise pm.ModelException('Ball flew out of the tube')
 
     def calc_output(self, input_vector):
         """

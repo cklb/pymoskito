@@ -147,16 +147,12 @@ class ODEInt(Solver):
 
     def _eval_events(self, t, x):
         """ Evaluation helper for the event function """
-        func = self._model.events
-        if func is None:
-            return np.array([0])
-        elif callable(func):
-            return np.array([func(t, x)])
-        elif isinstance(func, list):
-            return np.array([f(t, x) for f in func])
-        else:
-            raise TypeError("'func' has to be either None, callable or a list of callables")
-
+        # call all events
+        r = np.array([f(t, x) for f in self._model.events],
+                     dtype=float)
+        # an actual zero is counted as positive
+        r[r == 0] = np.finfo(float).eps
+        return r
 
     @property
     def t(self):
@@ -177,11 +173,12 @@ class ODEInt(Solver):
 
     def integrate(self, *, t=None):
         """
-        Integrate until target step is reached.
+        Solve the system equations for one step
 
-        :param t: target time
-        :param dt: target time step
-        :return: system state at target time
+        Args:
+            t (float): Target time to stop at, if None use step size from settings
+        Returns:
+            system state at target time
         """
         cur_time = self.t
         cur_state = self._cur_state
@@ -191,33 +188,44 @@ class ODEInt(Solver):
         else:
             new_time = t
         new_state = self._solver.integrate(new_time)
+        if not self._solver.successful():
+            raise SolverException("Integration failed.\n"
+                                  "This can happen due to several reasons, here are some pointers:\n"
+                                  "- First of all: Check the log for solver warnings\n"
+                                  "- Model: Check for errors and inconsistencies in the model equations\n"
+                                  "- For switching model equations: Try to provide event functions to help the solver\n"
+                                  "- Controller/Feedforward: Check for unreasonably large inputs\n"
+                                  "- Solver: Loosen the precision requirements by increasing aTol and/or rTol"
+                                  )
 
-        # check for events in rhs
+        # evaluate custom event functions for new state
         new_events = self._eval_events(new_time, new_state)
-        e_idx = np.where(self._cur_events * new_events < 0)[0]
+        # check if any events (sign changes) occurred
+        e_idxs = np.where(self._cur_events * new_events < 0)[0]
 
-        if (not self._solver.successful()) and (len(e_idx) == 0):
-            raise SolverException("Integration has not been successful.")
-
+        # run bisection to get exact time for each event
         e_times = []
-        if len(e_idx) > 0:
-            # run bisection to get exact time for each event
-            for e in e_idx:
-                self._logger.debug(f"Event with index {e} detected between "
-                                   f"{cur_time} and {new_time}")
-                try:
-                    e_t = bisect(self._b_func, a=cur_time, b=new_time,
-                                    args=(cur_time, cur_state, e))
-                except ValueError:
-                    self._logger.debug(f"Bisection yielded no result")
-                    continue
-
-                self._logger.debug(f"Bisection yielded event time {e_t}")
-                e_times.append(e_t)
+        for e_idx in e_idxs:
+            self._logger.debug(f"Event with index {e_idx} detected between "
+                               f"{cur_time} and {self.t} seconds")
+            try:
+                e_t = bisect(self._b_func, a=cur_time, b=self.t,
+                                args=(cur_time, cur_state, e_idx))
+            except SolverException as err:
+                e_t = self.t
+            except ValueError as err:
+                    if err.args[0] == 'f(a) and f(b) must have different signs':
+                        self._logger.debug("Event could not be reproduced, ignoring")
+                        continue
+                    else:
+                        raise SolverException(f"Bisection failed with error: '{err}'")
+            self._logger.debug(f"Bisection yielded event time {e_t}")
+            e_times.append(e_t)
 
         if len(e_times) > 0:
             # take the smallest time stamp and continue
-            e_time = min(e_times)
+            e_idx = np.argmin(e_times)
+            e_time = e_times[e_idx]
 
             self._logger.debug(f"Restarting at original t={cur_time} from state {cur_state} "
                                f"and solving up to event at t={e_time}")
@@ -226,6 +234,8 @@ class ODEInt(Solver):
             # integrate up to event time
             temp_state = self._solver.integrate(e_time)
             temp_events = self._eval_events(e_time, temp_state)
+            # make sure we are on the right side of the change
+            temp_events[e_idx] = np.copysign(temp_events[e_idx], new_events[e_idx])
 
             self._logger.debug(f"Restarting at event t={e_time} from state {temp_state} "
                                f"and solving up to desired t={new_time}")
@@ -249,6 +259,8 @@ class ODEInt(Solver):
         """
         self._solver.set_initial_value(x_start, t_start)
         x_end = self._solver.integrate(t_end)
+        if not self._solver.successful():
+            raise SolverException("Solver failed during bisection")
         e_end = self._eval_events(t_end, x_end)
         return e_end[e_idx]
 

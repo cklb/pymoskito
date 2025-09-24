@@ -28,8 +28,10 @@ class TwoTankSystem(pm.Model):
         pm.Model.__init__(self, settings)
 
         # register events
-        self.events = [self.event_level_1_low, self.event_level_2_low,
-                       self.event_level_1_high, self.event_level_2_high]
+        self.register_event(self.event_level_1_low)
+        self.register_event(self.event_level_2_low)
+        self.register_event(self.event_level_1_high)
+        self.register_event(self.event_level_2_high)
 
     def state_function(self, t, x, args):
         """
@@ -54,19 +56,16 @@ class TwoTankSystem(pm.Model):
         a2 = AS2 * np.sqrt(2 * g / (AT2 ** 2 - AS2 ** 2))
 
         dx = np.zeros(2)
-        if x1 >= 0:
-            # tank not empty, count outflow
-            dx[0] -= a1 * np.sqrt(x1 + hV)
         if x1 < hT:
-            # tank not full, count inflow
+            # tank 1 not full, count inflow
             dx[0] += K / AT1 * uA
-
+        if x1 >= 0 and x2 < hT:
+            # tank 1 not empty and tank 2 not full, count out- and inflow
+            dx[0] -= a1 * np.sqrt(x1 + hV)
+            dx[1] += a1 * np.sqrt(x1 + hV)
         if x2 >= 0:
             # tank not empty, count outflow
             dx[1] -= a2 * np.sqrt(x2 + hV)
-        if x2 < hT:
-            # tank not full, count inflow
-            dx[1] += a1 * np.sqrt(x1 + hV)
 
         return dx
 

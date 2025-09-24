@@ -7,6 +7,7 @@ by subclassing `SimulationModule`.
 import logging
 from abc import ABCMeta, abstractmethod
 from collections import OrderedDict
+from collections.abc import Callable
 from copy import copy
 
 from PyQt5.QtCore import QObject
@@ -164,8 +165,26 @@ class Model(SimulationModule):
         assert ("initial state" in settings)
         assert len(settings["initial state"]) == settings["state_count"]
         assert self.tick_divider == 1
+        self._events = []
 
-        self.events = self.example_event
+    def register_event(self, event):
+        """
+        Register switching events with the model
+
+        These events do help the solver if the system equations
+        are discontinuous.
+        For an example event function, see `event_example`.
+        """
+        if not hasattr(self, "_events"):
+            raise ModelException("Custom events for the Model can only be registered AFTER "
+                                 "the base class init() has been called.")
+        if not isinstance(event, Callable):
+            raise TypeError("A custom event must be callable, see Model.empty_event for an example.")
+        self._events.append(event)
+
+    @property
+    def events(self):
+        return self._events
 
     @property
     def initial_state(self):
@@ -187,7 +206,7 @@ class Model(SimulationModule):
         """
         pass
 
-    def example_event(self, t, x):
+    def event_example(self, t, x):
         """
         This must be a continuous function of time and state.
 
@@ -203,7 +222,7 @@ class Model(SimulationModule):
             Float
                 
         """
-        return 0
+        return x[0]
 
     def check_consistency(self, x):
         """
