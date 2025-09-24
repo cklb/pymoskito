@@ -61,20 +61,32 @@ from .tools import (
 __all__ = ["SimulationGui", "run"]
 
 
-def run(regimes=None):
-    """ Helper function to launch the PyMoskito GUI
+def run(regimes=None, show=True, execute=False, exit_after=False):
+    """
+    Helper function to launch the PyMoskito GUI
+
+    Args:
+        regimes (String): Path to a regime file to load
+        show (bool): If true, show the GUI otherwise operate in headless mode
+        execute (bool): If true, simulate all loaded regimes
+        exit_after (bool): If true, exit after all regimes are simulated
     """
     app = QApplication([])
     prog = SimulationGui()
+    if show:
+        prog.show()
     if regimes is not None:
         prog.load_regimes_from_file(regimes)
-    prog.show()
+    if exit_after:
+        prog.actExitOnBatchCompletion.setChecked(True)
+    if execute:
+        prog.start_regime_execution()
     app.exec_()
 
 
 class SimulationGui(QMainWindow):
     """
-    class for the graphical user interface
+    The graphical user interface of PyMoskito
     """
     # TODO enable closing plot docks by right-clicking their name
     TABLEAU_COLORS = (
@@ -965,7 +977,7 @@ class SimulationGui(QMainWindow):
         """
         Save the current simulation results.
 
-        If *fie_name* is given, the result will be saved to the specified
+        If *file_path* is given, the result will be saved to the specified
         location, making automated exporting easier.
 
         Args:
@@ -1228,9 +1240,11 @@ class SimulationGui(QMainWindow):
 
         self.stop_animation()
 
-        if data:
+        self.currentDataset = data
+
+        # check if at least one time step of the simulation was computed
+        if data and "results" in data and "Solver" in data["results"]:
             # import new data
-            self.currentDataset = data
             self._read_results()
             self._update_data_list()
             self._update_plots()
