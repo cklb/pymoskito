@@ -4,6 +4,30 @@
 History
 =======
 
+0.5.0 (2025-09-25)
+------------------
+
+* Fix problem with disturbance module if no sensor is present
+* Fix problems with generic PIDController
+* Fix code that was missed in refactoring
+* Fix remaining issues with event handling
+* Fix CI script
+* Add more information for binding build
+* Add support for python 3.13
+* Move computation of step size into the interactor
+* Adapt the tank example to make use of the tick divider
+* Add explicit requirement for pyqt5-qt5 for windows install
+* Improve documentation and handling of the measure rate
+* Improve handling of simulator state updates
+* Improve error messages for model input configuration
+* Adapt new package structure with extra src dir
+* Improve output of the example test runner
+* Make signal choice in AdditiveMixer explicit
+* Improve error messages for bindings
+* Add quality of live improvements for the GUI
+* Add model input as parameter for the visualizer
+* Add event handling capabilities to Solver
+
 0.4.1 (2024-10-21)
 ------------------
 

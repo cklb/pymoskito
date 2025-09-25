@@ -97,7 +97,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'PyMoskito'
-copyright = u'2018-2024, Stefan Ecklebe'
+copyright = u'2018-2025, The PyMoskito Maintainers'
 
 # The version info for the project you're documenting, acts as replacement
 # for |version| and |release|, also used in various other places throughout
@@ -259,7 +259,7 @@ latex_elements = {
 latex_documents = [
     ('index', 'pymoskito.tex',
      u'PyMoskito Documentation',
-     u'Stefan Ecklebe', 'manual'),
+     u'The PyMoskito Maintainers', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at
@@ -307,7 +307,7 @@ texinfo_documents = [
      u'PyMoskito Documentation',
      u'Stefan Ecklebe',
      'pymoskito',
-     'One line description of project.',
+     'A python based simulation toolbox.',
      'Miscellaneous'),
 ]
 
