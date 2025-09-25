@@ -32,4 +32,5 @@ jobs:
         python -m pip install ".[test, cpp]";
     - name: Test with unittest
       run: |
+        cd src/pymoskito
         xvfb-run python -u -m unittest -v -b
