@@ -4,19 +4,21 @@ import pickle
 import warnings
 
 from scipy.integrate import ode
+from scipy.interpolate import interp1d
 from scipy.optimize import bisect
 import sympy as sp
 import numpy as np
 
 from .simulation_modules import (
-    Model, Solver, SolverException, Trajectory, TrajectoryException, Controller,
+    Model, Solver, SolverException,
+    Trajectory, TrajectoryException, Controller,
     Feedforward, SignalMixer, ModelMixer, ObserverMixer, Limiter, Sensor,
     Disturbance
 )
 from .controltools import calc_prefilter, place_siso
 
 __all__ = ["LinearStateSpaceModel", "ODEInt", "ModelInputLimiter",
-           "Setpoint", "HarmonicTrajectory", "SmoothTransition",
+           "Setpoint", "HarmonicTrajectory", "SmoothTransition", "InterpolatorTrajectory",
            "Feedthrough",
            "PIDController", "LinearStateSpaceController",
            "DeadTimeSensor", "GaussianNoise",
@@ -398,6 +400,43 @@ class Setpoint(Trajectory):
 
     def _desired_values(self, t):
         return self.yd
+
+
+class InterpolatorTrajectory(Trajectory):
+    """
+    Generic trajectory that interpolates between the given values
+
+    This class basically is a wrapper for scipy's `interp1d`.
+
+    Note:
+        Values outside the given time domain will not be extrapolated but held
+        at their last values.
+
+    Parameters:
+        kind (string): The type of interpolation to use, possible values are
+        'linear', 'nearest', 'nearest-up', 'zero', 'slinear', 'quadratic', 'cubic', 'previous', or 'next'.
+        x_data (array): Time steps to work on
+        y_data (array): Corresponding values
+    """
+    public_settings = OrderedDict([
+        ("kind", "zero"),
+        ("x_data", [0, 1]),
+        ("y_data", [0, 10]),
+    ])
+
+    def __init__(self, settings):
+        super().__init__(settings)
+        x_data = settings["x_data"]
+        y_data = settings["y_data"]
+        self._interp = interp1d(x=x_data,
+                                y=y_data,
+                                kind=settings["kind"],
+                                bounds_error=False,
+                                fill_value=(y_data[0], y_data[-1]),
+                                )
+
+    def _desired_values(self, t):
+        return self._interp(t)
 
 
 class Feedthrough(Feedforward):
