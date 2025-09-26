@@ -226,12 +226,14 @@ class CppBase:
 
     def build_config(self):
         # generate config
+        use_shell = False
         if os.name == 'nt' and 'GCC' not in sys.version:
             cmd = ['cmake', '-A', 'x64', '-S', '.', '-B', BUILD_DIR]
+            use_shell = True
         else:
             cmd = ['cmake',  # '-DCMAKE_BUILD_TYPE=Debug',
                    '-S', '.', '-B', BUILD_DIR]
-        result = subprocess.run(cmd, cwd=self.module_path, capture_output=True)
+        result = subprocess.run(cmd, cwd=self.module_path, capture_output=True, shell=use_shell)
 
         if result.returncode != 0:
             self._logger.error(f"Generation of binding config failed with {result.stderr}")
@@ -239,11 +241,13 @@ class CppBase:
 
     def build_binding(self):
         # build
+        use_shell = False
         if os.name == 'nt' and 'GCC' not in sys.version:
             cmd = ['cmake', '--build', BUILD_DIR, '--config', 'Release', '--target', 'INSTALL']
+            use_shell = True
         else:
             cmd = ['cmake', '--build', BUILD_DIR]
-        result = subprocess.run(cmd, cwd=self.module_path, capture_output=True)
+        result = subprocess.run(cmd, cwd=self.module_path, capture_output=True, shell=use_shell)
 
         if result.returncode != 0:
             self._logger.error(f"Build process returned with:\n{result.stderr.decode('UTF-8')}")
