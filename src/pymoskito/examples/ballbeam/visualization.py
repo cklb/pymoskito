@@ -80,7 +80,7 @@ try:
             self.ren.SetBackground2(38 / 255, 139 / 255, 210 / 255)
 
             # apply some sane initial state
-            self.update_scene(np.array([0, 0, 0, 0]))
+            self.update_scene(np.array([0, 0, 0, 0]), 0)
 
             # get everybody into the frame
             self.ren.ResetCamera()
