@@ -54,4 +54,9 @@ docs = [
     "sphinx-rtd-dark-mode",
     "sphinxcontrib-tikz>=0.4.7",
 ]
-test = []
+
+[dependency-groups]
+dev = [
+    "pymoskito[cpp,docs]",
+    "black",
+]
