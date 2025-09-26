@@ -26,8 +26,8 @@ d_B = 60.0e-3               # m - diameter of the ball
 m = 2.8e-3                  # kg - mass of the ball
 g = 9.81                    # m/s^2 - gravity
 
-K = 10000                   # N/m - stiffness of the spring
-D = 1                       # Ns/m - damping ratio of the spring
+K = 1e3                     # N/m - stiffness of the spring
+D = 1e1                     # Ns/m - damping ratio of the spring
 
 A_B = np.pi*d_B**2/4        # m**2 - cross sectional area of the ball
 A_R = np.pi*d_R**2/4        # m**2 - cross sectional area of the tube
