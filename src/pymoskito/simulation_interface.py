@@ -457,10 +457,11 @@ class SimulatorInteractor(QObject):
                         break
                 else:
                     if not ignore_is_public:
+                        opts = "\n".join([f"- {k}" for k in sub_module_cls.public_settings.keys()])
                         self._logger.error(
-                            "_applyRegime(): No public setting called '{0}'"
-                            "available for Module: '{1}'".format(key,
-                                                                 module_type))
+                            "_applyRegime(): No public setting called '{0}' "
+                            "exists for module '{1}', available options are:\n{2}"
+                            "".format(key, module_type, opts))
                         return False
 
         return True
