@@ -51,7 +51,7 @@ cpp = [
 docs = [
     "Sphinx>=1.4.9",
     "docutils",
-    "sphinx-rtd-theme>=0.1.9",
+    "sphinx-rtd-dark-mode",
     "sphinxcontrib-tikz>=0.4.7",
 ]
 test = []
