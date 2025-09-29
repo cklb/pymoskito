@@ -8,6 +8,8 @@ from . import settings as st
 
 class MplTankVisualizer(pm.MplVisualizer):
 
+    water_color = "#00008b"
+
     def __init__(self, q_widget, q_layout):
         pm.MplVisualizer.__init__(self, q_widget, q_layout)
 
@@ -32,7 +34,7 @@ class MplTankVisualizer(pm.MplVisualizer):
                                            height=0,
                                            linewidth=0.1,
                                            fill=True,
-                                           color='blue',
+                                           color=self.water_color,
                                            zorder=1)
         self.axes.add_patch(self.tube1)
 
@@ -49,7 +51,7 @@ class MplTankVisualizer(pm.MplVisualizer):
                                            height=0,
                                            linewidth=0.1,
                                            fill=True,
-                                           color='blue',
+                                           color=self.water_color,
                                            zorder=1)
         self.axes.add_patch(self.tube2)
 
@@ -72,7 +74,7 @@ class MplTankVisualizer(pm.MplVisualizer):
                                            height=0.1 * self.hT,
                                            linewidth=2,
                                            fill=True,
-                                           color='white',
+                                           color=self.bg,
                                            zorder=3)
         self.axes.add_patch(self.conT1)
 
@@ -95,7 +97,7 @@ class MplTankVisualizer(pm.MplVisualizer):
                                              height=0.1 * self.hT,
                                              linewidth=2,
                                              fill=True,
-                                             color='white',
+                                             color=self.bg,
                                              zorder=3)
         self.axes.add_patch(self.conT1T2)
 
@@ -118,7 +120,7 @@ class MplTankVisualizer(pm.MplVisualizer):
                                            height=0.1 * self.hT,
                                            linewidth=2,
                                            fill=True,
-                                           color='white',
+                                           color=self.bg,
                                            zorder=3)
         self.axes.add_patch(self.conT2)
 
@@ -126,7 +128,7 @@ class MplTankVisualizer(pm.MplVisualizer):
                                         radius=0.1 * self.hT,
                                         linewidth=1,
                                         edgecolor='black',
-                                        facecolor='white',
+                                        facecolor=self.bg,
                                         zorder=10)
         self.axes.add_patch(pump_house)
 
@@ -136,7 +138,7 @@ class MplTankVisualizer(pm.MplVisualizer):
                                    linewidth=1,
                                    closed=False,
                                    edgecolor='black',
-                                   facecolor='white',
+                                   facecolor=self.bg,
                                    zorder=10)
         self.axes.add_patch(pump)
 
@@ -144,7 +146,7 @@ class MplTankVisualizer(pm.MplVisualizer):
                                              width=1.5 * self.rT,
                                              height=0.2 * self.hT,
                                              fill=True,
-                                             color='white',
+                                             color=self.bg,
                                              zorder=10)
         self.axes.add_patch(ventil_house)
 
@@ -154,7 +156,7 @@ class MplTankVisualizer(pm.MplVisualizer):
                                       [3.25 * self.rT, 0.05 * self.hT + 0.2 * self.hT]],
                                      linewidth=1,
                                      edgecolor='black',
-                                     facecolor='white',
+                                     facecolor=self.bg,
                                      zorder=10)
         self.axes.add_patch(ventil)
 
@@ -163,28 +165,28 @@ class MplTankVisualizer(pm.MplVisualizer):
 
     def update_scene(self, x, u):
         if u > 0:
-            self.conT1.set_color('blue')
+            self.conT1.set_color(self.water_color)
         else:
-            self.conT1.set_color('white')
+            self.conT1.set_color(self.bg)
 
         if 0 < x[0] < st.hT:
             self.tube1.set_height(x[0] * self.hT / st.hT)
         elif x[0] >= st.hT:
             self.tube1.set_height(self.hT)
         else:
-            self.conT1.set_color('white')
+            self.conT1.set_color(self.bg)
             self.tube1.set_height(0)
 
         if 0 < x[1] < st.hT:
-            self.conT1T2.set_color('blue')
-            self.conT2.set_color('blue')
+            self.conT1T2.set_color(self.water_color)
+            self.conT2.set_color(self.water_color)
             self.tube2.set_height(x[1] * self.hT / st.hT)
         elif x[1] >= st.hT:
-            self.conT1.set_color('blue')
+            self.conT1.set_color(self.water_color)
             self.tube1.set_height(self.hT)
         else:
-            self.conT1T2.set_color('white')
-            self.conT2.set_color('white')
+            self.conT1T2.set_color(self.bg)
+            self.conT2.set_color(self.bg)
             self.tube2.set_height(0)
 
         self.canvas.draw()

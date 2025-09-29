@@ -145,18 +145,18 @@ class MplVisualizer(Visualizer):
         self.update_theme()
 
     def update_theme(self):
-        fg = QGuiApplication.palette().text().color().getRgbF()
-        bg = QGuiApplication.palette().window().color().getRgbF()
+        self.fg = QGuiApplication.palette().text().color().getRgbF()
+        self.bg = QGuiApplication.palette().window().color().getRgbF()
 
-        self.fig.set_facecolor(bg)
-        self.fig.set_edgecolor(fg)
+        self.fig.set_facecolor(self.bg)
+        self.fig.set_edgecolor(self.fg)
 
-        self.axes.set_facecolor(bg)
-        self.axes.set_facecolor(bg)
+        self.axes.set_facecolor(self.bg)
+        self.axes.set_facecolor(self.bg)
         for s in self.axes.spines.values():
-            s.set_color(fg)
-        self.axes.tick_params(color=fg, labelcolor=fg, which="both")
-        self.axes.xaxis.label.set_color(fg)
-        self.axes.yaxis.label.set_color(fg)
+            s.set_color(self.fg)
+        self.axes.tick_params(color=self.fg, labelcolor=self.fg, which="both")
+        self.axes.xaxis.label.set_color(self.fg)
+        self.axes.yaxis.label.set_color(self.fg)
 
         self.canvas.draw()
