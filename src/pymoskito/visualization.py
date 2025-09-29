@@ -5,6 +5,7 @@ from PyQt5.QtGui import QGuiApplication
 
 from matplotlib.backends.backend_qt5agg import (
     NavigationToolbar2QT, FigureCanvasQTAgg as FigureCanvas)
+from matplotlib import pyplot as plt
 from matplotlib.figure import Figure
 
 __all__ = ["VtkVisualizer", "MplVisualizer"]
@@ -135,15 +136,27 @@ class MplVisualizer(Visualizer):
         self.qWidget = q_widget
         self.qLayout = q_layout
         self.dpi = 100
-        bg = QGuiApplication.palette().window().color().getRgbF()
-        self.fig = Figure((5.0, 4.0), facecolor=bg, dpi=self.dpi)
+        self.fig = Figure((5.0, 4.0), dpi=self.dpi)
         self.canvas = FigureCanvas(self.fig)
         self.canvas.setParent(self.qWidget)
         self.axes = self.fig.add_subplot(111)
         self.qLayout.addWidget(self.canvas)
         self.qWidget.setLayout(self.qLayout)
+        self.update_theme()
 
     def update_theme(self):
+        fg = QGuiApplication.palette().text().color().getRgbF()
         bg = QGuiApplication.instance().palette().window().color().getRgbF()
+
         self.fig.set_facecolor(bg)
+        self.fig.set_edgecolor(fg)
+
+        self.axes.set_facecolor(bg)
+        self.axes.set_facecolor(bg)
+        for s in self.axes.spines.values():
+            s.set_color(fg)
+        self.axes.tick_params(color=fg, labelcolor=fg, which="both")
+        self.axes.xaxis.label.set_color(fg)
+        self.axes.yaxis.label.set_color(fg)
+
         self.canvas.draw()
