@@ -112,8 +112,8 @@ class SimulationGui(QMainWindow):
         # constructor of the base class
         QMainWindow.__init__(self)
 
-        QCoreApplication.setOrganizationName("RST")
-        QCoreApplication.setOrganizationDomain("https://tu-dresden.de/rst")
+        QCoreApplication.setOrganizationName("PyMoskito")
+        QCoreApplication.setOrganizationDomain("https://github.com/cklb/pymoskito")
         QCoreApplication.setApplicationVersion(metadata.version("pymoskito"))
         QCoreApplication.setApplicationName(globals()["__package__"])
 
