@@ -172,8 +172,8 @@ class SimulationGui(QMainWindow):
         self.area.addDock(self.logDock, "bottom", self.dataDock)
         self.area.addDock(self.regimeDock, "left", self.lastSimDock)
         self.non_plotting_docks = list(self.area.findAll()[1].keys())
-
         self.standardDockState = self.area.saveState()
+        self.area.restoreState(self._settings.value("view/dock_state"), missing="ignore")
 
         # add widgets to the docks
         self.propertyDock.addWidget(self.targetView)
@@ -849,6 +849,7 @@ class SimulationGui(QMainWindow):
         self._add_setting("control/exit_on_batch_completion", "False")
 
         # view management
+        self._add_setting("view/dock_state", "")
         self._add_setting("view/show_coordinates", "True")
 
         # log management
@@ -1752,6 +1753,7 @@ class SimulationGui(QMainWindow):
     def closeEvent(self, QCloseEvent):
         self._logger.info("Close Event received, shutting down.")
         logging.getLogger().removeHandler(self.textLogger)
+        self._settings.setValue("view/dock_state", self.area.saveState())
         super().closeEvent(QCloseEvent)
 
     def loadStandardDockState(self):
