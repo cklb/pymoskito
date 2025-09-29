@@ -1801,4 +1801,5 @@ class SimulationGui(QMainWindow):
             self._settings.setValue("log_colors/NOTSET", "#00000")
 
         self.visualizer.update_theme()
-        self.area.update()
+        for dock in self.area.docks.values():
+            dock.updateStyle()
