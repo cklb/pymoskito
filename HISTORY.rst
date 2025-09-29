@@ -27,6 +27,10 @@ History
 * Add quality of live improvements for the GUI
 * Add model input as parameter for the visualizer
 * Add event handling capabilities to Solver
+* Add a dark mode for the GUI
+* Remember the last state of the dock area between runs
+* Hide the nagging plot title input dialog behind a config option
+* Fix problem with binding build under windows
 
 0.4.1 (2024-10-21)
 ------------------
