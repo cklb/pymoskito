@@ -146,7 +146,7 @@ class MplVisualizer(Visualizer):
 
     def update_theme(self):
         fg = QGuiApplication.palette().text().color().getRgbF()
-        bg = QGuiApplication.instance().palette().window().color().getRgbF()
+        bg = QGuiApplication.palette().window().color().getRgbF()
 
         self.fig.set_facecolor(bg)
         self.fig.set_edgecolor(fg)
