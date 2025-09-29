@@ -523,9 +523,19 @@ class SimulationGui(QMainWindow):
         plotMenu.addAction(self.actAddDataPointToPlot)
         plotMenu.addAction(self.actExportDataPoint)
         plotMenu.addAction(self.actRemoveDataPointFromPlot)
+        plotMenu.addSeparator()
         plotMenu.addAction(self.actCreatePlot)
         plotMenu.addAction(self.actShowPlot)
         plotMenu.addAction(self.actDeletePlot)
+        plotMenu.addSeparator()
+        self.actAskPlotTitle = QAction("Ask for plot title", self)
+        self.actAskPlotTitle.setCheckable(True)
+        self.actAskPlotTitle.setChecked(
+            self._settings.value("plot/ask_for_plot_title", type=bool)
+        )
+        plotMenu.addAction(self.actAskPlotTitle)
+        self.actAskPlotTitle.toggled.connect(
+            lambda val: self._settings.setValue("plot/ask_for_plot_title", val))
 
         helpMenu = self.menuBar().addMenu("&Help")
         helpMenu.addAction("&Online Documentation", self.show_online_docs)
