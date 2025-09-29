@@ -1,0 +1,8 @@
+[Icon Theme]
+Name=dark
+PanelDefault=25
+PanelSizes=25
+
+[icons]
+Size=25
+Type=Fixed

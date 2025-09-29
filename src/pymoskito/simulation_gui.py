@@ -143,15 +143,19 @@ class SimulationGui(QMainWindow):
         # sim results viewer
         self.result_view = QTreeView()
 
+        # icons
+        QIcon.setThemeSearchPaths(QIcon.themeSearchPaths() + [get_resource(".")])
+        self.setTheme()
+        icon_size = QSize(25, 25)
+
         # the docking area allows to rearrange the user interface at runtime
         self.area = pg.dockarea.DockArea()
 
         # Window properties
-        icon_size = QSize(25, 25)
         self.setCentralWidget(self.area)
         self.resize(1000, 700)
         self.setWindowTitle("PyMoskito")
-        res_path = get_resource("mosquito.png")
+        res_path = get_resource("mosquito")
         icon = QIcon(res_path)
         self.setWindowIcon(icon)
 
@@ -199,14 +203,14 @@ class SimulationGui(QMainWindow):
 
         self.actSave = QAction(self)
         self.actSave.setText('Save Results As')
-        self.actSave.setIcon(QIcon(get_resource("save.png")))
+        self.actSave.setIcon(QIcon.fromTheme("save"))
         self.actSave.setDisabled(True)
         self.actSave.setShortcut(QKeySequence.Save)
         self.actSave.triggered.connect(self.export_simulation_data)
 
         self.actLoadRegimes = QAction(self)
         self.actLoadRegimes.setText("Load Regimes from File")
-        self.actLoadRegimes.setIcon(QIcon(get_resource("load.png")))
+        self.actLoadRegimes.setIcon(QIcon.fromTheme("load"))
         self.actLoadRegimes.setDisabled(False)
         self.actLoadRegimes.setShortcut(QKeySequence.Open)
         self.actLoadRegimes.triggered.connect(self.load_regime_dialog)
@@ -258,7 +262,7 @@ class SimulationGui(QMainWindow):
 
         self.actAddDataPointToPlot = QAction(self)
         self.actAddDataPointToPlot.setText("&Add selected data to plot")
-        self.actAddDataPointToPlot.setIcon(QIcon(get_resource("add.png")))
+        self.actAddDataPointToPlot.setIcon(QIcon.fromTheme("add"))
         self.actAddDataPointToPlot.setToolTip(
             "Add the selected data set from the left to the selected plot "
             "on the right.")
@@ -268,7 +272,7 @@ class SimulationGui(QMainWindow):
 
         self.actExportDataPoint = QAction(self)
         self.actExportDataPoint.setText("&Export selected data")
-        self.actExportDataPoint.setIcon(QIcon(get_resource("export.png")))
+        self.actExportDataPoint.setIcon(QIcon.fromTheme("export"))
         self.actExportDataPoint.setToolTip(
             "Export the selected data set from the left to a csv or png file."
         )
@@ -278,7 +282,7 @@ class SimulationGui(QMainWindow):
 
         self.actRemoveDataPointFromPlot = QAction(self)
         self.actRemoveDataPointFromPlot.setText("&Remove selected data from plot")
-        self.actRemoveDataPointFromPlot.setIcon(QIcon(get_resource("delete.png")))
+        self.actRemoveDataPointFromPlot.setIcon(QIcon.fromTheme("delete"))
         self.actRemoveDataPointFromPlot.setToolTip(
             "Remove the selected data set from the plot on the right."
         )
@@ -292,7 +296,7 @@ class SimulationGui(QMainWindow):
         self.dataPointManipulationLayout.addWidget(self.plotLabel)
 
         self.actCreatePlot = QAction(self)
-        self.actCreatePlot.setIcon(QIcon(get_resource("add.png")))
+        self.actCreatePlot.setIcon(QIcon.fromTheme("add"))
         self.actCreatePlot.setText("&Create a new plot")
         self.actCreatePlot.setToolTip("Create a new plot.")
         self.actCreatePlot.triggered.connect(self.add_plot_tree_item)
@@ -301,7 +305,7 @@ class SimulationGui(QMainWindow):
 
         self.actShowPlot = QAction(self)
         self.actShowPlot.setText("&Show the selected plot")
-        self.actShowPlot.setIcon(QIcon(get_resource("view.png")))
+        self.actShowPlot.setIcon(QIcon.fromTheme("view"))
         self.actShowPlot.setToolTip(
             "Show the selected plot (double-click on name)."
         )
@@ -311,7 +315,7 @@ class SimulationGui(QMainWindow):
 
         self.actDeletePlot = QAction(self)
         self.actDeletePlot.setText("&Delete selected plot")
-        self.actDeletePlot.setIcon(QIcon(get_resource("delete.png")))
+        self.actDeletePlot.setIcon(QIcon.fromTheme("delete"))
         self.actDeletePlot.setToolTip(
             "Delete the selected plot."
         )
@@ -336,13 +340,13 @@ class SimulationGui(QMainWindow):
         # actions for simulation control
         self.actSimulateCurrent = QAction(self)
         self.actSimulateCurrent.setText("&Simulate Current Regime")
-        self.actSimulateCurrent.setIcon(QIcon(get_resource("simulate.png")))
+        self.actSimulateCurrent.setIcon(QIcon.fromTheme("simulate"))
         self.actSimulateCurrent.setShortcut(QKeySequence("F5"))
         self.actSimulateCurrent.triggered.connect(self.start_simulation)
 
         self.actSimulateAll = QAction(self)
         self.actSimulateAll.setText("Simulate &All Regimes")
-        self.actSimulateAll.setIcon(QIcon(get_resource("execute_regimes.png")))
+        self.actSimulateAll.setIcon(QIcon.fromTheme("execute_regimes"))
         self.actSimulateAll.setShortcut(QKeySequence("F6"))
         self.actSimulateAll.setDisabled(True)
         self.actSimulateAll.triggered.connect(self.start_regime_execution)
@@ -358,26 +362,26 @@ class SimulationGui(QMainWindow):
 
         self.actPlayPause = QAction(self)
         self.actPlayPause.setText("Play Animation")
-        self.actPlayPause.setIcon(QIcon(get_resource("play.png")))
+        self.actPlayPause.setIcon(QIcon.fromTheme("play"))
         self.actPlayPause.setDisabled(True)
         self.actPlayPause.setShortcut(QKeySequence(Qt.Key_Space))
         self.actPlayPause.triggered.connect(self.start_animation)
 
         self.actStop = QAction(self)
         self.actStop.setText("Stop")
-        self.actStop.setIcon(QIcon(get_resource("stop.png")))
+        self.actStop.setIcon(QIcon.fromTheme("stop"))
         self.actStop.setDisabled(True)
         self.actStop.triggered.connect(self.stop_animation)
 
         self.actSlow = QAction(self)
         self.actSlow.setText("Slowest")
-        self.actSlow.setIcon(QIcon(get_resource("slow.png")))
+        self.actSlow.setIcon(QIcon.fromTheme("slow"))
         self.actSlow.setDisabled(False)
         self.actSlow.triggered.connect(self.set_slowest_playback_speed)
 
         self.actFast = QAction(self)
         self.actFast.setText("Fastest")
-        self.actFast.setIcon(QIcon(get_resource("fast.png")))
+        self.actFast.setIcon(QIcon.fromTheme("fast"))
         self.actFast.setDisabled(False)
         self.actFast.triggered.connect(self.set_fastest_playback_speed)
 
@@ -414,7 +418,7 @@ class SimulationGui(QMainWindow):
 
         self.actResetCamera = QAction(self)
         self.actResetCamera.setText("Reset Camera")
-        self.actResetCamera.setIcon(QIcon(get_resource("video_camera.png")))
+        self.actResetCamera.setIcon(QIcon.fromTheme("video_camera"))
         self.actResetCamera.setDisabled(True)
         self.actResetCamera.setEnabled(self.visualizer.can_reset_view)
         self.actResetCamera.triggered.connect(self.reset_camera_clicked)
@@ -422,7 +426,7 @@ class SimulationGui(QMainWindow):
         # postprocessing
         self.actPostprocessing = QAction(self)
         self.actPostprocessing.setText("Launch Postprocessor")
-        self.actPostprocessing.setIcon(QIcon(get_resource("processing.png")))
+        self.actPostprocessing.setIcon(QIcon.fromTheme("processing"))
         self.actPostprocessing.setDisabled(False)
         self.actPostprocessing.triggered.connect(self.postprocessing_clicked)
         self.actPostprocessing.setShortcut(QKeySequence("F7"))
@@ -431,10 +435,9 @@ class SimulationGui(QMainWindow):
         # theming
         self.actToggleTheme = QAction(self)
         self.actToggleTheme.setText("Toggle Theme")
-        self.actToggleTheme.setIcon(QIcon(get_resource("theme.png")))
+        self.actToggleTheme.setIcon(QIcon.fromTheme("theme"))
         self.actToggleTheme.setDisabled(False)
         self.actToggleTheme.triggered.connect(self.toggleTheme)
-        self.setPalette()
 
         # toolbar
         self.toolbarSim = QToolBar("Simulation")
@@ -912,7 +915,7 @@ class SimulationGui(QMainWindow):
             self.playbackTimeChanged.emit()
 
         self.actPlayPause.setText("Pause Animation")
-        self.actPlayPause.setIcon(QIcon(get_resource("pause.png")))
+        self.actPlayPause.setIcon(QIcon.fromTheme("pause"))
         self.actPlayPause.triggered.disconnect(self.start_animation)
         self.actPlayPause.triggered.connect(self.pause_animation)
         self.playbackTimer.start(self.playbackTimeout)
@@ -925,7 +928,7 @@ class SimulationGui(QMainWindow):
         self._logger.info("Pausing Playback")
         self.playbackTimer.stop()
         self.actPlayPause.setText("Play Animation")
-        self.actPlayPause.setIcon(QIcon(get_resource("play.png")))
+        self.actPlayPause.setIcon(QIcon.fromTheme("play"))
         self.actPlayPause.triggered.disconnect(self.pause_animation)
         self.actPlayPause.triggered.connect(self.start_animation)
 
@@ -938,7 +941,7 @@ class SimulationGui(QMainWindow):
             # animation is playing -> stop it
             self.playbackTimer.stop()
             self.actPlayPause.setText("Play Animation")
-            self.actPlayPause.setIcon(QIcon(get_resource("play.png")))
+            self.actPlayPause.setIcon(QIcon.fromTheme("play"))
             self.actPlayPause.triggered.disconnect(self.pause_animation)
             self.actPlayPause.triggered.connect(self.start_animation)
 
@@ -960,7 +963,7 @@ class SimulationGui(QMainWindow):
         self._logger.info("Simulating: {}".format(regime_name))
 
         self.actSimulateCurrent.setIcon(QIcon(
-            get_resource("stop_simulation.png")))
+            get_resource("stop_simulation")))
         self.actSimulateCurrent.setText("Abort &Simulation")
         self.actSimulateCurrent.triggered.disconnect(self.start_simulation)
         self.actSimulateCurrent.triggered.connect(self.stop_simulation)
@@ -1171,7 +1174,7 @@ class SimulationGui(QMainWindow):
         Simulate all regimes in the regime list.
         """
         self.actSimulateAll.setText("Stop Simulating &All Regimes")
-        self.actSimulateAll.setIcon(QIcon(get_resource("stop_batch.png")))
+        self.actSimulateAll.setIcon(QIcon.fromTheme("stop_batch"))
         self.actSimulateAll.triggered.disconnect(self.start_regime_execution)
         self.actSimulateAll.triggered.connect(self.stop_regime_execution)
 
@@ -1208,7 +1211,7 @@ class SimulationGui(QMainWindow):
         self.actSave.setDisabled(True)
 
         self.actSimulateAll.setText("Simulate &All Regimes")
-        self.actSimulateAll.setIcon(QIcon(get_resource("execute_regimes.png")))
+        self.actSimulateAll.setIcon(QIcon.fromTheme("execute_regimes"))
         self.actSimulateAll.triggered.disconnect(self.stop_regime_execution)
         self.actSimulateAll.triggered.connect(self.start_regime_execution)
 
@@ -1238,7 +1241,7 @@ class SimulationGui(QMainWindow):
         self.statusLabel.setText("Simulation {}".format(status))
 
         self.actSimulateCurrent.setText("&Simulate Current Regime")
-        self.actSimulateCurrent.setIcon(QIcon(get_resource("simulate.png")))
+        self.actSimulateCurrent.setIcon(QIcon.fromTheme("simulate"))
         self.actSimulateCurrent.triggered.disconnect(self.stop_simulation)
         self.actSimulateCurrent.triggered.connect(self.start_simulation)
 
@@ -1664,7 +1667,7 @@ class SimulationGui(QMainWindow):
                 self._settings.setValue("path/previous_plot_format", ".csv")
             elif ext == '.png':
                 exporter.export_png(filename[0])
-                self._settings.setValue("path/previous_plot_format", ".png")
+                self._settings.setValue("path/previous_plot_format", "")
             else:
                 self._logger.error("Wrong extension used!")
                 return
@@ -1784,22 +1787,27 @@ class SimulationGui(QMainWindow):
 
     def toggleTheme(self):
         darkmode = not self._settings.value("theme/use_dark_theme", type=bool)
-        self.setPalette(darkmode)
+        self.setTheme(darkmode)
         self._settings.setValue("theme/use_dark_theme", darkmode)
 
-    def setPalette(self, use_dark_theme=None):
+    def setTheme(self, use_dark_theme=None):
         if use_dark_theme is None:
             use_dark_theme = self._settings.value("theme/use_dark_theme", type=bool)
 
         if use_dark_theme:
+            QIcon.setThemeName("dark")
             QApplication.instance().setPalette(darkPalette)
             self._settings.setValue("log_colors/INFO", "#efefef")
             self._settings.setValue("log_colors/NOTSET", "#fffff")
         else:
+            QIcon.setThemeName("light")
             QApplication.instance().setPalette(lightPalette)
             self._settings.setValue("log_colors/INFO", "#101010")
             self._settings.setValue("log_colors/NOTSET", "#00000")
 
-        self.visualizer.update_theme()
-        for dock in self.area.docks.values():
-            dock.updateStyle()
+        if hasattr(self, "area"):
+            for dock in self.area.docks.values():
+                dock.updateStyle()
+
+        if hasattr(self, "visualizer"):
+            self.visualizer.update_theme()

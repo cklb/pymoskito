@@ -34,7 +34,7 @@ class PostProcessor(QMainWindow):
             self._settings = QSettings()
 
         self.setWindowTitle("Processing")
-        self.setWindowIcon(QIcon(get_resource("processing.png")))
+        self.setWindowIcon(QIcon.fromTheme("processing"))
         self.mainFrame = QWidget(self)
         self.resize(1000, 600)
 
@@ -45,19 +45,19 @@ class PostProcessor(QMainWindow):
 
         self.actLoad = QAction(self)
         self.actLoad.setText("load result file")
-        self.actLoad.setIcon(QIcon(get_resource("load.png")))
+        self.actLoad.setIcon(QIcon.fromTheme("load"))
         self.actLoad.setDisabled(False)
         self.actLoad.triggered.connect(self.load_result_files)
 
         self.actPostLoad = QAction(self)
         self.actPostLoad.setText("load post-result file")
-        self.actPostLoad.setIcon(QIcon(get_resource("load.png")))
+        self.actPostLoad.setIcon(QIcon.fromTheme("load"))
         self.actPostLoad.setDisabled(False)
         self.actPostLoad.triggered.connect(self.load_post_result_files)
 
         self.actSwitch = QAction(self)
         self.actSwitch.setText("switch display mode")
-        self.actSwitch.setIcon(QIcon(get_resource("left_mode.png")))
+        self.actSwitch.setIcon(QIcon.fromTheme("left_mode"))
         self.actSwitch.setDisabled(False)
         self.actSwitch.triggered.connect(self.switch_sides)
         self.displayLeft = True
@@ -69,13 +69,13 @@ class PostProcessor(QMainWindow):
 
         self.actReloadMethods = QAction(self)
         self.actReloadMethods.setText("reload methods")
-        self.actReloadMethods.setIcon(QIcon(get_resource("reload.png")))
+        self.actReloadMethods.setIcon(QIcon.fromTheme("reload"))
         self.actReloadMethods.setDisabled(False)
         self.actReloadMethods.triggered.connect(self.update_post_method_list)
 
         self.actReloadMetaMethods = QAction(self)
         self.actReloadMetaMethods.setText("reload meta methods")
-        self.actReloadMetaMethods.setIcon(QIcon(get_resource("reload.png")))
+        self.actReloadMetaMethods.setIcon(QIcon.fromTheme("reload"))
         self.actReloadMetaMethods.setDisabled(False)
         self.actReloadMetaMethods.triggered.connect(
             self.update_meta_method_list)
@@ -354,10 +354,10 @@ class PostProcessor(QMainWindow):
     def switch_sides(self):
         self.displayLeft = not self.displayLeft
         if self.displayLeft:
-            self.actSwitch.setIcon(QIcon(get_resource("left_mode.png")))
+            self.actSwitch.setIcon(QIcon.fromTheme("left_mode"))
             self.post_figure_list.setFocus()
             self.current_figure_changed(self.post_figure_list.currentItem())
         else:
-            self.actSwitch.setIcon(QIcon(get_resource("right_mode.png")))
+            self.actSwitch.setIcon(QIcon.fromTheme("right_mode"))
             self.meta_figure_list.setFocus()
             self.current_figure_changed(self.meta_figure_list.currentItem())
