@@ -28,10 +28,6 @@ from .controltools import *
 from .visualization import *
 from .resources import *
 
-__author__ = 'Stefan Ecklebe'
-__email__ = 'stefan.ecklebe@umit-tirol.at'
-__version__ = '0.5.0'
-
 # configure logging
 with open(get_resource("logging.yaml", ""), "r") as f:
     log_conf = yaml.full_load(f)
