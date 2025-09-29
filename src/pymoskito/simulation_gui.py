@@ -607,9 +607,9 @@ class SimulationGui(QMainWindow):
         if hasattr(self, "actResetCamera"):
             self.actResetCamera.setEnabled(self.visualizer.can_reset_view)
 
-    def add_plot_tree_item(self, default=False):
+    def add_plot_tree_item(self):
         text = "plot_{:03d}".format(self.dataPointTreeWidget.topLevelItemCount())
-        if not default:
+        if self._settings.value("plot/ask_for_plot_title", type=bool):
             name, ok = QInputDialog.getText(self,
                                             "Select a plot title",
                                             "name of the new plot:",
@@ -682,7 +682,7 @@ class SimulationGui(QMainWindow):
         if not top_level_items:
             if self.dataPointTreeWidget.topLevelItemCount() < 2:
                 if self.dataPointTreeWidget.topLevelItemCount() < 1:
-                    self.add_plot_tree_item(default=True)
+                    self.add_plot_tree_item()
                 top_level_item = self.dataPointTreeWidget.topLevelItem(0)
             else:
                 self._logger.error("Can't add data set: no plot selected.")
@@ -851,6 +851,9 @@ class SimulationGui(QMainWindow):
         # view management
         self._add_setting("view/dock_state", "")
         self._add_setting("view/show_coordinates", "True")
+        self._add_setting("view/show_time_on_export", "False")
+        self._add_setting("view/export_width", "800")
+        self._add_setting("view/export_height", "600")
 
         # log management
         self._add_setting("log_colors/CRITICAL", "#DC143C")
@@ -860,9 +863,11 @@ class SimulationGui(QMainWindow):
         self._add_setting("log_colors/DEBUG", "#4682B4")
         self._add_setting("log_colors/NOTSET", "#000000")
 
-        self._add_setting("view/show_time_on_export", "False")
-        self._add_setting("view/export_width", "800")
-        self._add_setting("view/export_height", "600")
+        # theme management
+        self._add_setting("theme/use_dark_theme", "False")
+
+        # plot management
+        self._add_setting("plot/ask_for_plot_title", False)
 
     def _write_settings(self):
         """ Store the application state. """
