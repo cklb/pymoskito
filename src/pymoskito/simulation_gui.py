@@ -176,7 +176,8 @@ class SimulationGui(QMainWindow):
         self.area.addDock(self.regimeDock, "left", self.lastSimDock)
         self.non_plotting_docks = list(self.area.findAll()[1].keys())
         self.standardDockState = self.area.saveState()
-        self.area.restoreState(self._settings.value("view/dock_state"), missing="ignore")
+        if state := self._settings.value("view/dock_state", type=dict):
+            self.area.restoreState(state, missing="ignore")
 
         # add widgets to the docks
         self.propertyDock.addWidget(self.targetView)
@@ -868,7 +869,7 @@ class SimulationGui(QMainWindow):
         self._add_setting("control/exit_on_batch_completion", False)
 
         # view management
-        self._add_setting("view/dock_state", "")
+        self._add_setting("view/dock_state", {})
         self._add_setting("view/show_coordinates", True)
         self._add_setting("view/show_time_on_export", False)
         self._add_setting("view/export_width", "800")
