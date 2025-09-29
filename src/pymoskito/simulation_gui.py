@@ -87,9 +87,6 @@ class SimulationGui(QMainWindow):
     """
     The graphical user interface of PyMoskito
     """
-    lightStyle = LightModeStyle()
-    darkStyle = DarkModeStyle()
-
     # TODO enable closing plot docks by right-clicking their name
     TABLEAU_COLORS = (
         ('blue', '#1f77b4'),
@@ -1809,13 +1806,13 @@ class SimulationGui(QMainWindow):
 
         if use_dark_theme:
             QIcon.setThemeName("dark")
-            QApplication.instance().setStyle(self.darkStyle)
+            QApplication.instance().setStyle(DarkModeStyle())
             QApplication.instance().setPalette(darkPalette)
             self._settings.setValue("log_colors/INFO", "#efefef")
             self._settings.setValue("log_colors/NOTSET", "#fffff")
         else:
             QIcon.setThemeName("light")
-            QApplication.instance().setStyle(self.lightStyle)
+            QApplication.instance().setStyle(LightModeStyle())
             QApplication.instance().setPalette(lightPalette)
             self._settings.setValue("log_colors/INFO", "#101010")
             self._settings.setValue("log_colors/NOTSET", "#00000")
