@@ -1,15 +1,14 @@
 # -*- coding: utf-8 -*-
-
-# system
+from importlib import metadata
 import logging
-import numpy as np
+from operator import itemgetter
 import os
 import pickle
 import time
-from importlib import metadata
 import webbrowser
 import yaml
-from operator import itemgetter
+
+import numpy as np
 from scipy.interpolate import interp1d
 
 from PyQt5.QtCore import (pyqtSignal, pyqtSlot, Qt, QTimer, QSize, QSettings,
@@ -216,7 +215,7 @@ class SimulationGui(QMainWindow):
         self.actExitOnBatchCompletion.setText("&Exit On Batch Completion")
         self.actExitOnBatchCompletion.setCheckable(True)
         self.actExitOnBatchCompletion.setChecked(
-            self._settings.value("control/exit_on_batch_completion") == "True"
+            self._settings.value("control/exit_on_batch_completion", type=bool)
         )
         self.actExitOnBatchCompletion.changed.connect(
             self.update_exit_on_batch_completion_setting)
@@ -353,7 +352,7 @@ class SimulationGui(QMainWindow):
         self.actAutoPlay.setText("&Autoplay Simulation")
         self.actAutoPlay.setCheckable(True)
         self.actAutoPlay.setChecked(
-            self._settings.value("control/autoplay_animation") == "True"
+            self._settings.value("control/autoplay_animation", type=bool)
         )
         self.actAutoPlay.changed.connect(self.update_autoplay_setting)
 
@@ -435,7 +434,7 @@ class SimulationGui(QMainWindow):
         self.actToggleTheme.setIcon(QIcon(get_resource("theme.png")))
         self.actToggleTheme.setDisabled(False)
         self.actToggleTheme.triggered.connect(self.toggleTheme)
-        self.setStyleSheet()
+        self.setPalette()
 
         # toolbar
         self.toolbarSim = QToolBar("Simulation")
@@ -492,7 +491,7 @@ class SimulationGui(QMainWindow):
         self.actShowCoords = QAction("&Show Coordinates", self)
         self.actShowCoords.setCheckable(True)
         self.actShowCoords.setChecked(
-            self._settings.value("view/show_coordinates") == "True"
+            self._settings.value("view/show_coordinates", type=bool)
         )
         self.viewMenu.addAction(self.actShowCoords)
         self.actShowCoords.changed.connect(self.update_show_coords_setting)
@@ -852,13 +851,13 @@ class SimulationGui(QMainWindow):
         self._add_setting("path/previous_plot_format", ".csv")
 
         # control flow management
-        self._add_setting("control/autoplay_animation", "False")
-        self._add_setting("control/exit_on_batch_completion", "False")
+        self._add_setting("control/autoplay_animation", False)
+        self._add_setting("control/exit_on_batch_completion", False)
 
         # view management
         self._add_setting("view/dock_state", "")
-        self._add_setting("view/show_coordinates", "True")
-        self._add_setting("view/show_time_on_export", "False")
+        self._add_setting("view/show_coordinates", True)
+        self._add_setting("view/show_time_on_export", False)
         self._add_setting("view/export_width", "800")
         self._add_setting("view/export_height", "600")
 
@@ -871,7 +870,7 @@ class SimulationGui(QMainWindow):
         self._add_setting("log_colors/NOTSET", "#000000")
 
         # theme management
-        self._add_setting("theme/use_dark_theme", "False")
+        self._add_setting("theme/use_dark_theme", False)
 
         # plot management
         self._add_setting("plot/ask_for_plot_title", False)
@@ -1219,7 +1218,7 @@ class SimulationGui(QMainWindow):
         else:
             self._logger.error("Batch simulation has been aborted")
 
-        if self._settings.value("control/exit_on_batch_completion") == "True":
+        if self._settings.value("control/exit_on_batch_completion", type=bool):
             self._logger.info("Shutting down SimulationGUI")
             self.close()
 
@@ -1279,7 +1278,7 @@ class SimulationGui(QMainWindow):
             self.lastSimList.scrollToItem(new_item)
             self.setQListItemBold(self.lastSimList, new_item)
 
-        if self._settings.value("control/autoplay_animation") == "True":
+        if self._settings.value("control/autoplay_animation", type=bool):
             self.actPlayPause.trigger()
 
         if self.runningBatch:
@@ -1585,7 +1584,7 @@ class SimulationGui(QMainWindow):
                                                 mouse_coords.y())
         self.coordLabel.setText(coord_text)
 
-        show_info = self._settings.value("view/show_coordinates") == "True"
+        show_info = self._settings.value("view/show_coordinates", type=bool)
         if widget.sceneBoundingRect().contains(pos) and show_info:
             coord_item.setText(coord_text.replace(" ", "\n"))
             coord_item.show()
