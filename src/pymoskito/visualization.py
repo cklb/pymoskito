@@ -1,6 +1,8 @@
 import logging
 from abc import ABCMeta, abstractmethod
 
+from PyQt5.QtGui import QGuiApplication
+
 from matplotlib.backends.backend_qt5agg import (
     NavigationToolbar2QT, FigureCanvasQTAgg as FigureCanvas)
 from matplotlib.figure import Figure
@@ -39,6 +41,10 @@ class Visualizer(metaclass=ABCMeta):
         self._config = {}
         self._logger = logging.getLogger(self.__class__.__name__)
 
+    @abstractmethod
+    def update_theme(self):
+        pass
+
     def update_config(self, config):
         """
         Hook to update the current visualization configuration
@@ -57,6 +63,9 @@ class Visualizer(metaclass=ABCMeta):
 
 
 class DummyVisualizer(Visualizer):
+
+    def update_theme(self):
+        pass
 
     def update_scene(self, x, u):
         pass
@@ -126,9 +135,15 @@ class MplVisualizer(Visualizer):
         self.qWidget = q_widget
         self.qLayout = q_layout
         self.dpi = 100
-        self.fig = Figure((5.0, 4.0), facecolor='white', dpi=self.dpi)
+        bg = QGuiApplication.palette().window().color().getRgbF()
+        self.fig = Figure((5.0, 4.0), facecolor=bg, dpi=self.dpi)
         self.canvas = FigureCanvas(self.fig)
         self.canvas.setParent(self.qWidget)
         self.axes = self.fig.add_subplot(111)
         self.qLayout.addWidget(self.canvas)
         self.qWidget.setLayout(self.qLayout)
+
+    def update_theme(self):
+        bg = QGuiApplication.instance().palette().window().color().getRgbF()
+        self.fig.set_facecolor(bg)
+        self.canvas.draw()

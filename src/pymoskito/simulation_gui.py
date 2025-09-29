@@ -12,10 +12,9 @@ import yaml
 from operator import itemgetter
 from scipy.interpolate import interp1d
 
-# Qt
 from PyQt5.QtCore import (pyqtSignal, pyqtSlot, Qt, QTimer, QSize, QSettings,
-                          QCoreApplication, QModelIndex)
-from PyQt5.QtGui import QIcon, QKeySequence, QColor
+                          QCoreApplication, QModelIndex, QFile, QTextStream)
+from PyQt5.QtGui import QIcon, QKeySequence, QColor, QPalette
 from PyQt5.QtWidgets import (
     QApplication, QMainWindow,
     QWidget, QAction,
@@ -54,6 +53,7 @@ from .registry import get_registered_visualizers
 from .simulation_interface import SimulatorInteractor, SimulatorView
 from .visualization import MplVisualizer, VtkVisualizer, DummyVisualizer
 from .processing_gui import PostProcessor
+from .resources.themes import darkPalette, lightPalette
 from .tools import (
     get_resource, PlainTextLogger, Exporter, create_button_from_action
 )
@@ -427,8 +427,15 @@ class SimulationGui(QMainWindow):
         self.actPostprocessing.setDisabled(False)
         self.actPostprocessing.triggered.connect(self.postprocessing_clicked)
         self.actPostprocessing.setShortcut(QKeySequence("F7"))
-
         self.postprocessor = None
+
+        # theming
+        self.actToggleTheme = QAction(self)
+        self.actToggleTheme.setText("Toggle Theme")
+        self.actToggleTheme.setIcon(QIcon(get_resource("theme.png")))
+        self.actToggleTheme.setDisabled(False)
+        self.actToggleTheme.triggered.connect(self.toggleTheme)
+        self.setStyleSheet()
 
         # toolbar
         self.toolbarSim = QToolBar("Simulation")
@@ -454,7 +461,7 @@ class SimulationGui(QMainWindow):
         self.toolbarSim.addWidget(self.visuComboBox)
         self.toolbarSim.addSeparator()
         self.toolbarSim.addAction(self.actPostprocessing)
-        self.postprocessor = None
+        self.toolbarSim.addAction(self.actToggleTheme)
 
         # log dock
         self.logBox = QTextEdit(self)
@@ -1775,3 +1782,24 @@ class SimulationGui(QMainWindow):
                 new_font.setBold(0)
             q_list.item(i).setFont(new_font)
         q_list.repaint()
+
+    def toggleTheme(self):
+        darkmode = not self._settings.value("theme/use_dark_theme", type=bool)
+        self.setPalette(darkmode)
+        self._settings.setValue("theme/use_dark_theme", darkmode)
+
+    def setPalette(self, use_dark_theme=None):
+        if use_dark_theme is None:
+            use_dark_theme = self._settings.value("theme/use_dark_theme", type=bool)
+
+        if use_dark_theme:
+            QApplication.instance().setPalette(darkPalette)
+            self._settings.setValue("log_colors/INFO", "#efefef")
+            self._settings.setValue("log_colors/NOTSET", "#fffff")
+        else:
+            QApplication.instance().setPalette(lightPalette)
+            self._settings.setValue("log_colors/INFO", "#101010")
+            self._settings.setValue("log_colors/NOTSET", "#00000")
+
+        self.visualizer.update_theme()
+        self.area.update()
