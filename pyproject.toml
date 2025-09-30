@@ -48,15 +48,15 @@ build-backend = "uv_build"
 cpp = [
     "pybind11>=2.7.0",
 ]
+
+[dependency-groups]
 docs = [
     "docutils",
     "sphinx>=1.4.9",
     "sphinx-rtd-dark-mode",
     "sphinxcontrib-tikz>=0.4.7",
 ]
-
-[dependency-groups]
 dev = [
-    "pymoskito[cpp,docs]",
-    "black",
+    "pymoskito[cpp]",
+    {include-group = "docs"},
 ]
