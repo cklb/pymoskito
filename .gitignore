@@ -63,3 +63,4 @@ pymoskito.log.3
 CMakeLists.txt
 _build/
 _lib/
+/uv.lock
