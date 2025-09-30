@@ -1,6 +1,6 @@
 [project]
 name = "pymoskito"
-version = "0.5.0rc7"
+version = "0.5.0"
 description = "Python based modular simulation & postprocessing kickass toolbox"
 keywords = ["pymoskito control simulation feedback feedforward"]
 readme = "README.rst"
@@ -49,8 +49,8 @@ cpp = [
     "pybind11>=2.7.0",
 ]
 docs = [
-    "Sphinx>=1.4.9",
     "docutils",
+    "sphinx>=1.4.9",
     "sphinx-rtd-dark-mode",
     "sphinxcontrib-tikz>=0.4.7",
 ]
@@ -60,8 +60,3 @@ dev = [
     "pymoskito[cpp,docs]",
     "black",
 ]
-
-[[tool.uv.index]]
-name = "testpypi"
-url = "https://test.pypi.org/legacy/"
-publish-url = "https://test.pypi.org/legacy/"

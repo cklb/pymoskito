@@ -10,7 +10,7 @@ jobs:
   run:
     runs-on: ubuntu-latest
     environment:
-      name: testpypi
+      name: pypi
     permissions:
       id-token: write
       contents: read
@@ -29,4 +29,4 @@ jobs:
       - name: Smoke test (source distribution)
         run: uv run --isolated --no-project --with dist/*.tar.gz src/pymoskito/tests/test_examples.py
       - name: Publish
-        run: uv publish --index testpypi
+        run: uv publish
