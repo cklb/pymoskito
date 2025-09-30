@@ -29,4 +29,4 @@ jobs:
       - name: Smoke test (source distribution)
         run: uv run --isolated --no-project --with dist/*.tar.gz tests/test_examples.py
       - name: Publish
-        run: uv publish
+        run: uv publish --index testpypi
